@@ -31,7 +31,8 @@ Both of the scripts utilize the same configuration method,
 	which requires you to put a file in your SSH directory
 	with the name `username__widget.conf`.
 This file should contain key=value pairs, one per line.
-Currently only one pair is supported, the `accesshash`,
+Currently only one pair is supported, the `accesshash`.
+This command illustrates what a proper configuration should look like:
 
 ```
 bash-3.2$ cat ~/.ssh/dburfoot__widget.conf 
@@ -39,15 +40,43 @@ accesshash=0123456789abcdfe0123456789abcdf
 ```
 
 
-Usage:
+`DbGrabber` Usage:
 
 ```
 python DbGrabber.py username=dburfoot dbdir=/path/to/my/widget/directory widget=danswidget
 ```
 
-This command will upload the DB file for the widget `danswidget` from the directory `/path/to/my/widget/directory`,
+This command will grab the DB file for the widget `danswidget` into the directory `/path/to/my/widget/directory`,
 	for the user `dburfoot`.
-The full path to the DB file must be  `/path/to/my/widget/directory/DANSWIDGET_DB.sqlite`.
+The resulting full path for the DB file will be: 
+	`/path/to/my/widget/directory/DANSWIDGET_DB.sqlite`.
+
+
+`CodeUploader` Usage:
+
+
+```
+python CodeUploader.py username=dburfoot basedir=/path/to/code/or/db/dir widget=danswidget
+```
+
+This script will upload *either* a DB file or a widget code directory, 
+	depending on what it finds in the `basedir` argument.
+If it finds a DB file named `DANSWIDGET_DB.sqlite`, 
+	it will upload the single file to the server.
+If it finds a directory named `danswidget`, it will zip the contents 
+	of the directory and send the zip file to the server.
+The server will unzip the contents into the appropriate place.
+You can include anything you want in the Zip file, 
+	but there is a limit on the maximum size of the upload.
+For the standard widget Zip upload,
+	the script will include any nested directories it finds in the widget directory.
+	
+There is a special option to send the base files for the user
+	by using the argument `widget=base`.
+In this case, the script will collect all the direct child files in the basedir,
+	and send the result to the server to be expanded into the user directory.
+This enables you to update your `index.jsp` file.
+This script does NOT collect any nested directories.
 
 
 ### JavaScript Library
