@@ -1,12 +1,4 @@
 
-<%@ page import="java.util.*" %>
-
-<%@ page import="net.danburfoot.shared.*" %>
-<%@ page import="net.danburfoot.shared.DbUtil.*" %>
-<%@ page import="net.danburfoot.shared.HtmlUtil.*" %>
-
-<%@ page import="lifedesign.basic.*" %>
-<%@ page import="lifedesign.classic.*" %>
 
 <%@include file="../../life/AuthInclude.jsp_inc" %>
 
@@ -48,7 +40,6 @@ function rebuildWeek(mondaycode)
 {
 	if(!confirm("This will delete all the previous goal items for this week, and rebuild them from the template. Okay?"))
 		{ return; }
-	
 	
 	const olditems = getItemList("ex_week_goal").filter(exitem => exitem.getMondayCode() == mondaycode);
 	
@@ -118,82 +109,69 @@ function getMondayList()
 
 function redisplay()
 {
-	var mainlog = $('<p></p>');
-		
-	// var workoutlist = getItemList("workout_log").filter(wo => wo.getWoType() == workouttype);
+	var mainlog = "";
 	const workoutlist = getItemList("ex_week_goal");
+	const mondaylist = getMondayList().sort().reverse();
+	
+	mondaylist.forEach(function(themonday) {
 
-	var mondaylist = getMondayList().sort().reverse();
-	
-	// const unitinfo = getUnitInfo(workouttype);
-	
-	// const startmonday = getStartingMonday(workouttype);
-	
-	for(const mi in mondaylist)
-	{
-		const themonday = mondaylist[mi];
-				
 		var weeklist =  workoutlist.filter(witem => witem.getMondayCode() == themonday);
 		weeklist.sort(proxySort(a => [getExType4Code(a), a.getId()]));
 				
-		mainlog.append("<h3>Week Of " + themonday.substring(5) + "</h3>");
+		mainlog += `
+			<h3>Week of ${themonday.substring(5)}</h3>
+			<a class="css3button" href="javascript:rebuildWeek('${themonday}')">REBUILD</a>
+			<br/>
+			<br/>
+		`;
 		
-		mainlog.append("<a class=\"css3button\" href=\"javascript:rebuildWeek('" + themonday + "')\">REBUILD</a><br/></br/>");
+		var tablestr = `
+			<table class="dcb-basic" id="dcb-basic" width="60%">
+			<tr>
+			<th>Type</th>
+			<th>Code</th>
+			<th>Week Goal</th>
+			<th>Notes</th>
+			<th>...</th>
+			</tr>
+		`;
 
-		var mytable = $('<table></table>').addClass('dcb-basic').attr("id", "dcb-basic").attr("width", "60%");
-		
-		{
-			var row = $('<tr></tr>').addClass('bar');
-		
-			["Type", "Code", "Week Goal",  "Notes", "..."].forEach( function (hname) {
-			
-				row.append($('<th></th>').text(hname));
-			});
-			
-			mytable.append(row);	
-		}		
-			
-		
+		weeklist.forEach(function(woitem) {
 
-		const trcomposer = (new ComposerTool())
-					.append("<tr><td>{2}</td>")
-					.append("<td>{6}</td>")
-					.append("<td>{3}  {4}</td>")
-					.append("<td>{5}</td>")	
-					.append("<td>")
-					.append("<a href='javascript:editMiniNote({1})'><img src='/life/image/edit.png' height='18'/></a>")
-					.append("&nbsp; &nbsp; ")			
-					.append("<a href='javascript:deleteItem({1})'><img src='/life/image/remove.png' height='18'/></a>")
-					.append("</td>")
-					.append("</tr>");
-
-		for(var wi in weeklist)
-		{
-			const woitem = weeklist[wi];
-			// const effdate = getEffectiveDate(woitem);
-			// var shortdow = lookupDayCode(effdate).getShortDayOfWeek();
-			// var shownotes = woitem.getNotes();
+			const extype = getExType4Code(woitem.getShortCode());
 			
-			//if(effdate != woitem.getDayCode())
-			//	{ shownotes = "Catchup=" + woitem.getDayCode().substring(5) + "    " + shownotes; }
-	
+			const rowstr = `
+				<tr>
+				<td>${extype}</td>
+				<td>${woitem.getShortCode()}</td>
+				<td>${woitem.getWeeklyGoal()}</td>
+				<td>${woitem.getMiniNote()}</td>
+				<td>
+				<a href="javascript:editMiniNote(${woitem.getId()})">
+				<img src='/life/image/edit.png' height="18"/></a>
+				&nbsp;&nbsp;
+			
+				<a href="javascript:deleteItem(${woitem.getId()})">
+				<img src="/life/image/remove.png" height="18"/></a>
+				</td>
+				</tr>
+			`;
+			
 			const data = [woitem.getId(), getExType4Code(woitem.getShortCode()), 
 						woitem.getWeeklyGoal(), 
 						getUnitCode(woitem.getShortCode()),
 						woitem.getMiniNote(), woitem.getShortCode()];
 			
-			mytable.append(trcomposer.listFormat(data));
-		}
+			tablestr += rowstr;
+		});
 		
-		mainlog.append(mytable);		
-		
-		mainlog.append("<br/>");
-	}
-		
-	// $('#unit_info').html(unitinfo);
+		tablestr += `</table>`;
+
+		mainlog += tablestr;		
+		mainlog += "<br/>";
+	});
 	
-	$('#complete_log').html(mainlog);
-	
+	document.getElementById("complete_log").innerHTML = mainlog;
 }
 
 
