@@ -81,3 +81,18 @@ This script does NOT collect any nested directories.
 
 ### JavaScript Library
 
+In order to integrate with the service, the Widgets must include a couple of JavaScript files.
+The inclusion is done automatically for you with the `AssetInclude` command. 
+This folder contains the JS files that are included.
+
+There is only one file that is actually required, which is `LiteJsHelper.js`.
+This file provides basic utilities that the dynamically generated JS code calls.
+For example, the standard `getItemList` method that returns all of the items in a table
+	is defined here. 
+	
+The other files are optional for users. 
+They are basically a collection of utilities that I found to be convenient 
+	when composing widgets.
+For example there is a `populateSpanData` method that takes a JS hash as an argument,
+	and finds span tags on the page corresponding to the keys of the hash,
+	and sets the `innerHTML` field of the spans to the corresponding hash values.
