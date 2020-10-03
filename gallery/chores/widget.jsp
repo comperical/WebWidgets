@@ -1,9 +1,6 @@
-<%@ page import="java.util.*" %>
-<%@ page import="net.danburfoot.shared.*" %>
-<%@ page import="lifedesign.basic.*" %>
-<%@ page import="lifedesign.classic.*" %>
-<%@include file="../../life/AuthInclude.jsp_inc" %>
 
+
+<%@include file="../../life/AuthInclude.jsp_inc" %>
 
 <html>
 <head>
@@ -12,6 +9,8 @@
 <%@include file="../../life/AssetInclude.jsp_inc" %>
 
 <%= DataServer.basicInclude(request) %>
+
+<%= DataServer.includeIfAvailable(request, "minitask", "mini_task_list") %>
 
 <script>
 
@@ -213,7 +212,10 @@ function redisplayChoreList()
 				<a href="javascript:setEditStudyItem(${chore.getId()})">
 				<img src="/life/image/inspect.png" height=18"/a></a>
 				
-				<%= HtmlUtil.nbsp(3) %>
+				&nbsp; 
+				&nbsp; 
+				&nbsp; 
+
 				<a href="javascript:toggleChoreActive(${chore.getId()}, '${chore.getShortName()}')">
 				<img src="/life/image/cycle.png" height="18"/></a>				
 			
@@ -273,22 +275,18 @@ function redisplayChoreLog()
 	itemlist.sort(proxySort(a => [a.getShortName()]));
 	
 	// var lastlogmap = getLastLogMap();
-					
-	var activetable = $('<table></table>').addClass('dcb-basic').attr("id", "dcb-basic").attr("width", "70%");
 	
-	{
-		const header = `
-			<th width="7%">ID</th>
-			<th>Chore Name</th>
-			<th>Last Completed</th>
-			<th>Overdue</th>
-			<th width="18%">...</th>
-		`;
-		
-		var row = $('<tr></tr>').html(header);
-		
-		activetable.append(row);	
-	}
+	var activetable = `
+		<table id="dcb-basic" class="dcb-basic" width="70%">
+		<tr>
+		<th width="7%">ID</th>
+		<th>Chore Name</th>
+		<th>Last Completed</th>
+		<th>Overdue</th>
+		<th width="18%">...</th>
+		</tr>
+	`;
+
 	
 	itemlist.forEach(function(chore) {
 			
@@ -311,6 +309,7 @@ function redisplayChoreLog()
 		
 					
 		const rowstr = `
+			<tr>
 			<td>${chore.getId()}</td>
 			<td>${chore.getShortName()}</td>
 			<td>${lastupdate}</td>
@@ -321,26 +320,27 @@ function redisplayChoreLog()
 				<a href="javascript:swap2MiniTask(${chore.getId()})">
 				<img src="/life/image/swap2mtl.png" height=18"/a></a>
 				
-				<%= HtmlUtil.nbsp(2) %>
+				&nbsp;&nbsp;
 			
 				<a href="javascript:markComplete(${chore.getId()})">
 				<img src="/life/image/checkmark.png" height=18"/a></a>
 				
-				<%= HtmlUtil.nbsp(2) %>
+				&nbsp;&nbsp;
 				
 				<a href="javascript:setEditStudyItem(${chore.getId()})">
 				<img src="/life/image/inspect.png" height=18"/a></a>
 				
-				<%= HtmlUtil.nbsp(2) %>				
+				&nbsp;&nbsp;
 												
 				${weblinkstr}
 			</td>
+			</tr>
 		`;
 		
-		const row = $('<tr></tr>').addClass('bar').html(rowstr);
-
-		activetable.append(row);
+		activetable += rowstr;
 	});
+	
+	activetable += `</table>`;
 	
 	$('#chore_log_table').html(activetable);	
 	
@@ -396,14 +396,11 @@ function editWebLink()
 
 function saveNewDesc()
 {
-	var showItem = getEditStudyItem();
-
-	var newDesc = getDocFormValue("fullitemdesc");
+	const showItem = getEditStudyItem();
+	const newDesc = getDocFormValue("fullitemdesc");
 	
 	showItem.setExtraInfo(newDesc);
-	
-	syncSingleItem(showItem);		
-
+	syncSingleItem(showItem);
 	redisplay();
 }
 

@@ -1,18 +1,13 @@
 
-<%@ page import="java.util.*" %>
+<%@ page import="net.danburfoot.shared.Util" %>
+<%@ page import="net.danburfoot.shared.DayCode" %>
+<%@ page import="net.danburfoot.shared.HtmlUtil.OptSelector" %>
 
-<%@ page import="net.danburfoot.shared.*" %>
-<%@ page import="net.danburfoot.shared.DbUtil.*" %>
-<%@ page import="net.danburfoot.shared.HtmlUtil.*" %>
-
-<%@ page import="lifedesign.basic.*" %>
-<%@ page import="lifedesign.classic.*" %>
+<%@ page import="lifedesign.basic.LifeUtil" %>
 
 <%@include file="../../life/AuthInclude.jsp_inc" %>
 
-<%
-	ArgMap argMap = HtmlUtil.getArgMap(request);	
-	
+<%	
 	DayCode jvTodayCode = LifeUtil.getTodayTzAware();	
 	
 	OptSelector dayCodeSel = LifeUtil.standardDateSelector(14);
@@ -25,10 +20,7 @@
 <head>
 <title>Junk Food Log</title>
 
-
 <%@include file="../../life/AssetInclude.jsp_inc" %>
-
-
 
 <%= DataServer.basicInclude(request) %>
 
@@ -40,8 +32,6 @@ function addNew()
 	const thenotes = getDocFormValue("notes");
 	addNewSub(junkfact, thenotes);
 }
-
-
 
 function addClean()
 {
@@ -217,7 +207,6 @@ function redispFullTable()
 
 
 <form name="mainform">
-<input type="hidden" name="opcode" value="addnew"/>
 Junk Weight:
 <select name="junkfactor">
 <%= intSelector.getSelectStr(1) %>
