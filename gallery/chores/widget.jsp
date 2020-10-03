@@ -48,7 +48,7 @@ function swap2MiniTask(choreid)
 			"day_code" : todaycode
 		};
 		
-		const compitem = buildChoreCompItem(comprec);
+		const compitem = buildItem("chore_comp", comprec);
 		compitem.registerNSync();
 	}
 	
