@@ -334,7 +334,7 @@ Hour Spent: <select name="time_spent_min">
 <br/><br/>
 
 wakeup
-<a href="javascript:plusDefaultWakeUp()">
+<a href="javascript:createWakeUpItem()">
 <img src="/life/image/add.png" width="18"/></a> 
 
 <br/><br/>
