@@ -60,7 +60,7 @@ function createNew()
 			"order_key" : newid
 		};
 		
-		var newitem = buildMroutinePhaseItem(comrecord);
+		const newitem = buildItem("mroutine_phase", comrecord);
 		newitem.registerNSync();
 		redisplay();
 	}	
@@ -204,7 +204,6 @@ function redisplayMainTable()
 
 	var showInActive = getDocFormValue("show_inactive") == "true";
 	
-	// biglist.sort(proxySort(irec => [irec.getMainType(), irec.getShortname()]));
 		
 	{
 		for(var bi in biglist)
