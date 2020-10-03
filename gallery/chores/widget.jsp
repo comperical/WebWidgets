@@ -340,9 +340,7 @@ function redisplayChoreLog()
 	
 	activetable += `</table>`;
 	
-	$('#chore_log_table').html(activetable);	
-	
-	// console.log("done!!");
+	populateSpanData({'chore_log_table' : activetable });
 }
 
 
