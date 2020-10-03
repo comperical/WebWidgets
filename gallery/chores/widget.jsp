@@ -166,23 +166,17 @@ function redisplayChoreList()
 	var itemlist = getItemList("chore_def");
 	itemlist.sort(proxySort(a => [a.getShortName()]));
 	
-	// var lastlogmap = getLastLogMap();
-					
-	var activetable = $('<table></table>').addClass('dcb-basic').attr("id", "dcb-basic").attr("width", "60%");
-	
-	{
-		const header = `
-			<th width="7%">ID</th>
-			<th>Name</th>
-			<th>Frequency</th>
-			<th>Active?</th>
-			<th>Op</th>
-		`;
-		
-		var row = $('<tr></tr>').html(header);
-		
-		activetable.append(row);	
-	}
+	var tablestr = `
+		<table class="dcb-basic" id="dcb-basic" width="60%">
+		<tr>
+		<th width="7%">ID</th>
+		<th>Name</th>
+		<th>Frequency</th>
+		<th>Active?</th>
+		<th>Op</th>		
+		</tr>
+	`;
+				
 	
 	itemlist.forEach(function(chore) {
 		
@@ -204,6 +198,7 @@ function redisplayChoreList()
 		
 		
 		const rowstr = `
+			<tr>
 			<td>${chore.getId()}</td>
 			<td>${chore.getShortName()}</td>
 			<td>${chore.getDayFreq()}</td>
@@ -221,15 +216,18 @@ function redisplayChoreList()
 			
 				${weblinkstr}
 			</td>
-			
+			</tr>
 		`;
 
-		const row = $('<tr></tr>').addClass('bar').html(rowstr);
-
-		activetable.append(row);
+		tablestr += rowstr;
+		
 	});
 	
-	$('#chore_list_table').html(activetable);	
+	tablestr += `
+		</table>
+	`;
+	
+	populateSpanData({'chore_list_table' : tablestr});
 }
 
 function redisplayChoreItem()
