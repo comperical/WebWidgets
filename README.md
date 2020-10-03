@@ -96,3 +96,6 @@ They are basically a collection of utilities that I found to be convenient
 For example there is a `populateSpanData` method that takes a JS hash as an argument,
 	and finds span tags on the page corresponding to the keys of the hash,
 	and sets the `innerHTML` field of the spans to the corresponding hash values.
+Users should feel free to take whatever pieces of this system they find to be convenient
+	and leave out the rest.
+
