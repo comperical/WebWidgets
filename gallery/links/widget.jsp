@@ -1,29 +1,5 @@
 
-<%@ page import="java.util.*" %>
-
-
-<%@ page import="net.danburfoot.shared.*" %>
-<%@ page import="net.danburfoot.shared.HtmlUtil.*" %>
-
-
-<%@ page import="lifedesign.basic.*" %>
-<%@ page import="lifedesign.classic.*" %>
-<%@ page import="lifedesign.classic.JsCodeGenerator.*" %>
-
 <%@include file="../../life/AuthInclude.jsp_inc" %>
-
-<%
-	ArgMap argMap = HtmlUtil.getArgMap(request);
-	
-	OptSelector ratingSel = new OptSelector(Util.range(1, 10));
-	
-	DayCode todayCode = DayCode.getToday();
-	
-	List<DayCode> dayList = DayCode.getDayRange(todayCode.nDaysBefore(30), 35);
-	
-	OptSelector dayListSel = new OptSelector(dayList);
-	
-%>
 
 <html>
 <head>
@@ -56,7 +32,7 @@ function createNew()
 		"cat_id" : categid
 	};
 	
-	var newlinkitem = buildLinkMainItem(newrec);		
+	var newlinkitem = buildItem("link_main", newrec);		
 	newlinkitem.registerNSync();	
 	editStudyItem(newid);
 }
@@ -230,14 +206,7 @@ function redisplayEditItem()
 	if(EDIT_STUDY_ITEM == -1)
 		{ return; }
 	
-	var edititem = getEditRecord();
-	
-	$('#item_id').html(edititem.getId());
-	
-	$('#short_desc').html(edititem.getShortDesc());
-	
-	$('#link_url').html(edititem.getLinkUrl());
-
+	const edititem = getEditRecord();
 	const optmap = getCategoryMap();
 	const selectstr = getSelectString(optmap, edititem.getCatId());
 	
@@ -246,12 +215,14 @@ function redisplayEditItem()
 		${selectstr}
 		</select>
 	`;
-
-	$('#item_category_sel_span').html(spanstr);
 	
-	// const optmap = getCategoryMap();
-	// popOptionMap("category_sel", optmap);
-	
+	populateSpanData({
+		"item_id" : edititem.getId(),
+		"short_desc" : edititem.getShortDesc(),
+		"link_url" : edititem.getLinkUrl(), 
+		"item_category_sel_span" : spanstr
+	});
+		
 	const opsel = getUniqElementByName("item_category_sel");
 	opsel.value = edititem.getCatId();
 }
@@ -338,65 +309,53 @@ function redisplayMainTable()
 		document.getElementById("main_category_sel_span").innerHTML = selectstr;
 	}
 	
-	var linktable = $('<table></table>').addClass('dcb-basic').attr("id", "dcb-basic").attr("width", "70%");
-	
-	{
-		var row = $('<tr></tr>').addClass('bar');
-	
-		["ID", "Category", "ShortDesc", "Link", "---"].forEach( function (hname) {
+	var tablestr = `
+		<table class="dcb-basic" id="dcb-basic" width="70%">
+		<tr>
+		<th>ID</th>
+		<th>Category</th>
+		<th>ShortDesc</th>
+		<th>Link</th>
+		<th>---</th>
+		</tr>
+	`;
 		
-			row.append($('<th></th>').text(hname));
-		});
-		
-		linktable.append(row);	
-	}
-		
-	var linkmainlist = getItemList("link_main");
-	
-	
-	var trcomposer = (new ComposerTool())
-				.append("<tr>")
-				.append("<td>{1}</td>")
-				.append("<td>{2}</td>")
-				.append("<td>{3}</td>")
-				.append("<td><a href=\"{4}\">{5}</a></td>")
-				.append("<td width=\"10%\">{6}</td>")
-				.append("</tr>");
-				
-	var opcomposer = (new ComposerTool())
-				.append("<a href=\"javascript:editStudyItem({1})\"><img src=\"/life/image/inspect.png\" height=\"18\"></a>")
-				.append("&nbsp;&nbsp;&nbsp;")
-				.append("<a href=\"javascript:deleteItem({1})\"><img src=\"/life/image/remove.png\" height=\"18\"></a>");
-				
+	const linkmainlist = getItemList("link_main").filter(lmi => lmi.getCatId() == MAIN_CATEGORY);
 				
 	const categitem = lookupItem("link_categ", MAIN_CATEGORY);
 		
-	for(var lmi in linkmainlist)
-	{
-		const linkitem = linkmainlist[lmi];
-		if(linkitem.getCatId() != MAIN_CATEGORY)
-			{ continue; }
-						
-		var opstuff = opcomposer.listFormat([linkitem.getId()]);
+	linkmainlist.forEach(function(linkitem) {
 		
 		var shorturl = linkitem.getLinkUrl();
-		
 		if(shorturl.length > 40)
-			{ shorturl = shorturl.substring(0, 40)+"..."; }
+			{ shorturl = shorturl.substring(0, 40)+"..."; }		
 		
-		var datalist = [linkitem.getId(), categitem.getShortCode(), linkitem.getShortDesc(),  linkitem.getLinkUrl(), shorturl, opstuff];
+		tablestr += `
+			<tr>
+			<td>${linkitem.getId()}</td>
+			<td>${categitem.getShortCode()}</td>
+			<td>${linkitem.getShortDesc()}</td>
+			<td>
+			<a href="${linkitem.getLinkUrl()}">
+			${shorturl}
+			</a>
+			</td>
+			<td>
+			<a href="javascript:editStudyItem(${linkitem.getId()})">
+			<img src="/life/image/inspect.png" height="18"></a>
 			
-		linktable.append(trcomposer.listFormat(datalist));
-	}
+			&nbsp;&nbsp;
+			
+			<a href="javascript:deleteItem(${linkitem.getId()})">
+			<img src="/life/image/remove.png" height="18"></a>
+			
+			</td>
+			</tr>
+		`;
+	});
 	
-
-	$('#linktable').html(linktable);
-	
+	populateSpanData({"linktable" : tablestr });
 }
-
-
-
-
 
 </script>
 

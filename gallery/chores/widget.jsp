@@ -38,7 +38,7 @@ function swap2MiniTask(choreid)
 		"is_backlog" : 0
 	};
 	
-	const newitem = buildMiniTaskListItem(newrec);
+	const newitem = buildItem("mini_task_list", newrec);
 	newitem.registerNSync();
 		
 	if(confirm("Created MTL item, should I mark the chore as complete?")) 
@@ -62,7 +62,7 @@ function markComplete(choreid)
 		"day_code" : getTodayCode().getDateString()
 	};
 	
-	const newitem = buildChoreCompItem(newrec);
+	const newitem = buildItem("chore_comp", newrec);
 	newitem.registerNSync();
 	redisplay();
 }
@@ -123,7 +123,7 @@ function createNew()
 			"web_link" : ""
 		};
 		
-		const newitem = buildChoreDefItem(newrec);
+		const newitem = buildItem("chore_def", newrec);
 		newitem.registerNSync();
 		redisplay();
 	}
