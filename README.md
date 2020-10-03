@@ -2,6 +2,14 @@
 
 Public gallery code and scripts for WebWidgets system. 
 
+This code and documentation is provided primarily as a supplement to the demo videos that I have published
+	on YouTube.
+The intention is that interested users can watch a video about, for example, the Workout Log widget,
+	and then study the actual code for the widget.
+This documentation does not cover every aspect of the system.
+If you are interested in actually developing your own widget code,
+	please reach out to me for support.
+
 ### Widget Gallery
 
 This is a gallery of widgets that I have chosen as examples for public demonstration.
