@@ -261,3 +261,16 @@ function getUrlParamHash()
 	
 	return phash;
 }
+
+function encodeHash2QString(submitpack)
+{
+	var qlist = new Array();
+	
+	for (var key in submitpack) {
+		if (submitpack.hasOwnProperty(key)) {
+			qlist.push(key + "=" + encodeURIComponent(submitpack[key]));
+		}
+	}
+
+	return qlist.join("&");		
+}

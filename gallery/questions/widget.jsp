@@ -1,19 +1,5 @@
 
-<%@ page import="java.util.*" %>
-
-<%@ page import="net.danburfoot.shared.*" %>
-<%@ page import="net.danburfoot.shared.HtmlUtil.*" %>
-
-
-<%@ page import="lifedesign.basic.*" %>
-<%@ page import="lifedesign.classic.*" %><%@ page import="lifedesign.classic.JsCodeGenerator.*" %>
-
-
 <%@include file="../../life/AuthInclude.jsp_inc" %>
-
-<%
-
-%>
 
 <html>
 <head>
@@ -48,7 +34,7 @@ function createNew()
 			"full_notes" : "TBD",
 			"created_on" : todaycode,
 			"is_active" : 1,
-			"web_link" : "https://danburfoot.net",
+			"web_link" : "",
 			"has_answer" : 0
 		};
 		
@@ -114,7 +100,6 @@ function getSearchSection()
 {
 	if(SEARCH_INPUT.length == 0)
 	{
-	
 		return `
 			<br/>
 			<a class="css3button" onclick="javascript:enterSearchTerm()">search</a>
@@ -207,9 +192,18 @@ function getResultSection()
 			{ return; }
 			
 		const qitem = lookupItem("question_log", spair[1]);
-				
+		
+		var weblinkstr = `<img src="/life/image/purewhite.png" height="18"/>`;
+		
+		if(qitem.getWebLink().length > 0)
+		{
+			weblinkstr = `
+				<a href="${qitem.getWebLink()}"><img src="/life/image/chainlink.png" height="18"/></a>
+			`;
+		}
+		
 		const opcol = `
-			<a href="{2}"><img src='/life/image/chainlink.png' height='18'/></a>
+			${weblinkstr}
 			&nbsp;&nbsp;
 			<a href="javascript:editStudyItem(${qitem.getId()})"><img src='/life/image/inspect.png' height='18'/></a>
 			&nbsp;&nbsp;
@@ -321,7 +315,7 @@ function getQuestionTableSub(hasanswer)
 		if(hasanswer == 1 && openitem.getCreatedOn() < datecutoff.getDateString())
 			{ return; }
 			
-		const breaker = "<%= HtmlUtil.nbsp(2) %>";
+		const breaker = "&nbsp;&nbsp;";
 		
 		const opcol = `
 		<a href="${openitem.getWebLink()}"><img src='/life/image/chainlink.png' height='18'/></a>			
