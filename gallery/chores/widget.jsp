@@ -310,7 +310,7 @@ function redisplayChoreLog()
 			<tr>
 			<td>${chore.getId()}</td>
 			<td>${chore.getShortName()}</td>
-			<td>${lastupdate}</td>
+			<td>${lastupdate.substring(5)}</td>
 			<td>${choreage}</td>
 			
 			<td width="10%">
