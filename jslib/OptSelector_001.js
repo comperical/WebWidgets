@@ -10,24 +10,31 @@ function OptSelector()
 	this._selectedKey = "";
 }
 
+// Standard build function for OptSelector
+// Use this in preference to new keyword, for fluent coding style.
 function buildOptSelector() 
 {
 	return new OptSelector();	
 }
 
 
-// Keys and Displays are the same
+// Sets the keys and values from the given flat list
+// In this case keys and values will be the same.
 OptSelector.prototype.setKeyList = function(kdisp)
 {
 	return this.setKeyDispList(kdisp, kdisp);
 }
               
+// Sets the opening select statement for the selector
+// Provide the attributes etc you need for the select here.
 OptSelector.prototype.setSelectOpener = function(selopen)
 {
 	this._selectOpen = selopen;
 	return this;
 }
 
+// Clears the key/value pairs
+// I'm not sure this should ever actually be used, you can just build a new object
 OptSelector.prototype.resetData = function()
 {
 	this._keyList = [];
@@ -35,12 +42,17 @@ OptSelector.prototype.resetData = function()
 }
 
 
+// Sets the key that will be selected by default
+// You must set the key list first.
+// One of the keys must match the input.
 OptSelector.prototype.setSelectedKey = function(skey)
 {
 	this._selectedKey = skey;
 	return this;
 }
 
+// Set key/value pairs from the given map.
+// Keys will be keys of map, displays will be values.
 OptSelector.prototype.setFromMap = function(optmap)
 {
 	this.resetData();
@@ -54,6 +66,8 @@ OptSelector.prototype.setFromMap = function(optmap)
 	return this;
 }
 
+// Sets the key/values from the given flat list
+// Keys will be INDEXES, values will be items.
 OptSelector.prototype.setIndex2DispList = function(dlist)
 {
 	this.resetData();
@@ -68,7 +82,8 @@ OptSelector.prototype.setIndex2DispList = function(dlist)
 }
 
 
-
+// Sets key/values from given list pair.
+// Keys are from first list, values are from second list
 OptSelector.prototype.setKeyDispList = function(klist, dlist)
 {
 	
@@ -81,7 +96,8 @@ OptSelector.prototype.setKeyDispList = function(klist, dlist)
 	return this;
 }
 
-
+// Get the actual full select string for the OptSelector.
+// This starts with the select tag and ends with closing select tag.
 OptSelector.prototype.getSelectString = function()
 {
 	const ostr = this.getFullOptionStr();
@@ -90,13 +106,11 @@ OptSelector.prototype.getSelectString = function()
 		${this._selectOpen}
 		${ostr}
 		</select>
-	`;
-	
-	
-	
+	`;	
 }
 
-
+// Get the full list of options as a flat string
+// You can use this if you want to write out the select tags yourself.
 OptSelector.prototype.getFullOptionStr = function()
 {
 	var ss = "";
@@ -109,7 +123,8 @@ OptSelector.prototype.getFullOptionStr = function()
 	
 	return ss;
 }
-                     
+
+// Get the ith option string
 OptSelector.prototype.getSingleOptionStr = function(idx)
 {
 	const k = this._keyList[idx];
