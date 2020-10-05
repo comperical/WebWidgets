@@ -295,6 +295,40 @@ function updateMainCatSelect()
 	redisplay();
 }
 
+// TODO: put this in a generic file...?
+function buildOptionMap(items, labelfunc)
+{
+	var optmap = {};
+
+	items.forEach(function(itm) {
+		const label = labelfunc(itm);
+		optmap[itm.getId()] = label;
+	});
+
+	return optmap;
+}
+
+// TODO: this is the old way of dynamic JS dropdown creation, update to new way
+function getSelectString(optmap, selected)
+{
+	var sels = "";
+	
+	for(const k in optmap)
+	{
+		const label = optmap[k];
+		const chooseme = (selected+"") == (k+"") ? " selected " : "";
+		
+		sels += `
+			<option ${chooseme} value="${k}">${label}</option>
+		`;
+	}
+	
+	return sels;
+}
+
+
+
+
 function redisplayMainTable()
 {		
 	{
