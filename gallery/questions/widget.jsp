@@ -124,10 +124,10 @@ function scoreQuestion(qitem)
 	
 	searchterms.forEach(function(sterm) {
 				
-		if(qitem.getFullNotes().toLowerCase().indexOf(sterm) > -1)
+		if(qitem.getFullNotes().toLowerCase().indexOf(sterm.toLowerCase()) > -1)
 			{ score += 10; }
 		
-		if(qitem.getQuestionText().toLowerCase().indexOf(sterm) > -1)
+		if(qitem.getQuestionText().toLowerCase().indexOf(sterm.toLowerCase()) > -1)
 			{ score += 10; }	
 	});
 	
@@ -195,7 +195,7 @@ function getResultSection()
 		
 		var weblinkstr = `<img src="/life/image/purewhite.png" height="18"/>`;
 		
-		if(qitem.getWebLink().length > 0)
+		if(qitem.getWebLink().length > 1)
 		{
 			weblinkstr = `
 				<a href="${qitem.getWebLink()}"><img src="/life/image/chainlink.png" height="18"/></a>
@@ -317,8 +317,18 @@ function getQuestionTableSub(hasanswer)
 			
 		const breaker = "&nbsp;&nbsp;";
 		
+		var weblinkstr = `<img src="/life/image/purewhite.png" height="18"/>`;
+		
+		if(openitem.getWebLink().length > 1)
+		{
+			weblinkstr = `
+				<a href="${openitem.getWebLink()}"><img src="/life/image/chainlink.png" height="18"/></a>
+			`;
+		}
+		
+		
 		const opcol = `
-		<a href="${openitem.getWebLink()}"><img src='/life/image/chainlink.png' height='18'/></a>			
+		${weblinkstr}
 		${breaker}
 		<a href="javascript:editStudyItem(${openitem.getId()})"><img src='/life/image/inspect.png' height='18'/></a>
 		${breaker}
