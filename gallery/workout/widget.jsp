@@ -140,21 +140,19 @@ function getEffectiveDate(woitem)
 
 function createItem()
 {
-	// workout_log (id int, day_code varchar(10), wo_type varchar(20), wo_units int, notes varchar(100), primary key(id));	
-	var newid = newBasicId("workout_log");
-		
-	var payload = subPackFromFormNames(["day_code", "wo_type", "wo_units"]);
-			
-	payload["id"] = newid;
-	payload["notes"] = "";
-	payload["hole_fill"] = "";
-		
-	var newitem = buildWorkoutLogItem(payload);
-		
-	newitem.registerNSync();
-		
-	redisplay();	
+	const newid = newBasicId("workout_log");
+	const payload = {
+		"id" : newid,
+		"notes" : "",
+		"hole_fill" : "",
+		"day_code" : getDocFormValue("day_code"),
+		"wo_type" : getDocFormValue("wo_type"),
+		"wo_units" : getDocFormValue("wo_units")
+	};
 	
+	const newitem = buildItem("workout_log", payload);		
+	newitem.registerNSync();
+	redisplay();
 }
 
 function createLazyItem()
