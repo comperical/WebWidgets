@@ -274,3 +274,48 @@ function encodeHash2QString(submitpack)
 
 	return qlist.join("&");		
 }
+
+function submit2Base(submitpack)
+{
+	var qlist = new Array();
+	
+	for (var key in submitpack) {
+		if (submitpack.hasOwnProperty(key)) {
+			qlist.push(key + "=" + encodeURIComponent(submitpack[key]));
+		}
+	}
+
+	var qstr = qlist.join("&");	
+	
+	var newloc = window.location.origin + window.location.pathname + "?" + qstr;
+	
+	window.location.href = newloc;	
+}
+
+
+function submit2Current(submitpack)
+{
+	var qlist = new Array();
+	
+	for (var key in submitpack) {
+		if (submitpack.hasOwnProperty(key)) {
+			qlist.push(key + "=" + encodeURIComponent(submitpack[key]));
+		}
+	}
+
+	var qstr = qlist.join("&");	
+	
+	var winurl = window.location.href;
+	
+	if(winurl.search("#") > 0)
+	{
+		winurl = winurl.substr(0, winurl.search("#"));
+	}
+	
+	
+	var haveq = window.location.href.search("\\?") > 0;
+	
+	var newloc = winurl + (haveq ? "&" : "?") + qstr; 
+	
+	window.location.href = newloc;
+}
