@@ -10,9 +10,7 @@
 <%@include file="../../life/AuthInclude.jsp_inc" %>
 
 
-<%
-	ArgMap argMap = HtmlUtil.getArgMap(request);
-	
+<%	
 	OptSelector ratingSel = new OptSelector(Util.range(1, 10));
 	
 	DayCode todayCode = DayCode.getToday();
@@ -53,11 +51,22 @@ function createNew(tasktype)
 		var newid = newBasicId("mini_task_list");
 		
 		var todaycode = getTodayCode().getDateString();
+		
+		const newrec = {
+			"id" : newid,
+			"task_type" : tasktype,
+			"short_desc" : itemname,
+			"extra_info" : "",
+			"alpha_date" : todaycode,
+			"omega_date" : "",
+			"priority" : 5,
+			"is_backlog" : 0
+		};
 	
-		var newtaskitem = new MiniTaskListItem(newid, tasktype, itemname, '', todaycode, '', 5, 0);
+		// CREATE TABLE mini_task_list (id int, task_type varchar(10), short_desc varchar(30), extra_info varchar(400), alpha_date varchar(10), omega_date varchar(10), priority int, is_backlog smallint default 0, primary key(id));
 		
+		const newtaskitem = buildItem("mini_task_list", newrec);
 		newtaskitem.registerNSync();
-		
 		redisplay();
 	}
 }
@@ -314,184 +323,112 @@ function reDispActiveTable()
 	var activelist = getTaskItemList(false);
 	
 	// Sort by effective priority
-	activelist.sort(proxySort(actrec => [-getEffectivePriority(actrec)]));
+	activelist.sort(proxySort(actrec => [-getEffectivePriority(actrec)]));	
 	
-				
-	var activetable = $('<table></table>').addClass('dcb-basic').attr("id", "dcb-basic").attr("width", "75%");
+	var tablestr = `
+		<table id="dcb-basic" class="dcb-basic" width="80%">
+		<tr>
+		<th>ID</th>
+		<th>TaskType</th>
+		<th>ShortDesc</th>
+		<th>StartDate</th>
+		<th>Day Old</th>
+		<th>Int Prior</th>
+		<th>Eff Prior</th>
+		<th>---</th>
+		</tr>
+	`;
 	
-	{
-		var row = $('<tr></tr>').addClass('bar');
-	
-		["ID", "TaskType", "ShortDesc", "StartDate", "DayOld", "Int Prior", "Eff Prior", "---"].forEach( function (hname) {
-		
-			row.append($('<th></th>').text(hname));
-		});
-		
-		activetable.append(row);	
-	}
-		
 	const showtypelist = getShowTypeList();
-			
-	for(var ai in activelist)
-	{
-		var activitem = activelist[ai];
 	
+	activelist.forEach(function(activitem) {
+			
 		if(showtypelist.indexOf(activitem.getTaskType()) == -1)
-			{ continue; }
+			{ return; }
 	
+		const dayage = getTaskAge(activitem);
 		
-		// console.log("Task type is " + activitem.getTaskType() + ",  checked is " + showcbox.checked);
-		
-		// console.log(oneday + " " + dci);
+		var rowstr = `
+			<tr>
+			<td width="5">${activitem.getId()}</td>
+			<td width="7">${activitem.getTaskType()}</td>
+			<td width="40%">${activitem.getShortDesc()}</td>			
+			<td width="10%">${activitem.getAlphaDate().substring(5)}</td>	
+			<td>${dayage}</td>			
+		`;
 
-		var row = $('<tr></tr>').addClass('bar');
-	
-		// row.append($('<td></td>').text(possitem.getId()));
-		row.append($('<td></td>').attr("width", "5%").text(activitem.getId()));
-		
-		row.append($('<td></td>').attr("width", "7%").text(activitem.getTaskType()));
-		
-		row.append($('<td></td>').text(activitem.getShortDesc()));			
-				
-		row.append($('<td></td>').attr("width", "15%").text(activitem.getAlphaDate()));
-		
-		
+		// Intrinsic priority
 		{
-			// var dcalpha = lookupDayCode(activitem.getAlphaDate());
-			
-			// var dayage = dcalpha.daysUntil(getTodayCode());
-			
-			// var dayage = getTaskAgeMap()[activitem.getId()];
-			
-			var dayage = getTaskAge(activitem);
-		
-			row.append($('<td></td>').attr("width", "7%").text(dayage));
-		}
-			
-		{
-			var opcell = $('<td></td>').attr("width", "15%");
-			
-			opcell.append(activitem.getPriority()+"");
-			
-			for(var i = 0; i < 4; i++)
-				{ opcell.append("&nbsp;"); }
-			
-			var decprijs = "javascript:editItemPriority(" + activitem.getId() + ")";
-			
-			var decpriref = $('<a></a>').attr("href", decprijs).append($('<img></img>').attr("src", "/life/image/edit.png").attr("height", 16));;
-				
-			opcell.append(decpriref);
-			
-			row.append(opcell);
-		}
-				
-		
-		// Effective Priority
-		{
-			var opcell = $('<td></td>').attr("width", "10%");
-			
-			var effpri = getEffectivePriority(activitem);
-			
-			opcell.append(effpri.toFixed(1));		
-			
-			row.append(opcell);
+			rowstr += `
+				<td>
+				${activitem.getPriority()}
+				&nbsp; &nbsp; 
+				&nbsp;
+
+				<a href="javascript:editItemPriority(${activitem.getId()})">
+				<img src="/life/image/edit.png" height="18"/></a>
+				</td>
+			`;
 		}
 		
-				
+		// Effective priority
 		{
-			var opcell = $('<td></td>').attr("width", "18%");
+			const effpri = getEffectivePriority(activitem);
+			
+			rowstr += `
+				<td width="10%">
+				${effpri.toFixed(1)}
+				</td>
+			`;
+
+		}		
 		
-			{
-				// var deletejs = "javascript:deleteItem(" + possitem.getId() + ", '" + possitem.getShortname() + "')";
+		{
+			const breaker = "&nbsp; &nbsp;";
 			
-				var deletejs = "javascript:markItemComplete(" + activitem.getId() + ")";
-				
-				
-				var deleteref = $('<a></a>').attr("href", deletejs).append(
-										$('<img></img>').attr("src", "/life/image/checkmark.png").attr("height", 18)
-								);
-				
-				opcell.append(deleteref);
-			} 
+			rowstr += `
+				<td width="18%">
+				<a href="javascript:markItemComplete(${activitem.getId()})">
+				<img src="/life/image/checkmark.png" height="18"/></a>
 			
-			opcell.append("&nbsp;");
-			opcell.append("&nbsp;");
-			opcell.append("&nbsp;");			
-			
-			{
-				var incprijs = "javascript:refreshStartDate(" + activitem.getId() + ")";
+				${breaker}
 				
-				var incpriref = $('<a></a>').attr("href", incprijs).append($('<img></img>').attr("src", "/life/image/cycle.png").attr("height", 18));;
+				<a href="javascript:refreshStartDate(${activitem.getId()}">
+				<img src="/life/image/cycle.png" height="18"></a>
+			
+				${breaker}
 					
-				opcell.append(incpriref);
-			}
-			
-			
-			
-			
-			opcell.append("&nbsp;");
-			opcell.append("&nbsp;");
-			opcell.append("&nbsp;");
-			
-			{			
-				const studyurl = "javascript:editStudyItem(" + activitem.getId() + ")";
+				<a href="javascript:editStudyItem(${activitem.getId()})">
+				<img src="/life/image/inspect.png" height="18"></a>
 				
+				${breaker}
+
+				<a href="javascript:archiveItem(${activitem.getId()})">
+				<img src="/life/image/rghtarrow.png" height="18"></a>
 				
-				var studyref = $('<a></a>').attr("href", studyurl).append(
-										$('<img></img>').attr("src", "/life/image/inspect.png").attr("height", 18)
-								);
+				${breaker}
 				
-				opcell.append(studyref);
-			} 
-			
-			opcell.append("&nbsp;");
-			opcell.append("&nbsp;");
-			opcell.append("&nbsp;");			
-			
+				<a href="javascript:deleteItem(${activitem.getId()})">
+				<img src="/life/image/remove.png" height="18"></a>
+				
+				</td>
+			`;
+		}
+		
 
 			
-			{	
-				var deletejs = "javascript:archiveItem(" + activitem.getId() + ")";
-				
-				
-				var deleteref = $('<a></a>').attr("href", deletejs).append(
-										$('<img></img>').attr("src", "/life/image/rghtarrow.png").attr("height", 18)
-								);
-				
-				opcell.append(deleteref);
-			} 			
-			
-			opcell.append("&nbsp;");
-			opcell.append("&nbsp;");
-			opcell.append("&nbsp;");			
-					
-			
-			{			
-				var deletejs = "javascript:deleteItem(" + activitem.getId() + ")";
-				
-				
-				var deleteref = $('<a></a>').attr("href", deletejs).append(
-										$('<img></img>').attr("src", "/life/image/remove.png").attr("height", 18)
-								);
-				
-				opcell.append(deleteref);
-			} 			
-						
-			
-			
-			
-						
-			row.append(opcell);
-		}
+		rowstr += "</tr>";
 		
-		
-		
-		// row.append($('<td></td>').attr("width", "10%").text(activitem.getRating()));
-				
-		activetable.append(row);
-	}
+		tablestr += rowstr;	
+	});
+
 	
-	$('#activetable').html(activetable);	
+	tablestr += "</table>";
+	
+	populateSpanData({
+		"activetable" : tablestr
+	});
+	
 }
 
 function reDispCompleteTable()
@@ -569,28 +506,24 @@ function reDispEditItem()
 	if(EDIT_STUDY_ITEM == -1)
 		{ return; }
 	
-	var studyitem = getStudyItem();
-
-	$('#taskid').html(studyitem.getId());	
-
-	$('#shortdesc').html(studyitem.getShortDesc());	
-	
-	$('#tasktype').html(studyitem.getTaskType());	
-	
-	$('#alphadate').html(studyitem.getAlphaDate());	
-	
-	$('#omegadate').html(studyitem.getOmegaDate());	
-
-	$('#int_prior').html(studyitem.getPriority());	
-
-	$('#eff_prior').html(getEffectivePriority(studyitem).toFixed(2));
+	const studyitem = getStudyItem();
 	
 	var extrainfo = studyitem.getExtraInfo();
 	if(extrainfo.length == 0)
 		{ extrainfo = "Not Yet Set"; }
 	
-	const extralinelist = extrainfo.replace(/\n/g, "<br/>");
-	$('#extrainfo').html(extralinelist);
+	const extralinelist = extrainfo.replace(/\n/g, "<br/>");	
+	
+	populateSpanData({
+		"taskid" : studyitem.getId(),
+		"shortdesc" : studyitem.getShortDesc(),
+		"tasktype" : studyitem.getTaskType(),
+		"alphadate" : studyitem.getAlphaDate(),
+		"omegadate" : studyitem.getOmegaDate(),
+		"int_prior" : studyitem.getPriority(),
+		"eff_prior" : getEffectivePriority(studyitem).toFixed(2),
+		"extrainfo" : extralinelist
+	});
 	
 	document.getElementById("set_extra_info").value = extrainfo;	
 }
