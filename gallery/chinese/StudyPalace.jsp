@@ -167,7 +167,7 @@ function redisplay()
 
 <center>
 
-<h2>Study Palace</h2>
+<h2>Study Hanzi</h2>
 
 <br/>
 <br/>

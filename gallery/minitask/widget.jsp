@@ -1,21 +1,5 @@
 
-<%@ page import="java.util.*" %>
-
-<%@ page import="net.danburfoot.shared.*" %>
-<%@ page import="net.danburfoot.shared.HtmlUtil.*" %>
-
-<%@ page import="lifedesign.basic.*" %>
-<%@ page import="lifedesign.classic.*" %>
-
 <%@include file="../../life/AuthInclude.jsp_inc" %>
-
-
-<%	
-	OptSelector ratingSel = new OptSelector(Util.range(1, 10));
-	
-	DayCode todayCode = DayCode.getToday();
-		
-%>
 
 <html>
 <head>
@@ -73,13 +57,7 @@ function createNew(tasktype)
 
 // Get effective priority of item, given its intrinsic priority and its age.
 function getEffectivePriority(actitem)
-{
-	// console.log("Act Item is " + actitem.getId());
-	// var dcalpha = lookupDayCode(actitem.getAlphaDate());
-			
-	// var dayage = dcalpha.daysUntil(getTodayCode());
-	// var dayage = getTaskAgeMap()[actitem.getId()];
-	
+{	
 	var dayage = getTaskAge(actitem);
 	
 	var intprior = actitem.getPriority();
@@ -119,12 +97,10 @@ function deleteItem(killid)
 
 function markItemComplete(markid)
 {
-	var markitem = lookupItem("mini_task_list", markid);
-			
-	markitem.setOmegaDate("<%= DayCode.getToday() %>");
-	
-	syncSingleItem(markitem);		
-			
+	const markitem = lookupItem("mini_task_list", markid);
+	const todaycode = getTodayCode().getDateString();
+	markitem.setOmegaDate(todaycode);
+	syncSingleItem(markitem);					
 	redisplay();
 }
 
@@ -328,11 +304,10 @@ function reDispActiveTable()
 	var tablestr = `
 		<table id="dcb-basic" class="dcb-basic" width="80%">
 		<tr>
-		<th>ID</th>
-		<th>TaskType</th>
+		<th>Type</th>
 		<th>ShortDesc</th>
-		<th>StartDate</th>
-		<th>Day Old</th>
+		<th>Start</th>
+		<th>Age</th>
 		<th>Int Prior</th>
 		<th>Eff Prior</th>
 		<th>---</th>
@@ -350,7 +325,6 @@ function reDispActiveTable()
 		
 		var rowstr = `
 			<tr>
-			<td width="5">${activitem.getId()}</td>
 			<td width="7">${activitem.getTaskType()}</td>
 			<td width="40%">${activitem.getShortDesc()}</td>			
 			<td width="10%">${activitem.getAlphaDate().substring(5)}</td>	
@@ -433,72 +407,45 @@ function reDispActiveTable()
 
 function reDispCompleteTable()
 {
-
-	var completetable = $('<table></table>').addClass('dcb-basic').attr("id", "dcb-basic").attr("width", "70%");
 	
-	{
-		var row = $('<tr></tr>').addClass('bar');
+	var tablestr = `
+		<table id="dcb-basic" class="dcb-basic" width="70%">
+		<tr>
+		<th>Type</th>
+		<th>Desc</th>
+		<th>Start</th>
+		<th>Done</th>
+		<th>---</th>
+		</tr>
+	`;
 	
-		["ID", "TaskType", "ShortDesc", "Started", "Completed", "---"].forEach( function (hname) {
+	const completelist = getTaskItemList(true);
+	
+	completelist.forEach(function(compitem) {
 		
-			row.append($('<th></th>').text(hname));
-		});
-		
-		completetable.append(row);	
-	}
-	
-	
-	var completelist = getTaskItemList(true);
-	
-	
-	for(var ci in completelist)
-	{
-		var compitem = completelist[ci];
-	
-		// console.log(oneday + " " + dci);
-
-		var row = $('<tr></tr>').addClass('bar');
-	
-		// row.append($('<td></td>').text(possitem.getId()));
-		row.append($('<td></td>').attr("width", "5%").text(compitem.getId()));
-		
-		row.append($('<td></td>').attr("width", "8%").text(compitem.getTaskType()));
-		
-		row.append($('<td></td>').text(compitem.getShortDesc()));			
-				
-		row.append($('<td></td>').attr("width", "15%").text(compitem.getAlphaDate()));
-		
-		row.append($('<td></td>').attr("width", "15%").text(compitem.getOmegaDate()));
+		const rowstr = `
+			<tr>
+			<td width="8%">${compitem.getTaskType()}</td>
+			<td>${compitem.getShortDesc()}</td>
+			<td width="5%">${compitem.getAlphaDate().substring(5)}</td>
+			<td width="5%">${compitem.getOmegaDate().substring(5)}</td>
+			<td>
+			<a href="javascript:editStudyItem(${compitem.getId()})">
+			<img src="/life/image/inspect.png" height="18"></a>
+			</td>
 			
-				
-		// row.append($('<td></td>').attr("width", "10%").text(activitem.getRating()));
-				
-		{
-			var opcell = $('<td></td>').attr("width", "5%");
+			</tr>
+		`;
 		
+		tablestr += rowstr;
+			
+	});
 
-			{
-				// var deletejs = "javascript:deleteItem(" + possitem.getId() + ", '" + possitem.getShortname() + "')";
-			
-				var studyurl = "MiniTaskDetail.jsp?id=" + compitem.getId();
-				
-				
-				var studyref = $('<a></a>').attr("href", studyurl).append(
-										$('<img></img>').attr("src", "/life/image/inspect.png").attr("height", 18)
-								);
-				
-				opcell.append(studyref);
-			} 
-			
-						
-			row.append(opcell);
-		}		
-		
-		
-		completetable.append(row);
-	}
+	tablestr += `</table>`;
 	
-	$('#completetable').html(completetable);	
+	populateSpanData({
+		"completetable" : tablestr		
+	});
 }
 
 function reDispEditItem()
@@ -583,17 +530,26 @@ function redisplay()
 <form>
 <input type="radio" name="show_task_type" value="all" onChange="javascript:redisplay()">
 <label>All</label>
-<%= HtmlUtil.nbsp(4) %>
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+
+
 
 <input type="radio" name="show_task_type" value="crm" onChange="javascript:redisplay()">
 <label>CRM</label>
-<%= HtmlUtil.nbsp(4) %>
-
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
 
 <input type="radio" name="show_task_type" value="life" onChange="javascript:redisplay()" checked>
 <label>Life</label>
-<%= HtmlUtil.nbsp(4) %>
-
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
 
 <input type="radio" name="show_task_type" value="work" onChange="javascript:redisplay()">
 <label>Work</label>
@@ -699,7 +655,12 @@ function redisplay()
 </form>
 
 <a class="css3button" onclick="javascript:saveExtraInfo()">save</a>
-<%= HtmlUtil.nbsp(4) %>
+
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+
 <a class="css3button" onclick="javascript:toggleHidden4Class('edit_info')">cancel</a>
 
 </span>

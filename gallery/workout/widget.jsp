@@ -155,24 +155,6 @@ function createItem()
 	redisplay();
 }
 
-function createLazyItem()
-{
-	// workout_log (id int, day_code varchar(10), wo_type varchar(20), wo_units int, notes varchar(100), primary key(id));	
-	var newid = newBasicId("workout_log");
-		
-	var payload = subPackFromFormNames(["day_code"]);
-
-	payload["id"] = newid;
-	payload["wo_type"] = getDocFormValue("wo_type");
-	payload["wo_units"] = 0;
-	payload["hole_fill"] = "";
-	payload["notes"] = "LAZY";
-		
-	var newitem = buildWorkoutLogItem(payload);
-	newitem.registerNSync();
-	redisplay();
-}
-
 // This is the workout type that is selected in the drop-down for adding.
 // Need this to populate units field correctyly.
 function workoutType2Show()
@@ -518,11 +500,7 @@ Date:
 
 <a class="css3button" onclick="javascript:createItem()">ADD</a>
 
-<%= HtmlUtil.nbsp(4) %>
-
-<a class="css3button" onclick="javascript:createLazyItem()">LAZY</a>
-
-<br/>
+	<br/>
 <br/>
 
 </td>
