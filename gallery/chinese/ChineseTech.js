@@ -120,8 +120,8 @@ function computeStatInfoSub(itemtable, logtable)
 	
 	palacelist.forEach(function(pitem) {
 		var statpack = new Object();
-		// const jitter = (Math.random() - 0.5) * JITTER_SCALE;
-		const jitter = 0;
+		const jitter = (Math.random() - 0.5) * JITTER_SCALE;
+		// const jitter = 0;
 
 		statpack["num_review"] = 0;
 		statpack["net_score"] = jitter;

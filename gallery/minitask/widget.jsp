@@ -367,7 +367,7 @@ function reDispActiveTable()
 			
 				${breaker}
 				
-				<a href="javascript:refreshStartDate(${activitem.getId()}">
+				<a href="javascript:refreshStartDate(${activitem.getId()})">
 				<img src="/life/image/cycle.png" height="18"></a>
 			
 				${breaker}
