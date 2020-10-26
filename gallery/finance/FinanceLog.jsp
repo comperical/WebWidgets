@@ -135,7 +135,7 @@ function reDispCatOkTable()
 
 	var catreclist = catoklist.map(nocat => lookupItem("finance_main", nocat.getId()));
 		
-	catreclist.sort(proxySort(item => item.getTransactDate())).reverse();
+	catreclist.sort(proxySort(item => [item.getTransactDate()])).reverse();
 	
 	
 	catreclist.forEach(function(recitem) {

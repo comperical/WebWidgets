@@ -80,6 +80,8 @@ function proxySort(proxyfun)
 		
 		var tup1 = proxyfun(rec1);
 		var tup2 = proxyfun(rec2);
+
+		massert(Array.isArray(tup1), "The proxy function must return an Array/List, instead it returned " + tup1);
 		
 		for(var i in tup1)
 		{

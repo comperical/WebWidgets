@@ -11,7 +11,7 @@ function WorkoutLogger(workouts, goals)
 	
 	workouts = workouts.sort(proxySort(witem => [witem.getDayCode(), witem.getId()]));
 	
-	goals = goals.sort(proxySort(gitem => gitem.getMondayCode()));
+	goals = goals.sort(proxySort(gitem => [gitem.getMondayCode()]));
 	
 	// Map :: workout type :: list of unfilled goals
 	var unfilled = {};

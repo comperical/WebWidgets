@@ -72,7 +72,7 @@ function getLastCompletedMap()
 {
 	var bigloglist = getItemList("chore_comp");
 	
-	bigloglist.sort(proxySort(logitem => logitem.getDayCode())).reverse();
+	bigloglist.sort(proxySort(logitem => [logitem.getDayCode()])).reverse();
 
 	var compmap = {};
 	

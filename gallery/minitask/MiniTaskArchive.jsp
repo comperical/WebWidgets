@@ -108,7 +108,7 @@ function getTaskItemList(wantcompleted)
 	
 	var biglist = getItemList("mini_task_list");
 		
-	biglist.sort(proxySort(item => item.getAlphaDate())).reverse();
+	biglist.sort(proxySort(item => [item.getAlphaDate()])).reverse();
 	
 	for(var bi in biglist)
 	{	
@@ -138,7 +138,7 @@ function getTaskItemList(wantcompleted)
 	{
 		// tasklist.sort(function(a, b) { return b.getOmegaDate().localeCompare(a.getOmegaDate()); });
 		
-		tasklist.sort(proxySort(item => item.getOmegaDate())).reverse();
+		tasklist.sort(proxySort(item => [item.getOmegaDate()])).reverse();
 	}
 	
 
