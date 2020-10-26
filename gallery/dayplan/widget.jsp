@@ -26,8 +26,6 @@
 	OptSelector dayCodeSel = new OptSelector(DayCode.getDayRange(DayCode.getToday().nDaysBefore(10), DayCode.getToday().nDaysAfter(2)));
 	
 	String longPlanDow = TimeUtil.getLongDayOfWeek(jvTodayCode);		
-		
-	OptSelector templateSel = ClassicTech.getDayTemplateSelector(true);
 %>
 
 <html>
@@ -211,6 +209,22 @@ function getPlanDayItemList()
 	return itemlist;
 }
 
+function getTemplateIdMap()
+{
+	var idmap = {};
+	idmap[-1] = "----";
+
+	getItemList("day_template").forEach(function(item) {
+
+		if(item.getIsActive() == 0)
+			{ return; }
+
+		idmap[item.getId()] = item.getShortName();
+	});
+
+	return idmap;
+}
+
 function redisplay()
 {
 	var activelist = getPlanDayItemList();
@@ -282,12 +296,19 @@ function redisplay()
 		</table>
 	`;
 	
-	document.getElementById('dayplantable').innerHTML = tablestr;
-	
+	const tempsel = buildOptSelector()
+						.setFromMap(getTemplateIdMap())
+						.setSelectOpener(`<select name="temp_id" onChange="javascript:doTemplateImport()">`)
+						.setSelectedKey(-1)
+
 	populateSpanData({
+		"dayplantable" : tablestr,
+		"template_sel_span" : tempsel.getSelectString(),
 		"plan_day_name" : getStudyDayCode().getDayOfWeek(),
 		"plan_day_code" : getStudyDayCode().getDateString().substring(5)
 	});
+
+
 }
 
 
@@ -338,13 +359,9 @@ wakeup
 <img src="/life/image/add.png" width="18"/></a> 
 
 <br/><br/>
-<form>
 Import Template: 
-<select name="temp_id" onChange="javascript:doTemplateImport()">
-<%= templateSel.getSelectStr(-1) %>
-</select>
-</form>
-
+<span id="template_sel_span">
+</span>
 
 </body>
 </html>

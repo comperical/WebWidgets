@@ -27,7 +27,32 @@ REVIEW_DECAY_PARAM = Math.log(0.5)/HALF_LIFE_OF_RESULT;
 
 __HANZI_DATA_BY_CHAR = null;
 
+__CONFOUNDER_INDEX = null;
 
+
+function getConfounderIndex()
+{
+	if(__CONFOUNDER_INDEX == null)
+	{
+		__CONFOUNDER_INDEX = {};
+
+		getItemList("confounder").forEach(function(conf) {
+
+			const charlist = [conf.getLeftChar(), conf.getRghtChar()];
+
+			charlist.forEach(function(char) {
+
+				if(!(char in __CONFOUNDER_INDEX)) 
+					{ __CONFOUNDER_INDEX[char] = []; }
+
+				__CONFOUNDER_INDEX[char].push(conf);
+
+			});
+		});
+	}
+
+	return __CONFOUNDER_INDEX;
+}
 
 function lookupHanziDataByChar(hanzichar)
 {
@@ -65,6 +90,7 @@ function clearHanziDataCache() {
 
 	__PALACE_ITEM_BY_CHAR = null;
 	__HANZI_DATA_BY_CHAR = null;
+	__CONFOUNDER_INDEX = null;
 }
 
 

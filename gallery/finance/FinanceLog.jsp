@@ -1,43 +1,42 @@
 
-<%@ page import="java.util.*" %>
-
-<%@ page import="net.danburfoot.shared.*" %>
-<%@ page import="net.danburfoot.shared.HtmlUtil.*" %>
-<%@ page import="net.danburfoot.shared.FiniteState.*" %>
-
-<%@ page import="lifedesign.basic.*" %>
-<%@ page import="lifedesign.classic.*" %>
-<%@ page import="lifedesign.basic.LifeUtil.*" %>
-<%@ page import="lifedesign.classic.FinanceSystem.*" %>
-
-<%@include file="AuthInclude.jsp_inc" %>
+<%@include file="../../life/AuthInclude.jsp_inc" %>
 
 <%
-	ArgMap argMap = HtmlUtil.getArgMap(request);
-	
-	OptSelector catselect = new OptSelector(Util.listify(ExpenseType.values())).sortKeys().addKey("all");
-	
-	List<DayCode> cutofflist = Util.vector();
-	
-	for(int dayago : Util.listify(30, 45, 60, 90, 180, 360, 720))
-	{
-		cutofflist.add(DayCode.getToday().nDaysBefore(dayago));
-	}
-	
-	OptSelector cutDaySelect = (new OptSelector(cutofflist)).addKey("---");
-	
 %>
 
 <html>
 <head>
 <title>Finance Log</title>
 
-<%@include file="AssetInclude.jsp_inc" %>
+<%@include file="../../life/AssetInclude.jsp_inc" %>
 
-<%= JsCodeGenerator.getScriptInfo(request, "biz", Util.listify("finance_main", "finance_note")) %>
+<script src="FinanceTech.js"/></script>
+
+<%= DataServer.basicInclude(request) %>
 
 
 <script>
+
+EDIT_STUDY_ITEM = -1;
+
+
+function getPageComponent()
+{
+	return EDIT_STUDY_ITEM == -1 ? "main_display" : "inspect_record";
+}
+
+function editStudyItem(newid)
+{
+	EDIT_STUDY_ITEM = newid;
+	redisplay();
+}
+
+function back2Main()
+{
+	EDIT_STUDY_ITEM = -1;
+	redisplay();
+}
+
 
 function getUncatRecList()
 {
@@ -65,11 +64,6 @@ function getDollarFormat(centamount)
 	return "+++" + dollamount.toFixed(2);
 }
 
-function getOptionList()
-{
-	return ['<%= Util.join(Util.listify(ExpenseType.values()), "', '") %>'];
-}
-
 function doCat4Id(id)
 {
 	var noteitem = lookupItem("finance_note", id);
@@ -83,10 +77,15 @@ function doCat4Id(id)
 	redisplay();	
 }
 
-function editUserNote(id)
+function editUserNoteInspect()
 {
-	var noteitem = lookupItem("finance_note", id);
-	var newnote = prompt("Enter a new note for this item: ", noteitem.getTheNote());
+	editUserNote(EDIT_STUDY_ITEM);	
+}
+
+function editUserNote(itemid)
+{
+	const noteitem = lookupItem("finance_note", itemid);
+	const newnote = prompt("Enter a new note for this item: ", noteitem.getTheNote());
 	
 	if(newnote)
 	{
@@ -114,29 +113,6 @@ function composeCatOptionSelectStr(itemid)
 	return s + "</select>";
 }
 
-function composeInspectRef(itemid)
-{
-	var s = "<a href=\"FinanceRecInspect.jsp?id={1}\">";
-
-	s += "<img src=\"/life/image/inspect.png\" height=\"18\"/>";
-	
-	s += "</a>";
-	
-	return s;
-}
-
-function composeUserNoteEdit(itemid)
-{
-	var s = "<a href=\"javascript:editUserNote({1})\">";
-
-	s += "<img src=\"/life/image/edit.png\" height=\"18\"/>";
-	
-	s += "</a>";
-	
-	return s;
-}
-
-
 function reDispCatOkTable()
 {
 	var tablestr = `
@@ -151,8 +127,10 @@ function reDispCatOkTable()
 		</tr>
 	`;
 
-	const targcat = getDocFormValue("catselect");
-	const cutoffdate = getDocFormValue("cutoffdate");
+	const targcat = getDocFormValueDefault("expense_type_select", "food");
+	// const targcat = getDocFormValue("catselect");
+	// const cutoffdate = getDocFormValue("cutoffdate");
+	const cutoffdate = "2020-07-01";
 	const catoklist = getHaveCatRecList();
 
 	var catreclist = catoklist.map(nocat => lookupItem("finance_main", nocat.getId()));
@@ -188,7 +166,7 @@ function reDispCatOkTable()
 			&nbsp;
 			&nbsp;
 						
-			<a href="FinanceRecInspect.jso?id=${noteitem.getId()})">
+			<a href="javascript:editStudyItem(${noteitem.getId()})">
 			<img src="/life/image/inspect.png" height="18"/></a>
 			
 			</td>
@@ -204,6 +182,18 @@ function reDispCatOkTable()
 	
 	populateSpanData( { "maintable" : tablestr });
 
+	// Populate option selectors
+	{
+		const catwithdef = ["all"].concat(getExpenseCategoryList().sort());
+		
+		const catselect = buildOptSelector()
+					.setKeyList(catwithdef)
+					.setSelectedKey(targcat)
+					.setSelectOpener(`<select name="expense_type_select" onChange="javascript:redisplay()">`);
+		
+		populateSpanData({ "expense_type_sel_span" : catselect.getSelectString() });
+	}
+	
 }
 
 function reDispNoCatTable()
@@ -230,8 +220,15 @@ function reDispNoCatTable()
 		
 		const dollarstr = getDollarFormat(onerec.getCentAmount());
 		const nterec = lookupItem("finance_note", onerec.getId());
-		const catsel = composeCatOptionSelectStr(onerec.getId());
 		
+		const catsel = buildOptSelector()
+				.setKeyList(getExpenseCategoryList())
+				.setSelectOpener(`<select id="catselect${onerec.getId()}" onChange="javascript:doCat4Id(${onerec.getId()})">`)
+				.setSelectedKey(nterec.getExpenseCat());
+					
+		
+		// const catsel = composeCatOptionSelectStr(onerec.getId());
+				
 		const rowstr = `
 			<tr>
 			<td>${onerec.getTransactDate().substring(5)}</td>
@@ -247,7 +244,7 @@ function reDispNoCatTable()
 			&nbsp; 
 			&nbsp; 
 			
-			${catsel}
+			${catsel.getSelectString()}
 			
 			</td>
 			</tr>
@@ -262,12 +259,73 @@ function reDispNoCatTable()
 	populateSpanData({"nocattable" : tablestr});
 }
 
+function updateNoteCategory()
+{
+	const noterec = lookupItem("finance_note", EDIT_STUDY_ITEM);
+	const newcat = getDocFormValue("item_expense_cat_select");
+	noterec.setExpenseCat(newcat);
+	syncSingleItem(noterec);
+	redisplay();
+}
+
+// NOte: I don't think I ever do this. Basically not allowed
+function editPurchaseDate()
+{
+	const newdate = prompt("Enter a new purchase date: ");
+	
+	if(newdate)
+	{
+		dcmap = getDayCodeMap();
+		if(!dcmap.hasOwnProperty(newdate))
+		{
+			alert("Improper date format!");
+			return;
+		}
+		
+		// var showitem = getItem2Show()
+		
+		// showitem.setPurchaseDate(newdate);
+		
+		// syncSingleItem(showitem);		
+
+		// redisplay();		
+	}
+}
+
+
+function reDispInspectItem()
+{
+	if(EDIT_STUDY_ITEM == -1)
+		{ return; }
+	
+	const mainrec = lookupItem("finance_main", EDIT_STUDY_ITEM);
+	const noterec = lookupItem("finance_note", EDIT_STUDY_ITEM);
+	
+	const optselect = buildOptSelector()
+				.setKeyList(getExpenseCategoryList())
+				.setSelectedKey(noterec.getExpenseCat())
+				.setSelectOpener(`<select name="item_expense_cat_select" onChange="javascript:updateNoteCategory()">`);
+	
+	populateSpanData({
+		"itemdesc" : mainrec.getFullDesc(),
+		"pur_date" : mainrec.getTransactDate(),
+		"amount" : getDollarFormat(mainrec.getCentAmount()),
+		"user_note" : noterec.getTheNote(),
+		"category" : noterec.getExpenseCat(),
+		"expense_cat_sel_span" : optselect.getSelectString()
+	});
+}
+
 
 function redisplay()
 {
 	reDispNoCatTable();
 	
 	reDispCatOkTable();
+	
+	reDispInspectItem();
+	
+	setPageComponent(getPageComponent());
 }
 
 
@@ -281,6 +339,8 @@ function redisplay()
 
 <br/>
 
+<span class="page_component" id="main_display">
+
 <a href="FinanceAgg.jsp">Aggregation</a>
 
 <h3>Finance Log</h3>
@@ -293,13 +353,12 @@ function redisplay()
 <h3>Full Record List</h3>
 
 <form>
-Expense Type: <select name="catselect" onChange="javascript:redisplay()">
-<%= catselect.getSelectStr("all") %>
-</select>
+Expense Type:
+<span id="expense_type_sel_span"></span>
 
-Cutoff: <select name="cutoffdate" onChange="javascript:redisplay()">
-<%= cutDaySelect.getSelectStr("---") %>
-</select>
+<br/>
+
+<span id="cutoffdate_sel_span"></span>
 
 </form>
 
@@ -307,9 +366,54 @@ Cutoff: <select name="cutoffdate" onChange="javascript:redisplay()">
 
 <div id="maintable"></div>
 
+</span>
+
+<span class="page_component" id="inspect_record">
+
+<a href="javascript:back2Main()">main</a> 
 
 <br/><br/>
 
+<table width="50%" id="dcb-basic">
+<tr>
+<td width="50%">Desc</td>
+<td><div id="itemdesc"></div></td>
+<td></td>
+</tr>
+<tr>
+<td width="50%">Purchased</td>
+<td><span id="pur_date"></span>
+<td></td>
+</td>
+</tr>
+<tr>
+<td width="50%">Amount</td>
+<td><span id="amount"></span></td>
+<td></td>
+</tr>
+<tr>
+<td width="50%">Category</td>
+<td><span id="category"></span></td>
+<td></td>
+</tr>
+
+<tr>
+<td width="50%">Note</td>
+<td><span id="user_note"></span></td>
+<td><a href="javascript:editUserNoteInspect()"><img src="/life/image/edit.png" height=18/></a></td>
+</tr>
+<tr>
+<td width="50%">Category</td>
+
+<td colspan="2">
+<span id="expense_cat_sel_span"></span>
+</td>
+</tr>
+
+</table>
+
+
+</span>
 
 </center>
 </body>

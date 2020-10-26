@@ -125,6 +125,7 @@ function populateSpanData(spanmap)
 	for(var spanid in spanmap)
 	{
 		const spanel = document.getElementById(spanid);
+		massert(spanel != null, `Could not find element with ID ${spanid}`);
 		spanel.innerHTML = spanmap[spanid];
 	}
 }
@@ -226,6 +227,19 @@ function toggleHidden4Class(classname)
 function getDocFormValue(docformname)
 {
 	return getUniqElementByName(docformname).value;
+}
+
+// Get the value of the document form with the given name,
+// or return the default value if there are no elements with that name.
+// Error if there are multiple elements with name.
+function getDocFormValueDefault(docformname, defaultval)
+{
+	const selectlist = document.getElementsByName(docformname);
+	
+	massert(selectlist.length <= 1, 
+		"Found multiple elements with name " + docformname);
+	
+	return selectlist.length == 0 ? defaultval : selectlist[0].value;
 }
 
 // Get the element with the given name.

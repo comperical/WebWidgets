@@ -20,7 +20,7 @@
 
 <script src="ChineseTech.js"></script>
 
-<%= DataServer.basicIncludeOnly(request, "palace_item", "review_log", "hanzi_data") %>
+<%= DataServer.basicIncludeOnly(request, "palace_item", "review_log", "hanzi_data", "confounder") %>
 
 <%= DataServer.includeIfAvailable(request, "minitask", "mini_task_list") %>
 
@@ -142,6 +142,22 @@ function computePromptItem()
 
 function redisplay()
 {	
+	var confounderstr = "...";
+	{
+		const confidx = getConfounderIndex();
+		if(CURRENT_PROMPT_ITEM.getHanziChar() in confidx) 
+		{
+			// TODO: should eventually show ALL of these, there might be many.
+			const confitem = confidx[CURRENT_PROMPT_ITEM.getHanziChar()][0];
+			confounderstr = `
+				${confitem.getLeftChar()} / ${confitem.getRghtChar()}  :
+				${confitem.getExtraInfo()}
+			`;
+
+			// console.log("Found confounder: " + confitem);
+		}
+	}
+
 	const hanzidata = lookupHanziDataByChar(CURRENT_PROMPT_ITEM.getHanziChar());
 						
 	const storyhtml = CURRENT_PROMPT_ITEM.getPalaceNote().replace(/\n/g, "<br/>");
@@ -151,7 +167,7 @@ function redisplay()
 	$('#thepinyin').html(hanzidata.getPinYin());
 	$('#thecharacter').html(CURRENT_PROMPT_ITEM.getHanziChar());
 	$('#extranote').html(CURRENT_PROMPT_ITEM.getExtraNote());
-	
+	$('#confounder').html(confounderstr);
 }
 
 
@@ -211,6 +227,12 @@ function redisplay()
 <tr>
 <td width="20%"><b>Notes</b></td>
 <td><span id="extranote"></span></td></tr>
+
+<tr>
+<td width="20%"><b>Confounder</b></td>
+<td><span id="confounder"></span></td></tr>
+
+
 </table>
 
 <br/>

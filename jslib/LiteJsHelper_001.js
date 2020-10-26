@@ -21,39 +21,59 @@ function haveTable(tabname)
 	return tabname in __buildItemFuncMap;	
 }
 
+function haveItem(tabname, itemid)
+{
+	checkTableName(tabname);
+	const havefunc = __haveItemFuncMap[tabname];
+	return havefunc(itemid);
+}
+
 function getItemList(tabname)
 {
+	checkTableName(tabname);
 	var itemfunc = __getListFuncMap[tabname];
-	
-	massert(itemfunc != null, "No item function found for " + tabname);
-	
 	return itemfunc();
 }
 
 function buildItem(tabname, record)
 {
-	var buildfunc = __buildItemFuncMap[tabname];
-	
-	massert(buildfunc != null, "No build function found for " + tabname);
-	
+	checkTableName(tabname);
+	var buildfunc = __buildItemFuncMap[tabname];	
 	return buildfunc(record);	
 }
 
 function newBasicId(tabname)
 {
+	checkTableName(tabname);
 	var idfunc = __newBasicFuncMap[tabname];
-	
 	return idfunc();	
 }
 
 function lookupItem(tabname, k1, k2, k3, k4) 
 {
+	checkTableName(tabname);
 	return __itemLookupFuncMap[tabname](k1, k2, k3, k4);
 }
 
 function getHaveItemFunc(tabname)
 {
+	checkTableName(tabname);	
 	return __haveItemFuncMap[tabname];	
+}
+
+function checkTableName(tabname)
+{
+	// Trying to be very careful here with older browsers.
+	if(__haveItemFuncMap.hasOwnProperty(tabname)) {
+		return;
+	}
+
+	var tlist = [];
+	for(tname in __haveItemFuncMap) {
+		tlist.push(tname);
+	}
+
+	massert(false, "Could not find table name " + tabname + ", options are " + tlist);
 }
 
 // ----------------
