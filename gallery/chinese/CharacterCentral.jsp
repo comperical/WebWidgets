@@ -1,17 +1,10 @@
-<%@ page session="false" import="com.caucho.vfs.*, com.caucho.server.webapp.*" %>
-
-<%@ page import="java.util.*" %>
 
 <%@ page import="net.danburfoot.shared.*" %>
 <%@ page import="net.danburfoot.shared.HtmlUtil.*" %>
 
-<%@ page import="lifedesign.basic.*" %>
-<%@ page import="lifedesign.classic.*" %><%@ page import="lifedesign.classic.JsCodeGenerator.*" %>
-
-<%@include file="../AuthInclude.jsp_inc" %>
+<%@include file="../../life/AuthInclude.jsp_inc" %>
 
 <%
-	ArgMap argMap = HtmlUtil.getArgMap(request);
 	
 	OptSelector hskSelector = new OptSelector(Util.range(1, 6)).addKey("---");
 	
@@ -24,13 +17,17 @@
 <head>
 <title>Character Central</title>
 
-<%@include file="../AssetInclude.jsp_inc" %>
+<%@include file="../../life/AssetInclude.jsp_inc" %>
 
 <script src="ChineseTech.js"></script>
 
-<%= JsCodeGenerator.getScriptInfo(request, "chinese", Util.listify("palace_item", "hanzi_data", "review_log")) %>
+<%= DataServer.basicIncludeOnly(request, "confounder", "palace_item", "hanzi_data", "review_log") %>
 
 <script>
+
+EDIT_STUDY_ITEM = -1;
+
+
 
 function createPalaceItem(hdid) 
 {
@@ -50,11 +47,9 @@ function createPalaceItem(hdid)
 	
 	clearHanziDataCache();
 
-	const newitem = buildPalaceItemItem(newrec);
+	const newitem = buildItem("palace_item", newrec);
 	newitem.registerNSync();
 	redisplay();
-
-	alert("Created memory palace item, open in new tab to view");
 }
 
 
@@ -102,26 +97,88 @@ function filterDisplayList(hdlist)
 	
 }
 
+function back2Main()
+{
+	EDIT_STUDY_ITEM = -1;
+	redisplay();
+}
+
+function editStudyItem(itemid)
+{
+	EDIT_STUDY_ITEM = itemid;
+	redisplay();
+}
+
+function getPageComponent()
+{
+	return EDIT_STUDY_ITEM == -1 ? "main_list" : "edit_item";
+}
+
+function setDefaultRedisplay()
+{
+	const params = getUrlParamHash();
+	if("item_id" in params) {
+		EDIT_STUDY_ITEM = parseInt(params["item_id"]);
+	}
+
+	redisplay();
+}
+
 function redisplay()
 {
+	redisplayEditItem();
+	redisplayMainList();
+
+	setPageComponent(getPageComponent());
+}
+
+function redisplayEditItem()
+{
+	if(EDIT_STUDY_ITEM == -1)
+		{ return; }
+
+
+	const showitem = lookupItem("palace_item", EDIT_STUDY_ITEM);
+	populateSpanData({
+		"hanzi_char" : showitem.getHanziChar(),
+		"meaning" : showitem.getMeaning(),
+		"extra_note" : showitem.getExtraNote(),
+		"hanzi_char_big" : showitem.getHanziChar()
+	})
+
+	const palacetext = showitem.getPalaceNote();
+	const palacehtml = palacetext.replace(/\n/g, "<br/>");
+	
+	const characteritem = lookupHanziDataByChar(showitem.getHanziChar());
+	// console.log(characteritem);
+	
+	const pinyin = characteritem ? characteritem.getPinYin() : "---";
+
+	populateSpanData({
+		"palace_note1" : palacehtml,
+		"palace_note2" : palacetext,
+		"pinyin" : pinyin
+	});
+}
+
+function redisplayMainList()
+{
 	var hanzilist = getItemList("hanzi_data");
-	// principlist.sort(proxySort(a => [a.getId()])).reverse();
-	
-	// var lastlogmap = getLastLogMap();
-					
-	var activetable = $('<table></table>').addClass('dcb-basic').attr("id", "dcb-basic").attr("width", "70%");
-	
-	{
-		var row = $('<tr></tr>').addClass('bar');
-	
-		["Character", "PinYin", "Radical", "Definition", "HSK", "Frequency", "Palace?", "..."].forEach( function (hname) {
-		
-			row.append($('<th></th>').text(hname));
-		});
-		
-		activetable.append(row);	
-	}
-	
+
+	var maintable = `
+		<table class="dcb-basic" id="dcb-basic" height="80%">
+		<tr>
+		<th>Character</th>
+		<th>PinYin</th>
+		<th>Radical</th>
+		<th>Definition</th>
+		<th>HSK</th>
+		<th>Frequency</th>
+		<th>Palace?</th>
+		<th>...</th>
+		</tr>
+	`;
+
 	hanzilist = filterDisplayList(hanzilist);
 	
 	hanzilist = hanzilist.slice(0, 400);
@@ -129,67 +186,82 @@ function redisplay()
 	statinfo = computeStatInfo();
 	
 	hanzilist.forEach(function(hditem) {
-			
-		var row = $('<tr></tr>').addClass('bar');
-							
-		row.append($('<td></td>').text(hditem.getHanziChar()));				
-		
-		row.append($('<td></td>').text(hditem.getPinYin()));
-		
-		row.append($('<td></td>').text(hditem.getRadical()));
-		
-		row.append($('<td></td>').text(hditem.getDefinition()));
-		
-		row.append($('<td></td>').text(hditem.getHskLevel()));
-		
-		row.append($('<td></td>').text(hditem.getFreqRank()));
 
 		const palaceitem = lookupPalaceItemByChar(hditem.getHanziChar());
-		
 		const palacestr = palaceitem == null ? "---" :  statinfo[palaceitem.getId()].num_review;
-		
-		row.append($('<td></td>').text(palacestr));
 
-		
-		{
-		
-			var opcell = $('<td></td>').attr("width", "8%");
+		var opstr = `
+			<a href="javascript:createPalaceItem(${hditem.getId()})">
+			<img src="/life/image/add.png" height="18"/></a>
+		`;
 
-			// for(var i = 0; i < 3; i++)
-			// 	{ opcell.append("&nbsp;"); }
-			
-			if(palaceitem != null) 
-			{
-					
-				var viewurl = "PalaceItemEdit.jsp?item_id=" + palaceitem.getId();				
-				
-				var studyref = $('<a></a>').attr("href", viewurl).append(
-										$('<img></img>').attr("src", "/life/image/inspect.png").attr("height", 18)
-								);
-				
-				opcell.append(studyref);
+		if(palaceitem != null) {
+			opstr = `
+				<a href="javascript:editStudyItem(${palaceitem.getId()})">
+				<img src="/life/image/inspect.png" height="18"/></a>
+			`;
+		}
 
-			} else {
 
-				var createurl = "javascript:createPalaceItem(" + hditem.getId() + ")";			
-				
-				var studyref = $('<a></a>').attr("href", createurl).append(
-										$('<img></img>').attr("src", "/life/image/add.png").attr("height", 18)
-								);
-				
-				opcell.append(studyref);
-			}
-			
-			row.append(opcell);		
-		}		
+		const rowstr = `
+			<tr>
+			<td>${hditem.getHanziChar()}</td>
+			<td>${hditem.getPinYin()}</td>
+			<td>${hditem.getRadical()}</td>
+			<td>${hditem.getDefinition()}</td>
+			<td>${hditem.getHskLevel()}</td>
+			<td>${hditem.getFreqRank()}</td>
+			<td>${palacestr}</td>
+			<td width="8%">
+			${opstr}
+			</td>
+			</tr>
+		`;
 
-		activetable.append(row);		
+		maintable += rowstr;
 	});
-	
-	$('#maintable').html(activetable);
 
-	$('#itemcount').html(hanzilist.length);
+	maintable += `</table>`;
+
+	populateSpanData({
+		"maintable" : maintable,
+		"itemcount" : hanzilist.length
+	});
 }
+
+function savePalaceNote()
+{
+	const showitem = lookupItem("palace_item", EDIT_STUDY_ITEM);
+	const newnote = getDocFormValue("palace_note2");
+	showitem.setPalaceNote(newnote);
+	syncSingleItem(showitem);
+	toggleHidden4Class('edit_info');
+	redisplay();
+}
+
+function editCharacter()
+{
+	const showitem = lookupItem("palace_item", EDIT_STUDY_ITEM);
+	const newchar = prompt("Enter a new Hanzi character: ", showitem.getHanziChar());
+	
+	if(newchar)
+	{
+		showitem.setHanziChar(newchar);
+		syncSingleItem(showitem);		
+		redisplay();
+	}
+}
+
+function editItemExtraNote()
+{
+	genericEditTextField("palace_item", "extra_note", EDIT_STUDY_ITEM);
+}
+
+function editItemMeaning()
+{
+	genericEditTextField("palace_item", "meaning", EDIT_STUDY_ITEM);
+}
+
 
 
 
@@ -200,9 +272,11 @@ function redisplay()
 
 </head>
 
-<body onLoad="javascript:redisplay()">
+<body onLoad="javascript:setDefaultRedisplay()">
 
 <center>
+
+<span class="page_component" id="main_list">
 
 <h2>Character Central</h2>
 
@@ -233,6 +307,86 @@ Showing <span id="itemcount"></span> items
 
 
 <br/>
+
+</span>
+
+<span class="page_component" id="edit_item">
+
+<h3>Edit Palace Info</h3>
+
+<br/>
+
+<table width="50%" id="dcb-basic">
+<tr>
+<td width="25%">Back</td>
+<td></td>
+<td width="30%"><a href="javascript:back2Main()"><img src="/life/image/leftarrow.png" height="18"/></a></td>
+</tr>
+<tr>
+<td>Character</td>
+<td><div id="hanzi_char"></div></td>
+<td><a href="javascript:editCharacter()"><img src="/life/image/edit.png" height=18/></a></td>
+</tr>
+<tr>
+<td>Meaning</td>
+<td><div id="meaning"></div></td>
+<td><a href="javascript:editItemMeaning()"><img src="/life/image/edit.png" height=18/></a></td>
+</tr>
+<tr>
+<td>PinYin</td>
+<td><div id="pinyin"></div></td>
+<td></td>
+</tr>
+<tr>
+<td>Extra Note</td>
+<td><div id="extra_note"></div></td>
+<td><a href="javascript:editItemExtraNote()"><img src="/life/image/edit.png" height=18/></a></td>
+</tr>
+</table>
+
+<br/>
+
+<font size="60"><span id="hanzi_char_big"></span></font>
+
+
+<br/>
+<br/>
+
+
+<span class="edit_info">
+
+<table id="dcb-basic" width="50%" border="0">
+<tr>
+<td><span id="palace_note1"></span></td>
+
+<td width="10%">
+<a href="javascript:toggleHidden4Class('edit_info')"><img src="/life/image/edit.png" height="18"></a>
+</td>
+</tr>
+</table>
+<br/>
+</span>
+
+
+<span class="edit_info" hidden>
+
+<form>
+<textarea id="palace_note2" name="palace_note2" cols="80" rows="10">
+
+
+</textarea>
+</form>
+
+<a class="css3button" onclick="javascript:savePalaceNote()">save</a>
+
+<%= HtmlUtil.nbsp(4) %>
+
+
+<a class="css3button" onclick="javascript:toggleHidden4Class('edit_info')">cancel</a>
+
+</span>
+
+
 
 
 
