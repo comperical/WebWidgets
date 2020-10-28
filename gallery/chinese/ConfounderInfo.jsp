@@ -10,11 +10,13 @@
 
 <script src="ChineseTech.js"></script>
 
-<%= DataServer.basicIncludeOnly(request, "confounder") %>
+<%= DataServer.basicIncludeOnly(request, "confounder", "hanzi_data") %>
+
+<script src="ChineseTech.js"></script>
 
 <script>
 
-EDIT_STUDY_ITEM = -1;
+EDIT_STUDY_ITEM = 6;
 
 function createNew()
 {   
@@ -126,7 +128,39 @@ function redisplayEdit()
     });
 
 
+    const leftchar = lookupHanziDataByChar(studyitem.getLeftChar());
+    const rghtchar = lookupHanziDataByChar(studyitem.getRghtChar());
+    
+    
+    populateSpanData({
+    	"extra_info_left" : getCharTable(leftchar, "Left"),	    
+    	"extra_info_rght" : getCharTable(rghtchar, "Right")
+    });
+    
 }
+
+function getCharTable(charitem, tablename) 
+{
+	if(!charitem)
+		{ return ""; }
+	
+	return `
+		<table id="dcb-basic" class="dcb-basic" width="50%">
+		<tr>
+		<th colspan="2">${tablename}</th>
+		</tr>
+		<tr>
+		<td width="20%">Meaning</td>
+		<td>${charitem.getDefinition()}</td>
+		</tr>          
+		<tr>
+		<td width="20%">PinYin</td>
+		<td>${charitem.getPinYin()}</td>
+		</tr>		
+		</table>
+	`;
+}
+
 
 function redisplay()
 {
@@ -228,8 +262,6 @@ Right
 </tr>
 
 
-
-
 </table>
 
 <br/>
@@ -240,11 +272,15 @@ Right
 
 <font size="60"><span id="rght_char_BIG"></span></font>
 
-
-
-
 <br/>
 <br/>
+
+<span id="extra_info_left"></span>
+
+<br/>
+
+<span id="extra_info_rght"></span>
+
 
 </span>
 
