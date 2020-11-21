@@ -359,15 +359,15 @@ function editChoreFreq()
 	if(!newfreq)
 		{ return; }
 	
-	massert(isNormalInteger(newfreq), "Please enter an integer only");
-	
+	if(!okayInt(newfreq))
 	{
-		showItem.setDayFreq(parseInt(newfreq));
-		
-		syncSingleItem(showItem);		
-	
-		redisplay();
+		alert("Invalid number, please reenter: " + newfreq);
+		return;
 	}
+		
+	showItem.setDayFreq(parseInt(newfreq));
+	syncSingleItem(showItem);	
+	redisplay();
 }
 
 function editChoreName()

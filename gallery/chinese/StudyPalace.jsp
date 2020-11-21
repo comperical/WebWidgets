@@ -63,7 +63,7 @@ function createMiniTaskNote()
 	
 	const notename = prompt("Enter note : ", basicprompt);
 	
-	const weblink = "\nhttps://danburfoot.net/life/chinese/PalaceItemEdit.jsp?item_id=" + CURRENT_PROMPT_ITEM.getId();
+	const weblink = "\nhttps://danburfoot.net/life/chinese/CharacterCentral.jsp?item_id=" + CURRENT_PROMPT_ITEM.getId();
 	
 	if(notename)
 	{
@@ -72,7 +72,7 @@ function createMiniTaskNote()
 			"alpha_date" : getTodayCode().getDateString(),
 			"omega_date" : "",
 			"is_backlog" : 0,
-			"priority" : 5,
+			"priority" : 1,
 			"short_desc" : notename,
 			"task_type" : "life",
 			"extra_info" : weblink

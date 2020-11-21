@@ -422,11 +422,16 @@ function getNameOrEmpty(ingrid)
 function getRecipeItemCounts()
 {
 	var counts = {};
+
+	getItemList("recipe_item").forEach(function(ritem) {
+		counts[ritem.getId()] = 0;
+	});
 	
 	getItemList("ingredient").forEach(function(ingr) {
 				
 		const recpid = ingr.getRecipeId();
-			
+
+		// should not be necessary, but I am paranoid			
 		if(!(recpid in counts))
 			{ counts[recpid] = 0; }
 		

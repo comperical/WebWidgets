@@ -26,8 +26,15 @@ function getTaskAge(thetask)
 	return alphadc.daysUntil(TODAY_CODE);
 }
 
-function createNew(tasktype)
+function createNewTask()
 {
+	const showtypelist = getShowTypeList();
+	if(showtypelist.length > 1)
+	{
+		alert("Please select a single category");	
+		return;
+	}
+	
 	var itemname = prompt("New Item Desc: ");
 	
 	if(itemname)
@@ -38,7 +45,7 @@ function createNew(tasktype)
 		
 		const newrec = {
 			"id" : newid,
-			"task_type" : tasktype,
+			"task_type" : showtypelist[0],
 			"short_desc" : itemname,
 			"extra_info" : "",
 			"alpha_date" : todaycode,
@@ -507,21 +514,7 @@ function redisplay()
 
 <br/>
 
-<a name="truebutton" class="css3button" onclick="javascript:createNew('crm')">crm</a>
-
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-
-<a name="truebutton" class="css3button" onclick="javascript:createNew('life')">life</a>
-
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-
-<a name="truebutton" class="css3button" onclick="javascript:createNew('work')">work</a>
+<a name="truebutton" class="css3button" onclick="javascript:createNewTask()">new</a>
 
 <br/>
 <br/>

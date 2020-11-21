@@ -136,15 +136,17 @@ function populateSpanData(spanmap)
 // Return true if yes.
 function okayInt(intstr)
 {
-	const npint = parseInt(intstr);
-	return !isNaN(npint);
+	return /^-?\d+$/.test(intstr.trim());
 }
 
 // Return true if the given string is an allowable float.
 function okayFloat(floatstr)
 {
-	const floater = parseFloat(floatstr);
-	return !isNaN(floater);
+	// A valid int is also a valid float.
+	if(okayInt(floatstr))
+		{ return true; }
+
+	return /^-?\d*\.\d+$/.test(floatstr.trim());
 }
 
 __ERRORS_ON_PAGE = 0;

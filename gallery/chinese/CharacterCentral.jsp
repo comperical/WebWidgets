@@ -139,12 +139,32 @@ function redisplayEditItem()
 
 
 	const showitem = lookupItem("palace_item", EDIT_STUDY_ITEM);
+	var confounderstr = "...";
+	{
+		const confidx = getConfounderIndex();
+		if(showitem.getHanziChar() in confidx) 
+		{
+			// TODO: should eventually show ALL of these, there might be many.
+			const confitem = confidx[showitem.getHanziChar()][0];
+			confounderstr = `
+				${confitem.getLeftChar()} / ${confitem.getRghtChar()}  :
+				${confitem.getExtraInfo()}
+			`;
+		}
+	}
+
+
+
 	populateSpanData({
 		"hanzi_char" : showitem.getHanziChar(),
 		"meaning" : showitem.getMeaning(),
 		"extra_note" : showitem.getExtraNote(),
+		"confounder_info" : confounderstr,
 		"hanzi_char_big" : showitem.getHanziChar()
 	})
+
+
+
 
 	const palacetext = showitem.getPalaceNote();
 	const palacehtml = palacetext.replace(/\n/g, "<br/>");
@@ -156,9 +176,10 @@ function redisplayEditItem()
 
 	populateSpanData({
 		"palace_note1" : palacehtml,
-		"palace_note2" : palacetext,
 		"pinyin" : pinyin
 	});
+	
+	getUniqElementByName("palace_note2").value = palacetext;
 }
 
 function redisplayMainList()
@@ -166,7 +187,7 @@ function redisplayMainList()
 	var hanzilist = getItemList("hanzi_data");
 
 	var maintable = `
-		<table class="dcb-basic" id="dcb-basic" height="80%">
+		<table class="dcb-basic" id="dcb-basic" width="80%">
 		<tr>
 		<th>Character</th>
 		<th>PinYin</th>
@@ -341,6 +362,10 @@ Showing <span id="itemcount"></span> items
 <td>Extra Note</td>
 <td><div id="extra_note"></div></td>
 <td><a href="javascript:editItemExtraNote()"><img src="/life/image/edit.png" height=18/></a></td>
+</tr>
+<tr>
+<td>Confounder</td>
+<td colspan="2"><div id="confounder_info"></div></td>
 </tr>
 </table>
 
