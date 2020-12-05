@@ -8,14 +8,14 @@
 <%@ page import="lifedesign.basic.*" %>
 <%@ page import="lifedesign.classic.*" %><%@ page import="lifedesign.classic.JsCodeGenerator.*" %>
 
-<%@include file="../AuthInclude.jsp_inc" %>
+<%@include file="../../admin/AuthInclude.jsp_inc" %>
 
 
 <html>
 <head>
 <title>Memory Palace Listing</title>
 
-<%@include file="../AssetInclude.jsp_inc" %>
+<%@include file="../../admin/AssetInclude.jsp_inc" %>
 
 <script src="ChineseTech.js"></script>
 

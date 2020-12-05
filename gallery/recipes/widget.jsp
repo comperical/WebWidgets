@@ -1,12 +1,12 @@
 
-<%@include file="../../life/AuthInclude.jsp_inc" %>
+<%@include file="../../admin/AuthInclude.jsp_inc" %>
 
 
 <html>
 <head>
 <title>Recipes</title>
 
-<%@include file="../../life/AssetInclude.jsp_inc" %>
+<%@include file="../../admin/AssetInclude.jsp_inc" %>
 
 <%= DataServer.basicInclude(request) %>
 
@@ -205,6 +205,16 @@ function clearShoppingList()
 	
 }
 
+function cycleRecipeActive(ritemid)
+{
+	if(confirm("Are you sure you deactivate this recipe?"))
+	{
+		genericToggleActive("recipe_item", ritemid);
+	}	
+	
+	redisplay();
+}
+
 
 function redisplay()
 {
@@ -372,6 +382,9 @@ function reDispMainTable()
 	
 	recipes.forEach(function(ritem) {
 		
+		if(ritem.getIsActive() != 1) 
+			{ return; }
+
 		const ingcount = counts[ritem.getId()];
 			
 		const rowstr = `
@@ -387,7 +400,11 @@ function reDispMainTable()
 			<a href="javascript:addRecipe2List(${ritem.getId()})">
 			<img src="/life/image/add.png" height="18"/></a>
 			
-			
+			&nbsp; &nbsp;
+						
+			<a href="javascript:cycleRecipeActive(${ritem.getId()})">
+			<img src="/life/image/cycle.png" height="18"/></a>
+
 			</td>
 			</tr>
 		`;
@@ -460,9 +477,12 @@ function reDispShoppingList()
 	shoplist.sort(proxySort(shop => [getCategoryOrEmpty(shop.getIngrId()), getNameOrEmpty(shop.getIngrId())]));
 	
 	shoplist.forEach(function(shop) {
+
+		if(!haveItem("ingredient", shop.getIngrId()))
+			{ return; }
 			
 		const ingr = lookupItem("ingredient", shop.getIngrId());
-		
+
 		const recipe = lookupItem("recipe_item", ingr.getRecipeId());
 			
 		const rowstr = `

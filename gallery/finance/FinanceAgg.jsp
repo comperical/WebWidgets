@@ -9,7 +9,7 @@
 <%@ page import="lifedesign.basic.LifeUtil.*" %>
 <%@ page import="lifedesign.classic.FinanceSystem.*" %>
 
-<%@include file="../../life/AuthInclude.jsp_inc" %>
+<%@include file="../../admin/AuthInclude.jsp_inc" %>
 
 <%
 	ArgMap argMap = HtmlUtil.getArgMap(request);
@@ -29,7 +29,7 @@
 <head>
 <title>Finance Agg</title>
 
-<%@include file="../../life/AssetInclude.jsp_inc" %>
+<%@include file="../../admin/AssetInclude.jsp_inc" %>
 
 <script src="FinanceTech.js"/></script>
 

@@ -8,7 +8,7 @@
 <%@ page import="lifedesign.basic.*" %>
 <%@ page import="lifedesign.classic.*" %>
 
-<%@include file="../../life/AuthInclude.jsp_inc" %>
+<%@include file="../../admin/AuthInclude.jsp_inc" %>
 
 <%
 	String pageTitle = "Workout Log";
@@ -22,7 +22,7 @@
 <head>
 <title>Workout Log</title>
 
-<%@include file="../../life/AssetInclude.jsp_inc" %>
+<%@include file="../../admin/AssetInclude.jsp_inc" %>
 
 <%= DataServer.basicInclude(request) %>
 

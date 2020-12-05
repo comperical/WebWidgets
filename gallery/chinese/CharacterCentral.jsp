@@ -2,7 +2,7 @@
 <%@ page import="net.danburfoot.shared.*" %>
 <%@ page import="net.danburfoot.shared.HtmlUtil.*" %>
 
-<%@include file="../../life/AuthInclude.jsp_inc" %>
+<%@include file="../../admin/AuthInclude.jsp_inc" %>
 
 <%
 	
@@ -17,7 +17,7 @@
 <head>
 <title>Character Central</title>
 
-<%@include file="../../life/AssetInclude.jsp_inc" %>
+<%@include file="../../admin/AssetInclude.jsp_inc" %>
 
 <script src="ChineseTech.js"></script>
 

@@ -1,5 +1,5 @@
 
-<%@include file="../../life/AuthInclude.jsp_inc" %>
+<%@include file="../../admin/AuthInclude.jsp_inc" %>
 
 <%
 %>
@@ -8,7 +8,7 @@
 <head>
 <title>Finance Log</title>
 
-<%@include file="../../life/AssetInclude.jsp_inc" %>
+<%@include file="../../admin/AssetInclude.jsp_inc" %>
 
 <script src="FinanceTech.js"/></script>
 

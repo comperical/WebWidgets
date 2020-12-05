@@ -5,7 +5,7 @@
 
 <%@ page import="lifedesign.basic.LifeUtil" %>
 
-<%@include file="../../life/AuthInclude.jsp_inc" %>
+<%@include file="../../admin/AuthInclude.jsp_inc" %>
 
 <%	
 	DayCode jvTodayCode = LifeUtil.getTodayTzAware();	
@@ -20,7 +20,7 @@
 <head>
 <title>Junk Food Log</title>
 
-<%@include file="../../life/AssetInclude.jsp_inc" %>
+<%@include file="../../admin/AssetInclude.jsp_inc" %>
 
 <%= DataServer.basicInclude(request) %>
 

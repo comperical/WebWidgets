@@ -1,11 +1,11 @@
 
-<%@include file="../../life/AuthInclude.jsp_inc" %>
+<%@include file="../../admin/AuthInclude.jsp_inc" %>
 
 <html>
 <head>
 <title>Mini Task List</title>
 
-<%@include file="../../life/AssetInclude.jsp_inc" %>
+<%@include file="../../admin/AssetInclude.jsp_inc" %>
 
 <%= DataServer.basicInclude(request) %>
 
@@ -225,6 +225,24 @@ function getTaskItemList(wantcompleted)
 	
 
 	return tasklist;
+}
+
+function toggleItemStatus()
+{
+	massert(EDIT_STUDY_ITEM != -1);
+
+	const studyitem = lookupItem("mini_task_list", EDIT_STUDY_ITEM);
+	if(studyitem.getOmegaDate().length == 0) 
+	{ 
+		// This case is identical to just marking the study item complete.
+		markItemComplete(EDIT_STUDY_ITEM); 
+		return;
+	}
+
+	// To mark active, clear out the omega data.
+	studyitem.setOmegaDate("");
+	studyitem.syncItem();
+	redisplay();
 }
 
 function getShowTypeList()
@@ -461,12 +479,14 @@ function reDispEditItem()
 		{ return; }
 	
 	const studyitem = getStudyItem();
-	
+	const itemstat = studyitem.getOmegaDate().length == 0 ? "ACTIVE" : "COMPLETE";
+
 	var extrainfo = studyitem.getExtraInfo();
 	if(extrainfo.length == 0)
 		{ extrainfo = "Not Yet Set"; }
 	
 	const extralinelist = extrainfo.replace(/\n/g, "<br/>");	
+
 	
 	populateSpanData({
 		"taskid" : studyitem.getId(),
@@ -474,6 +494,7 @@ function reDispEditItem()
 		"tasktype" : studyitem.getTaskType(),
 		"alphadate" : studyitem.getAlphaDate(),
 		"omegadate" : studyitem.getOmegaDate(),
+		"item_status" : itemstat,
 		"int_prior" : studyitem.getPriority(),
 		"eff_prior" : getEffectivePriority(studyitem).toFixed(2),
 		"extrainfo" : extralinelist
@@ -605,6 +626,21 @@ function redisplay()
 <td>End Date</td>
 <td><span id="omegadate"></span></td>
 </tr>
+<tr>
+<td>Status</td>
+<td>
+<span id="item_status"></span>
+
+
+&nbsp;
+&nbsp;
+&nbsp;
+
+
+<a href="javascript:toggleItemStatus()"><img src="/life/image/cycle.png" height="18"></a>
+</td>
+</tr>
+
 <tr>
 <td>Intrinsic Priority</td>
 <td><span id="int_prior"></span>
