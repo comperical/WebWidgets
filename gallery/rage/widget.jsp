@@ -181,10 +181,11 @@ function redisplayStudyItem()
 		"day_code" : studyitem.getDayCode(),
 		"short_name" : studyitem.getShortName(),
 		"category_list" : tagstr,
-		"full_desc" : studyitem.getFullDesc(),
-		"add_tag_sel_span" : tagsel.getSelectString(),
-		"itemdescline" : desclinelist
+		"itemdescline" : desclinelist,
+		"add_tag_sel_span" : tagsel.getSelectString()
 	});
+
+	getUniqElementByName("full_desc").value = studyitem.getFullDesc();
 }
 
 function redisplayMainTable()
