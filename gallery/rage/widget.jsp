@@ -1,16 +1,5 @@
-<%@ page session="false" import="com.caucho.vfs.*, com.caucho.server.webapp.*" %>
-
-<%@ page import="java.util.*" %>
-
-<%@ page import="net.danburfoot.shared.*" %>
-<%@ page import="net.danburfoot.shared.HtmlUtil.*" %>
-
-<%@ page import="lifedesign.basic.*" %>
-
-<%@ page isELIgnored="true" %>
 
 <%@include file="../../admin/AuthInclude.jsp_inc" %>
-
 
 <html>
 <head>
@@ -22,18 +11,19 @@
 
 <script>
 
+var EDIT_STUDY_ITEM = -1;
+
 function createNew()
 {
-	var shortname = prompt("ENRAGED about what?? : ");
+	const shortname = prompt("ENRAGED about what?? : ");
 	
 	if(shortname)
 	{
-		var newid = newBasicId("rage_log");
-
-		var todaycode = getTodayCode().getDateString();
+		const newid = newBasicId("rage_log");
+		const todaycode = getTodayCode().getDateString();
 		
 		// created_on, active_on, completed_on, dead_line
-		var newrec = {
+		const newrec = {
 			"id" : newid,
 			"short_name" : shortname,
 			"category": 'misc',
@@ -41,7 +31,7 @@ function createNew()
 			"day_code" : todaycode		
 		};		
 		
-		var newitem = buildRageLogItem(newrec);
+		const newitem = buildItem("rage_log", newrec);
 		newitem.registerNSync();
 		redisplay();
 	}
@@ -57,6 +47,18 @@ function deleteItem(killid, shortname)
 	}
 }
 
+function editStudyItem(itemid) 
+{
+	EDIT_STUDY_ITEM = itemid;
+	redisplay();
+}
+
+function back2Main()
+{
+	EDIT_STUDY_ITEM = -1;
+	redisplay();
+}
+
 
 function getBasicDesc(rageitem)
 {
@@ -67,53 +69,155 @@ function getBasicDesc(rageitem)
 
 function redisplay()
 {
-	var principlist = getItemList("rage_log");
-	principlist.sort(proxySort(a => [a.getDayCode()])).reverse();
-	
-	// var lastlogmap = getLastLogMap();
-					
-	var activetable = $('<table></table>').addClass('dcb-basic').attr("id", "dcb-basic").attr("width", "80%");
-	
-	{
-		const header = `
-			<th width="7%">Date</th>
-			<th>Category</th>
-			<th>Name</th>
-			<th>Desc</th>
-			<th>Op</th>
+	redisplayMainTable();
+
+	redisplayStudyItem();
+
+	setPageComponent(getPageComponent());
+}
+
+function getPageComponent()
+{
+	return EDIT_STUDY_ITEM == -1 ? "maintable_cmp" : "edit_item";
+}
+
+function getTagList(itemid)
+{
+	const myitem = lookupItem("rage_log", itemid);
+	return tagListFromItem(myitem);
+}
+
+function tagListFromItem(ritem) 
+{
+	const tagstr = ritem.getCategory().trim();
+	return tagstr.length == 0 ? [] : tagstr.split(";");
+}
+
+function getTagUniverse()
+{
+	const tagset = new Set();
+
+	getItemList("rage_log").forEach(function(ritem) {
+		tagListFromItem(ritem).forEach(tag => tagset.add(tag));		
+	});
+
+	return [... tagset].sort(proxySort(s => [s.toLowerCase()]));
+}
+
+function addStudyTag()
+{
+	const newtag = getDocFormValue("add_tag_sel");
+	var thetags = getTagList(EDIT_STUDY_ITEM);
+	thetags.push(newtag);
+
+	const myitem = lookupItem("rage_log", EDIT_STUDY_ITEM);
+	myitem.setCategory(thetags.join(";"));
+	myitem.syncItem();
+	redisplay();
+}
+
+function removeStudyTag(tagidx) 
+{
+	const oldtags = getTagList(EDIT_STUDY_ITEM);
+	oldtags.splice(tagidx, 1);
+
+
+	const myitem = lookupItem("rage_log", EDIT_STUDY_ITEM);
+	myitem.setCategory(oldtags.join(";"));
+	myitem.syncItem();
+	redisplay();
+}
+
+function redisplayStudyItem()
+{
+	if(EDIT_STUDY_ITEM == -1)
+		{ return; }
+
+	const taglist = getTagList(EDIT_STUDY_ITEM);
+	var tagstr = "";
+
+	for(var tagidx in taglist) {
+
+		const tag = taglist[tagidx];
+
+		tagstr += `
+			${tag}
+			<a href="javascript:removeStudyTag('${tagidx}')">
+			<img src="/life/image/remove.png" height="16" /></a>
+			&nbsp; &nbsp; &nbsp;
 		`;
-		
-		var row = $('<tr></tr>').html(header);
-		
-		activetable.append(row);	
 	}
+
+	var fulltaglist = ['---'];
+	fulltaglist.push(... getTagUniverse());
+	const tagsel = buildOptSelector()
+						.setKeyList(fulltaglist)
+						.setSelectOpener(`<select name="add_tag_sel" onChange="javascript:addStudyTag()">`)
+						.setSelectedKey('---');
+
+
+
+	const studyitem = lookupItem("rage_log", EDIT_STUDY_ITEM);
 	
-	principlist.forEach(function(princitem) {
+	// Okay, this took me a while to get right. The issue is that 
+	// the standard string.replace(...) won't do a global, and there is no replaceAll
+	var desclinelist = studyitem.getFullDesc().replace(/\n/g, "<br/>");
+	
+	populateSpanData({
+		"day_code" : studyitem.getDayCode(),
+		"short_name" : studyitem.getShortName(),
+		"category_list" : tagstr,
+		"full_desc" : studyitem.getFullDesc(),
+		"add_tag_sel_span" : tagsel.getSelectString(),
+		"itemdescline" : desclinelist
+	});
+}
+
+function redisplayMainTable()
+{
+
+	var ragelist = getItemList("rage_log");
+	ragelist.sort(proxySort(a => [a.getDayCode()])).reverse();
+
+	var tablestr = `
+		<table id="dcb-basic" class="dcb-basic" width="80%">
+		<tr>
+		<th width="7%">Date</th>
+		<th>Tags</th>
+		<th>Name</th>
+		<th>Desc</th>
+		<th>Op</th>
+		</tr>
+	`;
+	
+	ragelist.forEach(function(item) {
+				
+		const taglist = tagListFromItem(item).join(", ");
 				
 		const rowstr = `
-			<td>${princitem.getDayCode().substring(5)}</td>	
-			<td>${princitem.getCategory()}</td>			
-			<td>${princitem.getShortName()}</td>
-			<td width="50%">${getBasicDesc(princitem)}</td>
+			<tr>
+			<td>${item.getDayCode().substring(5)}</td>	
+			<td>${taglist}</td>			
+			<td>${item.getShortName()}</td>
+			<td width="50%">${getBasicDesc(item)}</td>
 			<td width="10%">
-				<a href="RageItemEdit.jsp?item_id=${princitem.getId()}">
+				<a href="javascript:editStudyItem(${item.getId()})">
 				<img src="/life/image/inspect.png" height=18"/></a>
 				
-				<%= HtmlUtil.nbsp(3) %>
+				&nbsp; &nbsp; &nbsp;
 				
-				<a href="javascript:deleteItem(${princitem.getId()}, '${princitem.getShortName()}')">
+				<a href="javascript:deleteItem(${item.getId()}, '${item.getShortName()}')">
 				<img src="/life/image/remove.png" height="18"/></a>
 			</td>
+			</tr>
 		`
-		
-		const row = $('<tr></tr>').addClass('bar').html(rowstr);
 
-		activetable.append(row);
+		tablestr += rowstr;
 	});
-	
-	$('#maintable').html(activetable);
 
+	tablestr += "</table>";
 
+	populateSpanData({"maintable" : tablestr });
 }
 
 </script>
@@ -123,6 +227,8 @@ function redisplay()
 <body onLoad="javascript:redisplay()">
 
 <center>
+
+<span class="page_component" id="maintable_cmp">
 
 <h2>Rage Log</h2>
 
@@ -136,7 +242,60 @@ onclick="javascript:createNew()">NEW</a>
 
 
 <br/>
+</span>
 
+<span class="page_component" id="edit_item">
+
+<h3>Edit Item</h3>
+
+<br/>
+
+<table width="50%" id="dcb-basic">
+<tr>
+<td width="25%">Back</td>
+<td></td>
+<td width="30%"><a href="javascript:back2Main()"><img src="/life/image/leftarrow.png" height="18"/></a></td>
+</tr>
+<tr>
+<td>Name</td>
+<td><div id="short_name"></div></td>
+<td><a href="javascript:editShortName()"><img src="/life/image/edit.png" height=18/></a></td>
+</tr>
+<tr>
+<td>Tags</td>
+<td><div id="category_list"></div></td>
+<td>
+<span id="add_tag_sel_span"></span>
+</td>
+</tr>
+<tr>
+<td>Date</td>
+<td><span id="day_code"></span>
+<td></td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+<table id="dcb-basic" width="30%">
+<tr>
+<td>
+<span id="itemdescline">xxx<br/>yyy</span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+<form>
+<textarea id="full_desc" name="full_desc" rows="10" cols="50"></textarea>
+</form>
+
+<a href="javascript:saveNewDesc()">save desc</a>
+
+</span>
 
 
 </center>
