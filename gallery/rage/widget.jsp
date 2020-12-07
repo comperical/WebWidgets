@@ -53,6 +53,11 @@ function editStudyItem(itemid)
 	redisplay();
 }
 
+function editShortName()
+{
+	genericEditTextField("rage_log", "short_name", EDIT_STUDY_ITEM);
+}
+
 function back2Main()
 {
 	EDIT_STUDY_ITEM = -1;
@@ -79,6 +84,15 @@ function redisplay()
 function getPageComponent()
 {
 	return EDIT_STUDY_ITEM == -1 ? "maintable_cmp" : "edit_item";
+}
+
+function saveNewDesc()
+{
+	const myitem = lookupItem("rage_log", EDIT_STUDY_ITEM);
+	const newdesc = getDocFormValue("full_desc");
+	myitem.setFullDesc(newdesc);
+	myitem.syncItem();
+	redisplay();
 }
 
 function getTagList(itemid)
