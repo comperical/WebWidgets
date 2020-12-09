@@ -1,15 +1,5 @@
-<%@ page session="false" import="com.caucho.vfs.*, com.caucho.server.webapp.*" %>
-
-<%@ page import="java.util.*" %>
-
-<%@ page import="net.danburfoot.shared.*" %>
-<%@ page import="net.danburfoot.shared.HtmlUtil.*" %>
-
-<%@ page import="lifedesign.basic.*" %>
-<%@ page import="lifedesign.classic.*" %><%@ page import="lifedesign.classic.JsCodeGenerator.*" %>
 
 <%@include file="../../admin/AuthInclude.jsp_inc" %>
-
 
 <html>
 <head>
@@ -19,7 +9,9 @@
 
 <script src="ChineseTech.js"></script>
 
-<%= JsCodeGenerator.getScriptInfo(request, "chinese", Util.listify("palace_item", "review_log")) %>
+
+<%= DataServer.basicIncludeOnly(request, "palace_item", "review_log") %>
+
 
 <script>
 
@@ -48,20 +40,17 @@ function peelTimeString(timestamp)
 
 function reDispAggTable()
 {
-	
-	
-	var mytable = $('<table></table>').addClass('dcb-basic').attr("id", "dcb-basic").attr("width", "70%");
-	
-	{
-		var row = $('<tr></tr>').addClass('bar');
-	
-		["ID", "Character", "NumReview", "LastReview", "NetScore", "..."].forEach( function (hname) {
-				
-			row.append($('<th></th>').text(hname));
-		});
-		
-		mytable.append(row);	
-	}
+	var tablestr = `
+		<table class="dcb-basic" id="dcb-basic" width="70%">
+		<tr>
+		<th>ID</th>
+		<th>Character</th>
+		<th>NumReview</th>
+		<th>LastReview</th>
+		<th>NetScore</th>
+		<th>...</th>
+		</tr>
+	`;
 	
 	const statinfo = computeStatInfo();
 	
@@ -74,45 +63,30 @@ function reDispAggTable()
 		
 		if(palaceitem == undefined)
 			{ return; }
-				
-		var row = $('<tr></tr>').addClass('bar');
-		
-		row.append($('<td></td>').text(palaceitem.getId()));
-		
-		row.append($('<td></td>').text(palaceitem.getHanziChar()));
-				
-		row.append($('<td></td>').text(statpack["num_review"]));				
-		
-		row.append($('<td></td>').text(peelTimeString(statpack["last_review"])));				
-		
-		row.append($('<td></td>').text(statpack["net_score"].toFixed(2)));				
-					
-		
-		{
-		
-			var opcell = $('<td></td>').attr("width", "15%");
-						
-			{
-				var deleteref = "javascript:markStudyItem(" + palaceid + ")";
-				
-				var addtimeref = $('<a></a>').attr("href", deleteref).append(
-										$('<img></img>').attr("src", "/life/image/inspect.png").attr("height", 18)
-								);
-				
-				opcell.append(addtimeref);
-			} 	
-				
-			row.append(opcell);		
-		
 
-		}	
+		var lastrevtime = statpack["num_review"] == 0 ? "new" : peelTimeString(statpack["last_review"]);
+				
+		const rowstr = `
+			<tr>
+			<td>${palaceitem.getId()}</td>
+			<td>${palaceitem.getHanziChar()}</td>
+			<td>${statpack["num_review"]}</td>
+			<td>${lastrevtime}</td>
+			<td>${statpack["net_score"].toFixed(2)}</td>
+			<td>
+			<a href="javascript:markStudyItem(${palaceid})">
+			<img src="/life/image/inspect.png" height="18" /></a>
+			</td>
+			</tr>
+		`;
 		
-		mytable.append(row);			
+		tablestr += rowstr;
 			
 	});
-	
-	$('#aggregate_table').html(mytable);
-	
+
+	tablestr += "</table>";
+
+	populateSpanData({"aggregate_table" : tablestr });	
 }
 
 
@@ -122,81 +96,61 @@ function reDispBdTable()
 	const bditem = STUDY_PALACE_ID;
 	
 	const itemlist = getItemList("review_log").filter(ritem => ritem.getItemId() == bditem);
-	
+	itemlist.sort(proxySort(a => [a.getTimeStamp()])).reverse();
+
 	const palaceitem = lookupItem("palace_item", bditem);
 	
 	var netscore = 0;
 	
-	// var principlist = getItemList("palace_item");
-	// principlist.sort(proxySort(a => [a.getDayCode()])).reverse();
-	
-	// var lastlogmap = getLastLogMap();
-					
-	var mytable = $('<table></table>').addClass('dcb-basic').attr("id", "dcb-basic").attr("width", "40%");
-	
-	{
-		var row = $('<tr></tr>').addClass('bar');
-	
-		["Result", "Time", "Score", "..."].forEach( function (hname) {		
-			row.append($('<th></th>').attr("width", "7%").text(hname));
-		});
+	var principlist = getItemList("palace_item");
 		
-		mytable.append(row);	
-	}
+	var tablestr = `
+		<table class="dcb-basic" id="dcb-basic" width="40%">	
+		<tr>
+		<th>Result</th>
+		<th>Time</th>
+		<th>Score</th>
+		<th>...</th>
+		</tr>
+	`;
+
 	
 	itemlist.forEach(function(ritem) {
 			
-		var row = $('<tr></tr>').addClass('bar');
-		
-		// row.append($('<td></td>').text(ritem.getId()));				
-				
-		// row.append($('<td></td>').text(palaceitem.getHanziChar()));
-		
-		row.append($('<td></td>').text(ritem.getResultCode()));				
-		
-		row.append($('<td></td>').text(peelTimeString(ritem.getTimeStamp())));				
-
 		var probscore = singleReviewItemScore(ritem);
 		netscore += probscore;
-		row.append($('<td></td>').text(probscore.toFixed(2)));		
+
+		const rowstr = `
+			<tr>
+			<td>${ritem.getResultCode()}</td>
+			<td>${peelTimeString(ritem.getTimeStamp())}</td>
+			<td>${probscore.toFixed(2)}</td>
+			<td>
+
+			<a href="javascript:deleteItem(${ritem.getId()})">
+			<img src="/life/image/remove.png" height="18"></a>
+
+			</td>
+			</tr>
+		`;
+	
 		
-		{
-		
-			var opcell = $('<td></td>');
-						
-			{
-				var deleteref = "javascript:deleteItem(" + ritem.getId() + ")";
-				
-				var addtimeref = $('<a></a>').attr("href", deleteref).append(
-										$('<img></img>').attr("src", "/life/image/remove.png").attr("height", 18)
-								);
-				
-				opcell.append(addtimeref);
-			} 	
-				
-			row.append(opcell);		
-		}	
-		
-		mytable.append(row);
-		
-		
-		// const palnote = getFirstPalaceNote(ritem.getPalaceNote());
-		// row.append($('<td></td>').text(palnote));		
+		tablestr += rowstr;		
 	});
 	
 
 	const jitter = (Math.random() - 0.5) * JITTER_SCALE;
 		
-	$('#bd_numreview').html(itemlist.length);
-	$('#bd_character').html(palaceitem.getHanziChar());	
-	
-	$('#bd_basescore').html(netscore.toFixed(2));	
-	$('#bd_netscore').html((netscore + jitter).toFixed(2));	
-	
+	populateSpanData({
+		"bd_numreview" : itemlist.length,
+		"bd_character" : palaceitem.getHanziChar(),
+		"bd_basescore" : netscore.toFixed(2),
+		"bd_netscore" : (netscore + jitter).toFixed(2)
+	});	
 
+	tablestr += "</table>";
 
-
-	$('#breakdown_table').html(mytable);	
+	populateSpanData({"breakdown_table" : tablestr });
 }
 
 
@@ -213,10 +167,6 @@ function reDispBdTable()
 <center>
 
 <h2>Review Log</h2>
-
-<br/></br>
-<br/>
-<br/>
 
 <table width="30%" id="dcb-basic" align="center">
 <tr>

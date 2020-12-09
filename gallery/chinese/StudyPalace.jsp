@@ -161,13 +161,15 @@ function redisplay()
 	const hanzidata = lookupHanziDataByChar(CURRENT_PROMPT_ITEM.getHanziChar());
 						
 	const storyhtml = CURRENT_PROMPT_ITEM.getPalaceNote().replace(/\n/g, "<br/>");
-	$('#thestory').html(storyhtml);
-	$('#themeaning').html(CURRENT_PROMPT_ITEM.getMeaning());
-	
-	$('#thepinyin').html(hanzidata.getPinYin());
-	$('#thecharacter').html(CURRENT_PROMPT_ITEM.getHanziChar());
-	$('#extranote').html(CURRENT_PROMPT_ITEM.getExtraNote());
-	$('#confounder').html(confounderstr);
+
+	populateSpanData({
+		"thestory" : storyhtml,
+		"themeaning" : CURRENT_PROMPT_ITEM.getMeaning(),
+		"thepinyin" : hanzidata.getPinYin(),
+		"thecharacter" : CURRENT_PROMPT_ITEM.getHanziChar(),
+		"extranote" : CURRENT_PROMPT_ITEM.getExtraNote(),
+		"confounder" : confounderstr
+	});
 }
 
 
