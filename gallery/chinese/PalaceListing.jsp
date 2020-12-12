@@ -1,15 +1,5 @@
-<%@ page session="false" import="com.caucho.vfs.*, com.caucho.server.webapp.*" %>
-
-<%@ page import="java.util.*" %>
-
-<%@ page import="net.danburfoot.shared.*" %>
-<%@ page import="net.danburfoot.shared.HtmlUtil.*" %>
-
-<%@ page import="lifedesign.basic.*" %>
-<%@ page import="lifedesign.classic.*" %><%@ page import="lifedesign.classic.JsCodeGenerator.*" %>
 
 <%@include file="../../admin/AuthInclude.jsp_inc" %>
-
 
 <html>
 <head>
@@ -19,7 +9,7 @@
 
 <script src="ChineseTech.js"></script>
 
-<%= JsCodeGenerator.getScriptInfo(request, "chinese", Util.listify("palace_item")) %>
+<%= DataServer.basicIncludeOnly(request, "palace_item") %>
 
 <script>
 
@@ -56,92 +46,42 @@ function deleteItem(killid)
 
 function redisplay()
 {
-	var principlist = getItemList("palace_item");
-	principlist.sort(proxySort(a => [a.getId()])).reverse();
+	var itemlist = getItemList("palace_item");
+	itemlist.sort(proxySort(a => [a.getId()])).reverse();
 	
 	// var lastlogmap = getLastLogMap();
 					
-	var activetable = $('<table></table>').addClass('dcb-basic').attr("id", "dcb-basic").attr("width", "70%");
-	
-	{
-		var row = $('<tr></tr>').addClass('bar');
-	
-		["ID", "Character", "Meaning", "Note", "..."].forEach( function (hname) {
-		
-			if(hname == "Date")
-			{
-				row.append($('<th></th>').attr("width", "7%").text(hname));
-			} else {
-				row.append($('<th></th>').text(hname));
-			}
-		});
-		
-		activetable.append(row);	
-	}
-		
-	for(var pi in principlist)
-	{
-	
-		var princitem = principlist[pi];
-	
-		var row = $('<tr></tr>').addClass('bar');
-			
-		// row.append($('<td></td>').text(princitem.getId()));					
-		
-		row.append($('<td></td>').text(princitem.getId()));				
-		
-		row.append($('<td></td>').text(princitem.getHanziChar()));				
+	var tablestr = `
+		<table class="dcb-basic" id="dcb-basic" width="70%">
+		<tr>
+		<th>ID</th>
+		<th>Character</th>
+		<th>Meaning</th>
+		<th>Note</th>
+		</tr>
+	`;
 
-		row.append($('<td></td>').text(princitem.getMeaning()));				
+	itemlist.forEach(function(item) {
+
+		const palnote = getFirstPalaceNote(item.getPalaceNote());
+
+		const rowstr = `
+			<tr>
+			<td>${item.getId()}</td>
+			<td>${item.getHanziChar()}</td>
+			<td>${item.getMeaning()}</td>
+			<td>${palnote}</td>
+			</tr>
+		`;
 	
-		const palnote = getFirstPalaceNote(princitem.getPalaceNote());
-		row.append($('<td></td>').text(palnote));				
-				
-		{
-		
-			var opcell = $('<td></td>').attr("width", "15%");
-			
-
-			for(var i = 0; i < 3; i++)
-				{ opcell.append("&nbsp;"); }
-				
-			{
-				var viewurl = "PalaceItemEdit.jsp?item_id=" + princitem.getId();				
-				
-				var studyref = $('<a></a>').attr("href", viewurl).append(
-										$('<img></img>').attr("src", "/life/image/inspect.png").attr("height", 18)
-								);
-				
-				opcell.append(studyref);
-			} 						
-			
-			
-			for(var i = 0; i < 3; i++)
-				{ opcell.append("&nbsp;"); }				
-			
-			
-			{
-				var deleteref = "javascript:deleteItem(" + princitem.getId() + ")";
-				
-				var addtimeref = $('<a></a>').attr("href", deleteref).append(
-										$('<img></img>').attr("src", "/life/image/remove.png").attr("height", 18)
-								);
-				
-				opcell.append(addtimeref);
-			} 	
-				
-			row.append(opcell);		
-		
-
-		}
-		
-		activetable.append(row);
-	}
+		tablestr += rowstr;
+	});
 	
-	
-	$('#maintable').html(activetable);
+	tablestr += "</table>";
 
-
+	populateSpanData({
+		"maintable" : tablestr
+	});
 }
 
 

@@ -220,3 +220,22 @@ function getPalaceProgress()
 	return progmap;
 }
 
+function findExample(hanzichar) 
+{
+	if(!haveTable("hanzi_example"))
+		{ return null; }
+
+	var foundex = null;
+
+	if(haveTable("hanzi_example"))
+	{
+		getItemList("hanzi_example").forEach(function(hitem) {
+			if(hitem.getSimpHanzi().indexOf(hanzichar) != -1)
+				{ foundex = hitem; }
+		});
+	}
+
+	return foundex;
+}
+
+

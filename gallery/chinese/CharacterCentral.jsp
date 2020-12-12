@@ -23,9 +23,11 @@
 
 <%= DataServer.basicIncludeOnly(request, "confounder", "palace_item", "hanzi_data", "review_log") %>
 
+<%= DataServer.includeIfAvailable(request, "cedict", "hanzi_example") %>
+
 <script>
 
-EDIT_STUDY_ITEM = -1;
+EDIT_STUDY_ITEM = 695;
 
 
 
@@ -153,6 +155,16 @@ function redisplayEditItem()
 		}
 	}
 
+	var examplestr = "";
+	const foundex = findExample(showitem.getHanziChar());
+	if (foundex) 
+	{
+		// TODO: convert!!
+		examplestr = `
+			${foundex.getSimpHanzi()} (${foundex.getConvertedPy()}) ${foundex.getEnglish()};
+		`;
+
+	}
 
 
 	populateSpanData({
@@ -160,8 +172,9 @@ function redisplayEditItem()
 		"meaning" : showitem.getMeaning(),
 		"extra_note" : showitem.getExtraNote(),
 		"confounder_info" : confounderstr,
-		"hanzi_char_big" : showitem.getHanziChar()
-	})
+		"hanzi_char_big" : showitem.getHanziChar(),
+		"example_info" : examplestr
+	});
 
 
 
@@ -366,6 +379,10 @@ Showing <span id="itemcount"></span> items
 <tr>
 <td>Confounder</td>
 <td colspan="2"><div id="confounder_info"></div></td>
+</tr>
+<tr>
+<td>Example</td>
+<td colspan="2"><div id="example_info"></div></td>
 </tr>
 </table>
 

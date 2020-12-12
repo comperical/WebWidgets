@@ -1,13 +1,3 @@
-<%@ page session="false" import="com.caucho.vfs.*, com.caucho.server.webapp.*" %>
-
-<%@ page import="java.util.*" %>
-
-<%@ page import="net.danburfoot.shared.*" %>
-<%@ page import="net.danburfoot.shared.HtmlUtil.*" %>
-
-<%@ page import="lifedesign.basic.*" %>
-<%@ page import="lifedesign.classic.*" %>
-<%@ page import="lifedesign.classic.JsCodeGenerator.*" %>
 
 <%@include file="../../admin/AuthInclude.jsp_inc" %>
 
@@ -23,6 +13,9 @@
 <%= DataServer.basicIncludeOnly(request, "palace_item", "review_log", "hanzi_data", "confounder") %>
 
 <%= DataServer.includeIfAvailable(request, "minitask", "mini_task_list") %>
+
+<%= DataServer.includeIfAvailable(request, "cedict", "hanzi_example") %>
+
 
 <script>
 
@@ -140,6 +133,7 @@ function computePromptItem()
 	return lookupItem("palace_item", lowestid);
 }
 
+
 function redisplay()
 {	
 	var confounderstr = "...";
@@ -162,14 +156,52 @@ function redisplay()
 						
 	const storyhtml = CURRENT_PROMPT_ITEM.getPalaceNote().replace(/\n/g, "<br/>");
 
+
+	var examplestr = "";
+	const foundex = findExample(CURRENT_PROMPT_ITEM.getHanziChar());
+	if(foundex)
+	{
+		const pinyinstr = foundex.getConvertedPy();
+
+		examplestr = `
+			<tr>
+			<td width="20%"><b>Example</b></td>
+			<td>${foundex.getSimpHanzi()} (${pinyinstr}) ${foundex.getEnglish()}</td>
+			</tr>
+		`;
+	}
+
+
+	var infotable = `
+		<table id="dcb-basic" width="50%" border="0">
+		<tr>
+		<td width="20%"><b>Meaning</b></td>
+		<td>${CURRENT_PROMPT_ITEM.getMeaning()}</td>
+		<tr>
+		<td width="20%"><b>PinYin</b></td>
+		<td>${hanzidata.getPinYin()}</td>
+		<tr>
+		<td width="20%"><b>Notes</b></td>
+		<td>${CURRENT_PROMPT_ITEM.getExtraNote()}</td>
+		</tr>
+
+		<tr>
+		<td width="20%"><b>Confounder</b></td>
+		<td>${confounderstr}</td>
+		</tr>
+
+		${examplestr}
+		</table>
+
+	`;
+
 	populateSpanData({
 		"thestory" : storyhtml,
-		"themeaning" : CURRENT_PROMPT_ITEM.getMeaning(),
-		"thepinyin" : hanzidata.getPinYin(),
-		"thecharacter" : CURRENT_PROMPT_ITEM.getHanziChar(),
-		"extranote" : CURRENT_PROMPT_ITEM.getExtraNote(),
-		"confounder" : confounderstr
+		"info_table" : infotable,
+		"thecharacter" : CURRENT_PROMPT_ITEM.getHanziChar()
 	});
+
+
 }
 
 
@@ -202,7 +234,10 @@ function redisplay()
 
 <a class="css3button" onclick="javascript:showAnswer()">SHOW</a> 
 
-<%= HtmlUtil.nbsp(4) %>
+&nbsp; 
+&nbsp; 
+&nbsp; 
+&nbsp; 
 
 <a class="css3button" onclick="javascript:showStats()">STATS</a> 
 
@@ -218,43 +253,39 @@ function redisplay()
 </table>
 
 <br/>
-
-<table id="dcb-basic" width="50%" border="0">
-<tr>
-<td width="20%"><b>Meaning</b></td>
-<td><span id="themeaning"></span></td></tr>
-<tr>
-<td width="20%"><b>PinYin</b></td>
-<td><span id="thepinyin"></span></td></tr>
-<tr>
-<td width="20%"><b>Notes</b></td>
-<td><span id="extranote"></span></td></tr>
-
-<tr>
-<td width="20%"><b>Confounder</b></td>
-<td><span id="confounder"></span></td></tr>
-
-
-</table>
-
 <br/>
 
-
+<span id="info_table"></span>
 
 <br/><br/>
 
 <a class="css3button" onclick="javascript:markResult('easy')">TOO EASY</a> 
 
-<%= HtmlUtil.nbsp(10) %>
+
+&nbsp; 
+&nbsp; 
+&nbsp; 
+&nbsp; 
+&nbsp; 
 
 <a class="css3button" onclick="javascript:markResult('good')">GOOD</a> 
 
-<%= HtmlUtil.nbsp(10) %>
+
+&nbsp; 
+&nbsp; 
+&nbsp; 
+&nbsp; 
+&nbsp; 
 
 <a class="css3button" style="background:-webkit-gradient(linear,left top,left bottom,from(#c00),to(#800));"
 onclick="javascript:markResult('bad')">BAD</a> 
 
-<%= HtmlUtil.nbsp(10) %>
+
+&nbsp; 
+&nbsp; 
+&nbsp; 
+&nbsp; 
+&nbsp; 
 
 <a class="css3button" style="background:-webkit-gradient(linear,left top,left bottom,from(#cc0),to(#880));"
 onclick="javascript:createMiniTaskNote()">NOTE</a> 
