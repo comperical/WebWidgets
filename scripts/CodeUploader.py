@@ -5,26 +5,93 @@ import sys
 import shutil
 
 import ArgMap
-import DbGrabber
 
 from zipfile import ZipFile
 
 
-class CodeUploader:
+def get_domain_prefix(local=False):
+	return "http://localhost:8080" if local else "https://danburfoot.net"
+
+def get_config_directory():
+	from os.path import expanduser
+	homedir = expanduser("~")
+	return os.path.sep.join([homedir, ".ssh"])
+
+def get_widget_config_path(username):
+	filename = "{}__widget.conf".format(username)
+	return os.path.sep.join([get_config_directory(), filename])
+
+
+def check_update_username(argmap):
+	username = find_username(argmap)
+	argmap.put("username", username)
+
+def find_username(argmap):
+
+	candidates = get_username_configs()
+
+	# Okay, the user decided to specify in the command line, respect that
+	if argmap.containsKey("username"):
+		username = argmap.getStr("username")
+		assert username in candidates, "User name {} not found in config list, options are {}".format(username, str(candidates))
+		return username
+
+
+	# Okay we found the username from the config files, because there's only one proper config file.
+	if len(candidates) == 1:
+		return candidates[0]
+
+	assert False, "System could not find the username from config files, please specify on command line using username= option"
+
+
+def get_username_configs():
+
+	def gencands():
+		for onefile in os.listdir(get_config_directory()):
+			if onefile.endswith("__widget.conf"):
+				yield onefile.split("__")[0]
+
+	return list(gencands())
+
+def get_config_map(username):
+	
+	configpath = get_widget_config_path(username)
+	assert os.path.exists(configpath), "Could not find config path for user {}, you must put your config file at path {}".format(username, configpath)
+	
+	def genconf():
+		for line in open(configpath):			
+			if line.strip().startswith("#") or not "=" in line:
+				continue
+				
+			k, v = line.strip().split("=")
+			yield k.strip(), v.strip()
+
+
+	configmap = { k : v for k, v in genconf() }
+	assert 'accesshash' in configmap, "Require an accesshash parameter in configuration file"
+	return configmap	
+
+
+class AssetUploader:
 	
 	def __init__(self, argmap):
 		
-		self.basedir = argmap.getStr("basedir")
-		self.widget = argmap.getStr("widget")
+		self.widget = argmap.getStr("widgetname")
 		self.username = argmap.getStr("username")
 		self.local = argmap.getBit("local", False)
-						
+		self.basedir = None
+
+	def ensure_okay(self):
+		assert self.basedir != None, "Failed to find a good base directory in config"
+		#assert os.path.exists(self.get_widget_dir()), "Widget directory {} does not exists".format(self.get_widget_dir())
+
+
 	def compose_curl_call(self, configmap):
 		# curl  --request POST --form name=@TabCompleter.py http://localhost:8080/life/push2me?hello=world
 		payload = self.get_payload_path()
 		extend = self.get_file_type()
 		acchash = configmap['accesshash']
-		domainpref = DbGrabber.get_domain_prefix(local=self.local)
+		domainpref = get_domain_prefix(local=self.local)
 		assert os.path.exists(payload), "Payload path {} does not exist".format(payload)
 		return "curl --request POST --form payload=@{}  --form filetype={} --form username={} --form widget={} --form accesshash={} {}/life/push2me".format(payload, extend, self.username, self.widget, acchash, domainpref)
 	
@@ -36,7 +103,7 @@ class CodeUploader:
 	def do_cleanup(self):
 		pass
 
-class ZipUploader(CodeUploader):
+class ZipUploader(AssetUploader):
 	
 	def __init__(self, argmap):
 		
@@ -45,16 +112,31 @@ class ZipUploader(CodeUploader):
 	def get_file_type(self):
 		return "widgetzip"
 		
+	def find_base_dir(self, configmap):
+
+		def genprobes():
+			for idx in range(1, 6):
+				codekey = "codedir{}".format(idx)
+				if not codekey in configmap:
+					continue
+
+				probe = os.path.sep.join([configmap[codekey], self.widget])
+				if os.path.exists(probe):
+					yield configmap[codekey]
+
+		probelist = list(genprobes())
+		assert len(probelist) >  0, "Failed to find widget named {} in and code directories".format(self.widget)
+		assert len(probelist) == 1, "Found multiple directories for widget {} :: {}".format(self.widget, probelist)
+		self.basedir = probelist[0]
+
+
 	def get_zip_path(self, extension=False):
 		extstr = ".zip" if extension else ""
 		return os.sep.join([self.basedir, "__" + self.widget + extstr])
 	
 	def get_widget_dir(self):
 		return os.sep.join([self.basedir, self.widget])
-	
-	def is_okay(self):
-		return os.path.exists(self.get_widget_dir())	
-	
+		
 	def do_prep(self):
 		self.create_archive()
 		
@@ -76,7 +158,7 @@ class ZipUploader(CodeUploader):
 		zpath = self.get_zip_path()
 		shutil.make_archive(zpath, 'zip', widgetdir)
 		
-class BaseUploader(CodeUploader):
+class BaseUploader(AssetUploader):
 	
 	def __init__(self, argmap):
 		
@@ -87,11 +169,12 @@ class BaseUploader(CodeUploader):
 		return os.sep.join(["__" + self.widget + extstr])
 		
 	def get_file_type(self):
-		return "basezip"		
-		
-	def is_okay(self):
-		return self.widget == "base"
-	
+		return "basezip"	
+
+	def find_base_dir(self, configmap):
+		assert 'codedir1' in configmap, "You must have a property codedir1 in your configuration file"
+		self.basedir = configmap['codedir1']
+			
 	def do_prep(self):
 		self.create_archive()
 		
@@ -114,51 +197,27 @@ class BaseUploader(CodeUploader):
 		with ZipFile(zpath, 'w') as myzip:
 			for myfile in os.listdir(self.basedir):
 				fullpath = os.sep.join([self.basedir, myfile])
+				if os.path.isdir(fullpath):
+					continue
+					
 				print("Full path is {}".format(fullpath))
 				# Need the arcname= argument to give the files the right location in the archive.
-				
 				myzip.write(fullpath, arcname=myfile)
-		
-	
-class DbUploader(CodeUploader):
-	
-	def __init__(self, argmap):
-		
-		super().__init__(argmap)
-		
-	def get_db_path(self):
-		dbname = "{}_DB.sqlite".format(self.widget.upper())
-		return os.sep.join([self.basedir, dbname])
-		
-	def get_file_type(self):
-		return "sqlite"		
-		
-	def get_payload_path(self):
-		return self.get_db_path()		
-		
-	def is_okay(self):
-		#print("DB path is {}".format(self.get_db_path()))
-		return os.path.exists(self.get_db_path())	
-	
-	def do_prep(self):
-		pass
-	
 
 
 if __name__ == "__main__":
 	
 	argmap = ArgMap.getFromArgv(sys.argv)
-	configmap = DbGrabber.get_config_map(argmap.getStr('username'))
-	
-	
-	probeloaders = [ZipUploader(argmap), DbUploader(argmap), BaseUploader(argmap)]
-	probeloaders = [up for up in probeloaders if up.is_okay()]
-	
-	assert len(probeloaders) > 0, "Neither ZipUploader nor DbUploader are configured properly"
-	assert len(probeloaders) == 1, "Somehow BOTH ZipUploader and DbUploader are configured, you should keep DBs in separate directory!!!"
-	
-	uploader = probeloaders[0]
-	print("Going to run upload for type {}".format(uploader.__class__.__name__))
+	check_update_username(argmap)
+
+	configmap = get_config_map(argmap.getStr('username'))
+
+	widget = argmap.getStr("widgetname")
+	uploader = BaseUploader(argmap) if widget == "base" else ZipUploader(argmap)
+	uploader.find_base_dir(configmap)
+	uploader.ensure_okay()
+
+	# print("Going to run upload for type {}".format(uploader.__class__.__name__))
 	
 	uploader.do_prep()
 	uploader.do_upload(configmap)

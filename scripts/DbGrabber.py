@@ -5,58 +5,51 @@ import sys
 import shutil
 
 import ArgMap
-
-def get_domain_prefix(local=False):
-	return "http://localhost:8080" if local else "https://danburfoot.net"
-
-def get_config_map(username=None):
-	
-	assert username != None, "Default not yet implemented"
-	
-	from os.path import expanduser
-	homedir = expanduser("~")	
-	configpath = "{}/.ssh/{}__widget.conf".format(homedir, username)
-	assert os.path.exists(configpath), "Could not find config file at {}".format(configpath)
-	
-	def genconf():
-		for line in open(configpath):			
-			if line.strip().startswith("#") or not "=" in line:
-				continue
-				
-			k, v = line.strip().split("=")
-			yield k.strip(), v.strip()
+import CodeUploader
 
 
-	configmap = { k : v for k, v in genconf() }
-	assert 'accesshash' in configmap
-	return configmap	
+def lookup_db_dir(argmap, configmap):
+
+	if argmap.containsKey("dbdir"):
+		return argmap.getStr("dbdir")
+
+	if "dbdir" in configmap:
+		return configmap["dbdir"]
+
+	assert False, "You must specify a dbdir= parameter in either the command line or the config file"
+
 	
 def get_db_path(dbdir, widget):
-	assert widget.lower() == widget
+	assert widget.lower() == widget, "Widget names must be lowercase"
 	dbfile = "{}_DB.sqlite".format(widget.upper())
 	return os.sep.join([dbdir, dbfile])
 
 if __name__ == "__main__":
 
-	
 	argmap = ArgMap.getFromArgv(sys.argv)
+	CodeUploader.check_update_username(argmap)
+
+	# Widgetname and username are required
 	username = argmap.getStr("username")
-	dbdir = argmap.getStr("dbdir", "/opt/userdata/lifecode/datadir/userdb/{}".format(username))
-	
+	widget = argmap.getStr("widgetname")	
 	local = argmap.getBit("local", False)
+	configmap = CodeUploader.get_config_map(username)
+
+	dbdir = lookup_db_dir(argmap, configmap)
 	assert os.path.exists(dbdir), "DB directory {} does not exist".format(dbdir)
 	
-	widget = argmap.getStr("widget")
-	
-	configmap = get_config_map(username)
-	print("Config is {}".format(configmap))
-
 	dbpath = get_db_path(dbdir, widget)
-	assert not os.path.exists(dbpath), "DB path {} already exists, please delete or move first".format(dbpath)
+	if argmap.getBit("deleteold", False) and os.path.exists(dbpath):
+		os.remove(dbpath)
+		print("Deleted old DB path {}".format(dbpath))
 	
-	domainpref = get_domain_prefix(local)
+	assert not os.path.exists(dbpath), "DB path {} already exists, please delete or move first, or use deleteold=true".format(dbpath)
+	
+	domainpref = CodeUploader.get_domain_prefix(local)
 	url = "{}/life/pull2you?username={}&widget={}&accesshash={}".format(domainpref, username, widget, configmap['accesshash'])	
 	
 	curlcall = "curl  \"{}\" --output {}".format(url, dbpath)
-	print(curlcall)
 	os.system(curlcall)
+	
+	assert os.path.exists(dbpath), "Curl call failed to retrieve DB file to expected path {}".format(dbpath)
+	print("Downloaded DB file to path {}".format(dbpath))

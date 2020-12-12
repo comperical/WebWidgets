@@ -16,7 +16,7 @@
 
 <script>
 
-EDIT_STUDY_ITEM = 6;
+EDIT_STUDY_ITEM = -1;
 
 function createNew()
 {   
