@@ -239,7 +239,13 @@ function redisplay()
 		<th>---</th>
 		</tr>
 	`;
-	
+
+	// hour:minute now
+	const hourminnow = calcTimeHourStr(new Date()).substring(0, 5);
+
+	// true if previous row was past now	
+	var prevpastnow = false;
+
 	for(var ai in activelist)
 	{
 		const item = activelist[ai];	
@@ -257,9 +263,20 @@ function redisplay()
 			timespent = totalhour.toFixed(1) + " hr";
 		}
 		
-		
+		const hourminstr = `${endhourstr}${halfstr}`;
+		// To compare correctly, must transform "8:00" -> "08:00"
+		const cmphourmin = hourminstr.length == 4 ? "0" + hourminstr : hourminstr;
+		const currentpastnow = cmphourmin > hourminnow;
+
+		// highlight the NOW row
+		var colorstr = "";
+		if(currentpastnow && !prevpastnow)
+			{ colorstr = `style="background-color: lightgreen;"`}
+
+		prevpastnow = currentpastnow;
+
 		var rowstr = `
-			<tr>
+			<tr ${colorstr}>
 			<td>${item.getShortDesc()}</td>
 			<td>
 			
@@ -267,7 +284,7 @@ function redisplay()
 			<img src="/life/image/edit.png" height="18" /></a>
 			
 			</td>
-			<td>${endhourstr}${halfstr}</td>
+			<td>${hourminstr}</td>
 			<td width="15%">${timespent}</td>
 			<td>
 			<a href="javascript:addTime2Item(${item.getId()})">
@@ -288,7 +305,8 @@ function redisplay()
 			</td>
 			</tr>
 		`;	
-			
+		
+
 		tablestr += rowstr;
 	}
 	

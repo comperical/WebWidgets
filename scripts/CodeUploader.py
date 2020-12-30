@@ -93,7 +93,7 @@ class AssetUploader:
 		acchash = configmap['accesshash']
 		domainpref = get_domain_prefix(local=self.local)
 		assert os.path.exists(payload), "Payload path {} does not exist".format(payload)
-		return "curl --request POST --form payload=@{}  --form filetype={} --form username={} --form widget={} --form accesshash={} {}/life/push2me".format(payload, extend, self.username, self.widget, acchash, domainpref)
+		return "curl --request POST --form payload=@{}  --form filetype={} --form username={} --form widget={} --form accesshash={} {}/u/push2me".format(payload, extend, self.username, self.widget, acchash, domainpref)
 	
 	def do_upload(self, configmap):
 		curlcall = self.compose_curl_call(configmap)

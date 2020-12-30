@@ -17,6 +17,8 @@
 function generateTableInfo(wantbefore)
 {
 
+    var numshow = 0;
+
     var tablestr = `
         <table class="dcb-basic" id="dcb-basic" width="60%">
         <tr>
@@ -58,8 +60,13 @@ function generateTableInfo(wantbefore)
         `;
 
         tablestr += rowstr;
+        numshow += 1;
 
     });
+
+    /// this is a hack!!
+    if(wantbefore) 
+        { populateSpanData({"num_behind" : numshow }); }
 
     tablestr += `</table>`;
 
@@ -90,6 +97,8 @@ function redisplay()
 <br/>
 
 <h3>Learn Now!!</h3>
+
+<h4>Behind by <span id="num_behind"></span></h4>
 
 <div id="nowtable"></div>
 

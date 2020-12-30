@@ -56,7 +56,7 @@ function createMiniTaskNote()
 	
 	const notename = prompt("Enter note : ", basicprompt);
 	
-	const weblink = "\nhttps://danburfoot.net/life/chinese/CharacterCentral.jsp?item_id=" + CURRENT_PROMPT_ITEM.getId();
+	const weblink = "\nhttps://danburfoot.net/u/dburfoot/chinese/CharacterCentral.jsp?item_id=" + CURRENT_PROMPT_ITEM.getId();
 	
 	if(notename)
 	{

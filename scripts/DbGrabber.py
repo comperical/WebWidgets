@@ -46,7 +46,7 @@ if __name__ == "__main__":
 	assert not os.path.exists(dbpath), "DB path {} already exists, please delete or move first, or use deleteold=true".format(dbpath)
 	
 	domainpref = CodeUploader.get_domain_prefix(local)
-	url = "{}/life/pull2you?username={}&widget={}&accesshash={}".format(domainpref, username, widget, configmap['accesshash'])	
+	url = "{}/u/pull2you?username={}&widget={}&accesshash={}".format(domainpref, username, widget, configmap['accesshash'])	
 	
 	curlcall = "curl  \"{}\" --output {}".format(url, dbpath)
 	os.system(curlcall)
