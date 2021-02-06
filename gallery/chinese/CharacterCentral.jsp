@@ -111,6 +111,24 @@ function editStudyItem(itemid)
 	redisplay();
 }
 
+function bounce2NewId()
+{
+	const newid = prompt("Please enter a new ID:");
+
+	if(newid)
+	{
+
+		if(!okayInt(newid))
+		{
+			alert("please enter a valid Integer");
+			return;
+		}
+
+		EDIT_STUDY_ITEM = parseInt(newid);
+		redisplay();
+	}
+}
+
 function getPageComponent()
 {
 	return EDIT_STUDY_ITEM == -1 ? "main_list" : "edit_item";
@@ -355,6 +373,11 @@ Showing <span id="itemcount"></span> items
 <td width="25%">Back</td>
 <td></td>
 <td width="10%"><a href="javascript:back2Main()"><img src="/life/image/leftarrow.png" height="18"/></a></td>
+</tr>
+<tr>
+<td>Go To ID</td>
+<td></td>
+<td><a href="javascript:bounce2NewId()"><img src="/life/image/rghtarrow.png" height=18/></a></td>
 </tr>
 <tr>
 <td>Character</td>

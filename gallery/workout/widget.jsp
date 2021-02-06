@@ -33,6 +33,8 @@
 
 _BIG_GOAL_MAP = new Map();
 
+SHOW_LINEAR_MODE = false;
+
 EXERCISE_TYPE = "body";
 
 function deleteItem(killid)
@@ -187,6 +189,12 @@ function getExType4Code(shortcode)
 	return planitem == null ? "body" : planitem.getExType();
 }
 
+function toggleFormatMode()
+{
+	SHOW_LINEAR_MODE = !SHOW_LINEAR_MODE;
+	redisplay();
+}
+
 function getRecentMonday()
 {
 	return getMondayList()[0];
@@ -260,6 +268,8 @@ function redisplay()
 	document.getElementById("unit_info").innerHTML = getUnitCode(workouttype, getRecentMonday());
 	
 	
+	const linearmap = getLinearMondayMap();
+
 	var dcstr = "";
 
 	// var workoutlist = getItemList("workout_log").filter(wo => wo.getWoType() == workouttype);
@@ -273,7 +283,7 @@ function redisplay()
 		
 		const goaltable = getWeeklyGoalTable(wologger, themonday);
 		
-		const logtable = getWeeklyLogTable(wologger, themonday);
+		const logtable = getWeeklyLogTable(wologger, linearmap, themonday);
 		
 		dcstr += `
 			<h3>Week of ${themonday.substring(5)}</h3>
@@ -293,29 +303,56 @@ function redisplay()
 		`;
 	});
 	
-	document.getElementById("double_column_table").innerHTML = dcstr;
-	
+	const buttontext = SHOW_LINEAR_MODE ? "show logged" : "show linear";
 
-	
+	const formatbutton = `
+		<a href="javascript:toggleFormatMode()">
+		<button>${buttontext}</button>
+		</a>
+	`;
+
+	populateSpanData({
+		"show_format_button" : formatbutton,
+		"double_column_table": dcstr
+	});
 }
 
-function getWeeklyLogTable(wologger, themonday)
+function getLinearMondayMap()
 {
-	var weeklist = wologger.getWorkouts4Monday(themonday);
+	const linearmap = {};
+
+	getItemList("workout_log").forEach(function(item) {
+		const dc = lookupDayCode(item.getDayCode());
+		const monday = getMonday4Date(dc).getDateString();
+		if(!(monday in linearmap)) {
+			linearmap[monday] = [];
+		}
+
+		linearmap[monday].push(item);
+	});
+
+	return linearmap;
+}
+
+
+
+function getWeeklyLogTable(wologger, linearmap, themonday)
+{
+	const weeklist = SHOW_LINEAR_MODE 
+						? (themonday in linearmap ? linearmap[themonday] : []) 
+						: wologger.getWorkouts4Monday(themonday);
 		
-	var logstr = "";
-	
-	logstr += `
-	<h4>Log</h4>
-	<table id="dcb-basic" class="dcb-basic" width="95%">
-	<tr>
-	<th>Day</th>
-	<th>Date</th>
-	<th>Type</th>
-	<th>Length</th>
-	<th>Notes</th>
-	<th>...</th>
-	</tr>
+	var logstr = `
+		<h4>Log</h4>
+		<table id="dcb-basic" class="dcb-basic" width="95%">
+		<tr>
+		<th>Day</th>
+		<th>Date</th>
+		<th>Type</th>
+		<th>Length</th>
+		<th>Notes</th>
+		<th>...</th>
+		</tr>
 	`;
 	
 	weeklist.sort(proxySort(a => [a.getDayCode()])).reverse();
@@ -472,7 +509,7 @@ function getWeeklyGoalTable(wologger, themonday)
 <tr>
 <td width="40%" align="center">
 
-
+<div id="show_format_button"></div>
 
 </td>
 <td align="center">

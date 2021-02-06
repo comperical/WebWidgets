@@ -13,6 +13,8 @@
 
 EDIT_STUDY_ITEM = -1;
 
+SELECTED_CATEGORY = "all";
+
 function getPageComponent()
 {
     return EDIT_STUDY_ITEM == -1 ? "main_display" : "edit_info";
@@ -95,12 +97,18 @@ function editItemCategory()
 
 function getCategoryList()
 {
-    return ["book", "podcast", "movie", "TV show", "video"];
+    return ["book", "blog", "podcast", "movie", "TV show", "video", "manga", "course"];
 }
 
 function createNew()
 {
-    const shortname = prompt("New Media Item name: ");
+    if(SELECTED_CATEGORY == "all")
+    {
+        alert("Please selected a specific category");
+        return;
+    }
+
+    const shortname = prompt(`Enter name for new ${SELECTED_CATEGORY.toUpperCase()}: `);
     
     if(shortname)
     {
@@ -112,7 +120,7 @@ function createNew()
             "name" : shortname,
             "link" : "",
             "priority" : 5,
-            "category": 'book',
+            "category": SELECTED_CATEGORY,
             "extra_info" : "NotYetSet",
             "is_active" : 1,
             "is_complete" : 0
@@ -147,6 +155,7 @@ function redisplayEdit()
     }
 
     const item = lookupItem("media_item", EDIT_STUDY_ITEM);
+
 
     const catsel = buildOptSelector()
                     .setKeyList(getCategoryList())
@@ -227,7 +236,40 @@ function redisplayEdit()
     })
 }
 
+function updateCategory()
+{
+    SELECTED_CATEGORY = getDocFormValue("category_sel");
+    redisplay();
+}
+
 function redisplayMain()
+{
+
+
+    const maintable = getTableData(0);
+    const comptable = getTableData(1);
+
+    const catlist = getCategoryList();
+    catlist.push("all");
+    catlist.sort(proxySort(cat => [cat.toLowerCase()]));
+
+    const catsel = buildOptSelector()
+                        .setKeyList(catlist)
+                        .setSelectOpener(`<select name="category_sel" onChange="javascript:updateCategory()">`)
+                        .setSelectedKey(SELECTED_CATEGORY)
+                        .getSelectString();
+
+
+    populateSpanData({
+        "maintable" : maintable,
+        "comptable" : comptable,
+        "category_sel_span" : catsel
+    })
+
+}
+
+
+function getTableData(iscomplete)
 {
 
     var mainstr = `
@@ -251,7 +293,15 @@ function redisplayMain()
 
     itemlist.forEach(function(item) {
 
+        if(item.getIsComplete() != iscomplete)
+            { return; }
+
+        if(SELECTED_CATEGORY != "all" && item.getCategory() != SELECTED_CATEGORY)
+            { return; }
+
         var linkstr = "";
+
+
 
         if(item.getLink().length > 0)
         {
@@ -301,13 +351,8 @@ function redisplayMain()
 
     });
 
-
     mainstr += "</table>";
-
-    populateSpanData({
-        "maintable" : mainstr
-    })
-
+    return mainstr;
 }
 
 </script>
@@ -322,12 +367,19 @@ function redisplayMain()
 
 <h2>Media</h2>
 
-<a class="css3button" onclick="javascript:createNew()">NEW</a>
+<span id="category_sel_span"></span>
+
+<a href="javascript:createNew()"><button>new</button></a>
 
 <br/>
 <br/>
 
 <div id="maintable"></div>
+
+<h3>Completed</h3>
+
+<div id="comptable"></div>
+
 
 </span>
 

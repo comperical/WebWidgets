@@ -324,7 +324,7 @@ function reDispActiveTable()
 	var activelist = getTaskItemList(false);
 	
 	// Sort by effective priority
-	activelist.sort(proxySort(actrec => [-getEffectivePriority(actrec)]));	
+	activelist.sort(proxySort(actrec => [-actrec.getPriority()]));
 	
 	var tablestr = `
 		<table id="dcb-basic" class="dcb-basic" width="80%">
@@ -333,8 +333,7 @@ function reDispActiveTable()
 		<th>ShortDesc</th>
 		<th>Start</th>
 		<th>Age</th>
-		<th>Int Prior</th>
-		<th>Eff Prior</th>
+		<th>Priority</th>
 		<th>---</th>
 		</tr>
 	`;
@@ -369,18 +368,7 @@ function reDispActiveTable()
 				</td>
 			`;
 		}
-		
-		// Effective priority
-		{
-			const effpri = getEffectivePriority(activitem);
-			
-			rowstr += `
-				<td width="10%">
-				${effpri.toFixed(1)}
-				</td>
-			`;
 
-		}		
 		
 		{
 			const breaker = "&nbsp; &nbsp;";
@@ -495,8 +483,7 @@ function reDispEditItem()
 		"alphadate" : studyitem.getAlphaDate(),
 		"omegadate" : studyitem.getOmegaDate(),
 		"item_status" : itemstat,
-		"int_prior" : studyitem.getPriority(),
-		"eff_prior" : getEffectivePriority(studyitem).toFixed(2),
+		"priority" : studyitem.getPriority(),
 		"extrainfo" : extralinelist
 	});
 	
@@ -642,8 +629,8 @@ function redisplay()
 </tr>
 
 <tr>
-<td>Intrinsic Priority</td>
-<td><span id="int_prior"></span>
+<td>Priority</td>
+<td><span id="priority"></span>
 
 &nbsp;
 &nbsp;
@@ -651,10 +638,6 @@ function redisplay()
 
 <a href="javascript:editStudyItemPriority()"><img src="/life/image/edit.png" height="18"></a>
 </td>
-</tr>
-<tr>
-<td>Effective Priority</td>
-<td><span id="eff_prior"></span></td>
 </tr>
 
 </table>
