@@ -69,6 +69,13 @@ def get_config_map(username):
 
 	configmap = { k : v for k, v in genconf() }
 	assert 'accesshash' in configmap, "Require an accesshash parameter in configuration file"
+
+	# Special treatment for codedir=codedir1
+	if "codedir" in configmap:
+		assert not "codedir1" in configmap, "You cannot have both codedir= and codedir1= config arguments"
+		configmap["codedir1"] = configmap.pop("codedir")
+
+
 	return configmap	
 
 
