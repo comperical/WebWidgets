@@ -211,8 +211,8 @@ function getTaskItemList(wantcompleted)
 			tasklist.push(taskitem);
 		}
 		
-		if(tasklist.length > 50)
-			{ break; }
+		if(wantcompleted && tasklist.length > 50)
+		 	{ break; }
 	}
 	
 	// Sort completed tasks by finish date.
