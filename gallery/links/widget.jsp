@@ -15,6 +15,8 @@ var EDIT_STUDY_ITEM = -1;
 
 var STUDY_CATEGORY = false;
 
+var SEARCH_TERM = "goog";
+
 massert(getItemList("link_categ").length > 0,
 	"You must add some link categories by hand first!!");
 
@@ -151,6 +153,25 @@ function editFieldName(fname)
 	}
 }
 
+function reDoSearch()
+{
+	const newsearch = prompt("Search for: ", SEARCH_TERM);
+
+	if(newsearch) 
+	{
+		SEARCH_TERM = newsearch.toLowerCase();
+		redisplay();
+	}
+}
+
+function clearSearch()
+{
+	SEARCH_TERM = "";
+	redisplay();
+}
+
+
+
 function updateCategory()
 {
 	const edititem = getEditRecord();
@@ -165,7 +186,8 @@ function redisplay()
 	redisplayMainTable();	
 	redisplayEditItem();
 	redisplayCategoryTable();
-	
+	redisplaySearchTable();
+
 	setPageComponent(getPageComponent());
 }
 
@@ -194,10 +216,13 @@ function getPageComponent()
 {
 	if(EDIT_STUDY_ITEM != -1)
 		{ return "link_info"; }
-	
+
 	if(STUDY_CATEGORY)
 		{ return "category_info"; }
 	
+	if(SEARCH_TERM.length > 0)
+		{ return "link_search"; }
+
 	return "link_manager";
 }
 
@@ -326,23 +351,8 @@ function getSelectString(optmap, selected)
 	return sels;
 }
 
-
-
-
-function redisplayMainTable()
-{		
-	{
-		const optmap = getCategoryMap();
-		const options = getSelectString(optmap, MAIN_CATEGORY);
-		const selectstr = `
-			<select name="main_category_sel" onChange="javascript:updateMainCatSelect()">
-			${options}
-			</select>
-		`;
-		
-		document.getElementById("main_category_sel_span").innerHTML = selectstr;
-	}
-	
+function getLinkTableStr(linkmainlist)
+{
 	var tablestr = `
 		<table class="dcb-basic" id="dcb-basic" width="70%">
 		<tr>
@@ -353,10 +363,7 @@ function redisplayMainTable()
 		<th>---</th>
 		</tr>
 	`;
-		
-	const linkmainlist = getItemList("link_main").filter(lmi => lmi.getCatId() == MAIN_CATEGORY);
-				
-	const categitem = lookupItem("link_categ", MAIN_CATEGORY);
+						
 		
 	linkmainlist.forEach(function(linkitem) {
 		
@@ -364,6 +371,8 @@ function redisplayMainTable()
 		if(shorturl.length > 40)
 			{ shorturl = shorturl.substring(0, 40)+"..."; }		
 		
+		const categitem = lookupItem("link_categ", linkitem.getCatId());
+
 		tablestr += `
 			<tr>
 			<td>${linkitem.getId()}</td>
@@ -388,7 +397,49 @@ function redisplayMainTable()
 		`;
 	});
 	
-	populateSpanData({"linktable" : tablestr });
+	return tablestr;
+}
+
+
+function redisplayMainTable()
+{		
+	{
+		const optmap = getCategoryMap();
+		const options = getSelectString(optmap, MAIN_CATEGORY);
+		const selectstr = `
+			<select name="main_category_sel" onChange="javascript:updateMainCatSelect()">
+			${options}
+			</select>
+		`;
+		
+		document.getElementById("main_category_sel_span").innerHTML = selectstr;
+	}
+	
+	const linkmainlist = getItemList("link_main").filter(lmi => lmi.getCatId() == MAIN_CATEGORY);
+
+	const tablestr = getLinkTableStr(linkmainlist);
+
+	populateSpanData({"maintable" : tablestr });
+}
+
+
+
+function redisplaySearchTable() {
+
+	if(SEARCH_TERM.length == 0) {
+		return;
+	}
+
+
+
+	const searchlist = getItemList("link_main").filter(lmi => lmi.getShortDesc().toLowerCase().indexOf(SEARCH_TERM) > -1);
+
+	const tablestr = getLinkTableStr(searchlist);
+
+	populateSpanData({
+		"searchtable" : tablestr,
+		"search_result" : SEARCH_TERM
+	});
 }
 
 </script>
@@ -406,17 +457,62 @@ function redisplayMainTable()
 Category: 
 <span id="main_category_sel_span"></span>
 
---- <a href="javascript:studyCategoryInfo()">view</a>
+&nbsp; 
+&nbsp; 
+
+<a href="javascript:studyCategoryInfo()"><button>categories</button></a>
 
 <br/><br/>
+
+
+&nbsp; 
+&nbsp; 
+
+<a href="javascript:reDoSearch()"><button>search</button></a>
+
+<br/>
+<br/>
+
+<div id="maintable"></div>
+
+<br/>
+
 
 <a class="css3button" href="javascript:createNew()">NEW</a>
 
 
+</span>
+
+
+<span class="page_component" id="link_search">
+
+
+
+<h3>Link Search</h3>
+
+<br/><br/>
+
+<table id="dcb-basic" class="dcb-basic" width="30%">
+<tr>
+<td width="50%">Search Term</td>
+<td><span id="search_result"></span></td>
+</tr>
+</table>
+
+<br/>
+
+<a href="javascript:reDoSearch()"><button>re-search</button></a>
+
+&nbsp;
+&nbsp;
+
+<a href="javascript:clearSearch()"><button>clear</button></a>
+
+
 <br/>
 <br/>
 
-<div id="linktable"></div>
+<div id="searchtable"></div>
 
 </span>
 
