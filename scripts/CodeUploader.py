@@ -10,7 +10,7 @@ from zipfile import ZipFile
 
 
 def get_domain_prefix(local=False):
-	return "http://localhost:8080" if local else "https://danburfoot.net"
+	return "http://localhost:8080" if local else "https://webwidgets.io"
 
 def get_config_directory():
 	from os.path import expanduser

@@ -245,7 +245,9 @@ function redisplayMainTable()
 
 <span class="page_component" id="maintable_cmp">
 
-<h2>Rage Log</h2>
+<h2>Rage Log &nbsp;&nbsp;&nbsp; <a href="RageStats.jsp"><button>stats</button></a></h2>
+
+<br/>
 
 <a class="css3button" style="background:-webkit-gradient(linear,left top,left bottom,from(#c00),to(#800));"
 onclick="javascript:createNew()">NEW</a>

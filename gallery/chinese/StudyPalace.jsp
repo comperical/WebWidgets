@@ -21,6 +21,7 @@
 
 CURRENT_PROMPT_ITEM = computePromptItem();
 
+
 function markResult(resultcode)
 {	
 	// This creates a review_log item and then redisplays the quiz.
@@ -56,7 +57,7 @@ function createMiniTaskNote()
 	
 	const notename = prompt("Enter note : ", basicprompt);
 	
-	const weblink = "\nhttps://danburfoot.net/u/dburfoot/chinese/CharacterCentral.jsp?item_id=" + CURRENT_PROMPT_ITEM.getId();
+	const weblink = "\nhttps://webwidgets.io/u/dburfoot/chinese/CharacterCentral.jsp?item_id=" + CURRENT_PROMPT_ITEM.getId();
 	
 	if(notename)
 	{
@@ -67,7 +68,7 @@ function createMiniTaskNote()
 			"is_backlog" : 0,
 			"priority" : 1,
 			"short_desc" : notename,
-			"task_type" : "life",
+			"task_type" : "chinese",
 			"extra_info" : weblink
 		};		
 		
@@ -136,41 +137,10 @@ function computePromptItem()
 
 function redisplay()
 {	
-	var confounderstr = "...";
-	{
-		const confidx = getConfounderIndex();
-		if(CURRENT_PROMPT_ITEM.getHanziChar() in confidx) 
-		{
-			// TODO: should eventually show ALL of these, there might be many.
-			const confitem = confidx[CURRENT_PROMPT_ITEM.getHanziChar()][0];
-			confounderstr = `
-				${confitem.getLeftChar()} / ${confitem.getRghtChar()}  :
-				${confitem.getExtraInfo()}
-			`;
-
-			// console.log("Found confounder: " + confitem);
-		}
-	}
 
 	const hanzidata = lookupHanziDataByChar(CURRENT_PROMPT_ITEM.getHanziChar());
 						
 	const storyhtml = CURRENT_PROMPT_ITEM.getPalaceNote().replace(/\n/g, "<br/>");
-
-
-	var examplestr = "";
-	const foundex = findExample(CURRENT_PROMPT_ITEM.getHanziChar());
-	if(foundex)
-	{
-		const pinyinstr = foundex.getConvertedPy();
-
-		examplestr = `
-			<tr>
-			<td width="20%"><b>Example</b></td>
-			<td>${foundex.getSimpHanzi()} (${pinyinstr}) ${foundex.getEnglish()}</td>
-			</tr>
-		`;
-	}
-
 
 	var infotable = `
 		<table id="dcb-basic" width="50%" border="0">
@@ -184,16 +154,46 @@ function redisplay()
 		<td width="20%"><b>Notes</b></td>
 		<td>${CURRENT_PROMPT_ITEM.getExtraNote()}</td>
 		</tr>
-
-		<tr>
-		<td width="20%"><b>Confounder</b></td>
-		<td>${confounderstr}</td>
-		</tr>
-
-		${examplestr}
-		</table>
-
 	`;
+
+
+	{
+		const confidx = getConfounderIndex();
+		if(CURRENT_PROMPT_ITEM.getHanziChar() in confidx) 
+		{
+			// TODO: should eventually show ALL of these, there might be many.
+			const conflist = confidx[CURRENT_PROMPT_ITEM.getHanziChar()];
+			conflist.forEach(function(confitem) {
+
+				infotable += `
+					<tr>
+					<td width="20%"><b>Confounder</b></td>
+					<td>
+					${confitem.getLeftChar()} / ${confitem.getRghtChar()}  :
+					${confitem.getExtraInfo()}
+					</td>
+					</tr>
+				`;
+			});
+		}
+	}
+
+	const foundex = findExample(CURRENT_PROMPT_ITEM.getHanziChar());
+	if(foundex)
+	{
+		const pinyinstr = foundex.getConvertedPy();
+		const engremoved = removeClCruft(foundex.getEnglish());
+
+		infotable += `
+			<tr>
+			<td width="20%"><b>Example</b></td>
+			<td>${foundex.getSimpHanzi()} (${pinyinstr}) ${engremoved}</td>
+			</tr>
+		`;
+	}
+
+	infotable += "</table>";
+
 
 	populateSpanData({
 		"thestory" : storyhtml,

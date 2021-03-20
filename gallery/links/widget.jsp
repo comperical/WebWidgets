@@ -15,7 +15,7 @@ var EDIT_STUDY_ITEM = -1;
 
 var STUDY_CATEGORY = false;
 
-var SEARCH_TERM = "goog";
+var SEARCH_TERM = "";
 
 massert(getItemList("link_categ").length > 0,
 	"You must add some link categories by hand first!!");
@@ -233,8 +233,15 @@ function redisplayEditItem()
 	
 	const edititem = getEditRecord();
 	const optmap = getCategoryMap();
-	const selectstr = getSelectString(optmap, edititem.getCatId());
-	
+	// const selectstr = getSelectString(optmap, edititem.getCatId());
+	const selectstr = ""
+
+	const optsel = buildOptSelector()
+						.setFromMap(optmap)
+						.setSelectedKey(MAIN_CATEGORY)
+						.setSelectOpener(`<select name="item_category_sel" onChange="javascript:updateCategory()">`)
+						.getSelectString();
+
 	const spanstr = `
 		<select name="item_category_sel" onChange="javascript:updateCategory()">
 		${selectstr}
@@ -245,7 +252,7 @@ function redisplayEditItem()
 		"item_id" : edititem.getId(),
 		"short_desc" : edititem.getShortDesc(),
 		"link_url" : edititem.getLinkUrl(), 
-		"item_category_sel_span" : spanstr
+		"item_category_sel_span" : optsel
 	});
 		
 	const opsel = getUniqElementByName("item_category_sel");
@@ -316,7 +323,9 @@ function redisplayCategoryTable()
 
 function updateMainCatSelect()
 {
-	MAIN_CATEGORY = getDocFormValue("main_category_sel");
+	const catcode = getDocFormValue("main_category_sel");
+	const hits = getItemList("link_categ").filter(ctg => ctg.getShortCode() == catcode);
+	MAIN_CATEGORY = hits[0].getId();
 	redisplay();
 }
 
@@ -331,24 +340,6 @@ function buildOptionMap(items, labelfunc)
 	});
 
 	return optmap;
-}
-
-// TODO: this is the old way of dynamic JS dropdown creation, update to new way
-function getSelectString(optmap, selected)
-{
-	var sels = "";
-	
-	for(const k in optmap)
-	{
-		const label = optmap[k];
-		const chooseme = (selected+"") == (k+"") ? " selected " : "";
-		
-		sels += `
-			<option ${chooseme} value="${k}">${label}</option>
-		`;
-	}
-	
-	return sels;
 }
 
 function getLinkTableStr(linkmainlist)
@@ -403,23 +394,28 @@ function getLinkTableStr(linkmainlist)
 
 function redisplayMainTable()
 {		
-	{
-		const optmap = getCategoryMap();
-		const options = getSelectString(optmap, MAIN_CATEGORY);
-		const selectstr = `
-			<select name="main_category_sel" onChange="javascript:updateMainCatSelect()">
-			${options}
-			</select>
-		`;
-		
-		document.getElementById("main_category_sel_span").innerHTML = selectstr;
-	}
+	const categlist = getItemList("link_categ")
+				.filter(ctg => ctg.getIsActive() == 1)
+				.map(ctg => ctg.getShortCode())
+				.sort();
+
+
+	const optmap = getCategoryMap();
+	const optsel = buildOptSelector()
+						.setKeyList(categlist)
+						.setSelectedKey(MAIN_CATEGORY)
+						.setSelectOpener(`<select name="main_category_sel" onChange="javascript:updateMainCatSelect()">`)
+						.getSelectString();
+
 	
 	const linkmainlist = getItemList("link_main").filter(lmi => lmi.getCatId() == MAIN_CATEGORY);
 
 	const tablestr = getLinkTableStr(linkmainlist);
 
-	populateSpanData({"maintable" : tablestr });
+	populateSpanData({
+		"maintable" : tablestr,
+		"main_category_sel_span" : optsel
+	});
 }
 
 

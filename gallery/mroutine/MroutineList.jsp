@@ -220,8 +220,6 @@ function redisplayMainTable()
 				&nbsp;&nbsp;&nbsp;
 				<a href="javascript:cycleStatus(${onephase.getId()})">
 				<img src="/life/image/cycle.png" height="18"></a>
-				&nbsp;&nbsp;&nbsp;
-				<a href="javascript:deleteItem(${onephase.getId()})"><img src="/life/image/remove.png" height="18"></a>
 			`;
 			
 			

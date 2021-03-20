@@ -17,7 +17,7 @@ REVIEW_PROBS_MARGINAL = { "easy" : 0.1, "good" : 0.2, "bad" : 0.7 };
 // As of Feb 2020, the NetScores seem to be distributed around -0.5 to 5, 
 // with most being around 3. 
 JITTER_SCALE = 2.0
-// JITTER_SCALE = 0;
+// JITTER_SCALE = 0.0;
 
 // This is the big parameter that controls the half-life of a review result.
 // After N days, the impact of a review will fall in half.
@@ -86,11 +86,19 @@ function lookupPalaceItemByChar(hanzichar)
 	return foundid == null ? null : lookupItem("palace_item", foundid);
 }
 
-function clearHanziDataCache() {
-
+function clearHanziDataCache() 
+{
 	__PALACE_ITEM_BY_CHAR = null;
 	__HANZI_DATA_BY_CHAR = null;
 	__CONFOUNDER_INDEX = null;
+}
+
+
+// Remove the stupid CL:... info from the CEDICT strings
+function removeClCruft(engstr)
+{
+	const items = engstr.split("/").filter(t => !t.startsWith("CL"));
+	return items.join("/");
 }
 
 

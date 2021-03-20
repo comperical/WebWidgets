@@ -87,7 +87,7 @@ function newBatch()
         const probeid = newBasicId("samples");
         const outboxid = newBasicId("outbox");
 
-        const logurl = "https://danburfoot.net/u/dburfoot/sampletime/LogSample.jsp?id=" + probeid;
+        const logurl = "https://webwidgets.io/u/dburfoot/sampletime/LogSample.jsp?id=" + probeid;
 
         const smsmssg = `SampleTime for ${readypst} PST: ${logurl}`;
         
@@ -146,7 +146,7 @@ function editStudyItem(itemid)
 
 function editShortName()
 {
-    genericEditTextField("rage_log", "short_name", EDIT_STUDY_ITEM);
+    genericEditTextField("samples", "notes", EDIT_STUDY_ITEM);
 }
 
 function back2Main()
@@ -162,6 +162,8 @@ function redisplay()
 
     redisplayHistoryTable();
 
+    redisplayEditInfo();
+
     setPageComponent(getPageComponent());
 }
 
@@ -174,6 +176,44 @@ function readyAtForSample(sampitem)
 {
     const smsitem = lookupItem("outbox", sampitem.getOutboxId());
     return smsitem == null  ? "---" : smsitem.getReadyAtUtc();
+}
+
+function convertUtc2Pst(utctime) {
+
+    if(utctime.length == 0) {
+        return "";
+    }
+
+    const millitime = exactMomentFromIsoBasic(utctime, "UTC").getEpochTimeMilli();
+    return new ExactMoment(millitime).asIsoLongBasic("PST");
+}
+
+
+function redisplayEditInfo()
+{
+    if(EDIT_STUDY_ITEM == -1) {
+        return;
+    }
+    const studyitem = lookupItem("samples", EDIT_STUDY_ITEM);
+
+    populateSpanData({
+        "short_name": studyitem.getNotes(),
+        "day_code" : studyitem.getDayCode()
+    });
+
+    const outboxid = studyitem.getOutboxId();
+    if(haveItem("outbox", outboxid)) {
+
+        const obitem = lookupItem("outbox", outboxid);
+
+        const readypst = convertUtc2Pst(obitem.getReadyAtUtc());
+        const sentpst = convertUtc2Pst(obitem.getSentAtUtc());
+
+        populateSpanData({
+            "ready_at_pst" : readypst,
+            "sent_at_pst" : sentpst
+        });
+    }
 }
 
 
@@ -429,30 +469,18 @@ function redisplayHistoryTable()
 <td><span id="day_code"></span>
 <td></td>
 </tr>
-</table>
-
-<br/>
-<br/>
-
-<table id="dcb-basic" width="30%">
 <tr>
-<td>
-<span id="itemdescline">xxx<br/>yyy</span>
-</td>
+<td>SMS Ready</td>
+<td colspan="2"><span id="ready_at_pst"></span></td>
+</tr>
+<tr>
+<td>SMS Sent</td>
+<td colspan="2"><span id="sent_at_pst"></span></td>
 </tr>
 </table>
 
 <br/>
 <br/>
-
-<form>
-<textarea id="full_desc" name="full_desc" rows="10" cols="50"></textarea>
-</form>
-
-<a href="javascript:saveNewDesc()">save desc</a>
-
-</span>
-
 
 </center>
 </body>

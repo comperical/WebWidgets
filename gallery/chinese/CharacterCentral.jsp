@@ -27,9 +27,7 @@
 
 <script>
 
-EDIT_STUDY_ITEM = 695;
-
-
+EDIT_STUDY_ITEM = -1;
 
 function createPalaceItem(hdid) 
 {
@@ -157,33 +155,87 @@ function redisplayEditItem()
 	if(EDIT_STUDY_ITEM == -1)
 		{ return; }
 
-
 	const showitem = lookupItem("palace_item", EDIT_STUDY_ITEM);
-	var confounderstr = "...";
+
+	const characteritem = lookupHanziDataByChar(showitem.getHanziChar());
+	const pinyin = characteritem ? characteritem.getPinYin() : "---";	
+
+
+	var tablestr = `
+		<table width="50%" id="dcb-basic">
+		<tr>
+		<td width="25%">Back</td>
+		<td></td>
+		<td width="10%"><a href="javascript:back2Main()"><img src="/life/image/leftarrow.png" height="18"/></a></td>
+		</tr>
+		<tr>
+		<td>Go To ID</td>
+		<td></td>
+		<td><a href="javascript:bounce2NewId()"><img src="/life/image/rghtarrow.png" height=18/></a></td>
+		</tr>
+		<tr>
+		<td>Character</td>
+		<td>${showitem.getHanziChar()}</td>
+		<td><a href="javascript:editCharacter()"><img src="/life/image/edit.png" height=18/></a></td>
+		</tr>
+		<tr>
+		<td>Meaning</td>
+		<td>${showitem.getMeaning()}</td>
+		<td><a href="javascript:editItemMeaning()"><img src="/life/image/edit.png" height=18/></a></td>
+		</tr>
+		<tr>
+		<td>PinYin</td>
+		<td>${pinyin}</td>
+		<td></td>
+		</tr>
+		<tr>
+		<td>Extra Note</td>
+		<td>${showitem.getExtraNote()}</td>
+		<td><a href="javascript:editItemExtraNote()"><img src="/life/image/edit.png" height=18/></a></td>
+		</tr>
+	`;
+
+
 	{
 		const confidx = getConfounderIndex();
 		if(showitem.getHanziChar() in confidx) 
 		{
-			// TODO: should eventually show ALL of these, there might be many.
-			const confitem = confidx[showitem.getHanziChar()][0];
-			confounderstr = `
-				${confitem.getLeftChar()} / ${confitem.getRghtChar()}  :
-				${confitem.getExtraInfo()}
-			`;
+			const conflist = confidx[showitem.getHanziChar()];
+			conflist.forEach(function(confitem) {
+
+				tablestr += `
+					<tr>
+					<td>Confounder</td>
+					<td colspan="2">
+					${confitem.getLeftChar()} / ${confitem.getRghtChar()}  :
+					${confitem.getExtraInfo()}
+					</td>
+					</tr>
+				`;
+			});
 		}
 	}
 
-	var examplestr = "";
 	const foundex = findExample(showitem.getHanziChar());
 	if (foundex) 
 	{
-		// TODO: convert!!
-		examplestr = `
-			${foundex.getSimpHanzi()} (${foundex.getConvertedPy()}) ${foundex.getEnglish()};
-		`;
 
+		tablestr += `
+			<tr>
+			<td>Example</td>
+			<td colspan="2">
+			${foundex.getSimpHanzi()} (${foundex.getConvertedPy()}) ${foundex.getEnglish()};
+			</td>
+			</tr>
+		`;
 	}
 
+
+	tablestr += "</table>";
+
+
+
+	/*
 
 	populateSpanData({
 		"hanzi_char" : showitem.getHanziChar(),
@@ -193,6 +245,13 @@ function redisplayEditItem()
 		"hanzi_char_big" : showitem.getHanziChar(),
 		"example_info" : examplestr
 	});
+	*/
+
+	populateSpanData({
+		"main_edit_table" : tablestr,
+		"hanzi_char_big" : showitem.getHanziChar()
+		// "example_info" : examplestr
+	});
 
 
 
@@ -200,14 +259,10 @@ function redisplayEditItem()
 	const palacetext = showitem.getPalaceNote();
 	const palacehtml = palacetext.replace(/\n/g, "<br/>");
 	
-	const characteritem = lookupHanziDataByChar(showitem.getHanziChar());
-	// console.log(characteritem);
-	
-	const pinyin = characteritem ? characteritem.getPinYin() : "---";
+
 
 	populateSpanData({
-		"palace_note1" : palacehtml,
-		"pinyin" : pinyin
+		"palace_note1" : palacehtml
 	});
 	
 	getUniqElementByName("palace_note2").value = palacetext;
@@ -368,46 +423,7 @@ Showing <span id="itemcount"></span> items
 
 <br/>
 
-<table width="50%" id="dcb-basic">
-<tr>
-<td width="25%">Back</td>
-<td></td>
-<td width="10%"><a href="javascript:back2Main()"><img src="/life/image/leftarrow.png" height="18"/></a></td>
-</tr>
-<tr>
-<td>Go To ID</td>
-<td></td>
-<td><a href="javascript:bounce2NewId()"><img src="/life/image/rghtarrow.png" height=18/></a></td>
-</tr>
-<tr>
-<td>Character</td>
-<td><div id="hanzi_char"></div></td>
-<td><a href="javascript:editCharacter()"><img src="/life/image/edit.png" height=18/></a></td>
-</tr>
-<tr>
-<td>Meaning</td>
-<td><div id="meaning"></div></td>
-<td><a href="javascript:editItemMeaning()"><img src="/life/image/edit.png" height=18/></a></td>
-</tr>
-<tr>
-<td>PinYin</td>
-<td><div id="pinyin"></div></td>
-<td></td>
-</tr>
-<tr>
-<td>Extra Note</td>
-<td><div id="extra_note"></div></td>
-<td><a href="javascript:editItemExtraNote()"><img src="/life/image/edit.png" height=18/></a></td>
-</tr>
-<tr>
-<td>Confounder</td>
-<td colspan="2"><div id="confounder_info"></div></td>
-</tr>
-<tr>
-<td>Example</td>
-<td colspan="2"><div id="example_info"></div></td>
-</tr>
-</table>
+<div id="main_edit_table"></div>
 
 <br/>
 

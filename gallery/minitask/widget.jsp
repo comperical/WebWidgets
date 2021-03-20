@@ -15,6 +15,9 @@ var TODAY_CODE = getTodayCode();
 
 var EDIT_STUDY_ITEM = -1;
 
+// In this widget, this list is hardcoded
+const MASTER_TYPE_LIST = ["chinse", "crm", "life", "work"];
+
 // Gets the task's age. 
 // For purposes of efficiency, caller should supply a reference to todaycode
 function getTaskAge(thetask)
@@ -247,7 +250,6 @@ function toggleItemStatus()
 
 function getShowTypeList()
 {
-	const alltypes = ['crm', 'life', 'work'];
 	var hits = [];
 	
 	document.getElementsByName("show_task_type").forEach(function(n) {
@@ -258,7 +260,7 @@ function getShowTypeList()
 	});
 	
 	if(hits.length == 0 || hits[0] == "all")
-		{ return alltypes; }
+		{ return MASTER_TYPE_LIST; }
 	
 	return hits;
 }
@@ -266,11 +268,10 @@ function getShowTypeList()
 function setDefaultShow()
 {
 	var params = getUrlParamHash();
-	var typelist = ['crm', 'life', 'work'];
 	
 	if('default_show' in params)
 	{
-		for(var ti in typelist)
+		for(var ti in MASTER_TYPE_LIST)
 		{
 			var showme = typelist[ti] == params['default_show'];
 			var button = getUniqElementByName("show_" + typelist[ti]);
@@ -554,6 +555,17 @@ function redisplay()
 
 <input type="radio" name="show_task_type" value="work" onChange="javascript:redisplay()">
 <label>Work</label>
+
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+
+
+<input type="radio" name="show_task_type" value="chinese" onChange="javascript:redisplay()">
+<label>Chinese</label>
+
+
 </form>  
 
 <h3>Active Items &nbsp; &nbsp; &nbsp; <a href="MiniTaskArchive.jsp">backlog</a></h3>
