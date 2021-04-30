@@ -126,7 +126,7 @@ function redisplay()
 		`;
 		
 		var tablestr = `
-			<table class="dcb-basic" id="dcb-basic" width="60%">
+			<table class="basic-table" width="60%">
 			<tr>
 			<th>Type</th>
 			<th>Code</th>
@@ -189,8 +189,11 @@ function redisplay()
 
 <h2>Exercise Planner</h2>
 
-<a href="ExerciseTemplate.jsp">Template</a> --- 
-<a href="widget.jsp">Workouts</a>
+<a href="ExerciseTemplate.jsp"><button>template</button></a> 
+&nbsp;
+&nbsp;
+&nbsp;
+<a href="widget.jsp"><button>workouts</button></a>
 
 
 <center>

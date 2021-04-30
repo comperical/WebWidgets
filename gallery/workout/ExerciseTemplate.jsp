@@ -7,8 +7,6 @@
 
 
 <%@ page import="lifedesign.basic.*" %>
-<%@ page import="lifedesign.classic.*" %>
-<%@ page import="lifedesign.classic.JsCodeGenerator.*" %>
 
 <%@include file="../../admin/AuthInclude.jsp_inc" %>
 
@@ -63,7 +61,7 @@ function toggleItemActive(itemid)
 function redisplay()
 {	
 	
-	var activetable = $('<table></table>').addClass('dcb-basic').attr("id", "dcb-basic").attr("width", "60%");
+	var activetable = $('<table></table>').addClass('basic-table').attr("width", "60%");
 	
 	var headerlist = ["ID", "Category", "ShortName", "Weekly Goal", "Active?", "---"];
 	
@@ -160,8 +158,11 @@ function redisplay()
 
 <h2>Exercise Template</h2>
 
-<a href="ExercisePlanner.jsp">Planner</a> --- 
-<a href="widget.jsp">Workouts</a>
+<a href="ExercisePlanner.jsp"><button>planner</button></a>
+&nbsp;
+&nbsp;
+&nbsp;
+<a href="widget.jsp"><button>workouts</button></a>
 
 
 <br/><br/>

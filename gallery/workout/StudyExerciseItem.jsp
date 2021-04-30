@@ -6,7 +6,6 @@
 <%@ page import="net.danburfoot.shared.HtmlUtil.*" %>
 
 <%@ page import="lifedesign.basic.*" %>
-<%@ page import="lifedesign.classic.*" %><%@ page import="lifedesign.classic.JsCodeGenerator.*" %>
 
 <%@include file="../../admin/AuthInclude.jsp_inc" %>
 
@@ -173,7 +172,7 @@ function redisplay()
 
 <br/><br/>
 
-<table width="30%" id="dcb-basic">
+<table width="30%" class="basic-table">
 <tr>
 <td>Back</td>
 <td></td>
@@ -239,7 +238,7 @@ function redisplay()
 <br/>
 <br/>
 
-<table id="dcb-basic" width="30%">
+<table class="basic-table" width="30%">
 <tr>
 <td>
 <span id="itemdescline">xxx<br/>yyy</span>

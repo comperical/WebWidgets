@@ -344,7 +344,7 @@ function getWeeklyLogTable(wologger, linearmap, themonday)
 		
 	var logstr = `
 		<h4>Log</h4>
-		<table id="dcb-basic" class="dcb-basic" width="95%">
+		<table class="basic-table" width="95%">
 		<tr>
 		<th>Day</th>
 		<th>Date</th>
@@ -407,7 +407,7 @@ function getWeeklyGoalTable(wologger, themonday)
 
 	
 	var goalstr = `
-	<table id="dcb-basic" class="dcb-basic" width="90%">
+	<table class="basic-table" width="90%">
 	<tr>
 	<th>WO Type</th>
 	<th>Status</th>
@@ -478,10 +478,10 @@ function getWeeklyGoalTable(wologger, themonday)
 	
 	goalstr += `
 	<br/><br/><br/>
-	<a href="ExerciseTemplate.jsp">Template</a>
+	<a href="ExerciseTemplate.jsp"><button>template</button></a>
 	&nbsp;	&nbsp;
 	&nbsp;	&nbsp;
-	<a href="ExercisePlanner.jsp">Planner</a>
+	<a href="ExercisePlanner.jsp"><button>planner</button></a>
 	`;
 	
 
