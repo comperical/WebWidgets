@@ -146,7 +146,7 @@ function getDataFrameList()
 function redisplay()
 {
 	var tablestr = `
-		<table id="dcb-basic" class="dcb-basic" width="75%">
+		<table class="basic-table"  width="75%">
 		<tr>
 		<th>Category</th>
 		<th>Total</th>

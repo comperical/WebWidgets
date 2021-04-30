@@ -190,7 +190,7 @@ function redisplay()
 function redisplayMainTable()
 {
 	var mtstr = `
-	<table class="dcb-basic" id="dcb-basic" width="60%">
+	<table  class="basic-table" width="60%">
 	<tr>
 	<th>OrderKey</th>
 	<th>Name</th>
@@ -315,7 +315,7 @@ Show InActive:
 
 <br/><br/>
 
-<table width="30%" id="dcb-basic">
+<table width="30%" class="basic-table">
 <tr>
 <td>Back</td>
 <td></td>
@@ -344,7 +344,7 @@ Show InActive:
 <br/>
 <br/>
 
-<table id="dcb-basic" width="30%">
+<table class="basic-table" width="30%">
 <tr>
 <td>
 <span id="itemdescline">xxx<br/>yyy</span>

@@ -167,7 +167,7 @@ function redisplayChoreList()
 	itemlist.sort(proxySort(a => [a.getShortName()]));
 	
 	var tablestr = `
-		<table class="dcb-basic" id="dcb-basic" width="60%">
+		<table  class="basic-table" width="60%">
 		<tr>
 		<th width="7%">ID</th>
 		<th>Name</th>
@@ -275,7 +275,7 @@ function redisplayChoreLog()
 	// var lastlogmap = getLastLogMap();
 	
 	var activetable = `
-		<table id="dcb-basic" class="dcb-basic" width="70%">
+		<table class="basic-table"  width="70%">
 		<tr>
 		<th width="7%">ID</th>
 		<th>Chore Name</th>
@@ -462,7 +462,7 @@ Show All: <input type="checkbox" name="show_all" onChange="javascript:redisplay(
 
 <h2>Chore Info</h2>
 
-<table id="dcb-basic" width="50%">
+<table class="basic-table" width="50%">
 <tr>
 <td width="25%">Back</td>
 <td></td>
@@ -503,7 +503,7 @@ Show All: <input type="checkbox" name="show_all" onChange="javascript:redisplay(
 <br/>
 
 <!-- Full description table -->
-<table id="dcb-basic" width="30%">
+<table class="basic-table" width="30%">
 <tr>
 <td>
 <span id="itemdescline">xxx<br/>yyy</span>

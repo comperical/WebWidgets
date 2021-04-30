@@ -162,7 +162,7 @@ function redisplayEditItem()
 
 
 	var tablestr = `
-		<table width="50%" id="dcb-basic">
+		<table width="50%" class="basic-table">
 		<tr>
 		<td width="25%">Back</td>
 		<td></td>
@@ -273,7 +273,7 @@ function redisplayMainList()
 	var hanzilist = getItemList("hanzi_data");
 
 	var maintable = `
-		<table class="dcb-basic" id="dcb-basic" width="80%">
+		<table  class="basic-table" width="80%">
 		<tr>
 		<th>Character</th>
 		<th>PinYin</th>
@@ -436,7 +436,7 @@ Showing <span id="itemcount"></span> items
 
 <span class="edit_info">
 
-<table id="dcb-basic" width="50%" border="0">
+<table class="basic-table" width="50%" border="0">
 <tr>
 <td><span id="palace_note1"></span></td>
 

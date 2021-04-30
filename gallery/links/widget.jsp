@@ -262,7 +262,7 @@ function redisplayEditItem()
 function redisplayCategoryTable()
 {
 	var s = `
-		<table class="dcb-basic" id="dcb-basic" width="40%">
+		<table  class="basic-table" width="40%">
 		<tr>
 		<th>ID</th>
 		<th>Category</th>
@@ -345,7 +345,7 @@ function buildOptionMap(items, labelfunc)
 function getLinkTableStr(linkmainlist)
 {
 	var tablestr = `
-		<table class="dcb-basic" id="dcb-basic" width="70%">
+		<table  class="basic-table" width="70%">
 		<tr>
 		<th>ID</th>
 		<th>Category</th>
@@ -488,7 +488,7 @@ Category:
 
 <br/><br/>
 
-<table id="dcb-basic" class="dcb-basic" width="30%">
+<table class="basic-table"  width="30%">
 <tr>
 <td width="50%">Search Term</td>
 <td><span id="search_result"></span></td>
@@ -516,7 +516,7 @@ Category:
 
 <h2>Link Info</h2>
 
-<table id="dcb-basic" width="50%">
+<table class="basic-table" width="50%">
 <tr>
 <td>Back</td>
 <td></td>

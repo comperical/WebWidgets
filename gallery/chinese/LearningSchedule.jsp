@@ -20,7 +20,7 @@ function generateTableInfo(wantbefore)
     var numshow = 0;
 
     var tablestr = `
-        <table class="dcb-basic" id="dcb-basic" width="60%">
+        <table  class="basic-table" width="60%">
         <tr>
         <th>TargetDate</th>
         <th>Character</th>

@@ -166,7 +166,7 @@ function redisplayEdit()
 
         <h2>Edit Item</h2>
 
-        <table id="dcb-basic" class="dcb-basic" width="50%">
+        <table class="basic-table"  width="50%">
         <tr>
         <td>
         Back
@@ -273,7 +273,7 @@ function getTableData(iscomplete)
 {
 
     var mainstr = `
-        <table id="dcb-basic" id="dcb-basic" width="60%">
+        <table class="basic-table" class="basic-table" width="60%">
         <tr>
         <th>Name</th>
         <th>Category</th>

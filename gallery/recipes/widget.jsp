@@ -237,7 +237,7 @@ function reDispIngredient()
 	const myingr = lookupItem("ingredient", STUDY_INGR_ID);
 	
 	const datastr = `
-		<table class="dcb-basic" id="dcb-basic" width="50%">
+		<table  class="basic-table" width="50%">
 		<tr>
 		<td>Back</td>
 		<td colspan="2">
@@ -282,7 +282,7 @@ function reDispIngredient()
 		
 		<br/>
 		
-		<table class="dcb-basic" id="dcb-basic" width="50%">
+		<table  class="basic-table" width="50%">
 		<tr>
 		<th colspan="2">Notes</th>
 		</tr>
@@ -309,7 +309,7 @@ function reDispRecipeItem()
 	const recipeitem = lookupItem("recipe_item", STUDY_RECIPE_ID);
 	
 	var tablestr = `
-		<table id="dcb-basic" class="dcb-basic" width="70%">
+		<table class="basic-table"  width="70%">
 		<tr>
 		<th>Category</th>
 		<th>Ingredient</th>
@@ -368,7 +368,7 @@ function reDispRecipeItem()
 function reDispMainTable()
 {
 	var tablestr = `
-		<table id="dcb-basic" class="dcb-basic" width="60%">
+		<table class="basic-table"  width="60%">
 		<tr>
 		<th>Recipe</th>
 		<th>#Items</th>
@@ -462,7 +462,7 @@ function getRecipeItemCounts()
 function reDispShoppingList()
 {
 	var tablestr = `
-		<table id="dcb-basic" class="dcb-basic" width="60%">
+		<table class="basic-table"  width="60%">
 		<tr>
 		<th>Category</th>
 		<th>Item</th>

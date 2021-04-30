@@ -116,7 +116,7 @@ function composeCatOptionSelectStr(itemid)
 function reDispCatOkTable()
 {
 	var tablestr = `
-		<table id="dcb-basic" class="dcb-basic" width="90%">
+		<table class="basic-table"  width="90%">
 		<tr>
 		<th>DayCode</th>
 		<th>ExpenseCat</th>
@@ -199,7 +199,7 @@ function reDispCatOkTable()
 function reDispNoCatTable()
 {
 	var tablestr = `
-		<table id="dcb-basic" class="dcb-basic" width="75%">
+		<table class="basic-table"  width="75%">
 		<tr>
 		<th>Date</th>
 		<th>Statement</th>
@@ -374,7 +374,7 @@ Expense Type:
 
 <br/><br/>
 
-<table width="50%" id="dcb-basic">
+<table width="50%" class="basic-table">
 <tr>
 <td width="50%">Desc</td>
 <td><div id="itemdesc"></div></td>

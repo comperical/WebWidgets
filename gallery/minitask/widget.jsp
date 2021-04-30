@@ -328,7 +328,7 @@ function reDispActiveTable()
 	activelist.sort(proxySort(actrec => [-actrec.getPriority()]));
 	
 	var tablestr = `
-		<table id="dcb-basic" class="dcb-basic" width="80%">
+		<table class="basic-table"  width="80%">
 		<tr>
 		<th>Type</th>
 		<th>ShortDesc</th>
@@ -423,7 +423,7 @@ function reDispCompleteTable()
 {
 	
 	var tablestr = `
-		<table id="dcb-basic" class="dcb-basic" width="70%">
+		<table class="basic-table"  width="70%">
 		<tr>
 		<th>Type</th>
 		<th>Desc</th>
@@ -592,7 +592,7 @@ function redisplay()
 
 <br/>
 
-<table id="dcb-basic" width="50%">
+<table class="basic-table" width="50%">
 <tr>
 <td>Back</td>
 <td><a href="javascript:return2Main()"><img src="/life/image/leftarrow.png" height="18"/></a></td>
@@ -656,7 +656,7 @@ function redisplay()
 
 <br/><br/>
 
-<table id="dcb-basic" width="50%" border="0">
+<table class="basic-table" width="50%" border="0">
 <tr>
 <td>
 <span id="extrainfo"></span>

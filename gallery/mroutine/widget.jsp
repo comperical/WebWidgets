@@ -87,7 +87,7 @@ function isTodayLog(mrlog)
 function redisplay()
 {
 	var mtstr = `
-		<table class="dcb-basic" id="dcb-basic" width="30%">
+		<table  class="basic-table" width="30%">
 		<tr>
 		<th>Name</th>
 		<th>LogTime</th>

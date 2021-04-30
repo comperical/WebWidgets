@@ -143,7 +143,7 @@ function redisplay()
 	const storyhtml = CURRENT_PROMPT_ITEM.getPalaceNote().replace(/\n/g, "<br/>");
 
 	var infotable = `
-		<table id="dcb-basic" width="50%" border="0">
+		<table class="basic-table" width="50%" border="0">
 		<tr>
 		<td width="20%"><b>Meaning</b></td>
 		<td>${CURRENT_PROMPT_ITEM.getMeaning()}</td>
@@ -246,7 +246,7 @@ function redisplay()
 
 <span class="prompt_answer" hidden>
 
-<table id="dcb-basic" width="50%" border="0">
+<table class="basic-table" width="50%" border="0">
 <tr>
 <td width="20%"><b>Story</b></td>
 <td><span id="thestory"></span></td></tr>

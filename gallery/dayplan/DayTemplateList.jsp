@@ -237,7 +237,7 @@ function redisplayMainList()
 	var templatelist =  getItemList("day_template");
 
 	var mainstr = `
-		<table id="dcb-basic" class="dcb-basic" width="50%">
+		<table class="basic-table"  width="50%">
 		<tr>
 		<th>Name</th>
 		<th width="5%">Active?</th>		
@@ -330,7 +330,7 @@ function redisplayStudyItem()
 		{ return; }
 
 	var mainstr = `
-		<table id="dcb-basic" class="dcb-basic" width="50%">
+		<table class="basic-table"  width="50%">
 		<tr>
 		<th>Desc</th>
 		<th>..</th>

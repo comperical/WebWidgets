@@ -84,7 +84,7 @@ function redisplay()
 <br/>
 <br/>
 
-<table width="30%" id="dcb-basic" class="dcb-basic">
+<table width="30%" class="basic-table" >
 <tr>
 <td width="50%">Sample ID</td><td><div id="sample_id"></div></td>
 </tr>
@@ -102,7 +102,7 @@ function redisplay()
 <br/>
 <br/>
 
-<table width="40%" id="dcb-basic" class="dcb-basic">
+<table width="40%" class="basic-table" >
 <tr>
 <th>Result</th>
 </tr>

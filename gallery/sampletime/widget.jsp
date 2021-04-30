@@ -247,7 +247,7 @@ function redisplayMainTable()
         <h3>Scheduled for Tomorrow</h3>
 
 
-        <table id="dcb-basic" class="dcb-basic" width="60%">
+        <table class="basic-table"  width="60%">
         <tr>
         <th width="7%">ID</th>
         <th>Ready</th>
@@ -329,7 +329,7 @@ function redisplayHistoryTable()
             <br/>
             <h3>${dcstr}</h3>
 
-            <table id="dcb-basic" class="dcb-basic" width="80%">
+            <table class="basic-table"  width="80%">
             <tr>
             <th width="7%">ID</th>
             <th width="10%">Scheduled</th>
@@ -446,7 +446,7 @@ function redisplayHistoryTable()
 
 <br/>
 
-<table width="50%" id="dcb-basic">
+<table width="50%" class="basic-table">
 <tr>
 <td width="25%">Back</td>
 <td></td>

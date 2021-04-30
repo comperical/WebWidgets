@@ -195,7 +195,7 @@ function redisplayMainTable()
 	ragelist.sort(proxySort(a => [a.getDayCode()])).reverse();
 
 	var tablestr = `
-		<table id="dcb-basic" class="dcb-basic" width="80%">
+		<table class="basic-table"  width="80%">
 		<tr>
 		<th width="7%">Date</th>
 		<th>Tags</th>
@@ -267,7 +267,7 @@ onclick="javascript:createNew()">NEW</a>
 
 <br/>
 
-<table width="50%" id="dcb-basic">
+<table width="50%" class="basic-table">
 <tr>
 <td width="25%">Back</td>
 <td></td>
@@ -295,7 +295,7 @@ onclick="javascript:createNew()">NEW</a>
 <br/>
 <br/>
 
-<table id="dcb-basic" width="30%">
+<table class="basic-table" width="30%">
 <tr>
 <td>
 <span id="itemdescline">xxx<br/>yyy</span>

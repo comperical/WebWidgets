@@ -41,7 +41,7 @@ function peelTimeString(timestamp)
 function reDispAggTable()
 {
 	var tablestr = `
-		<table class="dcb-basic" id="dcb-basic" width="70%">
+		<table  class="basic-table" width="70%">
 		<tr>
 		<th>ID</th>
 		<th>Character</th>
@@ -105,7 +105,7 @@ function reDispBdTable()
 	var principlist = getItemList("palace_item");
 		
 	var tablestr = `
-		<table class="dcb-basic" id="dcb-basic" width="40%">	
+		<table  class="basic-table" width="40%">	
 		<tr>
 		<th>Result</th>
 		<th>Time</th>
@@ -168,7 +168,7 @@ function reDispBdTable()
 
 <h2>Review Log</h2>
 
-<table width="30%" id="dcb-basic" align="center">
+<table width="30%" class="basic-table" align="center">
 <tr>
 <td>Character</td>
 <td><span id="bd_character"></span></td>

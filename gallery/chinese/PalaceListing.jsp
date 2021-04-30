@@ -52,7 +52,7 @@ function redisplay()
 	// var lastlogmap = getLastLogMap();
 					
 	var tablestr = `
-		<table class="dcb-basic" id="dcb-basic" width="70%">
+		<table  class="basic-table" width="70%">
 		<tr>
 		<th>ID</th>
 		<th>Character</th>

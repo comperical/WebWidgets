@@ -101,7 +101,7 @@ function redispSummTable()
 	itemlist.sort(proxySort(a => [a.getDayCode()])).reverse();
 	
 	var tablestr = `
-		<table id="dcb-basic" class="dcb-basic" width="40%">
+		<table class="basic-table"  width="40%">
 		<tr>
 		<th>NDays</th>
 		<th>Since</th>
@@ -148,7 +148,7 @@ function redispFullTable()
 	const cutoff = getTodayCode().nDaysBefore(90);
 			
 	var tablestr = `
-		<table id="dcb-basic" class="dcb-basic" width="40%">
+		<table class="basic-table"  width="40%">
 		<tr>
 		<th>Day</th>
 		<th>Date</th>

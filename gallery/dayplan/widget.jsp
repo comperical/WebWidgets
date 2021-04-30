@@ -229,7 +229,7 @@ function redisplay()
 	var activelist = getPlanDayItemList();
 					
 	var tablestr = `
-		<table id="dcb-basic" class="dcb-basic" width="50%">
+		<table class="basic-table"  width="50%">
 		<tr>
 		<th>Desc</th>
 		<th>..</th>

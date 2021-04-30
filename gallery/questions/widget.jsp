@@ -175,7 +175,7 @@ function getResultSection()
 	var s = "";
 	
 	s += `
-		<table id="dcb-basic" width="75%">
+		<table class="basic-table" width="75%">
 		<tr class="bar">
 		<th>Score</th>
 		<th>Question</th>
@@ -234,7 +234,7 @@ function getResultSection()
 function getSearchTermTable()
 {	
 	var s = `
-		<table class="dcb-basic" id="dcb-basic" width="40%">
+		<table  class="basic-table" width="40%">
 	`;
 	
 	
@@ -290,7 +290,7 @@ function getQuestionTable(hasanswer)
 function getQuestionTableSub(hasanswer)
 {
 	var s = `
-		<table class="dcb-basic" id="dcb-basic" width="75%">
+		<table  class="basic-table" width="75%">
 	`;
 		
 	{
@@ -375,7 +375,7 @@ function getEditItemData()
 		
 		<br/>
 		
-		<table id="dcb-basic" width="50%">
+		<table class="basic-table" width="50%">
 		<tr>
 		<td>Back</td>
 		<td><a name="back_url" href="javascript:back2Main()"><img src="/life/image/leftarrow.png" height="18"/></a></td>
@@ -441,7 +441,7 @@ function getEditItemData()
 		
 		<br/>
 		
-		<table id="dcb-basic" width="50%" border="0">
+		<table class="basic-table" width="50%" border="0">
 		<tr>
 		<td>${extralineinfo}</td>
 		

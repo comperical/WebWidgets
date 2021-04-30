@@ -108,7 +108,7 @@ function redisplayMainTable()
 {
 
     var tablestr = `
-        <table id="dcb-basic" class="dcb-basic" width="40%">
+        <table class="basic-table"  width="40%">
         <tr>
         <th>Tag</th>
         <th>number</th>

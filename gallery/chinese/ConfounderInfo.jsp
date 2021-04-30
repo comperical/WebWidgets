@@ -65,7 +65,7 @@ function getPageComponent()
 function redisplayMain()
 {
     var mainstr = `
-        <table class="dcb-basic" id="dcb-basic" width="60%">
+        <table  class="basic-table" width="60%">
         <tr>
         <th>Char 1</th>
         <th>Char 2</th>
@@ -145,7 +145,7 @@ function getCharTable(charitem, tablename)
 		{ return ""; }
 	
 	return `
-		<table id="dcb-basic" class="dcb-basic" width="50%">
+		<table class="basic-table"  width="50%">
 		<tr>
 		<th colspan="2">${tablename}</th>
 		</tr>
@@ -212,7 +212,7 @@ function editExtraInfo()
 <h2>Edit Item</h2>
 
 
-<table class="dcb-basic" id="dcb-basic" width="50%">
+<table  class="basic-table" width="50%">
 <tr>    
 <td width="20%">
 Back
