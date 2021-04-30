@@ -6,7 +6,6 @@
 
 <%@ page import="lifedesign.basic.*" %>
 <%@ page import="lifedesign.classic.*" %>
-<%@ page import="lifedesign.classic.JsCodeGenerator.*" %>
 
 <%@include file="../../admin/AuthInclude.jsp_inc" %>
 
