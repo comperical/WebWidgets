@@ -11,6 +11,8 @@ LONG_DAY_WEEK_LIST = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "F
 
 const MONTH_NAMES = ["January", "February", "March", "April",  "May", "June", "July", "August", "September", "October", "November", "December"];
 
+const TIME_ZONE_LIST = ["UTC", "EST", "PST", "CST", "GMT"];
+
 function DayCode(longmilli, dayidx)
 {
 	// At this point, the TimeZone doesn't matter, we're just using the date format logic.
@@ -246,6 +248,109 @@ function getLastMonday()
 {
 	var dc = getTodayCode();
 	return getMonday4Date(dc);
+}
+
+
+function ExactMoment(longmilli)
+{
+	this.__epochTimeMilli = longmilli;
+}
+
+function exactMomentNow()
+{
+	const milli = new Date().getTime();
+	return new ExactMoment(milli);
+}
+
+function checkTimeZoneOkay(timezone)
+{
+	massert(TIME_ZONE_LIST.includes(timezone), "Unknown timezone " + timezone + " options are " + TIME_ZONE_LIST);
+}
+
+function enGbToIso(engbdate)
+{
+	// EN GB comes in this format:
+	// 10/01/2021
+
+	const toks = engbdate.split("/");
+	return toks[2] + "-" + toks[1] + "-" + toks[0];
+}
+
+function maybePad(pdstr)
+{
+	return pdstr.length == 1 ? "0" + pdstr : pdstr;
+}
+
+function enUsToIso(fullenus)
+{
+
+	// "1/10/2021, 9:56:58 PM"
+	// console.log("Input to function is : " + fullenus);
+
+	const date_time_apm = fullenus.replace(",", "").split(" ");
+
+	// console.log(date_time_apm);
+
+	const mnth_day_year = date_time_apm[0].split("/");
+	const isodate = [mnth_day_year[2], maybePad(mnth_day_year[0]), maybePad(mnth_day_year[1])].join("-");
+
+	// console.log("Date is "+ isodate);
+
+	const hr_mn_sc = date_time_apm[1].split(":");
+	const ispm = date_time_apm[2].includes("PM");
+	var basehour = parseInt(hr_mn_sc[0]);
+	basehour += (ispm && basehour < 12 ? 12 : 0);
+
+	// 12 AM --> 00:
+	basehour = (!ispm && basehour == 12 ? 0 : basehour);
+
+	const isotime = [maybePad(basehour+""), hr_mn_sc[1], hr_mn_sc[2]].join(":");
+	// console.log("ISO time is " + isotime);
+
+	return [isodate, isotime].join(" ");
+
+}
+
+function exactMomentFromIsoBasic(timestamp, timezone)
+{
+	checkTimeZoneOkay(timezone);
+
+	const millis = Date.parse(timestamp + " " + timezone);
+	return new ExactMoment(millis);
+}
+
+ExactMoment.prototype.getEpochTimeMilli = function()
+{
+	return this.__epochTimeMilli;
+}
+
+
+ExactMoment.prototype.withAddedMilli = function(milli)
+{
+	return new ExactMoment(this.__epochTimeMilli + milli);
+}
+
+
+
+ExactMoment.prototype.asIsoLongBasic = function(timezone)
+{
+	massert(TIME_ZONE_LIST.includes(timezone), "Unknown timezone " + timezone + " options are " + TIME_ZONE_LIST);
+	
+	// console.log(event.toLocaleString('en-GB', { timeZone: 'UTC' }));
+	// expected output: 20/12/2012, 03:00:00
+	const date_ob = new Date(this.__epochTimeMilli);
+
+	const enusform = date_ob.toLocaleString('en-US', { timeZone : timezone })
+	return enUsToIso(enusform);
+
+
+	/*
+	const engbform = date_ob.toLocaleString('en-GB', { timeZone : timezone });
+
+	const date_time = engbform.split(",");
+	const isodate = enGbToIso(date_time[0]);
+	return isodate + " " + date_time[1];
+	*/
 }
 
 

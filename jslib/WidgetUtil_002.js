@@ -262,6 +262,14 @@ function getUniqElementByName(elname)
 // Get Query String / URL Params as a hash.
 // Example MyWidget.jsp?name=1&id=5 will return
 // { "name" : 1, "id" : 5}
+function getUrlParamHash___XXX()
+{
+	return getUrlParamHash(window.location.search.substring(1));
+}
+
+// Get Query String / URL Params as a hash.
+// Example MyWidget.jsp?name=1&id=5 will return
+// { "name" : 1, "id" : 5}
 function getUrlParamHash()
 {
 	var phash = {};
@@ -270,7 +278,7 @@ function getUrlParamHash()
 		pl     = /\+/g,  // Regex for replacing addition symbol with a space
 		search = /([^&=]+)=?([^&]*)/g,
 		decode = function (s) { return decodeURIComponent(s.replace(pl, " ")); },
-		query  = window.location.search.substring(1);
+		query = window.location.search.substring(1);
 
 	while (match = search.exec(query))
 	{
@@ -278,6 +286,25 @@ function getUrlParamHash()
 	}
 	
 	return phash;
+}
+
+
+// Simple transform of a query string, without the leading ?, into a key=value pair
+// Should be a pure inverse of encodeHash2QString below.
+function decodeQString2Hash(qstring)
+{
+	massert(qstring[0] != '?', "By convention, please strip leading question mark from query string");
+
+	const params = {};
+	const pairs = qstring.split("&");
+
+	pairs.forEach(function(prstr) {
+		const kv = prstr.split("=");
+		massert(kv.length == 2, "Found bad key=value string " + prstr);
+		params[kv[0]] = decodeURIComponent(kv[1]);
+	});
+
+	return params;
 }
 
 function encodeHash2QString(submitpack)

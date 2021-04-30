@@ -15,6 +15,15 @@ __itemLookupFuncMap = {};
 // table name to haveItem func
 __haveItemFuncMap = {};
 
+// Map of of username::widgetname --> Unix checksum for the Widget DB
+__databaseCheckSum = {};
+
+// Get all the tables that have been registered on this page.
+function getWidgetTableList()
+{
+	return Object.keys(__buildItemFuncMap);
+}
+
 // Return true if the table is in the data for the page.
 function haveTable(tabname)
 {
@@ -39,6 +48,12 @@ function buildItem(tabname, record)
 {
     checkTableName(tabname);
     var buildfunc = __buildItemFuncMap[tabname];    
+
+    // Jan 2021: you no longer need to call newBasicId(...) yourself and put it in the record
+    // This method will do it for you.
+    if(!record.hasOwnProperty("id"))
+        { record["id"] = newBasicId(tabname); }
+
     return buildfunc(record);   
 }
 
@@ -97,6 +112,28 @@ function getTableCoords(tablemaster)
         "tablename" : tablemaster.tableName
     };
 }
+
+// Look up the widget owner and name from the url
+// Use that info to find the current checksum value
+// This needs to be looked up just-in-time, before the request is sent,
+// AFTER it is enqueued
+function __augmentWithCheckSum(opurl)
+{
+    massert(opurl.indexOf(CALLBACK_URL) == 0, 
+        "Expected OP URL to start with callback URL, found " + CALLBACK_URL);
+
+    const querystring = opurl.substring((CALLBACK_URL + "?").length);
+    // console.log("Query string is " + querystring);
+
+    const params = decodeQString2Hash(querystring);
+    // console.log(params);
+
+    const cksumkey = params["wowner"]+ "::" + params["wname"];
+    const cksumval = __databaseCheckSum[cksumkey];
+    params["checksum"] = cksumval;
+    return CALLBACK_URL + "?" + encodeHash2QString(params);
+}
+
 
 function genericUpsertUrl(tablemaster, item, keylist)
 {
@@ -177,12 +214,16 @@ function __maybeSendNewRequest()
     __REQUEST_IN_FLIGHT = true;
     
     const reqlist = __REQUEST_QUEUE.shift();
-    const opurl = reqlist[0];
+
+    // This needs to be augmented just-in-time
+    const opurl = __augmentWithCheckSum(reqlist[0]);
+    // console.log(reqlist[0]);
+    // console.log(opurl);
     const opname = reqlist[1];
     const itempk = reqlist[2];
     
-    console.log("sending new request, queue length is now " + __REQUEST_QUEUE.length);
-    console.log("Opname " + opname + ", PK: " + itempk);
+    // console.log("sending new request, queue length is now " + __REQUEST_QUEUE.length);
+    // console.log("Opname " + opname + ", PK: " + itempk);
     
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
@@ -203,19 +244,34 @@ function __maybeSendNewRequest()
 
 function __checkAjaxResponse(op, itemid, rtext)
 {
-    // console.log(response);   
+    // console.log(rtext);
     const response = JSON.parse(rtext);
     
     if(response.status_code == "okay")
     {
-        console.log("AjaxOp " + op + " for itemid " + itemid + " worked");  
+        // Read out the new CKSUM data from the response.
+        // These field names must match Java code.
+        const cksumkey = response.checksum_key;
+        const cksumval = parseInt(response.checksum_val);
+        __databaseCheckSum[cksumkey] = cksumval;
+
+        const logmssg = `AjaxOp for itemid ${itemid} worked, new val for key ${cksumkey} is ${cksumval}`;
+        console.log(logmssg);
         return;     
     }
     
     // Something went wrong, try to give user as informative a message as possible.
     const fcode = response.failure_code;
     const umssg = response.user_message;
-    massert(false, "Problem with sync operation " + fcode + "\n\n" + umssg);
+    const einfo = response.extra_info;
+    
+    var errmssg = `Problem with sync operation: ${fcode} \n ${umssg}`;
+    
+    if(einfo.length > 0) {
+    	errmssg += `\nAdditional info:\n${einfo}`;	    
+    }
+    
+    massert(false, errmssg);
 }
 
 
