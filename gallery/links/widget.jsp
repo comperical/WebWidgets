@@ -400,10 +400,12 @@ function redisplayMainTable()
 				.sort();
 
 
+	const curcatname = lookupItem("link_categ", MAIN_CATEGORY).getShortCode();
+
 	const optmap = getCategoryMap();
 	const optsel = buildOptSelector()
 						.setKeyList(categlist)
-						.setSelectedKey(MAIN_CATEGORY)
+						.setSelectedKey(curcatname)
 						.setSelectOpener(`<select name="main_category_sel" onChange="javascript:updateMainCatSelect()">`)
 						.getSelectString();
 
@@ -558,13 +560,13 @@ Category:
 
 <br/>
 
-<a class="css3button" href="javascript:createNewCategory()">NEW</a>
+<a href="javascript:createNewCategory()"><button>+cat</button></a>
 
 &nbsp;
 &nbsp;
 &nbsp;
 
-<a class="css3button" href="javascript:return2Main()">BACK</a>
+<a href="javascript:return2Main()"><button>main</button></a>
 
 
 <br/>
