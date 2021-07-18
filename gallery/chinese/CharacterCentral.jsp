@@ -42,6 +42,7 @@ function createPalaceItem(hdid)
 		"hanzi_char" : createfrom.getHanziChar(),
 		"palace_note": "EnterNoteHere",
 		"extra_note" : "...",
+		"is_active" : 1,
 		"meaning": createfrom.getDefinition()
 	};		
 	

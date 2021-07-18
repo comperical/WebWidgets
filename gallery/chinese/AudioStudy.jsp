@@ -220,7 +220,7 @@ function createMiniTaskNote()
 
 function showStats() 
 {
-    const progmap = getPalaceProgress();
+    const progmap = getPalaceProgress("review_log");
     
     const mystring = 
         "Today: " + progmap[0] + "\n" +

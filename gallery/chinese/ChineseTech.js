@@ -147,7 +147,7 @@ function parseCedictDef(cedict)
 
 function computeStatInfoSub(itemtable, logtable)
 {
-	const palacelist = getItemList(itemtable);
+	const palacelist = getItemList(itemtable).filter(item => item.getIsActive() == 1);
 	const reviewlist = getItemList(logtable);
 
 	var statmap = {};
@@ -192,7 +192,7 @@ function stripDiacritics(pinyin)
 
 
 // Map of days ago -> cumulative review items
-function getPalaceProgress()
+function getPalaceProgress(tablename)
 {
 	var tracker = getTodayCode();
 	var daysago = 0;
@@ -200,7 +200,7 @@ function getPalaceProgress()
 	var progmap = {};
 	var curtotal = 0;
 	
-	var reviewlist = getItemList("review_log");
+	var reviewlist = getItemList(tablename);
 	reviewlist.sort(proxySort(r => [r.getTimeStamp()])).reverse();
 
 	reviewlist.forEach(function(ritem) {

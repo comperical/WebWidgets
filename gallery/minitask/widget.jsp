@@ -13,10 +13,10 @@
 
 var TODAY_CODE = getTodayCode();
 
-var EDIT_STUDY_ITEM = -1;
+var EDIT_STUDY_ITEM = 3763;
 
 // In this widget, this list is hardcoded
-const MASTER_TYPE_LIST = ["chinse", "crm", "life", "work"];
+const MASTER_TYPE_LIST = ["chinese", "crm", "life", "work"];
 
 // Gets the task's age. 
 // For purposes of efficiency, caller should supply a reference to todaycode
@@ -304,6 +304,17 @@ function editStudyItemPriority()
 	editItemPriority(EDIT_STUDY_ITEM);
 }
 
+function updateTaskType()
+{
+	const newtype = getDocFormValue("task_type_sel");
+	const studyitem = getStudyItem();
+			
+	studyitem.setTaskType(newtype);
+	studyitem.syncItem();
+	
+	redisplay();	
+}
+
 
 function saveExtraInfo()
 {
@@ -476,11 +487,16 @@ function reDispEditItem()
 	
 	const extralinelist = extrainfo.replace(/\n/g, "<br/>");	
 
+	const ttypesel = buildOptSelector()
+					.setKeyList(MASTER_TYPE_LIST)
+					.setSelectOpener(`<select name="task_type_sel" onChange="javascript:updateTaskType()">`)
+					.setSelectedKey(studyitem.getTaskType())
+					.getSelectString();
 	
 	populateSpanData({
 		"taskid" : studyitem.getId(),
 		"shortdesc" : studyitem.getShortDesc(),
-		"tasktype" : studyitem.getTaskType(),
+		"task_type_sel_span" : ttypesel,
 		"alphadate" : studyitem.getAlphaDate(),
 		"omegadate" : studyitem.getOmegaDate(),
 		"item_status" : itemstat,
@@ -615,7 +631,7 @@ function redisplay()
 </tr>
 <tr>
 <td>TaskType</td>
-<td><span id="tasktype"></span></td>
+<td><span id="task_type_sel_span"></span></td>
 </tr>
 <tr>
 <td>Start Date</td>

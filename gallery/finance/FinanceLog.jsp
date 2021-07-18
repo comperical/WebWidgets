@@ -216,13 +216,15 @@ function reDispNoCatTable()
 		
 	nocatfinlist.sort(function(s1, s2) { return -s1.getTransactDate().localeCompare(s2.getTransactDate()); });	
 	
+	const categorylist = getExpenseCategoryList().sort();
+	
 	nocatfinlist.forEach(function(onerec) {
 		
 		const dollarstr = getDollarFormat(onerec.getCentAmount());
 		const nterec = lookupItem("finance_note", onerec.getId());
 		
 		const catsel = buildOptSelector()
-				.setKeyList(getExpenseCategoryList())
+				.setKeyList(categorylist)
 				.setSelectOpener(`<select id="catselect${onerec.getId()}" onChange="javascript:doCat4Id(${onerec.getId()})">`)
 				.setSelectedKey(nterec.getExpenseCat());
 					

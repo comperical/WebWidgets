@@ -500,7 +500,8 @@ function getWeeklyGoalTable(wologger, themonday)
 
 <center>
 
-<h2>Workout Log</h2>
+<h2>Workout Log &nbsp;&nbsp;&nbsp; <a href="WorkoutStats.jsp"><button>stats</button></a></h2>
+
 
 <center>
 

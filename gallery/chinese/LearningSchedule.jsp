@@ -14,6 +14,31 @@
 
 <script>
 
+function getRemainingCount() 
+{
+    var numshow = 0;
+    const schedlist = getItemList("learning_schedule");
+    const today = getTodayCode().getDateString();
+
+    schedlist.forEach(function(scheditem) {
+
+        const palitem = lookupPalaceItemByChar(scheditem.getTheChar());
+        if(palitem != null) 
+            { return; }
+
+        const target = scheditem.getDayCode();
+        const isbefore = target <= today;
+
+        if(isbefore)
+            { return; }
+
+        numshow += 1;
+
+    });
+
+    return numshow;
+}
+
 function generateTableInfo(wantbefore)
 {
 
@@ -75,9 +100,12 @@ function generateTableInfo(wantbefore)
 
 function redisplay()
 {
+    const total = getRemainingCount();
+
     populateSpanData({
         "nowtable" : generateTableInfo(true),
-        "futuretable" : generateTableInfo(false)
+        "futuretable" : generateTableInfo(false),
+        "total_remaining" : total
     })
 }
 
@@ -107,6 +135,8 @@ function redisplay()
 <br/>
 
 <h3>Future Target</h3>
+
+<b>Total remaining <span id="total_remaining"></span></b>
 
 <div id="futuretable"></div>
 

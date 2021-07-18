@@ -26,6 +26,12 @@
 
 <script>
 
+// The date when I started using the consumption target formula.
+SYSTEM_START_DATE = lookupDayCode("2021-07-01");
+
+// Target number of items per year
+YEARLY_CONSUMPTION_TARGET = 200;
+
 function addNew()
 {	
 	const junkfact = getDocFormValue("junkfactor");
@@ -40,11 +46,9 @@ function addClean()
 
 function addNewSub(junkfact, thenotes)
 {
-	const newid = newBasicId("junk_food_log");
 	const daycode = getDocFormValue("day_code");
 	
 	const newrec = {
-		"id" : newid,
 		"junkfactor" : parseInt(junkfact),
 		"day_code" : daycode,
 		"notes": thenotes
@@ -53,7 +57,7 @@ function addNewSub(junkfact, thenotes)
 	document.forms.mainform.notes.value = "";
 	document.forms.mainform.junkfactor.value = "1";
 	
-	const newitem = buildJunkFoodLogItem(newrec);
+	const newitem = buildItem("junk_food_log", newrec);
 	newitem.registerNSync();
 	redisplay();	
 }
@@ -74,6 +78,8 @@ function redisplay()
 	redispFullTable();
 	
 	redispSummTable();
+
+	redispStatTable();
 }
 
 function junkWeightSince(daycode) 
@@ -139,6 +145,51 @@ function redispSummTable()
 	document.getElementById('summtable').innerHTML = tablestr;
 }
 
+// This is the consumption target, which is the number of days
+// since the epoch times a weight factor.
+function getConsumptionTarget()
+{
+	const daysince = SYSTEM_START_DATE.daysUntil(getTodayCode()) + 1;
+
+	const consperday = YEARLY_CONSUMPTION_TARGET / 365;
+	return Math.floor(consperday * daysince);
+}
+
+
+// Display the status table - number of JF items since "epoch",  July 1, 2021
+// Show a warning of depending on how far above the target number I am.
+function redispStatTable()
+{
+	const junksince = junkWeightSince(SYSTEM_START_DATE);
+	const constarget = getConsumptionTarget();
+
+	const excess = junksince - constarget;
+
+	const colorstr = 
+		excess < 5 
+			? (excess < 0  ? "lightgreen" : "yellow") 
+			: (excess < 10 ? "red" : "red");
+
+	const tablestr = `
+		<table class="basic-table" width="40%">
+		<tr>
+		<th>Total</th>
+		<th>Target</th>
+		<th>Excess</th>
+		<th>Status</th>
+		</tr>
+		<tr>
+		<td>${junksince}</td>
+		<td>${constarget}</td>
+		<td>${excess}</td>
+		<td style="background-color: ${colorstr};"></td>
+		</tr>
+		</table>
+	`;
+
+
+	populateSpanData({"status_table" : tablestr});
+}
 
 function redispFullTable()
 {
@@ -230,6 +281,10 @@ Notes:
 <h4>Summary</h4>
 
 <div id="summtable"></div>
+
+<h4>Control Info</h4>
+
+<div id="status_table"></div>
 
 
 
