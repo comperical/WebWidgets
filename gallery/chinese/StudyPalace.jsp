@@ -19,6 +19,8 @@
 
 <script>
 
+TARGET_REVIEWS_PER_DAY = 30;
+
 CURRENT_PROMPT_ITEM = computePromptItem();
 
 
@@ -98,34 +100,76 @@ function showAnswer()
 	toggleHidden4Class('prompt_answer');
 }
 
+
+/* 
+Okay, this approach based on time analysis has TONS of problems.
+One is time parsing, which is a fiasco
+But also, the code becomes very slow since you need to do time computations on all these records, 
+and there are a lot of them
+Instead, just look at the most recent N records, and skip them
+*/
+/*
 function getRecentPromptIdSet() 
 {
-	var items = getItemList("review_log").sort(proxySort(itm => [itm.getId()])).reverse();
-	var recentlist = [];
-	
-	items.forEach(function(itm) {
-	
-		if(recentlist.length > 50)
-			{ return; }
-		
-		recentlist.push(itm.getItemId());
-	});
-	
-	return recentlist;	
-}
+    const cutoff = exactMomentNow().withAddedMilli(-DAY_MILLI)
 
+    const recentset = new Set();
+
+    getItemList("review_log").forEach(function(itm) {
+    
+        // Violating my own rule, timestamps should have timezone as part of variable or column name.
+        const logmoment = exactMomentFromIsoBasic(itm.getTimeStamp(), "PST");
+
+        console.log("Item time: " + logmoment.getEpochTimeMilli());
+        console.log("Cutoff time: " + cutoff.getEpochTimeMilli());
+
+        if(logmoment.getEpochTimeMilli() < cutoff.getEpochTimeMilli())
+            { return; }
+
+        recentset.add(itm.getItemId());
+    });
+    
+    return recentset;  
+}
+*/
+
+function getRecentPromptIdSet(backup) 
+{
+	const recentlist = getItemList("review_log").sort(proxySort(item => [item.getTimeStamp()]));
+    const recentset = new Set();
+
+    while(recentset.size < backup && recentlist.length > 0) {
+    	const nextone = recentlist.pop();
+    	// console.log("Adding next one " + nextone.getTimeStamp() + " ID is " + nextone.getItemId());
+    	recentset.add(nextone.getItemId());
+    }
+
+    return recentset;
+}
 
 function computePromptItem()
 {
 	// Okay this is the computation of the item with the lowest score
 	const statinfo = computeStatInfo();
-	const recentids = getRecentPromptIdSet();
-	// console.log(recentids);
+	const recentids = getRecentPromptIdSet(TARGET_REVIEWS_PER_DAY);
+	
+	// console.log("Stat Info size is " + Object.keys(statinfo).length);
+	// console.log("receit IDs are " + recentids);
 	// GOD DAMMIT JAVASCRIPT
-	const okayids = Object.keys(statinfo).filter(charid => recentids.indexOf(parseInt(charid)) == -1);
-	// console.log(okayids);
+	// This line has fucked me up MULTIPLE times
 
+	// Okay the issue here is that somehow when you call Object.keys, or even iterate through the keys,
+	// you get STRINGS instead of integers, even though the keys of statinfo are integers!!!!
+	// Since the recent ID set holds integers, the containment check will return false
+	// Okay, the point is that Javascript objects have property NAMES
+	const okayids = Object.keys(statinfo).filter(function(charid) { return !recentids.has(parseInt(charid)); });	
 	const lowestid = minWithProxy(okayids, it => statinfo[it]["net_score"]);
+
+	// console.log("All IDS " + Object.keys(statinfo).length);
+
+	// console.log("Recents IDS " + recentids.size);
+	// console.log("Okay IDS " + okayids.length);
+
 	
 	// const allitems = getItemList("palace_item");	
 	// return allitems[Math.floor(Math.random()*allitems.length)];
@@ -133,7 +177,6 @@ function computePromptItem()
 	
 	return lookupItem("palace_item", lowestid);
 }
-
 
 function redisplay()
 {	
@@ -155,7 +198,6 @@ function redisplay()
 		<td>${CURRENT_PROMPT_ITEM.getExtraNote()}</td>
 		</tr>
 	`;
-
 
 	{
 		const confidx = getConfounderIndex();
@@ -200,8 +242,6 @@ function redisplay()
 		"info_table" : infotable,
 		"thecharacter" : CURRENT_PROMPT_ITEM.getHanziChar()
 	});
-
-
 }
 
 

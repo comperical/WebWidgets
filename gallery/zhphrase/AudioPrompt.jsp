@@ -15,6 +15,8 @@
 
 <script>
 
+TARGET_REVIEWS_PER_DAY = 30;
+
 RECENT_ANSWER = null;
 
 // Toggle this to flip between prompt and response
@@ -63,33 +65,30 @@ function repeatPrompt()
     redisplay();
 }
 
-// TODO: this code is replicated in StudyPrompt, other places
-function getRecentPromptIdSet() 
-{
-    var items = getItemList("zh_phr_rev_log").sort(proxySort(itm => [itm.getId()])).reverse();
-    var recentlist = [];
-    
-    items.forEach(function(itm) {
-    
-        if(recentlist.length > 50)
-            { return; }
-        
-        recentlist.push(itm.getItemId());
-    });
-    
-    return recentlist;  
-}
 
+function getRecentPromptIdSet(backup) 
+{
+    const recentlist = getItemList("zh_phr_rev_log").sort(proxySort(item => [item.getTimeStamp()]));
+    const recentset = new Set();
+
+    while(recentset.size < backup && recentlist.length > 0) {
+        const nextone = recentlist.pop();
+        // console.log("Adding next one " + nextone.getTimeStamp() + " ID is " + nextone.getItemId());
+        recentset.add(nextone.getItemId());
+    }
+
+    return recentset;
+}
 
 // TODO: this code is replicated in StudyPrompt.jsp
 function computePromptItem()
 {
     // Okay this is the computation of the item with the lowest score
     const statinfo = computePhraseStatInfo();
-    const recentids = getRecentPromptIdSet();
+    const recentids = getRecentPromptIdSet(TARGET_REVIEWS_PER_DAY);
 
     // GOD DAMMIT JAVASCRIPT
-    var okayids = Object.keys(statinfo).filter(charid => recentids.indexOf(parseInt(charid)) == -1);
+    var okayids = Object.keys(statinfo).filter(charid => !recentids.has(parseInt(charid)));
     // console.log(okayids);
 
     if(okayids.length == 0) {
@@ -178,6 +177,13 @@ function redisplay()
 
 
     populateSpanData({ "maindata" : mainstr });
+
+
+    if(RECENT_ANSWER == null) 
+    {
+        // This seems to work on the 2nd and subsequent loads.
+        document.getElementsByName("user_response")[0].select();
+    }
     
 }
 

@@ -9,6 +9,8 @@
 
 <%= DataServer.basicInclude(request) %>
 
+<script src="LinkDisplay.js"></script>
+
 <script>
 
 var EDIT_STUDY_ITEM = -1;
@@ -24,11 +26,9 @@ var MAIN_CATEGORY = getItemList("link_categ")[0].getId();
 
 function createNew()
 {
-	const newid = newBasicId("link_main");
 	const categid = MAIN_CATEGORY;
 		
 	const newrec = {
-		"id": newid,
 		"link_url" : "http://danburfoot.net",
 		"short_desc" : "NotYetSet",
 		"cat_id" : categid
@@ -36,7 +36,7 @@ function createNew()
 	
 	var newlinkitem = buildItem("link_main", newrec);		
 	newlinkitem.registerNSync();	
-	editStudyItem(newid);
+	editStudyItem(newlinkitem.getId());
 }
 
 function createNewCategory()
@@ -44,15 +44,13 @@ function createNewCategory()
 	const newcat = prompt("Please enter a name for this category : ");
 	if(newcat)
 	{
-		const newid = newBasicId("link_categ");
 		const newrec = {
-			"id": newid,
 			"short_code" : newcat,
 			"full_desc" : "...",
 			"is_active" : 1
 		};
 		
-		const newitem = buildLinkCategItem(newrec);		
+		const newitem = buildItem("link_categ", newrec);		
 		newitem.registerNSync();
 		redisplay();
 	}
@@ -233,11 +231,14 @@ function redisplayEditItem()
 	
 	const edititem = getEditRecord();
 	const optmap = getCategoryMap();
+	const categlist = getSortedCategoryList();
+
 	// const selectstr = getSelectString(optmap, edititem.getCatId());
 	const selectstr = ""
 
 	const optsel = buildOptSelector()
 						.setFromMap(optmap)
+						.sortByDisplay()
 						.setSelectedKey(MAIN_CATEGORY)
 						.setSelectOpener(`<select name="item_category_sel" onChange="javascript:updateCategory()">`)
 						.getSelectString();
@@ -347,26 +348,26 @@ function getLinkTableStr(linkmainlist)
 	var tablestr = `
 		<table  class="basic-table" width="70%">
 		<tr>
-		<th>ID</th>
 		<th>Category</th>
 		<th>ShortDesc</th>
-		<th>Link</th>
-		<th>---</th>
+		<th width="30%">Link</th>
+		<th width="10%">---</th>
 		</tr>
 	`;
 						
 		
 	linkmainlist.forEach(function(linkitem) {
 		
-		var shorturl = linkitem.getLinkUrl();
+		var shorturl = getLinkDisplay(linkitem.getLinkUrl());
 		if(shorturl.length > 40)
 			{ shorturl = shorturl.substring(0, 40)+"..."; }		
 		
 		const categitem = lookupItem("link_categ", linkitem.getCatId());
 
+		// console.log(`Link display is ${linkdisplay} for link  ${linkitem.getLinkUrl()}`);
+
 		tablestr += `
 			<tr>
-			<td>${linkitem.getId()}</td>
 			<td>${categitem.getShortCode()}</td>
 			<td>${linkitem.getShortDesc()}</td>
 			<td>
@@ -391,14 +392,18 @@ function getLinkTableStr(linkmainlist)
 	return tablestr;
 }
 
-
-function redisplayMainTable()
-{		
-	const categlist = getItemList("link_categ")
+function getSortedCategoryList() 
+{
+	return getItemList("link_categ")
 				.filter(ctg => ctg.getIsActive() == 1)
 				.map(ctg => ctg.getShortCode())
 				.sort();
+}
 
+
+function redisplayMainTable()
+{		
+	const categlist = getSortedCategoryList();
 
 	const curcatname = lookupItem("link_categ", MAIN_CATEGORY).getShortCode();
 

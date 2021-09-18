@@ -17,6 +17,21 @@ function buildOptSelector()
 	return new OptSelector();	
 }
 
+// Maintaining the K/V pairing, sort by display values.
+OptSelector.prototype.sortByDisplay = function()
+{
+	const pairlist = [];
+
+	for(var idx = 0; idx < this._keyList.length; idx++)
+		{ pairlist.push([this._dspList[idx], this._keyList[idx]]);	}
+
+	pairlist.sort();
+
+	this._dspList = pairlist.map(pr => pr[0]);
+	this._keyList = pairlist.map(pr => pr[1]);
+	return this;
+}
+
 
 // Sets the keys and values from the given flat list
 // In this case keys and values will be the same.
