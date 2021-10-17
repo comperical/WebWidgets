@@ -11,16 +11,7 @@
 
 <%@include file="../../admin/AuthInclude.jsp_inc" %>
 
-<%
-	ArgMap argMap = HtmlUtil.getArgMap(request);
-	
-	int dayTotal = argMap.getInt("daytotal", 60);
-
-	OptSelector dayTotalSel = new OptSelector(Util.listify(30, 60, 90, 120, 150, 180, 270, 360));
-	
-	DayCode endDate = FinanceSystem.getLastMonthDay();
-	DayCode startDate = endDate.nDaysBefore(dayTotal);
-	
+<%		
 	Set<String> financeNeed = FinanceSystem.getNeedUploadMonthSet();
 
 %>
@@ -50,16 +41,46 @@
 
 </style>
 
+
 <script>
+
+
+function getLastMonthDay() 
+{
+	// Last day of month of last record
+	const items = getItemList("finance_main").sort(proxySort(item => [item.getTransactDate()]));
+
+	const lastrec = lookupDayCode(items[items.length-1].getTransactDate());
+	var daypntr = lastrec;
+
+	const day2Month = function(dc) { return dc.getDateString().substring(0,7); }
+
+
+	while(day2Month(lastrec) == day2Month(daypntr))
+		{ daypntr = daypntr.dayAfter(); }
+
+	return daypntr.dayBefore().getDateString();
+}
+
+AGG_WINDOW_OMEGA = getLastMonthDay();
+
+AGG_WINDOW_SIZE = 60;
+
+function getAggWindowAlpha() 
+{
+	return lookupDayCode(AGG_WINDOW_OMEGA).nDaysBefore(AGG_WINDOW_SIZE).getDateString();
+}
+
 
 HIDDEN_MAP = { "taxes" : true };
 
 PINNED_MAP = { };
 
-function changeDayTotal()
+function updateAggWindowSize() 
 {
-	const daytotal = getDocFormValue("daytotal");
-	submit2Base({"daytotal" : daytotal });
+	const ndays = getDocFormValue("agg_window_size");
+	AGG_WINDOW_SIZE = parseInt(ndays);
+	redisplay();
 }
 
 function getCat2ReccMap(notemap)
@@ -139,7 +160,7 @@ function getDollarFormat(centamount)
 
 function getDataFrameList()
 {
-	var cat2NoteMap = getCat2NoteMap('<%= startDate %>', '<%= endDate %>');
+	var cat2NoteMap = getCat2NoteMap(getAggWindowAlpha(), AGG_WINDOW_OMEGA);
 	var cat2ReccMap = getCat2ReccMap(cat2NoteMap);
 
 	var framelist = [];
@@ -165,13 +186,13 @@ function getDataFrameList()
 
 		if(expcat in PINNED_MAP) 
 		{
-			centsum = (-PINNED_MAP[expcat] * <%= dayTotal %>)*100;
+			centsum = (-PINNED_MAP[expcat] * AGG_WINDOW_SIZE)*100;
 		}
 		
 		frameitem.expcat = expcat;
 		frameitem.centsum = centsum;
 		frameitem.numrec = notelist.length;
-		frameitem.perday = (centsum / <%= dayTotal %>);
+		frameitem.perday = (centsum / AGG_WINDOW_SIZE);
 		frameitem.extrap2year = (frameitem.perday * 365);
 		
 		framelist.push(frameitem);
@@ -211,8 +232,43 @@ function removeHiddenMarker(category)
 	redisplay();	
 }
 
+function getAggWindowInfo() 
+{
+
+	var infostr = `
+		<h4>${getAggWindowAlpha()} :: ${AGG_WINDOW_OMEGA}</h4>
+	`;
+
+	const ndaylist = [30, 60, 90, 120, 180, 365, 730];
+
+	const optsel = buildOptSelector()
+						.setKeyList(ndaylist)
+						.setSelectedKey(AGG_WINDOW_SIZE)
+						.setSelectOpener(`<select name="agg_window_size" onChange="javascript:updateAggWindowSize()">`)
+						.getSelectString();
+
+	infostr += `
+		Last NDays: ${optsel}
+	`;
+
+	return infostr;
+}
+
+function handleNavBar() 
+{
+	const headerinfo = [
+        ["Finance Log", "FinanceLog.jsp"],	
+        ["Finance Agg", "FinanceAgg.jsp"],
+        ["Finance Plan", "FinancePlanner.jsp"]
+    ];
+
+    populateTopNavBar(headerinfo, "Finance Agg");
+}
+
 function redisplay()
 {
+	handleNavBar();
+
 	var tablestr = `
 		<table class="basic-table"  width="75%">
 		<tr>
@@ -304,7 +360,8 @@ function redisplay()
 		"aggtable" : tablestr,
 		"dailytotal" : getDollarFormat(dailytotal),
 		"yearlytotal" : getDollarFormat(yearlytotal),
-		"hidden_table" : getHiddenTableString()
+		"hidden_table" : getHiddenTableString(),
+		"agg_window_info" : getAggWindowInfo()
 	});
 }
 
@@ -359,13 +416,7 @@ function getHiddenTableString()
 
 <center>
 
-<a href="FinanceLog.jsp">Finance Log</a>
----
-<a href="FinancePlanner.jsp">Planner</a>
-
-
-
-<h3>Finance Aggregation</h3>
+<div class="topnav"></div>
 
 <% 
 	if(!financeNeed.isEmpty())
@@ -376,17 +427,7 @@ Should upload for month : <b><%= Util.join(financeNeed, " , ") %></b>
 
 <br/>
 
-<h4>Aggregation for Window: <%= startDate %> , <%= endDate %></h4>
-
-
-
-<form>
-Last #Day: <select name="daytotal" onChange="javascript:changeDayTotal()">
-<%= dayTotalSel.getSelectStr(dayTotal) %>
-</select>
-</form>
-
-
+<div id="agg_window_info"></div>
 
 
 <h4>

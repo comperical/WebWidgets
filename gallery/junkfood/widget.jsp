@@ -167,7 +167,7 @@ function redispStatTable()
 
 	const colorstr = 
 		excess < 5 
-			? (excess < 0  ? "lightgreen" : "yellow") 
+			? (excess <= 0  ? "lightgreen" : "yellow") 
 			: (excess < 10 ? "red" : "red");
 
 	const tablestr = `

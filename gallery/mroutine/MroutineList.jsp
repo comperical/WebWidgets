@@ -180,11 +180,23 @@ function getPageComponent()
 
 function redisplay()
 {
+	handleNavBar();
+
 	redisplayMainTable();
 	
 	redisplayEditItem();
 		
 	setPageComponent(getPageComponent());
+}
+
+function handleNavBar() {
+
+	const headerinfo = [
+        ["Morning Routine", "widget.jsp"],
+        ["Phases", "MroutineList.jsp"]
+    ];
+
+    populateTopNavBar(headerinfo, "Phases");
 }
 
 function redisplayMainTable()
@@ -285,9 +297,9 @@ function redisplayEditItem()
 
 <span class="page_component" id="main_component">
 
+<div class="topnav"></div>
 
-<h3>Morning Routine Phases</h3>
-
+<br/>
 
 
 <form>

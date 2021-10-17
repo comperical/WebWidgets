@@ -318,9 +318,22 @@ function reDispInspectItem()
 	});
 }
 
+function handleNavBar() 
+{
+    const headerinfo = [
+        ["Finance Log", "FinanceLog.jsp"],  
+        ["Finance Agg", "FinanceAgg.jsp"],
+        ["Finance Plan", "FinancePlanner.jsp"]
+    ];
+
+    populateTopNavBar(headerinfo, "Finance Log");
+}
+
 
 function redisplay()
 {
+	handleNavBar();
+
 	reDispNoCatTable();
 	
 	reDispCatOkTable();
@@ -339,14 +352,12 @@ function redisplay()
 
 <center>
 
+<div class="topnav"></div>
+
+<br/>
 <br/>
 
 <span class="page_component" id="main_display">
-
-<a href="FinanceAgg.jsp">Aggregation</a>
-
-<h3>Finance Log</h3>
-
 
 <div id="nocattable"></div>
 

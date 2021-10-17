@@ -148,8 +148,23 @@ function getPageComponent()
 	return SHOW_BASIC_LOG ? "chore_log" : "chore_list";
 }
 
+function handleNavBar() {
+
+	const selected = SHOW_BASIC_LOG ? "Chore Log" : "Chore List";
+
+	const headerinfo = [
+        ["Chore Log", "javascript:goToLog()"],
+        ["Chore List", "javascript:goToDefinition()"]
+    ];
+
+    populateTopNavBar(headerinfo, selected);
+}
+
+
 function redisplay()
 {
+	handleNavBar();
+
 	redisplayChoreList();
 	
 	redisplayChoreItem();
@@ -257,9 +272,15 @@ function redisplayChoreItem()
 }
 
 
-function toggleLogMode()
+function goToLog() 
 {
-	SHOW_BASIC_LOG = !SHOW_BASIC_LOG;	
+	SHOW_BASIC_LOG = true;
+	redisplay();
+}
+
+function goToDefinition() 
+{
+	SHOW_BASIC_LOG = false;
 	redisplay();
 }
 
@@ -422,11 +443,12 @@ function flipActive()
 
 <center>
 
+<div class="topnav"></div>
+
 <span class="page_component" id="chore_list">
 
-<h3>Chore Listing</h3>
 
-<a href="javascript:toggleLogMode()">Chore Log</a>
+<br/>
 
 <form>
 Show InActive
@@ -443,10 +465,6 @@ Show InActive
 </span>
 
 <span class="page_component" id="chore_log">
-
-<h3>Chore Logging</h3>
-
-<a href="javascript:toggleLogMode()">Chore List</a>
 
 <br/>
 
