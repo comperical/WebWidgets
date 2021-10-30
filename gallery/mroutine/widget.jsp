@@ -41,12 +41,18 @@ function getActivePhase()
     var phaselist = getItemList("mroutine_phase").filter(mrp => mrp.getIsActive() == 1);
     
     phaselist.sort(proxySort(a => [a.getOrderKey()]));
-    
+    const todayOfWeek = getTodayCode().getShortDayOfWeek();
+
     for(var pi in phaselist)
     {
         var phs = phaselist[pi];
-        var lastup = logmap[phs.getId()];
+        const lastup = logmap[phs.getId()];
         
+        // If this phase does not display on today's day of week, skip.
+        const showdays = getDayList4Item(phs);
+        if(!showdays.includes(todayOfWeek))
+            { continue; }
+
         if(lastup != getTodayCode().dateString)
             { return phs; }
     }
@@ -84,6 +90,17 @@ function isTodayLog(mrlog)
     
 }
 
+function getDayList4Item(phaseitem)
+{
+    const daystr = phaseitem.getOnDayList();
+
+    if(daystr == "" || daystr == "all")
+        { return [... SHORT_DAY_WEEK_LIST]; }
+
+    return daystr.split(",");
+}
+
+
 function handleNavBar() {
 
 	const headerinfo = [
@@ -107,6 +124,7 @@ function redisplay()
         <th>...</th>
         </tr>
     `;
+
 
     var complist = getItemList("mroutine_log").filter(mrlog => isTodayLog(mrlog));
     complist.sort(proxySort(a => [a.getLogTimePst])).reverse()

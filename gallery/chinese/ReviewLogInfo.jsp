@@ -47,7 +47,8 @@ function reDispAggTable()
 		<th>Character</th>
 		<th>NumReview</th>
 		<th>LastReview</th>
-		<th>NetScore</th>
+		<th>Base Score</th>
+		<th>Net Score</th>
 		<th>...</th>
 		</tr>
 	`;
@@ -72,6 +73,7 @@ function reDispAggTable()
 			<td>${palaceitem.getHanziChar()}</td>
 			<td>${statpack["num_review"]}</td>
 			<td>${lastrevtime}</td>
+			<td>${statpack["base_score"].toFixed(2)}</td>
 			<td>${statpack["net_score"].toFixed(2)}</td>
 			<td>
 			<a href="javascript:markStudyItem(${palaceid})">

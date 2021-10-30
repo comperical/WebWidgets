@@ -10,7 +10,7 @@
 
 <script src="ChineseTech.js"></script>
 
-<%= DataServer.basicIncludeOnly(request, "palace_item", "hanzi_data", "learning_schedule", "word_memory") %>
+<%= DataServer.include(request, "tables=palace_item,hanzi_data,learning_schedule,word_memory") %>
 
 <script>
 

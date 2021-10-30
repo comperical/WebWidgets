@@ -10,12 +10,11 @@
 
 <script src="ChineseTech.js"></script>
 
-<%= DataServer.basicIncludeOnly(request, "palace_item", "review_log", "hanzi_data", "confounder") %>
+<%= DataServer.include(request, "tables=palace_item,review_log,hanzi_data,confounder") %>
 
-<%= DataServer.includeIfAvailable(request, "minitask", "mini_task_list") %>
+<%= DataServer.includeIfOkay(request, "widgetname=minitask&tables=mini_task_list") %>
 
-<%= DataServer.includeIfAvailable(request, "cedict", "hanzi_example") %>
-
+<%= DataServer.includeIfOkay(request, "widgetname=cedict&tables=hanzi_example") %>
 
 <script>
 

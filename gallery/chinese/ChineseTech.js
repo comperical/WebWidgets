@@ -158,6 +158,7 @@ function computeStatInfoSub(itemtable, logtable)
 		// const jitter = 0;
 
 		statpack["num_review"] = 0;
+		statpack["base_score"] = 0;
 		statpack["net_score"] = jitter;
 		statpack["last_review"] = "2000";
 		statmap[pitem.getId()] = statpack;						

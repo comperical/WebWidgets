@@ -268,20 +268,24 @@ function getShowTypeList()
 function setDefaultShow()
 {
 	var params = getUrlParamHash();
-	
+	var foundit = false;
+
 	if('default_show' in params)
 	{
-		for(var ti in MASTER_TYPE_LIST)
-		{
-			var showme = typelist[ti] == params['default_show'];
-			var button = getUniqElementByName("show_" + typelist[ti]);
-			button.checked = showme;
-			
-			// getUniqElementByName('show_type').value = params['default_show'];
-			// console.log(params);
-		}
+		document.getElementsByName("show_task_type").forEach(function(n) {
+
+			const checkit = params['default_show'] == n.value;
+			if (checkit) {
+				n.checked = true;
+				foundit = true;
+			}
+		});
 	}
 	
+	if(!foundit) {
+		alert(`Warning, requested default show ${params['default_show']}, but options are ${MASTER_TYPE_LIST}`);
+	}
+
 	redisplay();
 }
 

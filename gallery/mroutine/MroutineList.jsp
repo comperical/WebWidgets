@@ -45,19 +45,18 @@ function cycleStatus(cycid)
 
 function createNew()
 {	
-	var shortname = prompt("Name of new phase: ");
+	const shortname = prompt("Name of new phase: ");
+	const neworder = 0;
 	
 	if(shortname)
-	{	
-		var newid = newBasicId("mroutine_phase");
-			
-		var comrecord = {
-			"id" : newid,
+	{				
+		const comrecord = {
 			"is_active" : 1,
 			"short_name" : shortname,
 			"full_desc": "NotYetSet",
 			"web_link" : "http://danburfoot.net",
-			"order_key" : newid
+			"order_key" : neworder,
+			"on_day_list" : "all"
 		};
 		
 		const newitem = buildItem("mroutine_phase", comrecord);
@@ -168,6 +167,45 @@ function setEditStudyItem(studyid)
 	redisplay();
 }
 
+function addOnDayItem()
+{
+	const showitem = getEditStudyItem();
+	const newday = getDocFormValue("on_day_sel");
+
+	var daylist = getDayList4Item(showitem);
+
+	if(daylist.includes(newday))
+	{
+		alert("Already have it!");
+		return;
+	}
+
+	daylist = [newday].concat(daylist);
+	showitem.setOnDayList(composeSaveString(daylist));
+	showitem.syncItem();
+	redisplay();
+}
+
+function composeSaveString(daylist) 
+{
+	daylist.sort(proxySort(dow => [SHORT_DAY_WEEK_LIST.indexOf(dow)]));
+	return daylist.join(",");
+}
+
+function removeDay4Item(xday) 
+{
+	const showitem = getEditStudyItem()
+	const prevlist = getDayList4Item(showitem);
+	const remidx = prevlist.indexOf(xday);
+
+	massert(remidx != -1, `Attempt to remove day ${xday} from list, but list is ${prevlist}`);
+	prevlist.splice(remidx, 1);
+
+	showitem.setOnDayList(composeSaveString(prevlist));
+	showitem.syncItem();
+	redisplay();
+}
+
 function back2Main()
 {
 	setEditStudyItem(-1);
@@ -189,6 +227,16 @@ function redisplay()
 	setPageComponent(getPageComponent());
 }
 
+function getDayList4Item(phaseitem)
+{
+	const daystr = phaseitem.getOnDayList();
+
+	if(daystr == "" || daystr == "all")
+		{ return [... SHORT_DAY_WEEK_LIST]; }
+
+	return daystr.split(",");
+}
+
 function handleNavBar() {
 
 	const headerinfo = [
@@ -206,6 +254,7 @@ function redisplayMainTable()
 	<tr>
 	<th>OrderKey</th>
 	<th>Name</th>
+	<th>Days</th>	
 	<th>Active?</th>
 	<th>---</th>
 	</tr>
@@ -242,6 +291,14 @@ function redisplayMainTable()
 			
 			const activstr = onephase.getIsActive() == 1 ? "Y" : "N";
 					
+			const daylist = getDayList4Item(onephase);
+			var dayshow = daylist.length == 7 ? "all" : daylist;
+
+			if(daylist.length == 5 && !daylist.includes("Sun") && !daylist.includes("Sat")) 
+				{ dayshow = "workdays"; }
+
+			// dayshow = daylist.length == 5 && !daylist.includes("Sun") && !daylist.includes("Sat") ? "workdays" : dayshow;
+
 			const mainrow = `
 			<tr>
 			<td>${onephase.getOrderKey()}
@@ -249,7 +306,8 @@ function redisplayMainTable()
 			<a href="javascript:editOrderKey(${onephase.getId()})"><img src="/life/image/edit.png" height="18"></a>
 			</td>			
 			<td>${onephase.getShortName()}</td>
-			<td>${activstr}</td>
+			<td>${dayshow}</td>
+			<td>${activstr}</td>			
 			<td>${opstuff}</td>
 			</tr>
 			`;
@@ -264,23 +322,56 @@ function redisplayMainTable()
 	document.getElementById("maintable").innerHTML = mtstr;
 }
 
+function getEditDayListData(daylist) 
+{
+	var s = "";
+
+	daylist.forEach(function(day) {
+
+		const a = `
+			${day} <a href="javascript:removeDay4Item('${day}')"><img src="/life/image/remove.png" height="16"/></a>
+
+			&nbsp;
+			&nbsp;
+			&nbsp;
+		`;
+
+		s += a;
+	});
+
+	return s;
+}
+
 function redisplayEditItem()
 {
 	if(EDIT_STUDY_ITEM == -1)
 		{ return; }
 
 	var showItem = getEditStudyItem();
-		
+	const currentDays = getDayList4Item(showItem);
+	const daylistEdit = getEditDayListData(currentDays);
+
+	const addDays = ["---"].concat(SHORT_DAY_WEEK_LIST.filter(dow => !currentDays.includes(dow)));
+
+	const dayaddsel = buildOptSelector()
+						.setKeyList(addDays)
+						.setSelectOpener(`<select name="on_day_sel" onChange="javascript:addOnDayItem()">`)
+						.getSelectString();
+
+	const showSelStr = currentDays.length == 7 ? "" : dayaddsel;
 	// Okay, this took me a while to get right. The issue is that 
 	// the standard string.replace(...) won't do a global, and there is no replaceAll
 	const desclinelist = showItem.getFullDesc().replace(/\n/g, "<br/>");
 	
 	const spandata = {
+		"item_id" : showItem.getId(),
 		"itemname" : showItem.getShortName(),
 		"web_link" : showItem.getWebLink(),
 		"itemdescline" : desclinelist,
 		"fullitemdesc" : showItem.getFullDesc(),
-		"isactive" : showItem.getIsActive() == 1 ? "YES" : "NO"
+		"isactive" : showItem.getIsActive() == 1 ? "YES" : "NO",
+		"on_days" : daylistEdit,
+		"on_day_sel_span" : showSelStr,
 	};
 	
 	populateSpanData(spandata);
@@ -327,11 +418,16 @@ Show InActive:
 
 <br/><br/>
 
-<table width="30%" class="basic-table">
+<table width="60%" class="basic-table">
 <tr>
 <td>Back</td>
 <td></td>
-<td><a href="javascript:back2Main()"><img src="/life/image/leftarrow.png" height="18"/></a></td>
+<td width="20%"><a href="javascript:back2Main()"><img src="/life/image/leftarrow.png" height="18"/></a></td>
+</tr>
+<tr>
+<td>ID</td>
+<td><div id="item_id"></div></td>
+<td></td>
 </tr>
 <tr>
 <td width="50%">Name</td>
@@ -351,6 +447,13 @@ Show InActive:
 </td>
 <td><a href="javascript:flipActive()"><img src="/life/image/cycle.png" height=18/></a></td>
 </tr>    
+
+<tr>
+<td width="50%">Days</td>
+<td><span id="on_days"></span></td>
+<td><span id="on_day_sel_span"></td>
+</tr>    
+
 </table>
 
 <br/>
