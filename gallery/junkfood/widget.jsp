@@ -1,20 +1,7 @@
 
-<%@ page import="net.danburfoot.shared.Util" %>
-<%@ page import="net.danburfoot.shared.DayCode" %>
-<%@ page import="net.danburfoot.shared.HtmlUtil.OptSelector" %>
-
 <%@ page import="lifedesign.basic.LifeUtil" %>
 
 <%@include file="../../admin/AuthInclude.jsp_inc" %>
-
-<%	
-	DayCode jvTodayCode = LifeUtil.getTodayTzAware();	
-	
-	OptSelector dayCodeSel = LifeUtil.standardDateSelector(14);
-	
-	OptSelector intSelector = new OptSelector(Util.range(0, 20)); // hope I don't need more than 20
-	
-%>
 
 <html>
 <head>
@@ -34,7 +21,7 @@ YEARLY_CONSUMPTION_TARGET = 200;
 
 function addNew()
 {	
-	const junkfact = getDocFormValue("junkfactor");
+	const junkfact = getDocFormValue("junk_factor_sel");
 	const thenotes = getDocFormValue("notes");
 	addNewSub(junkfact, thenotes);
 }
@@ -46,7 +33,7 @@ function addClean()
 
 function addNewSub(junkfact, thenotes)
 {
-	const daycode = getDocFormValue("day_code");
+	const daycode = getDocFormValue("day_code_sel");
 	
 	const newrec = {
 		"junkfactor" : parseInt(junkfact),
@@ -55,7 +42,7 @@ function addNewSub(junkfact, thenotes)
 	};		
 	
 	document.forms.mainform.notes.value = "";
-	document.forms.mainform.junkfactor.value = "1";
+	document.forms.mainform.junk_factor_sel.value = "1";
 	
 	const newitem = buildItem("junk_food_log", newrec);
 	newitem.registerNSync();
@@ -75,6 +62,8 @@ function deleteItem(killid)
 
 function redisplay()
 {
+	redispControls();
+
 	redispFullTable();
 	
 	redispSummTable();
@@ -100,6 +89,30 @@ function junkWeightSince(daycode)
 	
 	return jktotal;
 }
+
+function redispControls()
+{
+	const junksel = buildOptSelector()
+						.setKeyList([... Array(10).keys()])
+						.setSelectedKey(1)
+						.setSelectOpener(`<select name="junk_factor_sel">`)
+						.getSelectString();
+
+
+	const displaymap = getNiceDateDisplayMap(14);
+
+	const datesel = buildOptSelector()
+					.setFromMap(displaymap)
+					.setSelectedKey(getTodayCode().dayBefore().getDateString())
+					.setSelectOpener(`<select name="day_code_sel">`)
+					.getSelectString();
+
+	populateSpanData({
+		"day_code_sel_span" : datesel,
+		"junk_factor_sel_span" : junksel
+	})
+}
+
 
 function redispSummTable() 
 {
@@ -259,13 +272,11 @@ function redispFullTable()
 
 <form name="mainform">
 Junk Weight:
-<select name="junkfactor">
-<%= intSelector.getSelectStr(1) %>
-</select>
+<span id="junk_factor_sel_span"></span>
+
 Date:
-<select name="day_code">
-<%= dayCodeSel.getSelectStr(jvTodayCode.dayBefore()) %>
-</select>
+<span id="day_code_sel_span"></span>
+
 Notes:
 <input type="text" name="notes"/>
 </form>

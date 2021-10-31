@@ -267,20 +267,19 @@ function getShowTypeList()
 
 function setDefaultShow()
 {
-	var params = getUrlParamHash();
+	const params = getUrlParamHash();
+	if (!('default_show' in params)) 
+		{params['default_show'] = 'life';}
+
 	var foundit = false;
 
-	if('default_show' in params)
-	{
-		document.getElementsByName("show_task_type").forEach(function(n) {
-
-			const checkit = params['default_show'] == n.value;
-			if (checkit) {
-				n.checked = true;
-				foundit = true;
-			}
-		});
-	}
+	document.getElementsByName("show_task_type").forEach(function(n) {
+		const checkit = params['default_show'] == n.value;
+		if (checkit) {
+			n.checked = true;
+			foundit = true;
+		}
+	});
 	
 	if(!foundit) {
 		alert(`Warning, requested default show ${params['default_show']}, but options are ${MASTER_TYPE_LIST}`);
