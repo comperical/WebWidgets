@@ -1,31 +1,5 @@
 
-<%@ page import="java.util.*" %>
-
-<%@ page import="net.danburfoot.shared.*" %>
-<%@ page import="net.danburfoot.shared.HtmlUtil.*" %>
-
-<%@ page import="lifedesign.basic.*" %>
-<%@ page import="lifedesign.classic.*" %>
-
 <%@include file="../../admin/AuthInclude.jsp_inc" %>
-
-<%
-	ArgMap argMap = HtmlUtil.getArgMap(request);
-	
-	DayCode jvTodayCode = LifeUtil.getTodayTzAware();
-	
-	OptSelector ratingSel = new OptSelector(Util.range(1, 10));
-	
-	DayCode todayCode = DayCode.getToday();
-		
-	OptSelector endHourSel = new OptSelector(Util.range(1, 24));
-	
-	OptSelector timeSpentSel = new OptSelector(LifeUtil.getHourTimeMap());
-	
-	OptSelector dayCodeSel = new OptSelector(DayCode.getDayRange(DayCode.getToday().nDaysBefore(10), DayCode.getToday().nDaysAfter(2)));
-	
-	String longPlanDow = TimeUtil.getLongDayOfWeek(jvTodayCode);		
-%>
 
 <html>
 <head>
@@ -37,6 +11,29 @@
 
 <script>
 
+PLAN_DAY_CODE = getTodayCode();
+
+function getHourTimeMap()
+{
+	const hourmap = {
+		30 : "30 min",
+		60 : "60 min",
+		90 : "90 min"
+	}
+
+	for(var exhour = 2; exhour < 10; exhour++) {
+
+		[true, false].forEach(function(ishalf) {
+
+			const halfstr = ishalf ? ".5" : "";
+			const label = `${exhour}${halfstr} hr`;
+			const mincount = exhour * 60 + (ishalf ? 30 : 0);
+			hourmap[mincount] = label;
+		});
+	}
+
+	return hourmap;
+}
 
 function doTemplateImport()
 {
@@ -55,7 +52,7 @@ function doTemplateImport()
 		
 		const record = {
 			"id" : newBasicId("day_plan_main"),
-			"day_code" : getStudyDayCode().getDateString(),
+			"day_code" : PLAN_DAY_CODE.getDateString(),
 			"end_hour" : tmpitem.getEndHour(),
 			"half_hour" : tmpitem.getHalfHour(),
 			"short_desc" : tmpitem.getShortDesc()
@@ -102,19 +99,6 @@ function newByHourSpent()
 	}
 }
 
-function createNewFromEndHour()
-{
-	const itemname = prompt("Item Desc: ");
-	
-	if(itemname)
-	{	
-		createNewSub(
-			getDocFormValue("end_hour"),
-			false,
-			itemname
-		);
-	}
-}
 
 function createWakeUpItem()
 {
@@ -129,7 +113,7 @@ function createNewSub(endhour, ishalf, itemname)
 {
 	const record = {
 		"id" : newBasicId("day_plan_main"),
-		"day_code" : getStudyDayCode().getDateString(),
+		"day_code" : PLAN_DAY_CODE.getDateString(),
 		"end_hour" : endhour,
 		"half_hour" : ishalf ? 1 : 0,
 		"short_desc" : itemname
@@ -138,12 +122,6 @@ function createNewSub(endhour, ishalf, itemname)
 	const newitem = buildItem("day_plan_main", record);
 	newitem.registerNSync();
 	redisplay();
-}
-
-function getStudyDayCode()
-{
-	const pdstr = getDocFormValue("planday");
-	return lookupDayCode(pdstr);
 }
 
 function addTime2Item(itemid)
@@ -200,10 +178,15 @@ function deleteItem(killid)
 	redisplay();
 }
 
+function updatePlanDay()
+{
+	PLAN_DAY_CODE = lookupDayCode(getDocFormValue("plan_day_sel"));
+	redisplay();
+}
+
 function getPlanDayItemList()
 {
-	const studyday = getStudyDayCode();	
-	var itemlist = getItemList("day_plan_main").filter(dp => dp.getDayCode() == studyday.getDateString());
+	var itemlist = getItemList("day_plan_main").filter(dp => dp.getDayCode() == PLAN_DAY_CODE.getDateString());
 	itemlist.sort(proxySort(dp => [dp.getEndHour()]));
 	return itemlist;
 }
@@ -312,17 +295,35 @@ function redisplay()
 	tablestr += `
 		</table>
 	`;
+
+	const timeminsel = buildOptSelector()
+							.setFromMap(getHourTimeMap())
+							.setSelectOpener(`<select name="time_spent_min">`)
+							.getSelectString()
 	
 	const tempsel = buildOptSelector()
 						.setFromMap(getTemplateIdMap())
 						.setSelectOpener(`<select name="temp_id" onChange="javascript:doTemplateImport()">`)
 						.setSelectedKey(-1)
 
+
+	// TODO: this should give a day ahead, the whole point of the day plan is to do it the day before
+	const displaymap = getNiceDateDisplayMap(14);
+
+	const datesel = buildOptSelector()
+					.setFromMap(displaymap)
+					.setSelectedKey(PLAN_DAY_CODE.getDateString())
+					.setSelectOpener(`<select name="plan_day_sel" onChange="javascript:updatePlanDay()">`)
+					.getSelectString();
+
+
 	populateSpanData({
 		"dayplantable" : tablestr,
 		"template_sel_span" : tempsel.getSelectString(),
-		"plan_day_name" : getStudyDayCode().getDayOfWeek(),
-		"plan_day_code" : getStudyDayCode().getDateString().substring(5)
+		"plan_day_name" : PLAN_DAY_CODE.getDayOfWeek(),
+		"time_spent_min_span" : timeminsel,
+		"plan_day_code" : PLAN_DAY_CODE.getDateString().substring(5),
+		"plan_day_sel_span" : datesel
 	});
 
 
@@ -343,27 +344,14 @@ function redisplay()
 <h3>Day Plan for <span id="plan_day_name"></span>, <span id="plan_day_code"></span></h3>
 
 <form>
-Go To: <select name="planday" onChange="javascript:redisplay()">
-<%= dayCodeSel.getSelectStr(jvTodayCode) %>
-</select>
+Go To: <span id="plan_day_sel_span"></span>
 </form>
 
 <div id="dayplantable"></div>
 
 <br/><br/>
 
-End Time: <select name="end_hour">
-<%= endHourSel.getSelectStr("16") %>
-</select>
-
-<a href="javascript:createNewFromEndHour()">
-<img src="/life/image/add.png" width="18"/></a>
-
-<br/><br/>
-
-Hour Spent: <select name="time_spent_min">
-<%= timeSpentSel.getSelectStr("90") %>
-</select>
+Hour Spent: <span id="time_spent_min_span"></span>
 
 <a href="javascript:newByHourSpent()">
 <img src="/life/image/add.png" width="18"/></a>

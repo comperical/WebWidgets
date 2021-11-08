@@ -20,14 +20,17 @@
 <%@include file="../../admin/AssetInclude.jsp_inc" %>
 
 <script src="ChineseTech.js"></script>
+<script src="../hanyu/pin_yin_converter.js"></script>
 
-<%= DataServer.basicIncludeOnly(request, "confounder", "palace_item", "hanzi_data", "review_log") %>
+<%= DataServer.basicIncludeOnly(request, "confounder", "palace_item", "hanzi_data", "review_log", "word_memory") %>
 
 <%= DataServer.includeIfAvailable(request, "cedict", "hanzi_example") %>
 
 <script>
 
 EDIT_STUDY_ITEM = -1;
+
+CHARACTER_VOCAB_MAP = buildChar2VocabMap(getItemList("word_memory"));
 
 function createPalaceItem(hdid) 
 {
@@ -170,8 +173,8 @@ function redisplayEditItem()
 		<td width="10%"><a href="javascript:back2Main()"><img src="/life/image/leftarrow.png" height="18"/></a></td>
 		</tr>
 		<tr>
-		<td>Go To ID</td>
-		<td></td>
+		<td>ID</td>
+		<td>${EDIT_STUDY_ITEM}</td>
 		<td><a href="javascript:bounce2NewId()"><img src="/life/image/rghtarrow.png" height=18/></a></td>
 		</tr>
 		<tr>
@@ -217,20 +220,23 @@ function redisplayEditItem()
 		}
 	}
 
-	const foundex = findExample(showitem.getHanziChar());
-	if (foundex) 
-	{
+	const vocabex = CHARACTER_VOCAB_MAP[showitem.getHanziChar()] || [];
+
+	for(var idx = 0; idx < vocabex.length; idx++) {
+
+		const vocab = vocabex[idx];
+		const promptstr = (idx == 0 ? "Vocab" : "");
+		const pinyinstr = PinyinConverter.convert(vocab.getPinYin());
 
 		tablestr += `
 			<tr>
-			<td>Example</td>
+			<td>${promptstr}</td>
 			<td colspan="2">
-			${foundex.getSimpHanzi()} (${foundex.getConvertedPy()}) ${foundex.getEnglish()};
+			${vocab.getSimpHanzi()} (${pinyinstr}): ${vocab.getEnglish()}
 			</td>
 			</tr>
 		`;
 	}
-
 
 	tablestr += "</table>";
 
@@ -296,7 +302,9 @@ function redisplayMainList()
 	hanzilist.forEach(function(hditem) {
 
 		const palaceitem = lookupPalaceItemByChar(hditem.getHanziChar());
-		const palacestr = palaceitem == null ? "---" :  statinfo[palaceitem.getId()].num_review;
+		// const palacestr = palaceitem == null ? "---" :  statinfo[palaceitem.getId()].num_review;
+		const numvocab = (CHARACTER_VOCAB_MAP[hditem.getHanziChar()] || []).length;
+		const palacestr = numvocab;
 
 		var opstr = `
 			<a href="javascript:createPalaceItem(${hditem.getId()})">
@@ -370,6 +378,52 @@ function editItemMeaning()
 	genericEditTextField("palace_item", "meaning", EDIT_STUDY_ITEM);
 }
 
+function getShouldConvertList()
+{
+	const examples = getItemList("hanzi_example");
+	const vocablist = getItemList("word_memory");
+
+	const haveset = new Set(vocablist.map(item => item.getSimpHanzi()));
+
+	return examples.filter(item => !(haveset.has(item.getSimpHanzi())));
+}
+
+
+function convertExample2Vocab()
+{
+	massert(false, "Retaining for doc purposes only, do not use");
+
+	const convertList = getShouldConvertList();
+	console.log("Should convert list is " + convertList.length);
+	const maxConvert = 1000;
+	var numconvert = 0;
+
+	for(var idx = 0; idx < maxConvert && idx < convertList.length; idx++) {
+
+		const exitem = convertList[idx];
+
+		const newrec = {
+			"simp_hanzi" : exitem.getSimpHanzi(),
+			"trad_hanzi" : exitem.getTradHanzi(),
+			"english" : exitem.getEnglish(),
+			"pin_yin" : exitem.getPinYin(),
+			"basic_py" : "...",
+			"is_active" : 1,
+			"extra_notes" : "Converted from example id " + exitem.getId()
+		};
+
+		const newvoc = buildItem("word_memory", newrec);
+		newvoc.registerNSync();
+
+		numconvert += 1;
+	}
+
+	console.log("Converted  " + numconvert + " items");
+
+
+
+
+}
 
 
 

@@ -318,6 +318,8 @@ function redisplay()
         }
     }
 
+    /*
+    TODO: put the vocab display here from the standard study screen
     const foundex = findExample(CURRENT_PROMPT_ITEM.getHanziChar());
     if(foundex)
     {
@@ -331,6 +333,7 @@ function redisplay()
             </tr>
         `;
     }
+    */
 
     infotable += "</table>";
 

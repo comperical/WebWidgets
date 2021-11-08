@@ -9,8 +9,10 @@
 <%@include file="../../admin/AssetInclude.jsp_inc" %>
 
 <script src="ChineseTech.js"></script>
+<script src="../hanyu/pin_yin_converter.js"></script>
 
-<%= DataServer.include(request, "tables=palace_item,review_log,hanzi_data,confounder") %>
+
+<%= DataServer.include(request, "tables=palace_item,review_log,hanzi_data,confounder,word_memory") %>
 
 <%= DataServer.includeIfOkay(request, "widgetname=minitask&tables=mini_task_list") %>
 
@@ -22,6 +24,7 @@ TARGET_REVIEWS_PER_DAY = 30;
 
 CURRENT_PROMPT_ITEM = computePromptItem();
 
+CHARACTER_VOCAB_MAP = buildChar2VocabMap(getItemList("word_memory"));
 
 function markResult(resultcode)
 {	
@@ -219,16 +222,21 @@ function redisplay()
 		}
 	}
 
-	const foundex = findExample(CURRENT_PROMPT_ITEM.getHanziChar());
-	if(foundex)
-	{
-		const pinyinstr = foundex.getConvertedPy();
-		const engremoved = removeClCruft(foundex.getEnglish());
+
+	const vocabex = CHARACTER_VOCAB_MAP[CURRENT_PROMPT_ITEM.getHanziChar()] || [];
+
+	for(var idx = 0; idx < vocabex.length; idx++) {
+
+		const vocab = vocabex[idx];
+		const promptstr = (idx == 0 ? "Vocab" : "");
+
+		const pinyinstr = PinyinConverter.convert(vocab.getPinYin());
+		const engremoved = removeClCruft(vocab.getEnglish());
 
 		infotable += `
 			<tr>
-			<td width="20%"><b>Example</b></td>
-			<td>${foundex.getSimpHanzi()} (${pinyinstr}) ${engremoved}</td>
+			<td width="20%"><b>${promptstr}</b></td>
+			<td>${vocab.getSimpHanzi()} (${pinyinstr}) ${engremoved}</td>
 			</tr>
 		`;
 	}

@@ -247,4 +247,25 @@ function findExample(hanzichar)
 	return foundex;
 }
 
+function buildChar2VocabMap(vocablist)
+{
+	const mymap = {};
+
+	vocablist.forEach(function(item) {
+
+		const simple = item.getSimpHanzi();
+		for(var i = 0; i < simple.length; i++) {
+
+			const hchar = simple[i];
+			if(!(hchar in mymap))
+				{ mymap[hchar] = [];}
+
+			mymap[hchar].push(item);
+		}
+	});
+
+	return mymap;
+}
+
+
 

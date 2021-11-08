@@ -1,22 +1,5 @@
 
-<%@ page import="java.util.*" %>
-
-<%@ page import="net.danburfoot.shared.*" %>
-<%@ page import="net.danburfoot.shared.DbUtil.*" %>
-<%@ page import="net.danburfoot.shared.HtmlUtil.*" %>
-
-<%@ page import="lifedesign.basic.*" %>
-<%@ page import="lifedesign.classic.*" %>
-
 <%@include file="../../admin/AuthInclude.jsp_inc" %>
-
-<%
-	String pageTitle = "Workout Log";
-
-	OptSelector dayCodeSel = LifeUtil.standardDateSelector(14);
-
-	OptSelector intSelector = new OptSelector(Util.range(1, 10));
-%>
 
 <html>
 <head>
@@ -27,7 +10,6 @@
 <%= DataServer.basicInclude(request) %>
 
 <script src="WorkoutLogger.js"></script>
-
 
 <script>
 
@@ -147,9 +129,9 @@ function createItem()
 		"id" : newid,
 		"notes" : "",
 		"hole_fill" : "",
-		"day_code" : getDocFormValue("day_code"),
+		"day_code" : getDocFormValue("day_code_sel"),
 		"wo_type" : getDocFormValue("wo_type"),
-		"wo_units" : getDocFormValue("wo_units")
+		"wo_units" : getDocFormValue("wo_units_sel")
 	};
 	
 	const newitem = buildItem("workout_log", payload);		
@@ -248,23 +230,23 @@ function buildInitial()
 {
 	const actlist = getActiveExerciseCodeList().sort();
 	
-	const workoptsel = buildOptSelector()
-				.setSelectOpener(`<select name="wo_type" onChange="javascript:redisplay()">`)
-				.setKeyList(actlist);
-				
-	document.getElementById("wo_type_span").innerHTML = workoptsel.getSelectString();
+	buildOptSelector()
+		.setElementName("wo_type")
+		.setOnChange("javascript:redisplay()")
+		.setKeyList(actlist)
+		.autoPopulate();
 	
 	redisplay();
 }
 
 function redisplay()
 {		
+	redispControls();
+
 	const wologger = new WorkoutLogger(getItemList("workout_log"), getItemList("ex_week_goal"));
 	
 	const workouttype = workoutType2Show();
-	
-	getUniqElementByName("wo_units").value = getDistanceDefaultPrompt();
-	
+		
 	document.getElementById("unit_info").innerHTML = getUnitCode(workouttype, getRecentMonday());
 	
 	
@@ -334,6 +316,23 @@ function getLinearMondayMap()
 	return linearmap;
 }
 
+
+function redispControls()
+{
+	buildOptSelector()
+		.setKeyList([... Array(15).keys()])
+		.setSelectedKey(getDistanceDefaultPrompt())
+		.setElementName("wo_units_sel")
+		.autoPopulate()
+
+	const displaymap = getNiceDateDisplayMap(14);
+
+	buildOptSelector()
+		.setFromMap(displaymap)
+		.setSelectedKey(getTodayCode().dayBefore().getDateString())
+		.setElementName("day_code_sel")
+		.autoPopulate();
+}
 
 
 function getWeeklyLogTable(wologger, linearmap, themonday)
@@ -516,23 +515,18 @@ function getWeeklyGoalTable(wologger, themonday)
 <td align="center">
 
 <h3 style="display: inline;">Workout Type:</h3>
-<span id="wo_type_span">
-
-</span>
+<span id="wo_type_span"></span>
 
 
 <br/>
 
-Date:
-<select name="day_code">
-<%= dayCodeSel.getSelectStr(DayCode.getToday().dayBefore()) %>
-</select>
+<b>Date:</b>
+<span id="day_code_sel_span"></span>
 <br/>
 
-<span id="unit_info"></span> : 
-<select name="wo_units">
-<%= intSelector.getSelectStr("1") %>
-</select>
+<b><span id="unit_info"></span></b> : 
+
+<span id="wo_units_sel_span"></span>
 
 <br/><br/>
 
