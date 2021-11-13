@@ -13,6 +13,9 @@
 
 <script>
 
+// Need to maintain this as state
+SELECTED_DAY_CODE = getTodayCode().dayBefore().getDateString();
+
 
 EFFORT_CODE_MAP = {
     "E" : "Easy",
@@ -54,8 +57,6 @@ function lookupRecent(moveid)
 
 function logNewMove()
 {
-    const daycode = getDocFormValue("day_code_sel");
-
     const moveid = parseInt(getDocFormValue("move_select"));
         
     const clonefrom = lookupRecent(moveid);
@@ -67,7 +68,7 @@ function logNewMove()
         "weight" : clonefrom == null ? 135 : clonefrom.getWeight(),
         "effort" : clonefrom == null ? "M" : clonefrom.getEffort(),
         "notes" : "",
-        "day_code" : daycode      
+        "day_code" : SELECTED_DAY_CODE      
     };      
     
     const newitem = buildItem("weight_log", newrec);
@@ -94,6 +95,12 @@ function editEffortLevel(itemid)
 
     item.setEffort(effortnorm);
     item.syncItem();
+    redisplay();
+}
+
+function updateSelectedDay()
+{
+    SELECTED_DAY_CODE = getDocFormValue("day_code_sel");
     redisplay();
 }
 
@@ -212,7 +219,8 @@ function redisplayMainTable()
 
     const datesel = buildOptSelector()
                     .setFromMap(displaymap)
-                    .setSelectedKey(getTodayCode().dayBefore().getDateString())
+                    .setSelectedKey(SELECTED_DAY_CODE)
+                    .setOnChange("javascript:updateSelectedDay()")
                     .setElementName("day_code_sel")
                     .getSelectString();    
 

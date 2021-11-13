@@ -15,8 +15,21 @@ DATE_SEL_CODE = "all";
 
 function redisplay()
 {
+    handleNavBar();
+
     redisplayMainTable();
 }
+
+function handleNavBar() 
+{
+    const headerinfo = [
+        ["Rage Log", "widget.jsp"],
+        ["Rage Stats", "RageStats.jsp"]
+    ];
+
+    populateTopNavBar(headerinfo, "Rage Stats");
+}
+
 
 function tagListFromItem(ritem) 
 {
@@ -182,7 +195,11 @@ function redisplayMainTable()
 
 <center>
 
-<h2>Rage Stats &nbsp;&nbsp;&nbsp; <a href="widget.jsp"><button>log</button></a></h2>
+<div class="topnav"></div>
+
+<br/>
+<br/>
+
 
 Dates: <span id="date_sel_span"></span>
 <br/>

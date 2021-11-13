@@ -56,8 +56,15 @@ function createMiniTaskNote()
 		alert("You don't have a Notes widget. \n\nPlease ask your friendly admin to set one up!!");
 		return;
 	}
+
+	const hanzidata = lookupHanziDataByChar(CURRENT_PROMPT_ITEM.getHanziChar());
+
+	/// const pinyinstr = PinyinConverter.convert(vocab.getPinYin());
+
+	// 	<td>${hanzidata.getPinYin()}</td>
+
 	
-	const basicprompt = "MiniTaskNote for character=" + CURRENT_PROMPT_ITEM.getHanziChar() + ", ID=" + CURRENT_PROMPT_ITEM.getId() + " : ";
+	const basicprompt = `MiniTaskNote for character=${CURRENT_PROMPT_ITEM.getHanziChar()} (${hanzidata.getPinYin()}), ID=${CURRENT_PROMPT_ITEM.getId()}`;
 	
 	const notename = prompt("Enter note : ", basicprompt);
 	

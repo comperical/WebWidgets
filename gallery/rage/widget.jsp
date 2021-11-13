@@ -47,6 +47,17 @@ function deleteItem(killid, shortname)
 	}
 }
 
+function handleNavBar() 
+{
+	const headerinfo = [
+        ["Rage Log", "widget.jsp"],
+        ["Rage Stats", "RageStats.jsp"]
+    ];
+
+    populateTopNavBar(headerinfo, "Rage Log");
+}
+
+
 function editStudyItem(itemid) 
 {
 	EDIT_STUDY_ITEM = itemid;
@@ -74,6 +85,8 @@ function getBasicDesc(rageitem)
 
 function redisplay()
 {
+	handleNavBar();
+
 	redisplayMainTable();
 
 	redisplayStudyItem();
@@ -245,8 +258,9 @@ function redisplayMainTable()
 
 <span class="page_component" id="maintable_cmp">
 
-<h2>Rage Log &nbsp;&nbsp;&nbsp; <a href="RageStats.jsp"><button>stats</button></a></h2>
+<div class="topnav"></div>
 
+<br/>
 <br/>
 
 <a class="css3button" style="background:-webkit-gradient(linear,left top,left bottom,from(#c00),to(#800));"
