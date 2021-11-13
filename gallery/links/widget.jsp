@@ -39,6 +39,20 @@ function createNew()
 	editStudyItem(newlinkitem.getId());
 }
 
+function handleNavBar() 
+{
+	const headerinfo = [
+        ["Link Main", "javascript:return2Main()"],
+        ["Link Categories", "javascript:studyCategoryInfo()"]
+    ];
+
+    const current = STUDY_CATEGORY ? "Link Categories" : "Link Main"; 
+
+    populateTopNavBar(headerinfo, current);
+}
+
+
+
 function createNewCategory()
 {
 	const newcat = prompt("Please enter a name for this category : ");
@@ -181,6 +195,8 @@ function updateCategory()
 
 function redisplay()
 {
+	handleNavBar();
+
 	redisplayMainTable();	
 	redisplayEditItem();
 	redisplayCategoryTable();
@@ -453,23 +469,16 @@ function redisplaySearchTable() {
 
 <center>
 
-<span class="page_component" id="link_manager">
+<div class="topnav"></div>
 
-<h3>Link Manager</h3>
+<br/>
+
+<span class="page_component" id="link_manager">
 
 Category: 
 <span id="main_category_sel_span"></span>
 
-&nbsp; 
-&nbsp; 
-
-<a href="javascript:studyCategoryInfo()"><button>categories</button></a>
-
 <br/><br/>
-
-
-&nbsp; 
-&nbsp; 
 
 <a href="javascript:reDoSearch()"><button>search</button></a>
 
@@ -489,11 +498,7 @@ Category:
 
 <span class="page_component" id="link_search">
 
-
-
-<h3>Link Search</h3>
-
-<br/><br/>
+<br/>
 
 <table class="basic-table"  width="30%">
 <tr>
@@ -560,19 +565,7 @@ Category:
 
 <span class="page_component" id="category_info">
 
-<h3>Link Categories</h3>
-
-
-<br/>
-
-<a href="javascript:createNewCategory()"><button>+cat</button></a>
-
-&nbsp;
-&nbsp;
-&nbsp;
-
-<a href="javascript:return2Main()"><button>main</button></a>
-
+<a href="javascript:createNewCategory()"><button>+category</button></a>
 
 <br/>
 <br/>
