@@ -280,12 +280,16 @@ Date:
 Notes:
 <input type="text" name="notes"/>
 </form>
-<a href="javascript:addNew()">Add New</a>
 
----
 
-<a href="javascript:addClean()">Clean</a>
+<a href="javascript:addNew()"><button>add</button></a>
 
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+
+<a href="javascript:addClean()"><button>clean</button></a>
 
 <br/>
 

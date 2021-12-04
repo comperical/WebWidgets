@@ -19,7 +19,7 @@
 
 <%@include file="../../admin/AssetInclude.jsp_inc" %>
 
-<script src="ChineseTech.js"></script>
+<script src="ChineseTech.js?bust_cache=12"></script>
 <script src="../hanyu/pin_yin_converter.js"></script>
 
 <%= DataServer.basicIncludeOnly(request, "confounder", "palace_item", "hanzi_data", "review_log", "word_memory") %>

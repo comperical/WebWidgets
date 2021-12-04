@@ -36,6 +36,15 @@ function getVocabRequiredItems()
                 { continue; }
 
             const charitem = lookupHanziDataByChar(thechar);
+            if(charitem == null) 
+            {
+                // So many Chinese characters that some of the characters in vocabulary are not in the main 
+                // character DB!! For purposes of this widget, it is not a problem, you can just skip them
+                console.log(`Character ${thechar} from vocab item ${hanzistr} not found in character DB`);
+                continue;
+            }
+
+
             if(charitem.getHskLevel() == 1 || charitem.getHskLevel() == -1)
                 { continue; }
 
@@ -48,6 +57,31 @@ function getVocabRequiredItems()
 
     return requiredset;
 }
+
+// Map of character to count in Vocab data. 0 counts not present.
+function getVocabCharCountMap() 
+{
+    const counts = {};
+
+    getItemList("word_memory").forEach(function(worditem) {
+
+        if(worditem.getIsActive() == 0)
+            { return; }
+
+        const hanzistr = worditem.getSimpHanzi();
+        for(var idx = 0; idx < hanzistr.length; idx++)
+        { 
+            const thechar = hanzistr[idx];
+            if (!(thechar in counts)) 
+                { counts[thechar] = 0; }
+
+            counts[thechar] += 1;
+        }
+    });
+
+    return counts;
+}
+
 
 function getRemainingCount() 
 {
@@ -121,6 +155,96 @@ function generateVocabTableInfo()
     return tablestr;
 }
 
+function generateTableInfo()
+{
+
+    var numshow = 0;
+
+    var tablestr = `
+        <table  class="basic-table" width="60%">
+        <tr>
+        <th>Character</th>
+        <th>PinYin</th>
+        <th>#Vocab</th>
+        <th>HSK Level</th>
+        <th>Freq Rank</th>        
+        </tr>
+    `;
+
+    const vocabcount = getVocabCharCountMap();
+
+    getItemList("hanzi_data").forEach(charitem => {
+
+        const thechar = charitem.getHanziChar();
+
+        const palace = lookupPalaceItemByChar(thechar);
+
+        // Already have a palace entry
+        if(palace != null) 
+            { return; }
+
+        // Wrong level
+        if(charitem.getHskLevel() != 5)
+            { return; }
+
+        // Don't have any vocab entries
+        if(!(thechar in vocabcount)) 
+            { return; }
+
+        const rowstr = `
+            <tr>
+            <td>${thechar}</td>
+            <td>${charitem.getPinYin()}</td>            
+            <td>${vocabcount[thechar]}</td>
+            <td>${charitem.getHskLevel()}</td>
+            <td>${charitem.getFreqRank()}</td>
+            </tr>
+        `;
+
+        tablestr += rowstr;
+    });
+
+    /*
+    const today = getTodayCode().getDateString();
+    const schedlist = getItemList("learning_schedule");
+
+    schedlist.forEach(function(scheditem) {
+
+        const palitem = lookupPalaceItemByChar(scheditem.getTheChar());
+        if(palitem != null) 
+            { return; }
+
+        const charitem = lookupHanziDataByChar(scheditem.getTheChar());
+
+        const target = scheditem.getDayCode();
+        const isbefore = target <= today;
+
+        if(isbefore != wantbefore)
+            { return; }
+
+        const rowstr = `
+            <tr>
+            <td>${target}</td>
+            <td>${charitem.getHanziChar()}</td>
+            <td>${charitem.getPinYin()}</td>
+            <td>${charitem.getHskLevel()}</td>
+            <td>${charitem.getFreqRank()}</td>
+            <td></td>
+            </tr>
+        `;
+
+        tablestr += rowstr;
+        numshow += 1;
+
+    });
+    */
+
+    tablestr += `</table>`;
+
+    return tablestr;
+}
+
+/*
 function generateTableInfo(wantbefore)
 {
 
@@ -179,6 +303,8 @@ function generateTableInfo(wantbefore)
 
     return tablestr;
 }
+*/
+
 
 function redisplay()
 {
@@ -186,9 +312,7 @@ function redisplay()
 
     populateSpanData({
         "vocabtable" : generateVocabTableInfo(),
-        "nowtable" : generateTableInfo(true),
-        "futuretable" : generateTableInfo(false),
-        "total_remaining" : total
+        "nowtable" : generateTableInfo()
     })
 }
 
@@ -210,8 +334,6 @@ function redisplay()
 
 <h3>Learn Now!!</h3>
 
-<h4>Behind by <span id="num_behind"></span></h4>
-
 <div id="nowtable"></div>
 
 
@@ -220,14 +342,6 @@ function redisplay()
 
 
 <br/>
-
-<h3>Future Target</h3>
-
-<b>Total remaining <span id="total_remaining"></span></b>
-
-<div id="futuretable"></div>
-
-
 
 </center>
 </body>
