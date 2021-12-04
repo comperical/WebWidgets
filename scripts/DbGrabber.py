@@ -24,6 +24,29 @@ def get_db_path(dbdir, widget):
 	dbfile = "{}_DB.sqlite".format(widget.upper())
 	return os.sep.join([dbdir, dbfile])
 
+# okay, we need to do something special here, otherwise the user might think 
+# everything worked okay, even though the contents of the output file are just a 
+# couple of text lines saying "Access Denied!!"
+def check_sqlite_file_okay(dbfile):
+
+	with open(dbfile, "rb") as f:
+	    byte = f.read(16)
+	    if byte == b'SQLite format 3\x00':
+	    	return True
+
+
+	print("There was a problem downloading the Widget database:")
+	linecount = 0
+
+	for line in open(dbfile):
+		print("\t{}".format(line))
+
+		linecount += 1
+		if linecount >= 10:
+			break
+
+	return False
+
 if __name__ == "__main__":
 
 	argmap = ArgMap.getFromArgv(sys.argv)
@@ -52,4 +75,5 @@ if __name__ == "__main__":
 	os.system(curlcall)
 	
 	assert os.path.exists(dbpath), "Curl call failed to retrieve DB file to expected path {}".format(dbpath)
-	print("Downloaded DB file to path {}".format(dbpath))
+	assert check_sqlite_file_okay(dbpath), "Problem downloading DB file"
+	print("Success, downloaded DB file to path {}".format(dbpath))

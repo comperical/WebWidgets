@@ -8,6 +8,7 @@ import ArgMap
 
 from zipfile import ZipFile
 
+CONFIG_MAP_OKAY_KEYS = ["accesshash", "dbdir", "codedir", "codedir1", "codedir2", "codedir3"]
 
 def get_domain_prefix(local=False):
 	return "http://localhost:8080" if local else "https://webwidgets.io"
@@ -70,11 +71,13 @@ def get_config_map(username):
 	configmap = { k : v for k, v in genconf() }
 	assert 'accesshash' in configmap, "Require an accesshash parameter in configuration file"
 
+	for k, _ in configmap.items():
+		assert k in CONFIG_MAP_OKAY_KEYS, "Unknown configuration parameter '{}' in file, options are {}".format(k, CONFIG_MAP_OKAY_KEYS)
+
 	# Special treatment for codedir=codedir1
 	if "codedir" in configmap:
 		assert not "codedir1" in configmap, "You cannot have both codedir= and codedir1= config arguments"
 		configmap["codedir1"] = configmap.pop("codedir")
-
 
 	return configmap	
 
