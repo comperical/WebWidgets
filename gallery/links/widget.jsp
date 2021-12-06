@@ -22,7 +22,22 @@ var SEARCH_TERM = "";
 massert(getItemList("link_categ").length > 0,
 	"You must add some link categories by hand first!!");
 
-var MAIN_CATEGORY = getItemList("link_categ")[0].getId();
+// Very crude method of picking a default category.
+// On a workday, select LNKD (work)
+// On weekend, select YogaVideo
+function getDefaultCategory()
+{
+	const shortdow = getTodayCode().getShortDayOfWeek();
+	const weekend = ["sat", "sun"].includes(shortdow.toLowerCase());
+	const defaultcat = weekend ? "YogaVideo" : "LNKD";
+	const hits = getItemList("link_categ").filter(item => item.getShortCode() == defaultcat)
+
+	massert(hits.length == 1, `Expected exactly 1 but got ${hits.length} hits for default category ${defaultcat}`);
+	return hits[0].getId();
+}
+
+
+var MAIN_CATEGORY = getDefaultCategory();
 
 function createNew()
 {

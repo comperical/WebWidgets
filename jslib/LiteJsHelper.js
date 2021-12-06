@@ -21,7 +21,7 @@ __databaseCheckSum = {};
 // Get all the tables that have been registered on this page.
 function getWidgetTableList()
 {
-	return Object.keys(__buildItemFuncMap);
+    return Object.keys(__buildItemFuncMap);
 }
 
 // Return true if the table is in the data for the page.
@@ -268,11 +268,8 @@ function __checkAjaxResponse(op, itemid, rtext)
     var errmssg = `Problem with sync operation: ${fcode} \n ${umssg}`;
     
     if(einfo.length > 0) {
-    	errmssg += `\nAdditional info:\n${einfo}`;	    
+        errmssg += `\nAdditional info:\n${einfo}`;      
     }
     
     massert(false, errmssg);
 }
-
-
-
