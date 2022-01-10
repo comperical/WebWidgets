@@ -18,10 +18,21 @@ __haveItemFuncMap = {};
 // Map of of username::widgetname --> Unix checksum for the Widget DB
 __databaseCheckSum = {};
 
-// Get all the tables that have been registered on this page.
+// Get all the tables that have been registeredXXX on this page.
 function getWidgetTableList()
 {
     return Object.keys(__buildItemFuncMap);
+}
+
+// Get the full list of records associated with given table.
+// This is one of the most fundamental operations of the framework.
+// Error if the table name is not loaded on the current page.
+// If you are uncertain if the table will be present, use haveTable(...) to check
+function getItemList(tabname)
+{
+    checkTableName(tabname);
+    var itemfunc = __getListFuncMap[tabname];
+    return itemfunc();
 }
 
 // Return true if the table is in the data for the page.
@@ -37,12 +48,7 @@ function haveItem(tabname, itemid)
     return havefunc(itemid);
 }
 
-function getItemList(tabname)
-{
-    checkTableName(tabname);
-    var itemfunc = __getListFuncMap[tabname];
-    return itemfunc();
-}
+
 
 function buildItem(tabname, record)
 {
