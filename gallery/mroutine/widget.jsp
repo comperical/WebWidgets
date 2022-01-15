@@ -79,7 +79,7 @@ function markDone()
     };
     
     const newitem = buildItem("mroutine_log", comrecord);
-    newitem.registerNSync();
+    newitem.syncItem();
     redisplay();    
     
 }

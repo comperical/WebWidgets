@@ -28,7 +28,7 @@ function createNewTemplate()
 		}
 
 		const newtemplate = buildItem("day_template", newrec);
-		newtemplate.registerNSync();
+		newtemplate.syncItem();
 		redisplay();
 	}
 }
@@ -90,7 +90,7 @@ function plusDefaultWakeUp()
 	}
 
 	const newitem = buildItem("template_sub", newrec);
-	newitem.registerNSync();
+	newitem.syncItem();
 	redisplay();
 }
 
@@ -129,7 +129,7 @@ function newByHourSpent()
 		}
 
 		const newitem = buildItem("template_sub", newrec);
-		newitem.registerNSync();
+		newitem.syncItem();
 		redisplay();
 	}
 }
@@ -152,7 +152,7 @@ function createNew()
 		}
 
 		const newitem = buildItem("template_sub", newrec);
-		newitem.registerNSync();
+		newitem.syncItem();
 		redisplay();
 	}
 }

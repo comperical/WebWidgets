@@ -27,7 +27,7 @@ function createNew()
         };      
         
         const newitem = buildItem("finance_plan", newrec);
-        newitem.registerNSync();
+        newitem.syncItem();
         redisplay();
     }
 }

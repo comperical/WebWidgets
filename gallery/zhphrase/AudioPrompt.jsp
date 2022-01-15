@@ -48,7 +48,7 @@ function markResult(resultcode)
     };
     
     const newitem = buildItem("zh_phr_rev_log", newrec);
-    newitem.registerNSync();
+    newitem.syncItem();
     
     // clear recent answer
     RECENT_ANSWER = null;

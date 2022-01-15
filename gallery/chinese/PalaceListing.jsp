@@ -27,7 +27,7 @@ function createNew()
 	};		
 	
 	const newitem = buildPalaceItemItem(newrec);
-	newitem.registerNSync();
+	newitem.syncItem();
 	redisplay();
 	
 	const newurl = "PalaceItemEdit.jsp?item_id=" + newid;

@@ -81,7 +81,7 @@ function createNewCategory()
 		};
 		
 		const newitem = buildItem("link_categ", newrec);		
-		newitem.registerNSync();
+		newitem.syncItem();
 		redisplay();
 	}
 }

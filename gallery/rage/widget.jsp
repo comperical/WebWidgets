@@ -32,7 +32,7 @@ function createNew()
 		};		
 		
 		const newitem = buildItem("rage_log", newrec);
-		newitem.registerNSync();
+		newitem.syncItem();
 		redisplay();
 	}
 }

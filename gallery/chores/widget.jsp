@@ -39,7 +39,7 @@ function swap2MiniTask(choreid)
 	};
 	
 	const newitem = buildItem("mini_task_list", newrec);
-	newitem.registerNSync();
+	newitem.syncItem();
 		
 	if(confirm("Created MTL item, should I mark the chore as complete?")) 
 	{ 
@@ -49,7 +49,7 @@ function swap2MiniTask(choreid)
 		};
 		
 		const compitem = buildItem("chore_comp", comprec);
-		compitem.registerNSync();
+		compitem.syncItem();
 	}
 	
 	redisplay();
@@ -63,7 +63,7 @@ function markComplete(choreid)
 	};
 	
 	const newitem = buildItem("chore_comp", newrec);
-	newitem.registerNSync();
+	newitem.syncItem();
 	redisplay();
 }
 
@@ -124,7 +124,7 @@ function createNew()
 		};
 		
 		const newitem = buildItem("chore_def", newrec);
-		newitem.registerNSync();
+		newitem.syncItem();
 		redisplay();
 	}
 }

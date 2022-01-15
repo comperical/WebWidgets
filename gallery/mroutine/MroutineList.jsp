@@ -60,7 +60,7 @@ function createNew()
 		};
 		
 		const newitem = buildItem("mroutine_phase", comrecord);
-		newitem.registerNSync();
+		newitem.syncItem();
 		redisplay();
 	}	
 }

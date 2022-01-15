@@ -127,7 +127,7 @@ function createNew()
         };      
         
         const newitem = buildItem("media_item", newrec);
-        newitem.registerNSync();
+        newitem.syncItem();
         redisplay();
     }
 }

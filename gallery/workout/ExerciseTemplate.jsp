@@ -47,7 +47,7 @@ function createNew()
 		
 		console.log(Object.keys(comrecord));
 		var newitem = buildExercisePlanItem(comrecord);
-		newitem.registerNSync();
+		newitem.syncItem();
 		redisplay();
 	}
 }

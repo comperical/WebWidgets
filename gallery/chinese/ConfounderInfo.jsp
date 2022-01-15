@@ -31,7 +31,7 @@ function createNew()
     };      
     
     const newitem = buildItem("confounder", newrec);
-    newitem.registerNSync();
+    newitem.syncItem();
     EDIT_STUDY_ITEM = newid;
     redisplay();    
 }

@@ -37,7 +37,7 @@ function createNewMovement()
         }
 
         const newitem = buildItem("movement", newrec);
-        newitem.registerNSync();
+        newitem.syncItem();
         redisplay();
 
         alert("Created new movement!");
@@ -89,8 +89,6 @@ function copyFromPrevious()
 
     redisplay();
 }
-
-
 
 function editEffortLevel(itemid) 
 {

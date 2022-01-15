@@ -59,7 +59,7 @@ function doTemplateImport()
 		};
 		
 		const newitem = buildItem("day_plan_main", record);
-		newitem.registerNSync();		
+		newitem.syncItem();		
 	});
 	
 	deletes.forEach(function(olditem) { olditem.deleteItem(); });
@@ -120,7 +120,7 @@ function createNewSub(endhour, ishalf, itemname)
 	};
 	
 	const newitem = buildItem("day_plan_main", record);
-	newitem.registerNSync();
+	newitem.syncItem();
 	redisplay();
 }
 

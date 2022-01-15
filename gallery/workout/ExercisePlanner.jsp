@@ -63,7 +63,7 @@ function rebuildWeek(mondaycode)
 		};
 		
 		const newitem = buildExWeekGoalItem(newrec);
-		newitem.registerNSync();			
+		newitem.syncItem();			
 	});
 	
 	// Delete AFTER assigning new IDs

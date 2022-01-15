@@ -36,7 +36,7 @@ function createNewTask()
         };
             
         const newtaskitem = buildItem("mini_task_list", newrec);
-        newtaskitem.registerNSync();
+        newtaskitem.syncItem();
         redisplay();
 
         alert("Item created!!");

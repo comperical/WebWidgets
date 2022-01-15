@@ -46,7 +46,7 @@ function createNewBook()
         }
 
         const newitem = buildItem("manhua_book", newrec);
-        newitem.registerNSync();
+        newitem.syncItem();
         redisplay();
     }
 
@@ -99,7 +99,7 @@ function logChapter()
         }
 
         const newitem = buildItem("manhua_log", newrec);
-        newitem.registerNSync();
+        newitem.syncItem();
         redisplay();
     }
 }

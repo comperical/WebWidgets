@@ -172,7 +172,7 @@ function markResult(resultcode)
     
     // Skip this part for development.
     const newitem = buildReviewLogItem(newrec);
-    newitem.registerNSync();
+    newitem.syncItem();
     
     SHOW_ANSWER_MODE = false;
 
@@ -211,7 +211,7 @@ function createMiniTaskNote()
         };      
         
         const newitem = buildMiniTaskListItem(newrec);
-        newitem.registerNSync();
+        newitem.syncItem();
         
         alert("Created new MTL item");
     }

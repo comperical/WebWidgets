@@ -41,7 +41,7 @@ function markResult(resultcode)
 	};
 	
 	const newitem = buildReviewLogItem(newrec);
-	newitem.registerNSync();
+	newitem.syncItem();
 	
 	CURRENT_PROMPT_ITEM = computePromptItem();
 	redisplay();	
@@ -84,7 +84,7 @@ function createMiniTaskNote()
 		};		
 		
 		const newitem = buildMiniTaskListItem(newrec);
-		newitem.registerNSync();
+		newitem.syncItem();
 		
 		alert("Created new MTL item");
 	}

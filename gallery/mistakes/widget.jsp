@@ -38,7 +38,7 @@ function createNew()
         };      
         
         const newitem = buildItem("incident", newrec);
-        newitem.registerNSync();
+        newitem.syncItem();
         redisplay();
     }
 }

@@ -107,10 +107,10 @@ function newBatch()
         }
         
         const probeitem = buildItem("samples", proberec);
-        probeitem.registerNSync();
+        probeitem.syncItem();
 
         const smsitem = buildItem("outbox", smsrec);
-        smsitem.registerNSync();
+        smsitem.syncItem();
     }
 
     redisplay();

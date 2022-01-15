@@ -108,7 +108,7 @@ function newRecipe()
 		};		
 		
 		const newitem = buildItem("recipe_item", newrec);
-		newitem.registerNSync();
+		newitem.syncItem();
 		redisplay();
 	}
 }
@@ -136,7 +136,7 @@ function addRecipe2List(recid)
 			// sqlite> create table shopping_list(id int, ingr_id int, is_active smallint, created_on varchar(10), primary key(id));                   
 			
 			const newitem = buildItem("shopping_list", newrec);
-			newitem.registerNSync();
+			newitem.syncItem();
 		});
 		
 		redisplay();
@@ -164,7 +164,7 @@ function addIngredient()
 		};		
 		
 		const newitem = buildItem("ingredient", newrec);
-		newitem.registerNSync();
+		newitem.syncItem();
 		redisplay();		
 	}
 }

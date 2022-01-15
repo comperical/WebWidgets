@@ -33,7 +33,7 @@ function createNewSub()
     };      
     
     const newitem = buildItem("short_phrase", newrec);
-    newitem.registerNSync();
+    newitem.syncItem();
     return newitem.getId();
 }
 

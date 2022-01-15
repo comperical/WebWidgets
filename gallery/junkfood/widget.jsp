@@ -45,7 +45,7 @@ function addNewSub(junkfact, thenotes)
 	document.forms.mainform.junk_factor_sel.value = "1";
 	
 	const newitem = buildItem("junk_food_log", newrec);
-	newitem.registerNSync();
+	newitem.syncItem();
 	redisplay();	
 }
 

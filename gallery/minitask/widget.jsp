@@ -60,7 +60,7 @@ function createNewTask()
 		// CREATE TABLE mini_task_list (id int, task_type varchar(10), short_desc varchar(30), extra_info varchar(400), alpha_date varchar(10), omega_date varchar(10), priority int, is_backlog smallint default 0, primary key(id));
 		
 		const newtaskitem = buildItem("mini_task_list", newrec);
-		newtaskitem.registerNSync();
+		newtaskitem.syncItem();
 		redisplay();
 	}
 }

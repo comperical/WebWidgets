@@ -40,7 +40,7 @@ function createNew()
 		
 		var newitem = buildQuestionLogItem(comrecord);
 		
-		newitem.registerNSync();
+		newitem.syncItem();
 		
 		redisplay();
 	}

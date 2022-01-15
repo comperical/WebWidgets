@@ -55,7 +55,7 @@ function reBuildGoalFromTemplate(mondaycode)
 		};
 		
 		const newitem = buildExWeekGoalItem(newrec);
-		newitem.registerNSync();
+		newitem.syncItem();
 	});
 	
 	redisplay();
@@ -96,7 +96,7 @@ function enterFailedRecordList(mondaycode)
 		};
 
 		const newitem = buildWorkoutLogItem(newrec);
-		newitem.registerNSync();
+		newitem.syncItem();
 	});
 	
 	redisplay();
@@ -135,7 +135,7 @@ function createItem()
 	};
 	
 	const newitem = buildItem("workout_log", payload);		
-	newitem.registerNSync();
+	newitem.syncItem();
 	redisplay();
 }
 

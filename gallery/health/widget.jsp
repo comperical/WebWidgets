@@ -37,7 +37,7 @@ function createNewSub(rating, notestr)
     };
     
     const newitem = buildItem("health_log", newrec);
-    newitem.registerNSync();
+    newitem.syncItem();
     redisplay();
 }
 

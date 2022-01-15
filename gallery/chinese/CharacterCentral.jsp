@@ -52,7 +52,7 @@ function createPalaceItem(hdid)
 	clearHanziDataCache();
 
 	const newitem = buildItem("palace_item", newrec);
-	newitem.registerNSync();
+	newitem.syncItem();
 	redisplay();
 }
 
@@ -413,7 +413,7 @@ function convertExample2Vocab()
 		};
 
 		const newvoc = buildItem("word_memory", newrec);
-		newvoc.registerNSync();
+		newvoc.syncItem();
 
 		numconvert += 1;
 	}
