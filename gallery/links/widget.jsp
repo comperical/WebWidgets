@@ -49,8 +49,9 @@ function createNew()
 		"cat_id" : categid
 	};
 	
-	var newlinkitem = buildItem("link_main", newrec);		
-	newlinkitem.registerNSync();	
+	const newlinkitem = buildItem("link_main", newrec);	
+	newlinkitem.syncItem();
+	
 	editStudyItem(newlinkitem.getId());
 }
 

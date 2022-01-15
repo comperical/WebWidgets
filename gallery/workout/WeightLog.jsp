@@ -7,8 +7,6 @@
 
 <%@include file="../../admin/AssetInclude.jsp_inc" %>
 
-
-
 <%= DataServer.basicInclude(request) %>
 
 <script>
@@ -58,12 +56,17 @@ function lookupRecent(moveid)
 function logNewMove()
 {
     const moveid = parseInt(getDocFormValue("move_select"));
-        
     const clonefrom = lookupRecent(moveid);
 
+    copyFromClone(clonefrom);
+    redisplay();
+}
+
+function copyFromClone(clonefrom, moveid)
+{
     // created_on, active_on, completed_on, dead_line
     const newrec = {
-        "move_id" : moveid,
+        "move_id" : clonefrom == null ? moveid : clonefrom.getMoveId(),
         "rep_info": clonefrom == null ? 4 : clonefrom.getRepInfo(),
         "weight" : clonefrom == null ? 135 : clonefrom.getWeight(),
         "effort" : clonefrom == null ? "M" : clonefrom.getEffort(),
@@ -72,9 +75,22 @@ function logNewMove()
     };      
     
     const newitem = buildItem("weight_log", newrec);
-    newitem.registerNSync();
+    newitem.syncItem();
+}
+
+function copyFromPrevious()
+{
+    const prevday = getDocFormValue("copy_from_sel");
+    const prevlist = getItemList("weight_log").filter(item => item.getDayCode() == prevday);
+
+    prevlist.forEach(item => {
+        copyFromClone(item, -1);
+    });
+
     redisplay();
 }
+
+
 
 function editEffortLevel(itemid) 
 {
@@ -202,6 +218,26 @@ function getWeightNameMap() {
     return nmap;
 }
 
+
+
+function getCopyFromDisplayMap()
+{
+    const itemlist = getItemList("weight_log").sort(proxySort(item => [item.getDayCode()])).reverse();
+    const displaymap = {"---" : "---"};
+
+    itemlist.forEach(item => {
+
+        if (Object.keys(displaymap).length > 10)
+            { return; }
+
+        const dc = lookupDayCode(item.getDayCode());
+        displaymap[dc.getDateString()] = dc.getNiceDisplay();
+    });
+
+    return displaymap;
+
+}
+
 function redisplayMainTable()
 {
 
@@ -224,6 +260,14 @@ function redisplayMainTable()
                     .setElementName("day_code_sel")
                     .getSelectString();    
 
+    const copymap = getCopyFromDisplayMap();
+    const copysel = buildOptSelector()
+                        .setFromMap(copymap)
+                        .setSelectedKey("---")
+                        .setOnChange("javascript:copyFromPrevious()")
+                        .setElementName("copy_from_sel")
+                        .getSelectString();
+
     var pagestr = `
 
         Log New: ${optsel}         
@@ -238,6 +282,8 @@ function redisplayMainTable()
         <br/>
         ${datesel}
         <br/>
+        <br/>
+        Copy From: ${copysel}
     `;
 
     const mondayMap = getDataByMonday();
