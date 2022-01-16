@@ -6,8 +6,6 @@
 <head>
 <title>Exercise Planner</title>
 
-<%@include file="../../admin/AssetInclude.jsp_inc" %>
-
 <%= DataServer.basicInclude(request) %>
 
 <script>

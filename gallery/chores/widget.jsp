@@ -6,8 +6,6 @@
 <head>
 <title>Chore Listing</title>
 
-<%@include file="../../admin/AssetInclude.jsp_inc" %>
-
 <%= DataServer.basicInclude(request) %>
 
 <%= DataServer.includeIfAvailable(request, "minitask", "mini_task_list") %>

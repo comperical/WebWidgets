@@ -5,8 +5,6 @@
 <head>
 <title>SampleTime</title>
 
-<%@include file="../../admin/AssetInclude.jsp_inc" %>
-
 <%= DataServer.basicInclude(request) %>
 
 <%= DataServer.includeIfAvailable(request, "sms_box", "outbox") %>

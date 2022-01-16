@@ -12,8 +12,6 @@
 <head>
 <title>Morning Routine Phases</title>
 
-<%@include file="../../admin/AssetInclude.jsp_inc" %>
-
 <%= DataServer.basicInclude(request) %>
 
 <script>

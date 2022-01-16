@@ -1,13 +1,9 @@
 
-<%@ page import="lifedesign.basic.LifeUtil" %>
-
 <%@include file="../../admin/AuthInclude.jsp_inc" %>
 
 <html>
 <head>
 <title>Junk Food Log</title>
-
-<%@include file="../../admin/AssetInclude.jsp_inc" %>
 
 <%= DataServer.basicInclude(request) %>
 

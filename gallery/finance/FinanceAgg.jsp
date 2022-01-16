@@ -20,8 +20,6 @@
 <head>
 <title>Finance Agg</title>
 
-<%@include file="../../admin/AssetInclude.jsp_inc" %>
-
 <script src="FinanceTech.js"/></script>
 
 <%= DataServer.basicInclude(request) %>

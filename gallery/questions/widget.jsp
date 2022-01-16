@@ -5,8 +5,6 @@
 <head>
 <title>Questions</title>
 
-<%@include file="../../admin/AssetInclude.jsp_inc" %>
-
 <%= DataServer.basicInclude(request) %>
 
 <script>

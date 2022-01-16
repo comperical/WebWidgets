@@ -6,8 +6,6 @@
 <head>
 <title>Morning Routine</title>
 
-<%@include file="../../admin/AssetInclude.jsp_inc" %>
-
 <%= DataServer.basicInclude(request)  %>
 
 

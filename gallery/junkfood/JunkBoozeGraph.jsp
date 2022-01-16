@@ -5,8 +5,6 @@
 <head>
 <title>Junk Food Log</title>
 
-<%@include file="../../admin/AssetInclude.jsp_inc" %>
-
 <%= DataServer.basicInclude(request) %>
 
 <%= DataServer.include(request, "widgetname=other&tables=alc_log") %>

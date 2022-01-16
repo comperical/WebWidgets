@@ -5,8 +5,6 @@
 <head>
 <title>Link Manager</title>
 
-<%@include file="../../admin/AssetInclude.jsp_inc" %>
-
 <%= DataServer.basicInclude(request) %>
 
 <script src="LinkDisplay.js"></script>

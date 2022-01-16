@@ -5,8 +5,6 @@
 <head>
 <title>Workout Log</title>
 
-<%@include file="../../admin/AssetInclude.jsp_inc" %>
-
 <%= DataServer.basicInclude(request) %>
 
 <script src="WorkoutLogger.js"></script>

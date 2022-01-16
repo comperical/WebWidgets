@@ -25,8 +25,6 @@
 <head>
 <title><%= pageTitle %></title>
 
-<%@include file="../../admin/AssetInclude.jsp_inc" %>
-
 <script src="/life/jscript/jquery-1.4.2.js"></script>
 
 <%= DataServer.basicInclude(request) %>
