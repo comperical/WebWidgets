@@ -2,8 +2,6 @@
 <%@ page import="net.danburfoot.shared.*" %>
 <%@ page import="net.danburfoot.shared.HtmlUtil.*" %>
 
-<%@include file="../../admin/AuthInclude.jsp_inc" %>
-
 <%
 	
 	OptSelector hskSelector = new OptSelector(Util.range(1, 6)).addKey("---");
@@ -16,8 +14,6 @@
 <html>
 <head>
 <title>Character Central</title>
-
-<%@include file="../../admin/AssetInclude.jsp_inc" %>
 
 <script src="ChineseTech.js?bust_cache=12"></script>
 <script src="../hanyu/pin_yin_converter.js"></script>

@@ -1,12 +1,8 @@
 
-<%@include file="../../admin/AuthInclude.jsp_inc" %>
-
 
 <html>
 <head>
 <title>Character Learning Schedule</title>
-
-<%@include file="../../admin/AssetInclude.jsp_inc" %>
 
 <script src="ChineseTech.js"></script>
 

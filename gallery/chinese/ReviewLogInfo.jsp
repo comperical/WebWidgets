@@ -1,17 +1,11 @@
 
-<%@include file="../../admin/AuthInclude.jsp_inc" %>
-
 <html>
 <head>
 <title>Memory Palace Listing</title>
 
-<%@include file="../../admin/AssetInclude.jsp_inc" %>
-
 <script src="ChineseTech.js"></script>
 
-
 <%= DataServer.basicIncludeOnly(request, "palace_item", "review_log") %>
-
 
 <script>
 

@@ -2,8 +2,6 @@
 <%@ page import="net.danburfoot.shared.*" %>
 <%@ page import="net.danburfoot.shared.HtmlUtil.*" %>
 
-<%@include file="../../admin/AuthInclude.jsp_inc" %>
-
 <%
 	OptSelector boolSelector = (new OptSelector(Util.listify(true,false)));	
 %>
