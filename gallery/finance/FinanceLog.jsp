@@ -1,9 +1,4 @@
 
-<%@include file="../../admin/AuthInclude.jsp_inc" %>
-
-<%
-%>
-
 <html>
 <head>
 <title>Finance Log</title>

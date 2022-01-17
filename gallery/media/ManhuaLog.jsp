@@ -1,6 +1,3 @@
-<%@include file="../../admin/AuthInclude.jsp_inc" %>
-
-
 <html>
 <head>
 <title>Manhua Log</title>

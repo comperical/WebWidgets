@@ -1,5 +1,3 @@
-<%@include file="../../admin/AuthInclude.jsp_inc" %>
-
 
 <html>
 <head>

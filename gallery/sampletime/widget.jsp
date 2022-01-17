@@ -1,6 +1,4 @@
 
-<%@include file="../../admin/AuthInclude.jsp_inc" %>
-
 <html>
 <head>
 <title>SampleTime</title>

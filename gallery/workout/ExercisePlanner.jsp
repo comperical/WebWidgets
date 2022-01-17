@@ -1,7 +1,4 @@
 
-
-<%@include file="../../admin/AuthInclude.jsp_inc" %>
-
 <html>
 <head>
 <title>Exercise Planner</title>
