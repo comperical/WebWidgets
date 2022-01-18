@@ -286,14 +286,6 @@ function getUniqElementByName(elname)
 // Get Query String / URL Params as a hash.
 // Example MyWidget.jsp?name=1&id=5 will return
 // { "name" : 1, "id" : 5}
-function getUrlParamHash___XXX()
-{
-    return getUrlParamHash(window.location.search.substring(1));
-}
-
-// Get Query String / URL Params as a hash.
-// Example MyWidget.jsp?name=1&id=5 will return
-// { "name" : 1, "id" : 5}
 function getUrlParamHash()
 {
     var phash = {};

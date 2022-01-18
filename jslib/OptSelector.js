@@ -1,4 +1,6 @@
 
+// Utility to help with create HTML selectors (drop-down menus)
+// Contains a variety of methods to control the data, keys, and displays that are shown in the menu
 function OptSelector()
 {
     // Key weirdness about HTML option select:
@@ -130,16 +132,6 @@ OptSelector.prototype.autoPopulate = function()
 
 
 
-
-// Clears the key/value pairs
-// I'm not sure this should ever actually be used, you can just build a new object
-OptSelector.prototype.resetData = function()
-{
-    this._keyList = [];
-    this._dspList = [];
-}
-
-
 // Sets the key that will be selected by default
 // You must set the key list first.
 // One of the keys must match the input.
@@ -206,6 +198,16 @@ OptSelector.prototype.getSelectString = function()
         </select>
     `;  
 }
+
+// Clears the key/value pairs
+// this is primarily for internal use, callers should prefer to just
+// create a new OptSelector object
+OptSelector.prototype.resetData = function()
+{
+    this._keyList = [];
+    this._dspList = [];
+}
+
 
 // Get the full list of options as a flat string
 // You can use this if you want to write out the select tags yourself.

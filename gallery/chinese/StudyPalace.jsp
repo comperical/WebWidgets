@@ -24,10 +24,8 @@ CHARACTER_VOCAB_MAP = buildChar2VocabMap(getItemList("word_memory"));
 function markResult(resultcode)
 {	
 	// This creates a review_log item and then redisplays the quiz.
-	const newid = newBasicId("review_log");
 	const timestamp = calcFullLogTimeStr(new Date());
 	const newrec = {
-		"id" : newid,
 		"study_code" : "palace",
 		"item_id" : CURRENT_PROMPT_ITEM.getId(),
 		"result_code" : resultcode,
@@ -35,7 +33,7 @@ function markResult(resultcode)
 		"extra_info" : ""
 	};
 	
-	const newitem = buildReviewLogItem(newrec);
+	const newitem = buildItem("review_log", newrec);
 	newitem.syncItem();
 	
 	CURRENT_PROMPT_ITEM = computePromptItem();

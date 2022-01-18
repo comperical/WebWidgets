@@ -179,7 +179,7 @@ function getStudyItem()
 	if(EDIT_STUDY_ITEM == -1)
 		{ return null; }
 	
-	const hits = getItemList("mini_task_list").filter(item => item.getId() == EDIT_STUDY_ITEM);
+	const hits = W.getItemList("mini_task_list").filter(item => item.getId() == EDIT_STUDY_ITEM);
 	return hits[0];
 }
 
@@ -187,7 +187,7 @@ function getTaskItemList(wantcompleted)
 {
 	var tasklist = [];
 	
-	var biglist = getItemList("mini_task_list").filter(item => item.getIsBacklog() == 0);
+	var biglist = W.getItemList("mini_task_list").filter(item => item.getIsBacklog() == 0);
 		
 	biglist.sort(proxySort(item => [item.getAlphaDate()])).reverse();
 	

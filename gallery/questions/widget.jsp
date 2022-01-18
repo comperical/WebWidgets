@@ -19,13 +19,10 @@ function createNew()
 	
 	if(qtext)
 	{	
-		var newid = newBasicId("question_log");
-		
-		var todaycode = getTodayCode().getDateString();
+		const todaycode = getTodayCode().getDateString();
 		
 		// created_on, active_on, completed_on, dead_line
 		var comrecord = {
-			"id" : newid,
 			"question_text" : qtext,
 			"full_notes" : "TBD",
 			"created_on" : todaycode,
@@ -34,10 +31,8 @@ function createNew()
 			"has_answer" : 0
 		};
 		
-		var newitem = buildQuestionLogItem(comrecord);
-		
+		const newitem = buildItem("question_log", comrecord);
 		newitem.syncItem();
-		
 		redisplay();
 	}
 }
