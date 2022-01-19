@@ -32,25 +32,22 @@ function reBuildGoalFromTemplate(mondaycode)
 		{ return; }
 	
 	const todaycode = getTodayCode().getDateString();
-	const planitems = getItemList("exercise_plan");
+	const planitems = W.getItemList("exercise_plan");
 	
 	planitems.forEach(function(pitem) {
 			
-		const newid = newBasicId("ex_week_goal");
-		
 		// Skip inactive
 		if(pitem.getIsActive() == 0)
 			{ return; }
 		
 		const newrec = {
-			"id" : newid,
 			"mini_note" : "Created on : " + todaycode,
 			"monday_code" : mondaycode,
 			"short_code" : pitem.getShortCode(),
 			"weekly_goal" : pitem.getWeeklyGoal()
 		};
 		
-		const newitem = buildExWeekGoalItem(newrec);
+		const newitem = buildItem("ex_week_goal", newrec);
 		newitem.syncItem();
 	});
 	
@@ -64,7 +61,7 @@ function enterFailedRecordList(mondaycode)
 	if(!confirm(message))
 		{ return; }
 	
-	const wologger = new WorkoutLogger(getItemList("workout_log"), getItemList("ex_week_goal"));
+	const wologger = new WorkoutLogger(W.getItemList("workout_log"), W.getItemList("ex_week_goal"));
 	
 	const statusmap = wologger.getSummaryData(mondaycode);
 	
@@ -91,7 +88,7 @@ function enterFailedRecordList(mondaycode)
 			"hole_fill" : ""
 		};
 
-		const newitem = buildWorkoutLogItem(newrec);
+		const newitem = W.buildItem("workout_log", newrec);
 		newitem.syncItem();
 	});
 	
@@ -100,14 +97,14 @@ function enterFailedRecordList(mondaycode)
 
 function editItemNotes(editid)
 {
-	var myitem = lookupItem("workout_log", editid);
+	var myitem = W.lookupItem("workout_log", editid);
 	
 	var newnotes = prompt("Notes for this item: ", myitem.getNotes());
 	
 	if(newnotes)
 	{
 		myitem.setNotes(newnotes);
-		syncSingleItem(myitem);
+		myitem.syncItem();
 		redisplay();		
 	}
 }
@@ -120,9 +117,7 @@ function getEffectiveDate(woitem)
 
 function createItem()
 {
-	const newid = newBasicId("workout_log");
 	const payload = {
-		"id" : newid,
 		"notes" : "",
 		"hole_fill" : "",
 		"day_code" : getDocFormValue("day_code_sel"),
@@ -144,7 +139,7 @@ function workoutType2Show()
 
 function getPlanItem(shortcode)
 {
-	const planlist = getItemList("exercise_plan").filter(pln => pln.getShortCode() == shortcode);
+	const planlist = W.getItemList("exercise_plan").filter(pln => pln.getShortCode() == shortcode);
 	return planlist.length > 0 ? planlist[0] : null;
 }
 
@@ -216,7 +211,7 @@ function isWeekComplete(sumdata)
 
 function getActiveExerciseCodeList()
 {
-	return getItemList("exercise_plan")
+	return W.getItemList("exercise_plan")
 			.filter(function(ai) { return ai.getIsActive() == 1; })
 			.filter(function(ai) { return ai.getExType() == EXERCISE_TYPE; })
 			.map(function(ai) { return ai.getShortCode(); });	
@@ -239,7 +234,7 @@ function redisplay()
 {		
 	redispControls();
 
-	const wologger = new WorkoutLogger(getItemList("workout_log"), getItemList("ex_week_goal"));
+	const wologger = new WorkoutLogger(W.getItemList("workout_log"), W.getItemList("ex_week_goal"));
 	
 	const workouttype = workoutType2Show();
 		
@@ -251,7 +246,7 @@ function redisplay()
 	var dcstr = "";
 
 	// var workoutlist = getItemList("workout_log").filter(wo => wo.getWoType() == workouttype);
-	const workoutlist = getItemList("workout_log");
+	const workoutlist = W.getItemList("workout_log");
 	
 	// TODO: just return a limited number of Mondays here to avoid rendering years of data.
 	var mondaylist = getMondayList();
@@ -299,7 +294,7 @@ function getLinearMondayMap()
 {
 	const linearmap = {};
 
-	getItemList("workout_log").forEach(function(item) {
+	W.getItemList("workout_log").forEach(function(item) {
 		const dc = lookupDayCode(item.getDayCode());
 		const monday = getMonday4Date(dc).getDateString();
 		if(!(monday in linearmap)) {
@@ -383,7 +378,7 @@ function getWeeklyGoalTable(wologger, themonday)
 {	
 	const summary = wologger.getSummaryData(themonday);
 
-	const goalcount = getItemList("ex_week_goal").filter(gitem => gitem.getMondayCode() == themonday).length;
+	const goalcount = W.getItemList("ex_week_goal").filter(gitem => gitem.getMondayCode() == themonday).length;
 	
 	if(goalcount == 0)
 	{

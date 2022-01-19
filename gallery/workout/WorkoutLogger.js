@@ -114,7 +114,7 @@ WorkoutLogger.prototype.getSummaryData = function(mondaycode)
 		summap[wotype][0] = summap[wotype][0] + witem.getWoUnits()*1;			
 	});
 	
-	getItemList("ex_week_goal").filter(gitem => gitem.getMondayCode() == mondaycode).forEach(function(gitem) {
+	W.getItemList("ex_week_goal").filter(gitem => gitem.getMondayCode() == mondaycode).forEach(function(gitem) {
 		
 		const wocode = gitem.getShortCode();
 		initfunc(wocode);

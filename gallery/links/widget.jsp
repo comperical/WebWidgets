@@ -23,6 +23,8 @@ massert(getItemList("link_categ").length > 0,
 // On weekend, select YogaVideo
 function getDefaultCategory()
 {
+	/*
+	dburfoot note: this was a trick I used for my own use, unfortunately it breaks other people who don't have these categories.
 	const shortdow = getTodayCode().getShortDayOfWeek();
 	const weekend = ["sat", "sun"].includes(shortdow.toLowerCase());
 	const defaultcat = weekend ? "YogaVideo" : "LNKD";
@@ -30,6 +32,11 @@ function getDefaultCategory()
 
 	massert(hits.length == 1, `Expected exactly 1 but got ${hits.length} hits for default category ${defaultcat}`);
 	return hits[0].getId();
+	*/
+
+	const hits = getItemList("link_categ");
+	return hits[0].getId();
+
 }
 
 
