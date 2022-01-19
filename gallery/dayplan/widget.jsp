@@ -259,26 +259,26 @@ function redisplay()
 			<td>
 			
 			<a href="javascript:editItemDesc(${item.getId()})">
-			<img src="/life/image/edit.png" height="18" /></a>
+			<img src="/u/shared/image/edit.png" height="18" /></a>
 			
 			</td>
 			<td>${hourminstr}</td>
 			<td width="15%">${timespent}</td>
 			<td>
 			<a href="javascript:addTime2Item(${item.getId()})">
-			<img src="/life/image/upicon.png" height="18" /></a>
+			<img src="/u/shared/image/upicon.png" height="18" /></a>
 
 			&nbsp;
 			&nbsp;
 			
 			<a href="javascript:removeTimeFromItem(${item.getId()})">
-			<img src="/life/image/downicon.png" height="18" /></a>
+			<img src="/u/shared/image/downicon.png" height="18" /></a>
 
 			&nbsp;
 			&nbsp;
 			
 			<a href="javascript:deleteItem(${item.getId()})">
-			<img src="/life/image/remove.png" height="18" /></a>
+			<img src="/u/shared/image/remove.png" height="18" /></a>
 
 			</td>
 			</tr>
@@ -350,14 +350,14 @@ Go To: <span id="plan_day_sel_span"></span>
 Hour Spent: <span id="time_spent_min_span"></span>
 
 <a href="javascript:newByHourSpent()">
-<img src="/life/image/add.png" width="18"/></a>
+<img src="/u/shared/image/add.png" width="18"/></a>
 
 
 <br/><br/>
 
 wakeup
 <a href="javascript:createWakeUpItem()">
-<img src="/life/image/add.png" width="18"/></a> 
+<img src="/u/shared/image/add.png" width="18"/></a> 
 
 <br/><br/>
 Import Template: 

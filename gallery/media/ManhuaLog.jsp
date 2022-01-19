@@ -115,7 +115,7 @@ function getInfoTable()
         <td>Book Title</td>
         <td>${book.getShortName()}</td>
         <td>
-        <a href="javascript:editBookName()"><img src="/life/image/edit.png" height="18"/></a>
+        <a href="javascript:editBookName()"><img src="/u/shared/image/edit.png" height="18"/></a>
         </td>
         </tr>
 
@@ -124,7 +124,7 @@ function getInfoTable()
         <td>Base Link</td>
         <td>${book.getBaseLink()}</td>
         <td>
-        <a href="javascript:editBaseLink()"><img src="/life/image/edit.png" height="18"/></a>
+        <a href="javascript:editBaseLink()"><img src="/u/shared/image/edit.png" height="18"/></a>
         </td>
         </tr>
 
@@ -133,7 +133,7 @@ function getInfoTable()
         <td>Translation</td>
         <td><a href="${book.getTranslationDoc()}">${linkdisplay}</a></td>
         <td>
-        <a href="javascript:editTranslationDoc()"><img src="/life/image/edit.png" height="18"/></a>
+        <a href="javascript:editTranslationDoc()"><img src="/u/shared/image/edit.png" height="18"/></a>
         </td>
         </tr>
 
@@ -177,7 +177,7 @@ function getLogTableData()
             <td>${item.getChapterId()}</td>
             <td>${item.getChapterDesc()}</td>
             <td>
-            <a href="javascript:deleteLogItem(${item.getId()})"><img src="/life/image/remove.png" height="18"/></a>
+            <a href="javascript:deleteLogItem(${item.getId()})"><img src="/u/shared/image/remove.png" height="18"/></a>
             </td>
             </tr>
 

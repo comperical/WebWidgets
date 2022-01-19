@@ -259,22 +259,22 @@ function redisplayMainList()
 			<td>
 
 			<a href="javascript:editTemplateName(${item.getId()})">
-			<img src="/life/image/edit.png" height="18"/></a>
+			<img src="/u/shared/image/edit.png" height="18"/></a>
 
 			${breaker}
 
 			<a href="javascript:editStudyItem(${item.getId()})">
-			<img src="/life/image/inspect.png" height="18"/></a>
+			<img src="/u/shared/image/inspect.png" height="18"/></a>
 
 			${breaker}
 
 			<a href="javascript:archiveTemplate(${item.getId()})">
-			<img src="/life/image/cycle.png" height="18"/></a>
+			<img src="/u/shared/image/cycle.png" height="18"/></a>
 
 			${breaker}
 
 			<a href="javascript:deleteTemplateItem(${item.getId()})">
-			<img src="/life/image/remove.png" height="18"/></a>
+			<img src="/u/shared/image/remove.png" height="18"/></a>
 
 			</td>
 			</tr>
@@ -370,7 +370,7 @@ function redisplayStudyItem()
 			<td>
 
 			<a href="javascript:editItemName(${item.getId()})">
-			<img src="/life/image/edit.png" height="18"/></a>
+			<img src="/u/shared/image/edit.png" height="18"/></a>
 			
 			</td>
 			<td>${endhourstr + halfstr}</td>
@@ -379,17 +379,17 @@ function redisplayStudyItem()
 
 
 			<a href="javascript:addTime2Item(${item.getId()})">
-			<img src="/life/image/upicon.png" height="18"/></a>
+			<img src="/u/shared/image/upicon.png" height="18"/></a>
 
 			${breaker}
 
 			<a href="javascript:removeTimeFromItem(${item.getId()})">
-			<img src="/life/image/downicon.png" height="18"/></a>
+			<img src="/u/shared/image/downicon.png" height="18"/></a>
 
 			${breaker}
 
 			<a href="javascript:deleteItem(${item.getId()})">
-			<img src="/life/image/remove.png" height="18"/></a>
+			<img src="/u/shared/image/remove.png" height="18"/></a>
 
 			</td>
 			</tr>
@@ -462,7 +462,7 @@ Inactive? <input type="checkbox" name="show_inactive" onChange="javascript:redis
 
 
 <a href="javascript:back2Main()">
-<img src="/life/image/leftarrow.png" height="18"/></a>
+<img src="/u/shared/image/leftarrow.png" height="18"/></a>
 
 <br/><br/>
 
@@ -475,7 +475,7 @@ End Time:
 <span id="end_hour_sel_span"></span>
 
 <a href="javascript:createNew()">
-<img src="/life/image/add.png" width="18"/></a>
+<img src="/u/shared/image/add.png" width="18"/></a>
 
 <br/><br/>
 
@@ -483,14 +483,14 @@ Hour Spent:
 <span id="time_spent_sel_span"></span>
 
 <a href="javascript:newByHourSpent()">
-<img src="/life/image/add.png" width="18"/></a>
+<img src="/u/shared/image/add.png" width="18"/></a>
 
 
 <br/><br/><br/>
 
 wakeup
 <a href="javascript:plusDefaultWakeUp()">
-<img src="/life/image/add.png" width="18"/></a> 
+<img src="/u/shared/image/add.png" width="18"/></a> 
 
 </span>
 

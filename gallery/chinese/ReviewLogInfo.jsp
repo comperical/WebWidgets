@@ -71,7 +71,7 @@ function reDispAggTable()
 			<td>${statpack["net_score"].toFixed(2)}</td>
 			<td>
 			<a href="javascript:markStudyItem(${palaceid})">
-			<img src="/life/image/inspect.png" height="18" /></a>
+			<img src="/u/shared/image/inspect.png" height="18" /></a>
 			</td>
 			</tr>
 		`;
@@ -124,7 +124,7 @@ function reDispBdTable()
 			<td>
 
 			<a href="javascript:deleteItem(${ritem.getId()})">
-			<img src="/life/image/remove.png" height="18"></a>
+			<img src="/u/shared/image/remove.png" height="18"></a>
 
 			</td>
 			</tr>

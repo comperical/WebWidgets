@@ -237,7 +237,7 @@ function reDispIngredient()
 		<td>Back</td>
 		<td colspan="2">
 		<a href="javascript:back2Recipe()">
-		<img src="/life/image/leftarrow.png" height="18"/></a>
+		<img src="/u/shared/image/leftarrow.png" height="18"/></a>
 		</td>
 		</tr>
 		
@@ -246,7 +246,7 @@ function reDispIngredient()
 		<td>${myingr.getIngrName()}</td>
 		<td>
 		<a href="javascript:editIngrName()">
-		<img src="/life/image/edit.png" height="18"/></a>
+		<img src="/u/shared/image/edit.png" height="18"/></a>
 		
 		</td>
 		
@@ -257,7 +257,7 @@ function reDispIngredient()
 
 		<td>
 		<a href="javascript:editIngrCategory()">
-		<img src="/life/image/edit.png" height="18"/></a>
+		<img src="/u/shared/image/edit.png" height="18"/></a>
 		</td>		
 		</tr>
 		
@@ -267,7 +267,7 @@ function reDispIngredient()
 		
 		<td>
 		<a href="javascript:editQuantity()">
-		<img src="/life/image/edit.png" height="18"/></a>
+		<img src="/u/shared/image/edit.png" height="18"/></a>
 		</td>			
 		
 		</tr>
@@ -285,7 +285,7 @@ function reDispIngredient()
 		<td>${myingr.getNotes()}</td>
 		<td width="10%">
 		<a href="javascript:editIngrNotes()">
-		<img src="/life/image/edit.png" height="18"/></a>
+		<img src="/u/shared/image/edit.png" height="18"/></a>
 		</td>
 		</tr>
 		
@@ -330,12 +330,12 @@ function reDispRecipeItem()
 			<td>${ritem.getNotes()}</td>
 			<td>
 			<a href="javascript:studyIngredient(${ritem.getId()})">
-			<img src="/life/image/inspect.png" height="18"/></a>
+			<img src="/u/shared/image/inspect.png" height="18"/></a>
 			
 			&nbsp; &nbsp;
 			
 			<a href="javascript:deleteIngredient(${ritem.getId()})">
-			<img src="/life/image/remove.png" height="18"/></a>			
+			<img src="/u/shared/image/remove.png" height="18"/></a>			
 			
 			
 			</td>
@@ -388,17 +388,17 @@ function reDispMainTable()
 			<td>${ingcount}</td>
 			<td>
 			<a href="javascript:studyRecipe(${ritem.getId()})">
-			<img src="/life/image/inspect.png" height="18"/></a>
+			<img src="/u/shared/image/inspect.png" height="18"/></a>
 
 			&nbsp; &nbsp;
 						
 			<a href="javascript:addRecipe2List(${ritem.getId()})">
-			<img src="/life/image/add.png" height="18"/></a>
+			<img src="/u/shared/image/add.png" height="18"/></a>
 			
 			&nbsp; &nbsp;
 						
 			<a href="javascript:cycleRecipeActive(${ritem.getId()})">
-			<img src="/life/image/cycle.png" height="18"/></a>
+			<img src="/u/shared/image/cycle.png" height="18"/></a>
 
 			</td>
 			</tr>
@@ -488,7 +488,7 @@ function reDispShoppingList()
 			<td>${recipe.getRecipeName()}</td>			
 			<td>
 			<a href="javascript:deleteShoppingItem(${shop.getId()})">
-			<img src="/life/image/remove.png" height="18"/></a>
+			<img src="/u/shared/image/remove.png" height="18"/></a>
 			</td>
 			</tr>
 		`;

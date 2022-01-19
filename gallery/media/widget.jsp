@@ -172,7 +172,7 @@ function redisplayEdit()
         </td>
         <td>
         <a href="javascript:back2Main()">
-        <img src="/life/image/leftarrow.png" height="18"/></a>
+        <img src="/u/shared/image/leftarrow.png" height="18"/></a>
         </td>
         </tr>
         <tr>
@@ -184,7 +184,7 @@ function redisplayEdit()
         </td>
         <td>
         <a href="javascript:editItemName()">
-        <img src="/life/image/edit.png" height="18"/></a>
+        <img src="/u/shared/image/edit.png" height="18"/></a>
         </td>        
         </tr>
 
@@ -197,7 +197,7 @@ function redisplayEdit()
         </td>
         <td>
         <a href="javascript:editItemLink()">
-        <img src="/life/image/edit.png" height="18"/></a>
+        <img src="/u/shared/image/edit.png" height="18"/></a>
         </td>        
         </tr>   
 
@@ -219,7 +219,7 @@ function redisplayEdit()
         </td>
         <td>
         <a href="javascript:editItemPriority()">
-        <img src="/life/image/edit.png" height="18"/></a>
+        <img src="/u/shared/image/edit.png" height="18"/></a>
         </td>
         </tr>   
 
@@ -304,7 +304,7 @@ function getTableData(iscomplete)
         {
             linkstr = `
                 <a href="${item.getLink()}">
-                <img src="/life/image/chainlink.png" height="18"/></a>
+                <img src="/u/shared/image/chainlink.png" height="18"/></a>
             `
         }
 
@@ -320,23 +320,23 @@ function getTableData(iscomplete)
             <td>
 
             <a href="javascript:markItemComplete(${item.getId()})">
-            <img src="/life/image/checkmark.png" height="18"/></a>
+            <img src="/u/shared/image/checkmark.png" height="18"/></a>
 
             ${breaker}
 
             <a href="javascript:cycleItemStatus(${item.getId()})">
-            <img src="/life/image/cycle.png" height="18"/></a>
+            <img src="/u/shared/image/cycle.png" height="18"/></a>
 
             ${breaker}
 
 
             <a href="javascript:inspectItem(${item.getId()})">
-            <img src="/life/image/inspect.png" height="18"/></a>
+            <img src="/u/shared/image/inspect.png" height="18"/></a>
 
             ${breaker}
 
             <a href="javascript:deleteItem(${item.getId()})">
-            <img src="/life/image/remove.png" height="18"/></a>
+            <img src="/u/shared/image/remove.png" height="18"/></a>
 
 
 

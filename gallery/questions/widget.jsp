@@ -184,23 +184,23 @@ function getResultSection()
 			
 		const qitem = lookupItem("question_log", spair[1]);
 		
-		var weblinkstr = `<img src="/life/image/purewhite.png" height="18"/>`;
+		var weblinkstr = `<img src="/u/shared/image/purewhite.png" height="18"/>`;
 		
 		if(qitem.getWebLink().length > 1)
 		{
 			weblinkstr = `
-				<a href="${qitem.getWebLink()}"><img src="/life/image/chainlink.png" height="18"/></a>
+				<a href="${qitem.getWebLink()}"><img src="/u/shared/image/chainlink.png" height="18"/></a>
 			`;
 		}
 		
 		const opcol = `
 			${weblinkstr}
 			&nbsp;&nbsp;
-			<a href="javascript:editStudyItem(${qitem.getId()})"><img src='/life/image/inspect.png' height='18'/></a>
+			<a href="javascript:editStudyItem(${qitem.getId()})"><img src='/u/shared/image/inspect.png' height='18'/></a>
 			&nbsp;&nbsp;
-			<a href="javascript:markAnswer(${qitem.getId()})"><img src='/life/image/checkmark.png' height='18'/></a>
+			<a href="javascript:markAnswer(${qitem.getId()})"><img src='/u/shared/image/checkmark.png' height='18'/></a>
 			&nbsp;&nbsp;
-			<a href="javascript:deleteItem(${qitem.getId()})"><img src='/life/image/remove.png' height='18'/></a>
+			<a href="javascript:deleteItem(${qitem.getId()})"><img src='/u/shared/image/remove.png' height='18'/></a>
 		`;
 				
 		const answer1 = qitem.getFullNotes().split("\n")[0];
@@ -308,12 +308,12 @@ function getQuestionTableSub(hasanswer)
 			
 		const breaker = "&nbsp;&nbsp;";
 		
-		var weblinkstr = `<img src="/life/image/purewhite.png" height="18"/>`;
+		var weblinkstr = `<img src="/u/shared/image/purewhite.png" height="18"/>`;
 		
 		if(openitem.getWebLink().length > 1)
 		{
 			weblinkstr = `
-				<a href="${openitem.getWebLink()}"><img src="/life/image/chainlink.png" height="18"/></a>
+				<a href="${openitem.getWebLink()}"><img src="/u/shared/image/chainlink.png" height="18"/></a>
 			`;
 		}
 		
@@ -321,11 +321,11 @@ function getQuestionTableSub(hasanswer)
 		const opcol = `
 		${weblinkstr}
 		${breaker}
-		<a href="javascript:editStudyItem(${openitem.getId()})"><img src='/life/image/inspect.png' height='18'/></a>
+		<a href="javascript:editStudyItem(${openitem.getId()})"><img src='/u/shared/image/inspect.png' height='18'/></a>
 		${breaker}
-		<a href="javascript:markAnswered(${openitem.getId()})"><img src='/life/image/checkmark.png' height='18'/></a>
+		<a href="javascript:markAnswered(${openitem.getId()})"><img src='/u/shared/image/checkmark.png' height='18'/></a>
 		${breaker}
-		<a href="javascript:deleteItem(${openitem.getId()})"><img src='/life/image/remove.png' height='18'/></a>
+		<a href="javascript:deleteItem(${openitem.getId()})"><img src='/u/shared/image/remove.png' height='18'/></a>
 		`;			
 		
 		const answer1 = openitem.getFullNotes().split("\n")[0];
@@ -369,7 +369,7 @@ function getEditItemData()
 		<table class="basic-table" width="50%">
 		<tr>
 		<td>Back</td>
-		<td><a name="back_url" href="javascript:back2Main()"><img src="/life/image/leftarrow.png" height="18"/></a></td>
+		<td><a name="back_url" href="javascript:back2Main()"><img src="/u/shared/image/leftarrow.png" height="18"/></a></td>
 		</tr>
 		<tr>
 		<td>ID</td>
@@ -383,7 +383,7 @@ function getEditItemData()
 		&nbsp;
 		&nbsp;
 		
-		<a href="javascript:editQuestionText()"><img src="/life/image/edit.png" height="18"></a>
+		<a href="javascript:editQuestionText()"><img src="/u/shared/image/edit.png" height="18"></a>
 		
 		</td>
 		</tr>
@@ -396,7 +396,7 @@ function getEditItemData()
 		&nbsp;
 		&nbsp;
 		
-		<a href="javascript:editWebLink()"><img src="/life/image/edit.png" height="18"></a>
+		<a href="javascript:editWebLink()"><img src="/u/shared/image/edit.png" height="18"></a>
 		</td>
 		</tr>
 		
@@ -408,7 +408,7 @@ function getEditItemData()
 		&nbsp;
 		&nbsp;
 		
-		<a href="javascript:cycleField('has_answer')"><img src="/life/image/cycle.png" height="18"></a>
+		<a href="javascript:cycleField('has_answer')"><img src="/u/shared/image/cycle.png" height="18"></a>
 		</td>
 		</tr>
 		
@@ -420,7 +420,7 @@ function getEditItemData()
 		&nbsp;
 		&nbsp;
 		
-		<a href="javascript:cycleField('is_active')"><img src="/life/image/cycle.png" height="18"></a>
+		<a href="javascript:cycleField('is_active')"><img src="/u/shared/image/cycle.png" height="18"></a>
 		</td>
 		</tr>
 		
@@ -437,7 +437,7 @@ function getEditItemData()
 		<td>${extralineinfo}</td>
 		
 		<td width="10%">
-		<a href="javascript:editExtraInfo()"><img src="/life/image/edit.png" height="18"></a>
+		<a href="javascript:editExtraInfo()"><img src="/u/shared/image/edit.png" height="18"></a>
 		</td>
 		</tr>
 		</table>		

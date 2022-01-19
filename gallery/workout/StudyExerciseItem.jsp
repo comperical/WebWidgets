@@ -174,13 +174,13 @@ function redisplay()
 <tr>
 <td>Back</td>
 <td></td>
-<td><a href="ExerciseTemplate.jsp"><img src="/life/image/leftarrow.png" height="18"/></a></td>
+<td><a href="ExerciseTemplate.jsp"><img src="/u/shared/image/leftarrow.png" height="18"/></a></td>
 </tr>
 
 <tr>
 <td width="50%">ShortCode</td>
 <td><div id="short_code"></div></td>
-<td><a href="javascript:editShortCode()"><img src="/life/image/edit.png" height=18/></a></td>
+<td><a href="javascript:editShortCode()"><img src="/u/shared/image/edit.png" height=18/></a></td>
 </tr>
 <tr>
 <td width="50%">Type</td>
@@ -218,7 +218,7 @@ function redisplay()
 <tr>
 <td width="50%">Units</td>
 <td><div id="unit_code"></div></td>
-<td><a href="javascript:editUnitCode()"><img src="/life/image/edit.png" height=18/></a></td>
+<td><a href="javascript:editUnitCode()"><img src="/u/shared/image/edit.png" height=18/></a></td>
 </tr>
 
 
@@ -229,7 +229,7 @@ function redisplay()
 <td><span id="isactive"></span>
 
 </td>
-<td><a href="javascript:flipActive()"><img src="/life/image/cycle.png" height=18/></a></td>
+<td><a href="javascript:flipActive()"><img src="/u/shared/image/cycle.png" height=18/></a></td>
 </tr>
 </table>
 

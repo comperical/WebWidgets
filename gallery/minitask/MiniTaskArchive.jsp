@@ -200,7 +200,7 @@ function redisplay()
 			
 			var decprijs = "javascript:editItemPriority(" + activitem.getId() + ")";
 			
-			var decpriref = $('<a></a>').attr("href", decprijs).append($('<img></img>').attr("src", "/life/image/edit.png").attr("height", 16));;
+			var decpriref = $('<a></a>').attr("href", decprijs).append($('<img></img>').attr("src", "/u/shared/image/edit.png").attr("height", 16));;
 				
 			opcell.append(decpriref);
 			
@@ -218,7 +218,7 @@ function redisplay()
 				
 				
 				var deleteref = $('<a></a>').attr("href", deletejs).append(
-										$('<img></img>').attr("src", "/life/image/leftarrow.png").attr("height", 18)
+										$('<img></img>').attr("src", "/u/shared/image/leftarrow.png").attr("height", 18)
 								);
 				
 				opcell.append(deleteref);
@@ -235,7 +235,7 @@ function redisplay()
 				
 				
 				var studyref = $('<a></a>').attr("href", studyurl).append(
-										$('<img></img>').attr("src", "/life/image/inspect.png").attr("height", 18)
+										$('<img></img>').attr("src", "/u/shared/image/inspect.png").attr("height", 18)
 								);
 				
 				opcell.append(studyref);
@@ -254,7 +254,7 @@ function redisplay()
 				
 				
 				var deleteref = $('<a></a>').attr("href", deletejs).append(
-										$('<img></img>').attr("src", "/life/image/remove.png").attr("height", 18)
+										$('<img></img>').attr("src", "/u/shared/image/remove.png").attr("height", 18)
 								);
 				
 				opcell.append(deleteref);

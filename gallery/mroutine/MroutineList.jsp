@@ -271,12 +271,12 @@ function redisplayMainTable()
 				{ continue; }
 						
 			const opstuff = `
-				<a href="javascript:setEditStudyItem(${onephase.getId()})"><img src="/life/image/inspect.png" height="18"></a>
+				<a href="javascript:setEditStudyItem(${onephase.getId()})"><img src="/u/shared/image/inspect.png" height="18"></a>
 				&nbsp;&nbsp;&nbsp;
-				<a href="${onephase.getWebLink()}"><img src="/life/image/chainlink.png" height="18"></a>
+				<a href="${onephase.getWebLink()}"><img src="/u/shared/image/chainlink.png" height="18"></a>
 				&nbsp;&nbsp;&nbsp;
 				<a href="javascript:cycleStatus(${onephase.getId()})">
-				<img src="/life/image/cycle.png" height="18"></a>
+				<img src="/u/shared/image/cycle.png" height="18"></a>
 			`;
 			
 			
@@ -299,7 +299,7 @@ function redisplayMainTable()
 			<tr>
 			<td>${onephase.getOrderKey()}
 			&nbsp;&nbsp;&nbsp;
-			<a href="javascript:editOrderKey(${onephase.getId()})"><img src="/life/image/edit.png" height="18"></a>
+			<a href="javascript:editOrderKey(${onephase.getId()})"><img src="/u/shared/image/edit.png" height="18"></a>
 			</td>			
 			<td>${onephase.getShortName()}</td>
 			<td>${dayshow}</td>
@@ -325,7 +325,7 @@ function getEditDayListData(daylist)
 	daylist.forEach(function(day) {
 
 		const a = `
-			${day} <a href="javascript:removeDay4Item('${day}')"><img src="/life/image/remove.png" height="16"/></a>
+			${day} <a href="javascript:removeDay4Item('${day}')"><img src="/u/shared/image/remove.png" height="16"/></a>
 
 			&nbsp;
 			&nbsp;
@@ -418,7 +418,7 @@ Show InActive:
 <tr>
 <td>Back</td>
 <td></td>
-<td width="20%"><a href="javascript:back2Main()"><img src="/life/image/leftarrow.png" height="18"/></a></td>
+<td width="20%"><a href="javascript:back2Main()"><img src="/u/shared/image/leftarrow.png" height="18"/></a></td>
 </tr>
 <tr>
 <td>ID</td>
@@ -428,12 +428,12 @@ Show InActive:
 <tr>
 <td width="50%">Name</td>
 <td><div id="itemname"></div></td>
-<td><a href="javascript:editItemName()"><img src="/life/image/edit.png" height=18/></a></td>
+<td><a href="javascript:editItemName()"><img src="/u/shared/image/edit.png" height=18/></a></td>
 </tr>
 <tr>
 <td width="50%">Link</td>
 <td><div id="web_link"></div></td>
-<td><a href="javascript:editWebLink()"><img src="/life/image/edit.png" height=18/></a></td>
+<td><a href="javascript:editWebLink()"><img src="/u/shared/image/edit.png" height=18/></a></td>
 </tr>
 
 <tr>
@@ -441,7 +441,7 @@ Show InActive:
 <td><span id="isactive"></span>
 
 </td>
-<td><a href="javascript:flipActive()"><img src="/life/image/cycle.png" height=18/></a></td>
+<td><a href="javascript:flipActive()"><img src="/u/shared/image/cycle.png" height=18/></a></td>
 </tr>    
 
 <tr>

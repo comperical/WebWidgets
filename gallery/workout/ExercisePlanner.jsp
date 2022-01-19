@@ -143,11 +143,11 @@ function redisplay()
 				<td>${woitem.getMiniNote()}</td>
 				<td>
 				<a href="javascript:editMiniNote(${woitem.getId()})">
-				<img src='/life/image/edit.png' height="18"/></a>
+				<img src='/u/shared/image/edit.png' height="18"/></a>
 				&nbsp;&nbsp;
 			
 				<a href="javascript:deleteItem(${woitem.getId()})">
-				<img src="/life/image/remove.png" height="18"/></a>
+				<img src="/u/shared/image/remove.png" height="18"/></a>
 				</td>
 				</tr>
 			`;

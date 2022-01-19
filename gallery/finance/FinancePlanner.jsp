@@ -118,7 +118,7 @@ function getStudyItemString()
         <tr>
         <td width="25%">Back</td>
         <td></td>
-        <td width="30%"><a href="javascript:back2Main()"><img src="/life/image/leftarrow.png" height="18"/></a></td>
+        <td width="30%"><a href="javascript:back2Main()"><img src="/u/shared/image/leftarrow.png" height="18"/></a></td>
         </tr>
         <tr>
         <td>Category</td>
@@ -128,7 +128,7 @@ function getStudyItemString()
         <tr>
         <td>Monthly Target</td>
         <td>$ ${studyitem.getMonthlyTarget()}</td>
-        <td><a href="javascript:editMonthlyTarget()"><img src="/life/image/edit.png" height=18/></a></td>
+        <td><a href="javascript:editMonthlyTarget()"><img src="/u/shared/image/edit.png" height=18/></a></td>
         </tr>
         <tr>
         <td>Daily Target</td>
@@ -139,7 +139,7 @@ function getStudyItemString()
         <tr>
         <td>Note</td>
         <td>${studyitem.getExtraInfo()}</td>
-        <td><a href="javascript:editCatNote()"><img src="/life/image/edit.png" height=18/></a></td>
+        <td><a href="javascript:editCatNote()"><img src="/u/shared/image/edit.png" height=18/></a></td>
         </tr>
 
         </table>
@@ -181,7 +181,7 @@ function getMainTableString()
             <td>${item.getMonthlyTarget() * 12}</td>            
             <td>
 
-            <a href="javascript:editStudyItem(${item.getId()})"><img src="/life/image/inspect.png" height="18"/></a>
+            <a href="javascript:editStudyItem(${item.getId()})"><img src="/u/shared/image/inspect.png" height="18"/></a>
 
             </td>
             </tr>

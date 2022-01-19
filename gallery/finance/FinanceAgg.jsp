@@ -316,18 +316,18 @@ function redisplay()
 
 		/*
 		const pinlink = expcat in PINNED_MAP
-					? `<a href="javascript:removePin('${expcat}')"><img src="/life/image/trashbin.png" height="16"/></a>`
-					: `<a href="javascript:pinCategoryValue('${expcat}')"><img src="/life/image/pin.png" height="16"/></a>`;
+					? `<a href="javascript:removePin('${expcat}')"><img src="/u/shared/image/trashbin.png" height="16"/></a>`
+					: `<a href="javascript:pinCategoryValue('${expcat}')"><img src="/u/shared/image/pin.png" height="16"/></a>`;
 
 		*/
 
 		const pinlink = `
-			<a href="javascript:pinCategoryValue('${expcat}')"><img src="/life/image/pin.png" height="16"/></a> 
+			<a href="javascript:pinCategoryValue('${expcat}')"><img src="/u/shared/image/pin.png" height="16"/></a> 
 			
 			&nbsp;
 			&nbsp;
 
-			<a href="javascript:pinCategoryValue('${expcat}')"><img src="/life/image/broomstick.png" height="16"/></a>
+			<a href="javascript:pinCategoryValue('${expcat}')"><img src="/u/shared/image/broomstick.png" height="16"/></a>
 		`;
 
 
@@ -378,7 +378,7 @@ function getHiddenTableString()
 			<tr>
 			<td>${hidcat}</td>
 			<td>
-			<a href="javascript:removeHiddenMarker('${hidcat}')"><img src="/life/image/trashbin.png" height="18"/></a>
+			<a href="javascript:removeHiddenMarker('${hidcat}')"><img src="/u/shared/image/trashbin.png" height="18"/></a>
 			</td>
 			</tr>
 		`
@@ -393,7 +393,7 @@ function getHiddenTableString()
 			<tr>
 			<td>${hidcat} = ${pinval}</td>
 			<td>
-			<a href="javascript:removePin('${hidcat}')"><img src="/life/image/trashbin.png" height="18"/></a>
+			<a href="javascript:removePin('${hidcat}')"><img src="/u/shared/image/trashbin.png" height="18"/></a>
 			</td>
 			</tr>
 		`

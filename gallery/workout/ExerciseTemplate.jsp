@@ -109,7 +109,7 @@ function redisplay()
 			{
 				var studylink = "StudyExerciseItem.jsp?item_id=" + activitem.getId();
 				
-				var incpriref = $('<a></a>').attr("href", studylink).append($('<img></img>').attr("src", "/life/image/inspect.png").attr("height", 18));;
+				var incpriref = $('<a></a>').attr("href", studylink).append($('<img></img>').attr("src", "/u/shared/image/inspect.png").attr("height", 18));;
 				
 				opcell.append(incpriref);
 				opcell.append("&nbsp;");
@@ -121,7 +121,7 @@ function redisplay()
 				var deletejs = "javascript:toggleItemActive(" + activitem.getId() + ")";
 				
 				var deleteref = $('<a></a>').attr("href", deletejs).append(
-					$('<img></img>').attr("src", "/life/image/cycle.png").attr("height", 18)
+					$('<img></img>').attr("src", "/u/shared/image/cycle.png").attr("height", 18)
 					);
 				
 				opcell.append(deleteref);

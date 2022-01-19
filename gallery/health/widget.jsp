@@ -84,17 +84,17 @@ function redisplayMainTable()
             <td>${item.getDayCode()}</td>
             <td>${item.getRating()}</td>
             <td>
-            <a href="javascript:editItemRating(${item.getId()})"><img src="/life/image/edit.png" height="18"/></a>
+            <a href="javascript:editItemRating(${item.getId()})"><img src="/u/shared/image/edit.png" height="18"/></a>
             </td>
             <td>${item.getNotes()}</td>
             <td>
 
-            <a href="javascript:editItemDesc(${item.getId()})"><img src="/life/image/edit.png" height="18"/></a>
+            <a href="javascript:editItemDesc(${item.getId()})"><img src="/u/shared/image/edit.png" height="18"/></a>
 
             &nbsp;
             &nbsp;
 
-            <a href="javascript:deleteItem(${item.getId()})"><img src="/life/image/remove.png" height="18"/></a>
+            <a href="javascript:deleteItem(${item.getId()})"><img src="/u/shared/image/remove.png" height="18"/></a>
 
             </td>            
             </tr>

@@ -339,27 +339,27 @@ function redisplayMainTable()
                 ${item.getRepInfo()}
                 </td>
                 <td>
-                <a href="javascript:editRepInfo(${item.getId()})"><img src="/life/image/edit.png" height="18"/></a>
+                <a href="javascript:editRepInfo(${item.getId()})"><img src="/u/shared/image/edit.png" height="18"/></a>
                 </td>                
                 <td>
                 ${item.getWeight()}
                 </td>
                 <td>
-                <a href="javascript:editWeight(${item.getId()})"><img src="/life/image/edit.png" height="18"/></a>
+                <a href="javascript:editWeight(${item.getId()})"><img src="/u/shared/image/edit.png" height="18"/></a>
                 </td>
 
                 <td>${effortshow}</td>
                 <td>
-                <a href="javascript:editEffortLevel(${item.getId()})"><img src="/life/image/edit.png" height="18"/></a>
+                <a href="javascript:editEffortLevel(${item.getId()})"><img src="/u/shared/image/edit.png" height="18"/></a>
                 </td>
 
                 <td width="20%">${item.getNotes()}</td>
                 <td width="5%">
-                <a href="javascript:editItemNotes(${item.getId()})"><img src="/life/image/edit.png" height="18"/></a>
+                <a href="javascript:editItemNotes(${item.getId()})"><img src="/u/shared/image/edit.png" height="18"/></a>
                 </td>
 
                 <td>
-                <a href="javascript:removeItem(${item.getId()})"><img src="/life/image/remove.png" height="16"></a>
+                <a href="javascript:removeItem(${item.getId()})"><img src="/u/shared/image/remove.png" height="16"></a>
                 </td>
 
                 </tr>
@@ -406,21 +406,21 @@ function redisplayMainTable()
             ${item.getWeight()}
             </td>
             <td>
-            <a href="javascript:editWeight(${item.getId()})"><img src="/life/image/edit.png" height="18"/></a>
+            <a href="javascript:editWeight(${item.getId()})"><img src="/u/shared/image/edit.png" height="18"/></a>
             </td>
 
             <td>${effortshow}</td>
             <td>
-            <a href="javascript:editEffortLevel(${item.getId()})"><img src="/life/image/edit.png" height="18"/></a>
+            <a href="javascript:editEffortLevel(${item.getId()})"><img src="/u/shared/image/edit.png" height="18"/></a>
             </td>
 
             <td width="20%">${item.getNotes()}</td>
             <td width="5%">
-            <a href="javascript:editItemNotes(${item.getId()})"><img src="/life/image/edit.png" height="18"/></a>
+            <a href="javascript:editItemNotes(${item.getId()})"><img src="/u/shared/image/edit.png" height="18"/></a>
             </td>
 
             <td>
-            <a href="javascript:removeItem(${item.getId()})"><img src="/life/image/remove.png" height="16"></a>
+            <a href="javascript:removeItem(${item.getId()})"><img src="/u/shared/image/remove.png" height="16"></a>
             </td>
 
             </tr>

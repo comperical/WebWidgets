@@ -282,13 +282,13 @@ function redisplayMainTable()
             <td width="10%">
 
                 <a href="javascript:deleteItem(${item.getId()})">
-                <img src="/life/image/remove.png" height=18"/></a>
+                <img src="/u/shared/image/remove.png" height=18"/></a>
 
                 &nbsp;
                 &nbsp;
 
                 <a href="javascript:editStudyItem(${item.getId()})">
-                <img src="/life/image/inspect.png" height=18"/></a>
+                <img src="/u/shared/image/inspect.png" height=18"/></a>
                 
             </td>
             </tr>
@@ -384,14 +384,14 @@ function redisplayHistoryTable()
                 <td width="10%">
 
                     <a href="javascript:deleteItem(${item.getId()})">
-                    <img src="/life/image/remove.png" height=18"/></a>
+                    <img src="/u/shared/image/remove.png" height=18"/></a>
 
                     &nbsp;
                     &nbsp;
                     &nbsp;
 
                     <a href="javascript:editStudyItem(${item.getId()})">
-                    <img src="/life/image/inspect.png" height=18"/></a>
+                    <img src="/u/shared/image/inspect.png" height=18"/></a>
                     
                 </td>
                 </tr>
@@ -446,12 +446,12 @@ function redisplayHistoryTable()
 <tr>
 <td width="25%">Back</td>
 <td></td>
-<td width="30%"><a href="javascript:back2Main()"><img src="/life/image/leftarrow.png" height="18"/></a></td>
+<td width="30%"><a href="javascript:back2Main()"><img src="/u/shared/image/leftarrow.png" height="18"/></a></td>
 </tr>
 <tr>
 <td>Name</td>
 <td><div id="short_name"></div></td>
-<td><a href="javascript:editShortName()"><img src="/life/image/edit.png" height=18/></a></td>
+<td><a href="javascript:editShortName()"><img src="/u/shared/image/edit.png" height=18/></a></td>
 </tr>
 <tr>
 <td>Tags</td>

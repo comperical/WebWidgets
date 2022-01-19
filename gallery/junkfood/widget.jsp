@@ -231,7 +231,7 @@ function redispFullTable()
 			<td>${jkitem.getNotes()}</td>
 			<td>
 			<a href="javascript:deleteItem(${jkitem.getId()})">
-			<img src="/life/image/remove.png" height="18"/>
+			<img src="/u/shared/image/remove.png" height="18"/>
 			</a>
 			</td>
 			</tr>

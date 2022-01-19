@@ -82,9 +82,9 @@ function composeStudyView()
 {
     const studyitem = lookupItem("short_phrase", _STUDY_PHRASE);
 
-    const editlink = `<img src="/life/image/edit.png" height="18"/>`;
+    const editlink = `<img src="/u/shared/image/edit.png" height="18"/>`;
 
-    const backlink = `<img src="/life/image/leftarrow.png" height="18"/>`;
+    const backlink = `<img src="/u/shared/image/leftarrow.png" height="18"/>`;
 
     const mainstr = `
 
@@ -173,13 +173,13 @@ function composeMainList()
             <td>
 
             <a href="javascript:studyPhrase(${item.getId()})">
-            <img src="/life/image/inspect.png" height="18"/></a>
+            <img src="/u/shared/image/inspect.png" height="18"/></a>
                         
             &nbsp;
             &nbsp;
                     
             <a href="javascript:togglePhraseActive(${item.getId()})">
-            <img src="/life/image/cycle.png" height="18"/></a>
+            <img src="/u/shared/image/cycle.png" height="18"/></a>
 
             </td>
             </tr>

@@ -166,22 +166,22 @@ function redisplayEditItem()
 		<tr>
 		<td width="25%">Back</td>
 		<td></td>
-		<td width="10%"><a href="javascript:back2Main()"><img src="/life/image/leftarrow.png" height="18"/></a></td>
+		<td width="10%"><a href="javascript:back2Main()"><img src="/u/shared/image/leftarrow.png" height="18"/></a></td>
 		</tr>
 		<tr>
 		<td>ID</td>
 		<td>${EDIT_STUDY_ITEM}</td>
-		<td><a href="javascript:bounce2NewId()"><img src="/life/image/rghtarrow.png" height=18/></a></td>
+		<td><a href="javascript:bounce2NewId()"><img src="/u/shared/image/rghtarrow.png" height=18/></a></td>
 		</tr>
 		<tr>
 		<td>Character</td>
 		<td>${showitem.getHanziChar()}</td>
-		<td><a href="javascript:editCharacter()"><img src="/life/image/edit.png" height=18/></a></td>
+		<td><a href="javascript:editCharacter()"><img src="/u/shared/image/edit.png" height=18/></a></td>
 		</tr>
 		<tr>
 		<td>Meaning</td>
 		<td>${showitem.getMeaning()}</td>
-		<td><a href="javascript:editItemMeaning()"><img src="/life/image/edit.png" height=18/></a></td>
+		<td><a href="javascript:editItemMeaning()"><img src="/u/shared/image/edit.png" height=18/></a></td>
 		</tr>
 		<tr>
 		<td>PinYin</td>
@@ -191,7 +191,7 @@ function redisplayEditItem()
 		<tr>
 		<td>Extra Note</td>
 		<td>${showitem.getExtraNote()}</td>
-		<td><a href="javascript:editItemExtraNote()"><img src="/life/image/edit.png" height=18/></a></td>
+		<td><a href="javascript:editItemExtraNote()"><img src="/u/shared/image/edit.png" height=18/></a></td>
 		</tr>
 	`;
 
@@ -304,13 +304,13 @@ function redisplayMainList()
 
 		var opstr = `
 			<a href="javascript:createPalaceItem(${hditem.getId()})">
-			<img src="/life/image/add.png" height="18"/></a>
+			<img src="/u/shared/image/add.png" height="18"/></a>
 		`;
 
 		if(palaceitem != null) {
 			opstr = `
 				<a href="javascript:editStudyItem(${palaceitem.getId()})">
-				<img src="/life/image/inspect.png" height="18"/></a>
+				<img src="/u/shared/image/inspect.png" height="18"/></a>
 			`;
 		}
 
@@ -492,7 +492,7 @@ Showing <span id="itemcount"></span> items
 <td><span id="palace_note1"></span></td>
 
 <td width="10%">
-<a href="javascript:toggleHidden4Class('edit_info')"><img src="/life/image/edit.png" height="18"></a>
+<a href="javascript:toggleHidden4Class('edit_info')"><img src="/u/shared/image/edit.png" height="18"></a>
 </td>
 </tr>
 </table>

@@ -153,13 +153,13 @@ function reDispCatOkTable()
 			<td width="7%">
 			
 			<a href="javascript:editUserNote(${noteitem.getId()})">
-			<img src="/life/image/edit.png" height="18"/></a>
+			<img src="/u/shared/image/edit.png" height="18"/></a>
 
 			&nbsp;
 			&nbsp;
 						
 			<a href="javascript:editStudyItem(${noteitem.getId()})">
-			<img src="/life/image/inspect.png" height="18"/></a>
+			<img src="/u/shared/image/inspect.png" height="18"/></a>
 			
 			</td>
 			</tr>
@@ -232,7 +232,7 @@ function reDispNoCatTable()
 			<td>
 			
 			<a href="javascript:editUserNote(${onerec.getId()})">
-			<img src="/life/image/edit.png" height="18"/></a>
+			<img src="/u/shared/image/edit.png" height="18"/></a>
 
 			&nbsp; 
 			&nbsp; 
@@ -405,7 +405,7 @@ Expense Type:
 <tr>
 <td width="50%">Note</td>
 <td><span id="user_note"></span></td>
-<td><a href="javascript:editUserNoteInspect()"><img src="/life/image/edit.png" height=18/></a></td>
+<td><a href="javascript:editUserNoteInspect()"><img src="/u/shared/image/edit.png" height=18/></a></td>
 </tr>
 <tr>
 <td width="50%">Category</td>

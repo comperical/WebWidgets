@@ -375,7 +375,7 @@ function reDispActiveTable()
 				&nbsp;
 
 				<a href="javascript:editItemPriority(${activitem.getId()})">
-				<img src="/life/image/edit.png" height="18"/></a>
+				<img src="/u/shared/image/edit.png" height="18"/></a>
 				</td>
 			`;
 		}
@@ -387,27 +387,27 @@ function reDispActiveTable()
 			rowstr += `
 				<td width="18%">
 				<a href="javascript:markItemComplete(${activitem.getId()})">
-				<img src="/life/image/checkmark.png" height="18"/></a>
+				<img src="/u/shared/image/checkmark.png" height="18"/></a>
 			
 				${breaker}
 				
 				<a href="javascript:refreshStartDate(${activitem.getId()})">
-				<img src="/life/image/cycle.png" height="18"></a>
+				<img src="/u/shared/image/cycle.png" height="18"></a>
 			
 				${breaker}
 					
 				<a href="javascript:editStudyItem(${activitem.getId()})">
-				<img src="/life/image/inspect.png" height="18"></a>
+				<img src="/u/shared/image/inspect.png" height="18"></a>
 				
 				${breaker}
 
 				<a href="javascript:archiveItem(${activitem.getId()})">
-				<img src="/life/image/rghtarrow.png" height="18"></a>
+				<img src="/u/shared/image/rghtarrow.png" height="18"></a>
 				
 				${breaker}
 				
 				<a href="javascript:deleteItem(${activitem.getId()})">
-				<img src="/life/image/remove.png" height="18"></a>
+				<img src="/u/shared/image/remove.png" height="18"></a>
 				
 				</td>
 			`;
@@ -455,7 +455,7 @@ function reDispCompleteTable()
 			<td width="5%">${compitem.getOmegaDate().substring(5)}</td>
 			<td>
 			<a href="javascript:editStudyItem(${compitem.getId()})">
-			<img src="/life/image/inspect.png" height="18"></a>
+			<img src="/u/shared/image/inspect.png" height="18"></a>
 			</td>
 			
 			</tr>
@@ -610,7 +610,7 @@ function redisplay()
 <table class="basic-table" width="50%">
 <tr>
 <td>Back</td>
-<td><a href="javascript:return2Main()"><img src="/life/image/leftarrow.png" height="18"/></a></td>
+<td><a href="javascript:return2Main()"><img src="/u/shared/image/leftarrow.png" height="18"/></a></td>
 </tr>
 <tr>
 <td>ID</td>
@@ -624,7 +624,7 @@ function redisplay()
 &nbsp;
 &nbsp;
 
-<a href="javascript:editItemName()"><img src="/life/image/edit.png" height="18"></a>
+<a href="javascript:editItemName()"><img src="/u/shared/image/edit.png" height="18"></a>
 
 </td>
 </tr>
@@ -651,7 +651,7 @@ function redisplay()
 &nbsp;
 
 
-<a href="javascript:toggleItemStatus()"><img src="/life/image/cycle.png" height="18"></a>
+<a href="javascript:toggleItemStatus()"><img src="/u/shared/image/cycle.png" height="18"></a>
 </td>
 </tr>
 
@@ -663,7 +663,7 @@ function redisplay()
 &nbsp;
 &nbsp;
 
-<a href="javascript:editStudyItemPriority()"><img src="/life/image/edit.png" height="18"></a>
+<a href="javascript:editStudyItemPriority()"><img src="/u/shared/image/edit.png" height="18"></a>
 </td>
 </tr>
 
@@ -678,7 +678,7 @@ function redisplay()
 </td>
 
 <td width="10%">
-<a href="javascript:toggleHidden4Class('edit_info')"><img src="/life/image/edit.png" height="18"></a>
+<a href="javascript:toggleHidden4Class('edit_info')"><img src="/u/shared/image/edit.png" height="18"></a>
 </td>
 </tr>
 </table>

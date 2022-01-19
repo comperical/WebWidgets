@@ -83,12 +83,12 @@ function redisplayMain()
             <td>${item.getExtraInfo()}</td>
             <td>
             <a href="javascript:inspectItem(${item.getId()})">
-            <img src="/life/image/inspect.png" height="18"/></a>
+            <img src="/u/shared/image/inspect.png" height="18"/></a>
 
             &nbsp;&nbsp;&nbsp;
 
             <a href="javascript:deleteItem(${item.getId()})">
-            <img src="/life/image/remove.png" height="18"/></a>
+            <img src="/u/shared/image/remove.png" height="18"/></a>
 
             </td>
             </tr>
@@ -217,7 +217,7 @@ Back
 </td>
 <td>
 <a href="javascript:back2Main()">
-<img src="/life/image/leftarrow.png" height="18"/></a>
+<img src="/u/shared/image/leftarrow.png" height="18"/></a>
 </td>
 </tr>
 
@@ -230,7 +230,7 @@ Left
 </td>
 <td>
 <a href="javascript:editLeftChar()">
-<img src="/life/image/edit.png" height="18"/>
+<img src="/u/shared/image/edit.png" height="18"/>
 </td>
 </tr>
 
@@ -243,7 +243,7 @@ Right
 </td>
 <td>
 <a href="javascript:editRghtChar()">
-<img src="/life/image/edit.png" height="18"/>
+<img src="/u/shared/image/edit.png" height="18"/>
 </td>
 </tr>
 
@@ -253,7 +253,7 @@ Right
 </td>
 <td>
 <a href="javascript:editExtraInfo()">
-<img src="/life/image/edit.png" height="18"/>
+<img src="/u/shared/image/edit.png" height="18"/>
 </td>
 </tr>
 

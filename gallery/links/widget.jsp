@@ -321,12 +321,12 @@ function redisplayCategoryTable()
 			
 		const removeop = `
 			<a href="javascript:deleteCategory(${categ.getId()})">
-			<img src="/life/image/remove.png" height="18"></a>
+			<img src="/u/shared/image/remove.png" height="18"></a>
 		`;
 		
 		const toggleop = `
 			<a href="javascript:genericToggleActive('link_categ', ${categ.getId()})">
-			<img src="/life/image/cycle.png" height="18"></a>		
+			<img src="/u/shared/image/cycle.png" height="18"></a>		
 		`;
 		
 		const op2display = numhit == 0 ? removeop : toggleop;
@@ -405,12 +405,12 @@ function getLinkTableStr(linkmainlist)
 			</td>
 			<td>
 			<a href="javascript:editStudyItem(${linkitem.getId()})">
-			<img src="/life/image/inspect.png" height="18"></a>
+			<img src="/u/shared/image/inspect.png" height="18"></a>
 			
 			&nbsp;&nbsp;
 			
 			<a href="javascript:deleteItem(${linkitem.getId()})">
-			<img src="/life/image/remove.png" height="18"></a>
+			<img src="/u/shared/image/remove.png" height="18"></a>
 			
 			</td>
 			</tr>
@@ -544,7 +544,7 @@ Category:
 <tr>
 <td>Back</td>
 <td></td>
-<td><a name="back_url" href="javascript:return2Main()"><img src="/life/image/leftarrow.png" height="18"/></a></td>
+<td><a name="back_url" href="javascript:return2Main()"><img src="/u/shared/image/leftarrow.png" height="18"/></a></td>
 </tr>
 <tr>
 <td>ID</td>
@@ -554,12 +554,12 @@ Category:
 <tr>
 <td>Desc</td>
 <td><span id="short_desc"></span></td>
-<td><a href="javascript:editShortDesc()"><img src="/life/image/edit.png" height="18"/></a></td>
+<td><a href="javascript:editShortDesc()"><img src="/u/shared/image/edit.png" height="18"/></a></td>
 </tr>
 <tr>
 <td>Link</td>
 <td><span id="link_url"></span></td>
-<td><a href="javascript:editLinkUrl()"><img src="/life/image/edit.png" height="18"/></a></td>
+<td><a href="javascript:editLinkUrl()"><img src="/u/shared/image/edit.png" height="18"/></a></td>
 </tr>
 <tr>
 <td>Category</td>

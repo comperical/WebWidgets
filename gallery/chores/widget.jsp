@@ -195,13 +195,13 @@ function redisplayChoreList()
 		
 		const activestr = chore.getIsActive() == 1 ? "YES" : "NO";
 		
-		var weblinkstr = `<img src="/life/image/purewhite.png" height="18"/>`;
+		var weblinkstr = `<img src="/u/shared/image/purewhite.png" height="18"/>`;
 		
 		if(chore.getWebLink().length > 0)
 		{
 			weblinkstr = `
 				&nbsp;&nbsp;
-				<a href="${chore.getWebLink()}"><img src="/life/image/chainlink.png" height="18"/></a>
+				<a href="${chore.getWebLink()}"><img src="/u/shared/image/chainlink.png" height="18"/></a>
 			`;
 			
 		}
@@ -215,14 +215,14 @@ function redisplayChoreList()
 			<td>${activestr}</td>
 			<td width="15%">
 				<a href="javascript:setEditStudyItem(${chore.getId()})">
-				<img src="/life/image/inspect.png" height=18"/a></a>
+				<img src="/u/shared/image/inspect.png" height=18"/a></a>
 				
 				&nbsp; 
 				&nbsp; 
 				&nbsp; 
 
 				<a href="javascript:toggleChoreActive(${chore.getId()}, '${chore.getShortName()}')">
-				<img src="/life/image/cycle.png" height="18"/></a>				
+				<img src="/u/shared/image/cycle.png" height="18"/></a>				
 			
 				${weblinkstr}
 			</td>
@@ -318,7 +318,7 @@ function redisplayChoreLog()
 		
 		if(chore.getWebLink().length > 0) 
 		{
-			weblinkstr = `<a href="${chore.getWebLink()}"><img src="/life/image/chainlink.png" height=18"></a>`;
+			weblinkstr = `<a href="${chore.getWebLink()}"><img src="/u/shared/image/chainlink.png" height=18"></a>`;
 		}
 		
 					
@@ -332,17 +332,17 @@ function redisplayChoreLog()
 			<td width="10%">
 
 				<a href="javascript:swap2MiniTask(${chore.getId()})">
-				<img src="/life/image/swap2mtl.png" height=18"/a></a>
+				<img src="/u/shared/image/swap2mtl.png" height=18"/a></a>
 				
 				&nbsp;&nbsp;
 			
 				<a href="javascript:markComplete(${chore.getId()})">
-				<img src="/life/image/checkmark.png" height=18"/a></a>
+				<img src="/u/shared/image/checkmark.png" height=18"/a></a>
 				
 				&nbsp;&nbsp;
 				
 				<a href="javascript:setEditStudyItem(${chore.getId()})">
-				<img src="/life/image/inspect.png" height=18"/a></a>
+				<img src="/u/shared/image/inspect.png" height=18"/a></a>
 				
 				&nbsp;&nbsp;
 												
@@ -479,7 +479,7 @@ Show All: <input type="checkbox" name="show_all" onChange="javascript:redisplay(
 <tr>
 <td width="25%">Back</td>
 <td></td>
-<td><a name="back_url" href="javascript:return2Main()"><img src="/life/image/leftarrow.png" height="18"/></a></td>
+<td><a name="back_url" href="javascript:return2Main()"><img src="/u/shared/image/leftarrow.png" height="18"/></a></td>
 </tr>
 <tr>
 <td>ID</td>
@@ -489,24 +489,24 @@ Show All: <input type="checkbox" name="show_all" onChange="javascript:redisplay(
 <tr>
 <td>Name</td>
 <td><span id="short_name"></span></td>
-<td><a href="javascript:editChoreName()"><img src="/life/image/edit.png" height="18"/></a></td>
+<td><a href="javascript:editChoreName()"><img src="/u/shared/image/edit.png" height="18"/></a></td>
 </tr>
 <tr>
 <td>Link</td>
 <td><span id="web_link"></span></td>
-<td><a href="javascript:editWebLink()"><img src="/life/image/edit.png" height="18"/></a></td>
+<td><a href="javascript:editWebLink()"><img src="/u/shared/image/edit.png" height="18"/></a></td>
 </tr>
 <tr>
 <td>Frequency</td>
 <td><span id="day_freq"></span></td>
-<td><a href="javascript:editChoreFreq()"><img src="/life/image/edit.png" height="18"/></a></td>
+<td><a href="javascript:editChoreFreq()"><img src="/u/shared/image/edit.png" height="18"/></a></td>
 </tr>
 <tr>
 <td width="50%">Active?</td>
 <td><span id="isactive"></span>
 
 </td>
-<td><a href="javascript:flipActive()"><img src="/life/image/cycle.png" height=18/></a></td>
+<td><a href="javascript:flipActive()"><img src="/u/shared/image/cycle.png" height=18/></a></td>
 </tr>
 
 </table>

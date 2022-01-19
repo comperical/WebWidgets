@@ -169,12 +169,12 @@ function getMainTableInfo()
             <td width="40%">${getBasicMistakeDesc(item)}</td>
             <td width="10%">
                 <a href="javascript:editStudyItem(${item.getId()})">
-                <img src="/life/image/inspect.png" height=18"/></a>
+                <img src="/u/shared/image/inspect.png" height=18"/></a>
                 
                 &nbsp; &nbsp; &nbsp;
                 
                 <a href="javascript:deleteItem(${item.getId()}, '${item.getShortDesc()}')">
-                <img src="/life/image/remove.png" height="18"/></a>
+                <img src="/u/shared/image/remove.png" height="18"/></a>
             </td>
             </tr>
         `

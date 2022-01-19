@@ -134,7 +134,7 @@ function redisplay()
             <td>${tstamp}</td>
             <td>
             <a href="javascript:deleteItem(${logitem.getId()})">
-            <img src="/life/image/remove.png" height="18"></a>
+            <img src="/u/shared/image/remove.png" height="18"></a>
             </td>
             </tr>
         `;

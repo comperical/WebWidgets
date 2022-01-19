@@ -365,9 +365,9 @@ function getWeeklyLogTable(wologger, linearmap, themonday)
 		<td>${woitem.getWoUnits()}</td>
 		<td>${woitem.getNotes()}</td>
 		<td>
-		<a href="javascript:editItemNotes(${woitem.getId()})"><img src='/life/image/edit.png' height='18'/></a>
+		<a href="javascript:editItemNotes(${woitem.getId()})"><img src='/u/shared/image/edit.png' height='18'/></a>
 		&nbsp;&nbsp;&nbsp;
-		<a href="javascript:deleteItem(${woitem.getId()})"><img src='/life/image/remove.png' height='18'/></a>
+		<a href="javascript:deleteItem(${woitem.getId()})"><img src='/u/shared/image/remove.png' height='18'/></a>
 		</td>
 		</tr>
 		`;
@@ -429,7 +429,7 @@ function getWeeklyGoalTable(wologger, themonday)
 		{
 			const anyfail = wologger.anyFailForBatch(themonday, wotype);
 			const imcode = anyfail ? 'failure' : 'crown';
-			imstr = `<img src="/life/image/${imcode}.png" height='22'/>`;
+			imstr = `<img src="/u/shared/image/${imcode}.png" height='22'/>`;
 			imlist.push(imstr);
 			numcomplete += 1;
 		}
