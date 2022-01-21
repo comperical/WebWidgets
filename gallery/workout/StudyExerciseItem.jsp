@@ -1,36 +1,14 @@
 
-<%@ page import="java.util.*" %>
-
-<%@ page import="net.danburfoot.shared.*" %>
-<%@ page import="net.danburfoot.shared.DbUtil.*" %>
-<%@ page import="net.danburfoot.shared.HtmlUtil.*" %>
-
-<%@ page import="lifedesign.basic.*" %>
-
-<%@include file="../../admin/AuthInclude.jsp_inc" %>
-
-
-<%
-	String pageTitle = "Study Exercise Item";
-
-	ArgMap argMap = HtmlUtil.getArgMap(request);
-	int itemId = argMap.getInt("item_id");
-	
-	OptSelector categoryList = new OptSelector(Util.listify("brain", "body"));
-
-	OptSelector intSelectList = new OptSelector(Util.range(1, 20));
-%>
-
 <html>
 <head>
-<title><%= pageTitle %></title>
-
-<script src="/life/jscript/jquery-1.4.2.js"></script>
+<title>Study Ex. Item</title>
 
 <%= DataServer.basicInclude(request) %>
 
 
 <script>
+
+STUDY_ITEM_ID = parseInt(getUrlParamHash()["item_id"]);
 
 function flipActive()
 {
@@ -39,9 +17,7 @@ function flipActive()
 	var curActive = showItem.getIsActive();
 	
 	showItem.setIsActive(curActive == 1 ? 0 : 1);
-	
-	syncSingleItem(showItem);		
-
+	showItem.syncItem();
 	redisplay();
 }
 
@@ -52,9 +28,7 @@ function saveNewDesc()
 	var newDesc = getDocFormValue("fullitemdesc");
 	
 	showItem.setFullDesc(newDesc);
-	
-	syncSingleItem(showItem);		
-
+	showItem.syncItem();
 	redisplay();
 }
 
@@ -64,28 +38,27 @@ function updateExType()
 	const newtype = getDocFormValue("sel_ex_type");
 	
 	showitem.setExType(newtype);
-	syncSingleItem(showitem);		
+	showitem.syncItem();
 	redisplay();
-
 }
 
 function updateGoal()
 {
 	const showitem = getItem2Show();
-	const newgoal = getDocFormValue("sel_goal");
+	const newgoal = getDocFormValue("weekly_goal_sel");
 	
 	showitem.setWeeklyGoal(newgoal);
-	syncSingleItem(showitem);		
+	showitem.syncItem();
 	redisplay();
 }
 
 function updateDistance()
 {
 	const showitem = getItem2Show();
-	const newdist = getDocFormValue("sel_distance");
+	const newdist = getDocFormValue("usual_distance_sel");
 	
 	showitem.setUsualDistance(newdist);
-	syncSingleItem(showitem);		
+	showitem.syncItem();
 	redisplay();
 }
 
@@ -97,7 +70,7 @@ function editShortCode()
 	if(shortcode)
 	{		
 		showitem.setShortCode(shortcode);
-		syncSingleItem(showitem);		
+		showitem.syncItem();
 		redisplay();		
 	}
 }
@@ -112,48 +85,59 @@ function editUnitCode()
 	if(unitcode)
 	{		
 		showitem.setUnitCode(unitcode);
-		syncSingleItem(showitem);		
+		showitem.syncItem();
 		redisplay();		
 	}
 }
 
 function getItem2Show()
 {
-	var onelist = getItemList("exercise_plan")
-			.filter(it => it.getId() == <%= itemId %>);
-			
-	return onelist[0];
+	return W.lookupItem("exercise_plan", STUDY_ITEM_ID);
 }
 
 function redisplay()
 {
 
-	var showItem = getItem2Show();
-	
-	$('#short_code').html(showItem.getShortCode());
-	
-	$('#unit_code').html(showItem.getUnitCode());
+	const showItem = getItem2Show();
+	const activestr = showItem.getIsActive() == 1 ? "YES" : "NO";
 
-	$('#ex_type').html(showItem.getExType());
-		
-	$('#usual_distance').html(showItem.getUsualDistance());
+	const curItemDesc = showItem.getFullDesc();
+	const desclinelist = curItemDesc.replace(/\n/g, "<br/>");
+
+
+	populateSpanData({
+		"short_code" : showItem.getShortCode(),
+		"unit_code" : showItem.getUnitCode(),
+		"ex_type" : showItem.getExType(),
+		"usual_distance" : showItem.getUsualDistance(),
+		"weekly_goal" : showItem.getWeeklyGoal(),
+		"isactive" : activestr,
+		"itemdescline" : desclinelist
+	})
 	
-	$('#weekly_goal').html(showItem.getWeeklyGoal());
-	
-	getUniqElementByName("sel_ex_type").value = showItem.getExType();
-	
-	getUniqElementByName("sel_distance").value = showItem.getUsualDistance();	
-	
-	var curItemDesc = showItem.getFullDesc();
-	
-	// Okay, this took me a while to get right. The issue is that 
-	// the standard string.replace(...) won't do a global, and there is no replaceAll
-	var desclinelist = curItemDesc.replace(/\n/g, "<br/>");
-	$('#itemdescline').html(desclinelist);
-	
-	var activebool = showItem.getIsActive() == 1;
-	
-	$('#isactive').html(activebool ? "YES" : "NO");	
+	buildOptSelector()
+		.setKeyList(["body", "brain"])
+		.setElementName("sel_ex_type")
+		.setOnChange("javascript:updateExType()")
+		.setSelectedKey(showItem.getExType())
+		.autoPopulate();
+
+	const goalrange = [...Array(20).keys()];
+	buildOptSelector()
+		.setKeyList(goalrange)
+		.setSelectedKey(showItem.getWeeklyGoal())
+		.setElementName("weekly_goal_sel")
+		.setOnChange("javascript:updateGoal()")
+		.autoPopulate()
+
+	const usuallist = [... Array(10).keys()];
+	buildOptSelector()
+		.setKeyList(usuallist)
+		.setSelectedKey(showItem.getUsualDistance())
+		.setElementName("usual_distance_sel")
+		.setOnChange("javascript:updateDistance()")
+		.autoPopulate()
+
 }
 
 </script>
@@ -166,7 +150,7 @@ function redisplay()
 
 <br/><br/>
 
-<h3><%= pageTitle %></h3>
+<h3>Study Exercise Item</h3>
 
 <br/><br/>
 
@@ -186,9 +170,7 @@ function redisplay()
 <td width="50%">Type</td>
 <td><div id="ex_type"></div></td>
 <td>
-<select name="sel_ex_type" onChange="javascript:updateExType()">
-<%= categoryList.getSelectStr("---") %>
-</select>
+<span id="sel_ex_type_span"></span>
 </td>
 </tr>
 
@@ -198,9 +180,7 @@ function redisplay()
 <td width="50%">Goal</td>
 <td><div id="weekly_goal"></div></td>
 <td>
-<select name="sel_goal" onChange="javascript:updateGoal()">
-<%= intSelectList.getSelectStr("---") %>
-</select>
+<span id="weekly_goal_sel_span"></span>
 </td>
 </tr>
 
@@ -208,9 +188,7 @@ function redisplay()
 <td width="50%">Usual Distance</td>
 <td><div id="usual_distance"></div></td>
 <td>
-<select name="sel_distance" onChange="javascript:updateDistance()">
-<%= intSelectList.getSelectStr("---") %>
-</select>
+<span id="usual_distance_sel_span"></span>
 </td>
 </tr>
 

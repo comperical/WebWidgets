@@ -12,21 +12,21 @@ function deleteItem(killid)
 {
 	if(confirm("DON'T BE LAZY - are you sure you want to delete this item??"))
 	{
-		lookupItem("ex_week_goal", killid).deleteItem();
+		W.lookupItem("ex_week_goal", killid).deleteItem();
 		redisplay();		
 	}
 }
 
 function editMiniNote(editid)
 {
-	var myitem = lookupItem("ex_week_goal", editid);
+	var myitem = W.lookupItem("ex_week_goal", editid);
 	
 	var newnotes = prompt("Notes for this item: ", myitem.getMiniNote());
 	
 	if(newnotes)
 	{
 		myitem.setMiniNote(newnotes);
-		syncSingleItem(myitem);
+		myitem.syncItem();
 		redisplay();		
 	}
 }
@@ -36,28 +36,26 @@ function rebuildWeek(mondaycode)
 	if(!confirm("This will delete all the previous goal items for this week, and rebuild them from the template. Okay?"))
 		{ return; }
 	
-	const olditems = getItemList("ex_week_goal").filter(exitem => exitem.getMondayCode() == mondaycode);
+	const olditems = W.getItemList("ex_week_goal").filter(exitem => exitem.getMondayCode() == mondaycode);
 	
 	// Gotcha here: if you delete before create, the new items will get reallocated the IDs deleted previously.
 	// So if the delete operations get processed after the create operations because of race condition,
 	// you will end up deleting the records you just built.
-	const tempitems = getItemList("exercise_plan");
+	const tempitems = W.getItemList("exercise_plan");
 	
 	tempitems.forEach(function(titem) {
 			
 		if(titem.getIsActive() != 1)
 			{ return; }
 		
-		const newid = newBasicId("ex_week_goal");
 		const newrec = {
-			"id" : newid,
 			"mini_note" : "...",
 			"monday_code" : mondaycode,
 			"short_code" : titem.getShortCode(),
 			"weekly_goal" : titem.getWeeklyGoal()
 		};
 		
-		const newitem = buildExWeekGoalItem(newrec);
+		const newitem = W.buildItem("ex_week_goal", newrec);
 		newitem.syncItem();			
 	});
 	
@@ -70,7 +68,7 @@ function rebuildWeek(mondaycode)
 
 function getPlanItem(shortcode)
 {
-	const planlist = getItemList("exercise_plan").filter(pln => pln.getShortCode() == shortcode);
+	const planlist = W.getItemList("exercise_plan").filter(pln => pln.getShortCode() == shortcode);
 	return planlist.length > 0 ? planlist[0] : null;
 }
 
@@ -105,7 +103,7 @@ function getMondayList()
 function redisplay()
 {
 	var mainlog = "";
-	const workoutlist = getItemList("ex_week_goal");
+	const workoutlist = W.getItemList("ex_week_goal");
 	const mondaylist = getMondayList().sort().reverse();
 	
 	mondaylist.forEach(function(themonday) {
