@@ -66,7 +66,6 @@ function createMiniTaskNote()
 	if(notename)
 	{
 		const newrec = {
-			"id" : newBasicId("mini_task_list"),
 			"alpha_date" : getTodayCode().getDateString(),
 			"omega_date" : "",
 			"is_backlog" : 0,
@@ -76,9 +75,8 @@ function createMiniTaskNote()
 			"extra_info" : weblink
 		};		
 		
-		const newitem = buildMiniTaskListItem(newrec);
+		const newitem = buildItem("mini_task_list", newrec);
 		newitem.syncItem();
-		
 		alert("Created new MTL item");
 	}
 	

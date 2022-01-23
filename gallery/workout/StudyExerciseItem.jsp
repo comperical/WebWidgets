@@ -148,11 +148,11 @@ function redisplay()
 
 <center>
 
-<br/><br/>
+<br/>
 
 <h3>Study Exercise Item</h3>
 
-<br/><br/>
+<br/>
 
 <table width="30%" class="basic-table">
 <tr>
