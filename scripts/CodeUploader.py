@@ -11,7 +11,7 @@ from zipfile import ZipFile
 CONFIG_MAP_OKAY_KEYS = ["accesshash", "dbdir", "codedir", "codedir1", "codedir2", "codedir3"]
 
 def get_domain_prefix(local=False):
-	return "http://localhost:8080" if local else "https://webwidgets.io"
+	return  "https://webwidgets.io"
 
 def get_config_directory():
 	from os.path import expanduser
@@ -41,6 +41,11 @@ def find_username(argmap):
 	# Okay we found the username from the config files, because there's only one proper config file.
 	if len(candidates) == 1:
 		return candidates[0]
+
+	# Special treatment for admin user :-)
+	if "dburfoot" in candidates:
+		print("Defaulting to admin user name")
+		return "dburfoot"
 
 	assert False, "System could not find the username from config files, please specify on command line using username= option"
 
