@@ -10,7 +10,7 @@
 
 function deleteItem(killid)
 {
-    lookupItem("mroutine_log", killid).deleteItem();
+    W.lookupItem("mroutine_log", killid).deleteItem();
     redisplay();
 }
 
@@ -18,7 +18,7 @@ function getLogMap()
 {
     // Map of Phase ID :: last daycode update   
     var logmap = {};
-    var loglist = getItemList("mroutine_log");
+    var loglist = W.getItemList("mroutine_log");
     loglist.sort(proxySort(a => [a.getLogTimePst()]));
     
     loglist.forEach(function(mrlog) {   
@@ -33,7 +33,7 @@ function getActivePhase()
 {
     // Active Phase is the lowest ORDER KEY phase with no log item for the given day.
     var logmap = getLogMap();
-    var phaselist = getItemList("mroutine_phase").filter(mrp => mrp.getIsActive() == 1);
+    var phaselist = W.getItemList("mroutine_phase").filter(mrp => mrp.getIsActive() == 1);
     
     phaselist.sort(proxySort(a => [a.getOrderKey()]));
     const todayOfWeek = getTodayCode().getShortDayOfWeek();
@@ -65,15 +65,13 @@ function markDone()
         return; 
     }
     
-    const newid = newBasicId("mroutine_log");
-    const ltpst = calcFullLogTimeStr(new Date());   
+    const ltpst = exactMomentNow().asIsoLongBasic(MY_TIME_ZONE);
     const comrecord = {
-        "id" : newid,
         "phase_id" : actphase.getId(),
         "log_time_pst" : ltpst
     };
     
-    const newitem = buildItem("mroutine_log", comrecord);
+    const newitem = W.buildItem("mroutine_log", comrecord);
     newitem.syncItem();
     redisplay();    
     
@@ -121,12 +119,12 @@ function redisplay()
     `;
 
 
-    var complist = getItemList("mroutine_log").filter(mrlog => isTodayLog(mrlog));
+    var complist = W.getItemList("mroutine_log").filter(mrlog => isTodayLog(mrlog));
     complist.sort(proxySort(a => [a.getLogTimePst])).reverse()
     
     complist.forEach(function(logitem) {
 
-        const cphase = lookupItem("mroutine_phase", logitem.getPhaseId());
+        const cphase = W.lookupItem("mroutine_phase", logitem.getPhaseId());
         const tstamp = logitem.getLogTimePst().split(" ")[1].substring(0, 5);       
         const itemrow = `
             <tr>

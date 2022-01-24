@@ -169,7 +169,13 @@ function generateTableInfo()
 
     const vocabcount = getVocabCharCountMap();
 
-    getItemList("hanzi_data").forEach(charitem => {
+    function getVc(charitem) {
+        const thechar = charitem.getHanziChar();
+        return (thechar in vocabcount) ? vocabcount[thechar] : 0;
+    }
+
+    const sortlist = getItemList("hanzi_data").sort(proxySort(charitem => [-getVc(charitem)]));
+    sortlist.forEach(charitem => {
 
         const thechar = charitem.getHanziChar();
 

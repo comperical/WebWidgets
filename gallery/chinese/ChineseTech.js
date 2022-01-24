@@ -42,7 +42,7 @@ function getConfounderIndex()
 	{
 		__CONFOUNDER_INDEX = {};
 
-		getItemList("confounder").forEach(function(conf) {
+		W.getItemList("confounder").forEach(function(conf) {
 
 			const charlist = [conf.getLeftChar(), conf.getRghtChar()];
 
@@ -66,13 +66,13 @@ function lookupHanziDataByChar(hanzichar)
 	{
 		console.log("Rebuilding hanzi data -> char map");
 		__HANZI_DATA_BY_CHAR = {}
-		getItemList("hanzi_data").forEach(function(hditem) {
+		W.getItemList("hanzi_data").forEach(function(hditem) {
 			__HANZI_DATA_BY_CHAR[hditem.getHanziChar()] = hditem.getId();	
 		});
 	}
 	
 	const foundid = __HANZI_DATA_BY_CHAR[hanzichar];	
-	return lookupItem("hanzi_data", foundid);
+	return W.lookupItem("hanzi_data", foundid);
 }
 
 __PALACE_ITEM_BY_CHAR = null;
@@ -83,13 +83,13 @@ function lookupPalaceItemByChar(hanzichar)
 	{
 		console.log("Rebuilding palance data -> char map");
 		__PALACE_ITEM_BY_CHAR = {}
-		getItemList("palace_item").forEach(function(hditem) {
+		W.getItemList("palace_item").forEach(function(hditem) {
 			__PALACE_ITEM_BY_CHAR[hditem.getHanziChar()] = hditem.getId();	
 		});
 	}
 	
 	const foundid = __PALACE_ITEM_BY_CHAR[hanzichar];	
-	return foundid == null ? null : lookupItem("palace_item", foundid);
+	return foundid == null ? null : W.lookupItem("palace_item", foundid);
 }
 
 function clearHanziDataCache() 
@@ -155,8 +155,8 @@ function parseCedictDef(cedict)
 
 function computeStatInfoSub(itemtable, logtable)
 {
-	const palacelist = getItemList(itemtable).filter(item => item.getIsActive() == 1);
-	const reviewlist = getItemList(logtable);
+	const palacelist = W.getItemList(itemtable).filter(item => item.getIsActive() == 1);
+	const reviewlist = W.getItemList(logtable);
 
 	var statmap = {};
 	
@@ -219,8 +219,8 @@ function bayesianUpdate(ritem)
 
 function bayesianStatInfoCalc(itemtable, logtable)
 {
-    const palacelist = getItemList(itemtable).filter(item => item.getIsActive() == 1);
-    const reviewlist = getItemList(logtable).sort(proxySort(item => [item.getTimeStamp()]));
+    const palacelist = W.getItemList(itemtable).filter(item => item.getIsActive() == 1);
+    const reviewlist = W.getItemList(logtable).sort(proxySort(item => [item.getTimeStamp()]));
 
     var statmap = {};
     

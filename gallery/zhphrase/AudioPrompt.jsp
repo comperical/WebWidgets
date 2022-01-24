@@ -38,7 +38,7 @@ function computePhraseStatInfo()
 
 function markResult(resultcode)
 {   
-    const timestamp = calcFullLogTimeStr(new Date());
+    const timestamp = exactMomentNow().asIsoLongBasic(MY_TIME_ZONE);
     const newrec = {
         "study_code" : "zh_phrase",
         "item_id" : CURRENT_PROMPT_ITEM.getId(),

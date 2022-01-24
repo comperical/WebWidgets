@@ -19,12 +19,12 @@ TARGET_REVIEWS_PER_DAY = 30;
 
 CURRENT_PROMPT_ITEM = computePromptItem();
 
-CHARACTER_VOCAB_MAP = buildChar2VocabMap(getItemList("word_memory"));
+CHARACTER_VOCAB_MAP = buildChar2VocabMap(W.getItemList("word_memory"));
 
 function markResult(resultcode)
 {	
 	// This creates a review_log item and then redisplays the quiz.
-	const timestamp = calcFullLogTimeStr(new Date());
+	const timestamp = exactMomentNow().asIsoLongBasic(MY_TIME_ZONE);
 	const newrec = {
 		"study_code" : "palace",
 		"item_id" : CURRENT_PROMPT_ITEM.getId(),
@@ -33,7 +33,7 @@ function markResult(resultcode)
 		"extra_info" : ""
 	};
 	
-	const newitem = buildItem("review_log", newrec);
+	const newitem = W.buildItem("review_log", newrec);
 	newitem.syncItem();
 	
 	CURRENT_PROMPT_ITEM = computePromptItem();
@@ -44,7 +44,7 @@ function markResult(resultcode)
 
 function createMiniTaskNote()
 {
-	if(!haveTable("mini_task_list"))
+	if(!W.haveTable("mini_task_list"))
 	{
 		alert("You don't have a Notes widget. \n\nPlease ask your friendly admin to set one up!!");
 		return;
@@ -135,7 +135,7 @@ function getRecentPromptIdSet()
 
 function getRecentPromptIdSet(backup) 
 {
-	const recentlist = getItemList("review_log").sort(proxySort(item => [item.getTimeStamp()]));
+	const recentlist = W.getItemList("review_log").sort(proxySort(item => [item.getTimeStamp()]));
     const recentset = new Set();
 
     while(recentset.size < backup && recentlist.length > 0) {
@@ -173,9 +173,7 @@ function computePromptItem()
 	
 	// const allitems = getItemList("palace_item");	
 	// return allitems[Math.floor(Math.random()*allitems.length)];
-	const promptitem = lookupItem("palace_item", lowestid);
-	
-	return lookupItem("palace_item", lowestid);
+	return W.lookupItem("palace_item", lowestid);
 }
 
 function redisplay()

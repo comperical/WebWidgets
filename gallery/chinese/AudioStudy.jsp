@@ -154,10 +154,8 @@ function markResult(resultcode)
     console.log("Marking result " + resultcode);
 
     // This creates a review_log item and then redisplays the quiz.
-    const newid = newBasicId("review_log");
-    const timestamp = calcFullLogTimeStr(new Date());
+    const timestamp = exactMomentNow().asIsoLongBasic(MY_TIME_ZONE);
     const newrec = {
-        "id" : newid,
         "study_code" : "palace",
         "item_id" : CURRENT_PROMPT_ITEM.getId(),
         "result_code" : resultcode,
