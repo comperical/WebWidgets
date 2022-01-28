@@ -39,7 +39,7 @@ function doTemplateImport()
 	const deletes = getPlanDayItemList();	
 	
 	// remember: create new first to assign IDs, then delete old.
-	getItemList("template_sub").forEach(function(tmpitem) {
+	W.getItemList("template_sub").forEach(function(tmpitem) {
 		
 		if(tmpitem.getTempId() != temp_id)
 			{ return; }
@@ -47,14 +47,13 @@ function doTemplateImport()
 		// console.log(tmpitem);
 		
 		const record = {
-			"id" : newBasicId("day_plan_main"),
 			"day_code" : PLAN_DAY_CODE.getDateString(),
 			"end_hour" : tmpitem.getEndHour(),
 			"half_hour" : tmpitem.getHalfHour(),
 			"short_desc" : tmpitem.getShortDesc()
 		};
 		
-		const newitem = buildItem("day_plan_main", record);
+		const newitem = W.buildItem("day_plan_main", record);
 		newitem.syncItem();		
 	});
 	
@@ -108,21 +107,20 @@ function createWakeUpItem()
 function createNewSub(endhour, ishalf, itemname)
 {
 	const record = {
-		"id" : newBasicId("day_plan_main"),
 		"day_code" : PLAN_DAY_CODE.getDateString(),
 		"end_hour" : endhour,
 		"half_hour" : ishalf ? 1 : 0,
 		"short_desc" : itemname
 	};
 	
-	const newitem = buildItem("day_plan_main", record);
+	const newitem = W.buildItem("day_plan_main", record);
 	newitem.syncItem();
 	redisplay();
 }
 
 function addTime2Item(itemid)
 {
-	var planitem = lookupItem("day_plan_main", itemid);
+	var planitem = W.lookupItem("day_plan_main", itemid);
 	
 	if(planitem.getHalfHour() == 0)
 	{
@@ -132,20 +130,19 @@ function addTime2Item(itemid)
 		planitem.setHalfHour(0);
 	}
 	
-	syncSingleItem(planitem);			
+	planitem.syncItem();
 	redisplay();	
 }
 
 function editItemDesc(itemid)
 {
-	var planitem = lookupItem("day_plan_main", itemid);
-	
-	var newdesc = prompt("Edit new description for item: ", planitem.getShortDesc());
+	const planitem = W.lookupItem("day_plan_main", itemid);
+	const newdesc = prompt("Edit new description for item: ", planitem.getShortDesc());
 	
 	if(newdesc)
 	{
 		planitem.setShortDesc(newdesc);
-		syncSingleItem(planitem);			
+		planitem.syncItem();
 		redisplay();			
 	}
 }
@@ -153,7 +150,7 @@ function editItemDesc(itemid)
 
 function removeTimeFromItem(itemid)
 {
-	var planitem = lookupItem("day_plan_main", itemid);
+	var planitem = W.lookupItem("day_plan_main", itemid);
 	
 	if(planitem.getHalfHour() == 1)
 	{
@@ -163,7 +160,7 @@ function removeTimeFromItem(itemid)
 		planitem.setHalfHour(1);
 	}
 	
-	syncSingleItem(planitem);			
+	planitem.syncItem();
 	redisplay();	
 }
 
@@ -182,7 +179,7 @@ function updatePlanDay()
 
 function getPlanDayItemList()
 {
-	var itemlist = getItemList("day_plan_main").filter(dp => dp.getDayCode() == PLAN_DAY_CODE.getDateString());
+	const itemlist = W.getItemList("day_plan_main").filter(dp => dp.getDayCode() == PLAN_DAY_CODE.getDateString());
 	itemlist.sort(proxySort(dp => [dp.getEndHour()]));
 	return itemlist;
 }
@@ -192,7 +189,7 @@ function getTemplateIdMap()
 	var idmap = {};
 	idmap[-1] = "----";
 
-	getItemList("day_template").forEach(function(item) {
+	W.getItemList("day_template").forEach(function(item) {
 
 		if(item.getIsActive() == 0)
 			{ return; }
@@ -219,7 +216,7 @@ function redisplay()
 	`;
 
 	// hour:minute now
-	const hourminnow = calcTimeHourStr(new Date()).substring(0, 5);
+	const hourminnow = exactMomentNow().asIsoLongBasic(MY_TIME_ZONE).substring(11, 16);
 
 	// true if previous row was past now	
 	var prevpastnow = false;

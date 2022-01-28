@@ -15,7 +15,7 @@ var STUDY_CATEGORY = false;
 
 var SEARCH_TERM = "";
 
-massert(getItemList("link_categ").length > 0,
+massert(W.getItemList("link_categ").length > 0,
 	"You must add some link categories by hand first!!");
 
 // Very crude method of picking a default category.
@@ -34,7 +34,7 @@ function getDefaultCategory()
 	return hits[0].getId();
 	*/
 
-	const hits = getItemList("link_categ");
+	const hits = W.getItemList("link_categ");
 	return hits[0].getId();
 
 }
@@ -52,7 +52,7 @@ function createNew()
 		"cat_id" : categid
 	};
 	
-	const newlinkitem = buildItem("link_main", newrec);	
+	const newlinkitem = W.buildItem("link_main", newrec);	
 	newlinkitem.syncItem();
 	
 	editStudyItem(newlinkitem.getId());
@@ -83,7 +83,7 @@ function createNewCategory()
 			"is_active" : 1
 		};
 		
-		const newitem = buildItem("link_categ", newrec);		
+		const newitem = W.buildItem("link_categ", newrec);		
 		newitem.syncItem();
 		redisplay();
 	}
@@ -93,14 +93,14 @@ function deleteItem(killid)
 {
 	if(confirm("Are you sure you want to delete item " + killid + " ?"))
 	{
-		lookupItem("link_main", killid).deleteItem();
+		W.lookupItem("link_main", killid).deleteItem();
 		redisplay();
 	}
 }
 
 function deleteCategory(killcateg)
 {
-	const victim = lookupItem("link_categ", killcateg);
+	const victim = W.lookupItem("link_categ", killcateg);
 	
 	if(confirm("Are you sure you want to delete category " + victim.getShortCode() + "?"))
 	{
@@ -113,7 +113,7 @@ function getLinkCategMap()
 {
 	var catmap = {};
 	
-	var catlist = getItemList("link_categ");
+	var catlist = W.getItemList("link_categ");
 	
 	catlist.forEach(ci => catmap[ci.getShortCode()] = ci.getId() );
 
@@ -140,15 +140,14 @@ function studyCategoryInfo()
 
 function getEditRecord()
 {
-	const itemlist = getItemList("link_main").filter(rec => rec.getId() == EDIT_STUDY_ITEM);
-	return itemlist[0];			
+	return W.lookupItem("link_main", EDIT_STUDY_ITEM);
 }
 
 function getCategoryMap()
 {	
 	// Okay, this sorting doesn't come out in the final drop-down,
 	// because it goes through the intermediate map 
-	const categlist = getItemList("link_categ")
+	const categlist = W.getItemList("link_categ")
 				.filter(ctg => ctg.getIsActive() == 1)
 				.sort(proxySort(ctg => [ctg.getShortCode()]));
 	
@@ -179,7 +178,7 @@ function editFieldName(fname)
 	if(newinfo)
 	{
 		edititem[fname] = newinfo;
-		syncSingleItem(edititem);
+		edititem.syncItem();
 		redisplay();
 	}
 }
@@ -310,7 +309,7 @@ function redisplayCategoryTable()
 	
 	var countmap = {};
 	
-	getItemList("link_main").forEach(function(litem) {
+	W.getItemList("link_main").forEach(function(litem) {
 	
 		if(!(litem.getCatId() in countmap))
 			{ countmap[litem.getCatId()] = 0; }
@@ -318,7 +317,7 @@ function redisplayCategoryTable()
 		countmap[litem.getCatId()] += 1;
 	});
 	
-	var categorylist = getItemList("link_categ").sort(proxySort(c => [c.getShortCode()]));
+	var categorylist = W.getItemList("link_categ").sort(proxySort(c => [c.getShortCode()]));
 	
 	categorylist.forEach(function(categ) {
 		
@@ -360,7 +359,7 @@ function redisplayCategoryTable()
 function updateMainCatSelect()
 {
 	const catcode = getDocFormValue("main_category_sel");
-	const hits = getItemList("link_categ").filter(ctg => ctg.getShortCode() == catcode);
+	const hits = W.getItemList("link_categ").filter(ctg => ctg.getShortCode() == catcode);
 	MAIN_CATEGORY = hits[0].getId();
 	redisplay();
 }
@@ -397,7 +396,7 @@ function getLinkTableStr(linkmainlist)
 		if(shorturl.length > 40)
 			{ shorturl = shorturl.substring(0, 40)+"..."; }		
 		
-		const categitem = lookupItem("link_categ", linkitem.getCatId());
+		const categitem = W.lookupItem("link_categ", linkitem.getCatId());
 
 		// console.log(`Link display is ${linkdisplay} for link  ${linkitem.getLinkUrl()}`);
 
@@ -429,7 +428,7 @@ function getLinkTableStr(linkmainlist)
 
 function getSortedCategoryList() 
 {
-	return getItemList("link_categ")
+	return W.getItemList("link_categ")
 				.filter(ctg => ctg.getIsActive() == 1)
 				.map(ctg => ctg.getShortCode())
 				.sort();
@@ -440,7 +439,7 @@ function redisplayMainTable()
 {		
 	const categlist = getSortedCategoryList();
 
-	const curcatname = lookupItem("link_categ", MAIN_CATEGORY).getShortCode();
+	const curcatname = W.lookupItem("link_categ", MAIN_CATEGORY).getShortCode();
 
 	const optmap = getCategoryMap();
 	const optsel = buildOptSelector()
@@ -450,7 +449,7 @@ function redisplayMainTable()
 						.getSelectString();
 
 	
-	const linkmainlist = getItemList("link_main").filter(lmi => lmi.getCatId() == MAIN_CATEGORY);
+	const linkmainlist = W.getItemList("link_main").filter(lmi => lmi.getCatId() == MAIN_CATEGORY);
 
 	const tablestr = getLinkTableStr(linkmainlist);
 
@@ -470,7 +469,7 @@ function redisplaySearchTable() {
 
 
 
-	const searchlist = getItemList("link_main").filter(lmi => lmi.getShortDesc().toLowerCase().indexOf(SEARCH_TERM) > -1);
+	const searchlist = W.getItemList("link_main").filter(lmi => lmi.getShortDesc().toLowerCase().indexOf(SEARCH_TERM) > -1);
 
 	const tablestr = getLinkTableStr(searchlist);
 
