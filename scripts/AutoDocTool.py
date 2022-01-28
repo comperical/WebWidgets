@@ -273,8 +273,7 @@ New version of AutoGen code identical to previous for DB link_main</code></pre>
 
 def get_config():
 
-    username =  CodePush.find_username(ArgMap.ArgMap())
-
+    username =  get_running_user()
 
     topstr = """
         <h4>Configuring the Scripts</h4>
