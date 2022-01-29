@@ -86,8 +86,8 @@ def get_requirements():
             so there is a good chance you already have it.
         To check, run this command:
 
-        <pre><code>admins-mbp:script burfoot$ python3 --version
-Python 3.6.5</code></pre>
+        <pre>admins-mbp:script burfoot$ python3 --version
+Python 3.6.5</pre>
 
         <p>
         The scripts also depend on <a href="https://curl.se/">curl</a>, 
@@ -95,9 +95,9 @@ Python 3.6.5</code></pre>
         To check if you have curl, run:
         </p>
 
-        <pre><code>admins-mbp:script burfoot$ curl --version
+        <pre>admins-mbp:script burfoot$ curl --version
 curl 7.64.1 (x86_64-apple-darwin19.0) libcurl/7.64.1 (SecureTransport) LibreSSL/2.8.3 zlib/1.2.11 nghttp2/1.39.2
-...</code></pre>
+...</pre>
 
         <p>
         The WebWidgets framework uses <a href="https://sqlite.org">SQLite</a> (version 3) to store data. 
@@ -105,9 +105,9 @@ curl 7.64.1 (x86_64-apple-darwin19.0) libcurl/7.64.1 (SecureTransport) LibreSSL/
         To check if you have the right version, type:
         </p>
 
-        <pre><code>admins-mbp:script burfoot$ sqlite3 --version
+        <pre>admins-mbp:script burfoot$ sqlite3 --version
 3.28.0 2019-04-15 14:49:49 ....
-</code></pre>
+</pre>
         
         <p>Any 3.x version should work fine, you don't need exactly 3.28.0.</p>
 
@@ -134,14 +134,14 @@ def get_code_push():
         Here is a typical interaction:
         </p>
 
-        <pre><code>admins-mbp:script burfoot$ CodePush.py widgetname=links
+        <pre>admins-mbp:script burfoot$ CodePush.py widgetname=links
 Wrote upload file to path /opt/rawdata/servlet/dburfoot__links.widgetzip
 Deleted old file /opt/userdata/widgetserve/dburfoot/links/widget.jsp
 Deleted old file /opt/userdata/widgetserve/dburfoot/links/LinkDisplay.js
 Extracted file /opt/userdata/widgetserve/dburfoot/links/widget.jsp, size is 11687
 Extracted file /opt/userdata/widgetserve/dburfoot/links/LinkDisplay.js, size is 838
 Prepended AuthInclude tag to Widget file widget.jsp
-        </code></pre>
+        </pre>
 
     """.format(CodePush.__name__)
 
@@ -153,8 +153,7 @@ Prepended AuthInclude tag to Widget file widget.jsp
             edit a file, push it to the server, and reload to see the result.
         </p>
 
-
-        <pre><code>admins-mbp:script burfoot$ time CodePush.py widgetname=links
+        <pre>admins-mbp:script burfoot$ time CodePush.py widgetname=links
 ...
 Extracted file /opt/userdata/widgetserve/dburfoot/links/LinkDisplay.js, size is 838
 Prepended AuthInclude tag to Widget file widget.jsp
@@ -162,7 +161,7 @@ Prepended AuthInclude tag to Widget file widget.jsp
 real    0m0.159s
 user    0m0.084s
 sys     0m0.028s
-        </code></pre>
+        </pre>
     """
 
     return codepush
@@ -224,9 +223,9 @@ def get_data_push_pull():
             the script will give you an error:
         </p>
 
-        <pre><code>
+        <pre>
 admins-mbp:script burfoot$ PullData.py widgetname=links 
-**Error** : DB path /opt/userdata/db4widget/dburfoot/LINKS_DB.sqlite already exists, please delete or move first, or use deleteold=true</code></pre>
+**Error** : DB path /opt/userdata/db4widget/dburfoot/LINKS_DB.sqlite already exists, please delete or move first, or use deleteold=true</pre>
 
         <p>
         You can add the extra deleteold argument as suggested, or simply delete the file yourself.
@@ -241,18 +240,18 @@ admins-mbp:script burfoot$ PullData.py widgetname=links
         To demonstrate this, I've added a dummy table to my links database:
         </p>
 
-        <pre><code>
+        <pre>
 sqlite> .schema
 CREATE TABLE link_main (id int, cat_id int, short_desc varchar(150), link_url varchar(250), primary key(id));
 CREATE TABLE link_categ (id int, short_code varchar(20), full_desc varchar(400), is_active smallint, primary key(id));        
-sqlite> create table dummy_link (id int, my_link varchar(30), primary key(id));</code></pre>
+sqlite> create table dummy_link (id int, my_link varchar(30), primary key(id));</pre>
 
         <p>
         Now I upload it to the server, and it creates a new JS file for me.
         The other tables are not changed, so the JS code is not updated.
         </p>
 
-        <pre><code>
+        <pre>
 admins-mbp:script burfoot$ DataPush.py widgetname=links
 Defaulting to admin user name
 Wrote upload file to path /opt/rawdata/servlet/dburfoot__links.sqlite
@@ -261,7 +260,7 @@ Deleted old DB file /opt/userdata/db4widget/dburfoot/LINKS_DB.sqlite
 Copied upload file to location /opt/userdata/db4widget/dburfoot/LINKS_DB.sqlite, size is 26624
 Wrote autogen code to path /opt/userdata/widgetserve/dburfoot/autogenjs/links/DummyLink__001.js
 New version of AutoGen code identical to previous for DB link_categ
-New version of AutoGen code identical to previous for DB link_main</code></pre>
+New version of AutoGen code identical to previous for DB link_main</pre>
     """
 
 
@@ -322,8 +321,24 @@ def get_full_html():
 
     basic = get_basic_html();
 
-    return """
+    fullstr = """
     <html>
+    <style>
+        pre {
+            font-size: .7em;
+            font-family: "Liberation Mono",Menlo,Courier,monospace;
+            font-weight: 400;
+            padding-top: 3px;
+            line-height: 1.42;
+            border-radius: 2px;
+            padding-bottom: 3px;
+            background-color: #e5e5e5;
+            color: rgba(0, 0, 0, 0.87);
+        }
+    </style>
+    """
+
+    fullstr += """
     <body>
 
     <center>
@@ -339,6 +354,8 @@ def get_full_html():
     </body>
     </html>
     """.format(basic)
+
+    return fullstr
 
 
 if __name__ == "__main__":
