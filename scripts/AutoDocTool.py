@@ -288,7 +288,7 @@ def get_config():
         <li><b>{}</b></li>
         </ul>
 
-    """.format("dburfoot", CodePush.SUBFOLDER_NAME, CodePush.get_config_directory(), CodePush.get_widget_config_path(username))
+    """.format(username, CodePush.SUBFOLDER_NAME, CodePush.get_config_directory(), CodePush.get_widget_config_path(username))
 
 
     topstr += """
