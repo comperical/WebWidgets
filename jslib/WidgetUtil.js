@@ -1,17 +1,8 @@
 
 
-// Fast check to determine if the given map is empty.
-// This is a weird JS thing.
-function fastEmpty(mymap)
-{
-    for(var k in mymap)
-        { return false; }
-    
-    return true;
-}
-
 // Delete Item from given table. 
 // Error if the item with the given ID does not exist.
+// Redisplays on success, if you don't want this behavior, do not use this method.
 function genericDeleteItem(tablename, itemid)
 {
     massert(haveItem(tablename, itemid), 
@@ -29,7 +20,7 @@ function genericToggleActive(tablename, itemid)
     const theitem = lookupItem(tablename, itemid);
     const newactive = theitem.getIsActive() == 1 ? 0 : 1;
     theitem.setIsActive(newactive);
-    syncSingleItem(theitem);
+    theitem.syncItem();
     redisplay();
 }
 
@@ -44,7 +35,7 @@ function genericEditTextField(tablename, fieldname, itemid)
     if(newval)
     {
         theitem[fieldname] = newval;
-        syncSingleItem(theitem);
+        theitem.syncItem();
         redisplay();
     }
 }
@@ -69,7 +60,7 @@ function genericEditIntField(tablename, fieldname, itemid)
     }
 
     theitem[fieldname] = newval;
-    syncSingleItem(theitem);
+    theitem.syncItem();
     redisplay();
 }
 
@@ -120,29 +111,7 @@ function proxySort(proxyfun)
     }
 }
 
-// Set the page component to the selected ID.
-// This is used to enable SPA-style behavior.
-// The code looks up all of the elements with the "page_component" class. 
-// Then it marks the component as hidden unless it's ID matches the argument ID. 
-function setPageComponent(selectedid)
-{
-    // Warning: this might be non-compliant for old browsers.
-    const complist = Array.from(document.getElementsByClassName("page_component"));
-    
-    complist.forEach(function(citem) {
-        
-        if(citem.id != selectedid)
-        {
-            citem.hidden = true;
-            return;
-        }
-    
-        citem.hidden = false;
-        foundit = true;
-    });
-    
-    massert(foundit, "Failed to find page_component element with ID " + selectedid);
-}
+
 
 // Given map of span ID :: HTML data, 
 // Lookup all the spans, and populate them.
@@ -210,45 +179,7 @@ If you are the admin, please fix the error; if you are a user, please contact ad
 }
 
 
-// Hide element with given ID
-function hideItem(itemid)
-{
-    setHidden2Value(itemid, true);
-}
 
-// Show (= un-hide) element with given ID.
-function showItem(itemid)
-{
-    setHidden2Value(itemid, false);
-}
-
-// Set the hidden property of element with given ID to true/false argument.
-function setHidden2Value(itemid, ishidden)
-{
-    var theitem = document.getElementById(itemid);
-    theitem.hidden = ishidden;
-}
-
-// Toggle Hidden value for given element.
-function toggleHidden(theitem)
-{
-    theitem.hidden = !theitem.hidden;
-}
-
-// Toggle Hidden value for element with given ID.
-function toggleHidden4Id(itemid)
-{
-    var theitem = document.getElementById(itemid);
-    toggleHidden(theitem);
-}
-
-// Toggle Hidden value for all elements with given class.
-function toggleHidden4Class(classname)
-{
-    var clist = document.getElementsByClassName(classname);
-    for(var ci in clist)
-        { toggleHidden(clist[ci]); }
-}
 
 // Get the VALUE of the form element with the given NAME.
 // Error if there is no element with the given name, or multiple elements.

@@ -1,13 +1,18 @@
 
-_DAY_CODE_MAP = {};
 
-_DAY_CODE_LIST = [];
 
-DAY_MILLI = (1000 * 60 * 60 * 24);
+// Map of ISO date strings to DayCode Objects.
+const __DAY_CODE_MAP = {};
 
-SHORT_DAY_WEEK_LIST = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+// List of all DayCode objects available in the system.
+// This list contains about 15K records, about plus/minus ten years from the present date.
+const __DAY_CODE_LIST = [];
 
-LONG_DAY_WEEK_LIST = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const DAY_MILLI = (1000 * 60 * 60 * 24);
+
+const SHORT_DAY_WEEK_LIST = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+const LONG_DAY_WEEK_LIST = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 const MONTH_NAMES = ["January", "February", "March", "April",  "May", "June", "July", "August", "September", "October", "November", "December"];
 
@@ -21,6 +26,22 @@ const TIME_ZONE_MAP = {
 
 const TIME_ZONE_LIST = Object.keys(TIME_ZONE_MAP);
 
+// This is the main way to create DayCodes.
+// The input argument is an ISO formatted string of the form YYYY-MM-DD, such as 2021-01-10
+// This method returns an immutable DayCode object from the internal pool.
+function lookupDayCode(dcstr)
+{
+    const dcmap = getDayCodeMap();
+
+    massert(dcstr in dcmap, 
+        `The string ${dcstr} is not present in the DayCode system. 
+        Please be aware the system contains only ${__DAY_CODE_LIST.length} entries`);
+
+    return dcmap[dcstr];    
+}
+
+
+
 function DayCode(longmilli, dayidx)
 {
     // At this point, the TimeZone doesn't matter, we're just using the date format logic.
@@ -30,7 +51,7 @@ function DayCode(longmilli, dayidx)
     
     this.dayCodeIndex = dayidx;
     
-    this.dateString = calcDayCodeStr(this.dateItem);
+    this.dateString = __calcDayCodeStr(this.dateItem);
     
 }
 
@@ -102,37 +123,20 @@ DayCode.prototype.getNiceDisplay = function()
     return nices;
 }
 
-// Lookup the DayCode object from the given ISO string
-function lookupDayCode(dcstr)
-{
-    var dcmap = getDayCodeMap(dcstr);
-
-    return dcmap[dcstr];    
-}
 
 
-function calcDayCodeStr(dateitem)
+// Internal method that composes an ISO YYYY-MM-DD timestamp from a JavaScript Date object.
+function __calcDayCodeStr(dateitem)
 {
     // Ugh, MONTH is zero-indexed, but DATE is 1-indexed!!
     var ds = dateitem.getFullYear() + "-" + padLeadingZeros((dateitem.getMonth()+1)+"", 2) + "-" + padLeadingZeros(dateitem.getDate()+"", 2);   
     return ds;  
 }
 
-function calcTimeHourStr(dateitem)
-{
-    var ds = padLeadingZeros(dateitem.getHours()+"", 2) + ":" + padLeadingZeros(dateitem.getMinutes()+"", 2) + ":" + padLeadingZeros(dateitem.getSeconds()+"", 2);
-    return ds;  
-}
-
-function calcFullLogTimeStr(dateitem)
-{
-    return calcDayCodeStr(dateitem) + " " + calcTimeHourStr(dateitem);  
-}
-
 // DayCode for current Date.
 function getTodayCode()
 {
-    var todaystr = calcDayCodeStr(new Date());
+    var todaystr = __calcDayCodeStr(new Date());
     return getDayCodeMap()[todaystr];   
 }
 
@@ -161,9 +165,9 @@ function padLeadingZeros(str2pad, reqlen)
 
 
 // Initialize the DayCode data.
-function _maybeInitDayData()
+function __maybeInitDayData()
 {
-    if(_DAY_CODE_LIST.length == 0)
+    if(__DAY_CODE_LIST.length == 0)
     {
         // 2020-10-03.
         var startmilli = 1380847199792;
@@ -174,9 +178,9 @@ function _maybeInitDayData()
             
             var dc = new DayCode(daymilli, di);
             
-            _DAY_CODE_MAP[dc.getDateString()] = dc;
+            __DAY_CODE_MAP[dc.getDateString()] = dc;
             
-            _DAY_CODE_LIST[di] = dc;
+            __DAY_CODE_LIST[di] = dc;
         }       
     }
 }
@@ -188,27 +192,26 @@ function _maybeInitDayData()
 // date processing.
 function getEarliestOkayDate()
 {
-    _maybeInitDayData();
+    __maybeInitDayData();
     
-    return _DAY_CODE_LIST[0];
+    return __DAY_CODE_LIST[0];
 }
 
 // Complete list of all day codes in the system.
 // In order, starting with earliest date.
 function getDayCodeList()
 {
-    _maybeInitDayData();
+    __maybeInitDayData();
     
-    return _DAY_CODE_LIST;
+    return __DAY_CODE_LIST;
 }
 
 
 // return map of ISO date code to DayCode object.
 function getDayCodeMap()
 {
-    _maybeInitDayData();
-    
-    return _DAY_CODE_MAP;
+    __maybeInitDayData();
+    return __DAY_CODE_MAP;
 }
 
 // List of dates corresponding to the current week.
@@ -219,7 +222,7 @@ function getCurrentWeekList()
 
 // Get the list of date strings corresponding to the week of the given Monday.
 // The Monday will be the first day of the list.
-// Argument is a DayCode.
+// Argument is a DayCode
 function getWeekOfList(mondaycode)
 {
     massert(mondaycode.getShortDayOfWeek() == "Mon");
@@ -252,22 +255,11 @@ function getMonday4Date(dc)
 }
 
 // Most recent Monday - the starting Monday for today's date.
+// See getMonday4Date method above
 function getLastMonday()
 {
     var dc = getTodayCode();
     return getMonday4Date(dc);
-}
-
-
-function ExactMoment(longmilli)
-{
-    this.__epochTimeMilli = longmilli;
-}
-
-function exactMomentNow()
-{
-    const milli = new Date().getTime();
-    return new ExactMoment(milli);
 }
 
 function checkTimeZoneOkay(timezone)
@@ -280,15 +272,6 @@ function __timeZone2OffSet(timezone)
     checkTimeZoneOkay(timezone);
 
     return TIME_ZONE_MAP[timezone];
-}
-
-function enGbToIso(engbdate)
-{
-    // EN GB comes in this format:
-    // 10/01/2021
-
-    const toks = engbdate.split("/");
-    return toks[2] + "-" + toks[1] + "-" + toks[0];
 }
 
 function maybePad(pdstr)
@@ -326,6 +309,21 @@ function enUsToIso(fullenus)
 
 }
 
+// Construct an exact Moment using the given millisecond argument.
+// This is the number of milliseconds since the Unix epoch.
+// https://en.wikipedia.org/wiki/Unix_time
+function ExactMoment(longmilli)
+{
+    this.__epochTimeMilli = longmilli;
+}
+
+// Create an Exact Moment representing the current instant of time.
+// This is one of the main ways to create an ExactMoment.
+function exactMomentNow()
+{
+    const milli = new Date().getTime();
+    return new ExactMoment(milli);
+}
 
 ExactMoment.prototype.getEpochTimeMilli = function()
 {
@@ -333,13 +331,20 @@ ExactMoment.prototype.getEpochTimeMilli = function()
 }
 
 
+// Return a new ExactMoment that is the given amount of milliseconds in the future.
+// This is a simple approach to converting times. Say you want to add a 1/2 hour to the current time.
+// const nowex = exactMomentNow(); 
+// const futex = nowex.withAddedMilli(30*60*1000); // half hour in milliseconds
+// const timestr = futex.asIsoLongBasic("PST"); // this is a timestamp
 ExactMoment.prototype.withAddedMilli = function(milli)
 {
     return new ExactMoment(this.__epochTimeMilli + milli);
 }
 
 
-
+// Format this ExactMoment as a long ISO timestamp, using the given timezone.
+// 2021-01-10 06:17:31
+// 2019-03-15 23:22:05
 ExactMoment.prototype.asIsoLongBasic = function(timezone)
 {
     massert(TIME_ZONE_LIST.includes(timezone), "Unknown timezone " + timezone + " options are " + TIME_ZONE_LIST);
@@ -350,15 +355,6 @@ ExactMoment.prototype.asIsoLongBasic = function(timezone)
 
     const enusform = date_ob.toLocaleString('en-US', { timeZone : timezone })
     return enUsToIso(enusform);
-
-
-    /*
-    const engbform = date_ob.toLocaleString('en-GB', { timeZone : timezone });
-
-    const date_time = engbform.split(",");
-    const isodate = enGbToIso(date_time[0]);
-    return isodate + " " + date_time[1];
-    */
 }
 
 function exactMomentFromIsoBasic(timestamp, timezone)

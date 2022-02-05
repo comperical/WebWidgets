@@ -10,6 +10,20 @@
 
 <script>
 
+function handleNavBar() 
+{
+    const headerinfo = [
+        ["Learning Schedule", "LearningSchedule.jsp"],
+        ["Study Stats", "StudyStats.jsp"]
+    ];
+
+    // const current = STUDY_CATEGORY ? "Link Categories" : "Link Main"; 
+
+    populateTopNavBar(headerinfo, "Learning Schedule");
+}
+
+
+
 // Get the Hanzi characters that are in words in the vocab log but not currently in the character study system.
 function getVocabRequiredItems()
 {
@@ -206,40 +220,6 @@ function generateTableInfo()
         tablestr += rowstr;
     });
 
-    /*
-    const today = getTodayCode().getDateString();
-    const schedlist = getItemList("learning_schedule");
-
-    schedlist.forEach(function(scheditem) {
-
-        const palitem = lookupPalaceItemByChar(scheditem.getTheChar());
-        if(palitem != null) 
-            { return; }
-
-        const charitem = lookupHanziDataByChar(scheditem.getTheChar());
-
-        const target = scheditem.getDayCode();
-        const isbefore = target <= today;
-
-        if(isbefore != wantbefore)
-            { return; }
-
-        const rowstr = `
-            <tr>
-            <td>${target}</td>
-            <td>${charitem.getHanziChar()}</td>
-            <td>${charitem.getPinYin()}</td>
-            <td>${charitem.getHskLevel()}</td>
-            <td>${charitem.getFreqRank()}</td>
-            <td></td>
-            </tr>
-        `;
-
-        tablestr += rowstr;
-        numshow += 1;
-
-    });
-    */
 
     tablestr += `</table>`;
 
@@ -310,6 +290,8 @@ function generateTableInfo(wantbefore)
 
 function redisplay()
 {
+    handleNavBar();
+
     const total = getRemainingCount();
 
     populateSpanData({
@@ -331,10 +313,10 @@ function redisplay()
 
 <center>
 
+<div class="topnav"></div>
+
 <br/>
-
-
-<h3>Learn Now!!</h3>
+<br/>
 
 <div id="nowtable"></div>
 

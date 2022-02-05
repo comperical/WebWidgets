@@ -14,6 +14,18 @@ const LEVEL_LIST = [1, 2, 3, 4, 5, 6];
 
 const NUM_CHAR_LIST = [1, 2, 3, 4, 5];
 
+function handleNavBar() 
+{
+    const headerinfo = [
+        ["Learning Schedule", "LearningSchedule.jsp"],
+        ["Study Stats", "StudyStats.jsp"]
+    ];
+
+    populateTopNavBar(headerinfo, "Study Stats");
+}
+
+
+
 function getVocabStatInfo()
 {
 
@@ -231,6 +243,8 @@ function getDisplayPage()
 
 function redisplay()
 {
+    handleNavBar();
+
     const pagestr = getDisplayPage();
 
     populateSpanData({"mainpage" : pagestr });
@@ -248,6 +262,8 @@ function redisplay()
 <body onLoad="javascript:redisplay()">
 
 <center>
+
+<div class="topnav"></div>
 
 <br/>
 

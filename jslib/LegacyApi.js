@@ -66,3 +66,69 @@ function deleteSingleItem(item)
     console.log(`Warning, function deleteSingleItem is deprecated, please use item.deleteItem()`)
     W.__submitNewRequest(item.getDeleteUrl(), "delete", item.getPkeyStr());
 }
+
+// Set the page component to the selected ID.
+// This is used to enable SPA-style behavior.
+// The code looks up all of the elements with the "page_component" class. 
+// Then it marks the component as hidden unless it's ID matches the argument ID. 
+function setPageComponent(selectedid)
+{
+    // Warning: this might be non-compliant for old browsers.
+    const complist = Array.from(document.getElementsByClassName("page_component"));
+    
+    complist.forEach(function(citem) {
+        
+        if(citem.id != selectedid)
+        {
+            citem.hidden = true;
+            return;
+        }
+    
+        citem.hidden = false;
+        foundit = true;
+    });
+    
+    massert(foundit, "Failed to find page_component element with ID " + selectedid);
+}
+
+// Hide element with given ID
+function hideItem(itemid)
+{
+    setHidden2Value(itemid, true);
+}
+
+// Show (= un-hide) element with given ID.
+function showItem(itemid)
+{
+    setHidden2Value(itemid, false);
+}
+
+// Set the hidden property of element with given ID to true/false argument.
+function setHidden2Value(itemid, ishidden)
+{
+    var theitem = document.getElementById(itemid);
+    theitem.hidden = ishidden;
+}
+
+// Toggle Hidden value for given element.
+function toggleHidden(theitem)
+{
+    theitem.hidden = !theitem.hidden;
+}
+
+// Toggle Hidden value for element with given ID.
+function toggleHidden4Id(itemid)
+{
+    var theitem = document.getElementById(itemid);
+    toggleHidden(theitem);
+}
+
+// Toggle Hidden value for all elements with given class.
+function toggleHidden4Class(classname)
+{
+    var clist = document.getElementsByClassName(classname);
+    for(var ci in clist)
+        { toggleHidden(clist[ci]); }
+}
+
+
