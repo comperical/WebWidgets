@@ -20,9 +20,19 @@ const TIME_ZONE_MAP = {
     "UTC" : "+00:00",
     "EST" : "-05:00",
     "PST" : "-08:00",
+    "PDT" : "-07:00",
     // "CST" : "-06:00", This fucking thing just doesnt work
     "GMT" : "+00:00"
 }
+
+const TIME_ZONE_OFFSET_MAP = {
+    "UTC" : 0,
+    "EST" : -5,
+    "PST" : -8,
+    "PDT" : -7,
+    "GMT" : 0
+}
+
 
 const TIME_ZONE_LIST = Object.keys(TIME_ZONE_MAP);
 
@@ -279,36 +289,6 @@ function maybePad(pdstr)
     return pdstr.length == 1 ? "0" + pdstr : pdstr;
 }
 
-function enUsToIso(fullenus)
-{
-
-    // "1/10/2021, 9:56:58 PM"
-    // console.log("Input to function is : " + fullenus);
-
-    const date_time_apm = fullenus.replace(",", "").split(" ");
-
-    // console.log(date_time_apm);
-
-    const mnth_day_year = date_time_apm[0].split("/");
-    const isodate = [mnth_day_year[2], maybePad(mnth_day_year[0]), maybePad(mnth_day_year[1])].join("-");
-
-    // console.log("Date is "+ isodate);
-
-    const hr_mn_sc = date_time_apm[1].split(":");
-    const ispm = date_time_apm[2].includes("PM");
-    var basehour = parseInt(hr_mn_sc[0]);
-    basehour += (ispm && basehour < 12 ? 12 : 0);
-
-    // 12 AM --> 00:
-    basehour = (!ispm && basehour == 12 ? 0 : basehour);
-
-    const isotime = [maybePad(basehour+""), hr_mn_sc[1], hr_mn_sc[2]].join(":");
-    // console.log("ISO time is " + isotime);
-
-    return [isodate, isotime].join(" ");
-
-}
-
 // Construct an exact Moment using the given millisecond argument.
 // This is the number of milliseconds since the Unix epoch.
 // https://en.wikipedia.org/wiki/Unix_time
@@ -321,7 +301,8 @@ function ExactMoment(longmilli)
 // This is one of the main ways to create an ExactMoment.
 function exactMomentNow()
 {
-    const milli = new Date().getTime();
+    // const milli = new Date().getTime();
+    const milli = Date.now();
     return new ExactMoment(milli);
 }
 
@@ -342,32 +323,34 @@ ExactMoment.prototype.withAddedMilli = function(milli)
 }
 
 
-// Format this ExactMoment as a long ISO timestamp, using the given timezone.
-// 2021-01-10 06:17:31
-// 2019-03-15 23:22:05
 ExactMoment.prototype.asIsoLongBasic = function(timezone)
 {
-    massert(TIME_ZONE_LIST.includes(timezone), "Unknown timezone " + timezone + " options are " + TIME_ZONE_LIST);
+    massert(timezone in TIME_ZONE_OFFSET_MAP, "Unknown timezone " + timezone + " options are " + TIME_ZONE_OFFSET_MAP);
     
-    // console.log(event.toLocaleString('en-GB', { timeZone: 'UTC' }));
-    // expected output: 20/12/2012, 03:00:00
-    const date_ob = new Date(this.__epochTimeMilli);
+    const hourmod = TIME_ZONE_OFFSET_MAP[timezone];
 
-    const enusform = date_ob.toLocaleString('en-US', { timeZone : timezone })
-    return enUsToIso(enusform);
+    const mydate = new Date(this.__epochTimeMilli + (hourmod * 3600 * 1000));
+    // console.log("Milli time: " + this.__epochTimeMilli);
+
+    const isoformat = mydate.toISOString().substring(0, "2022-04-14T21:20:00".length).replace("T", " ");
+    // console.log(isoformat);
+
+    return isoformat;
 }
 
 function exactMomentFromIsoBasic(timestamp, timezone)
 {
-    const tzstr = __timeZone2OffSet(timezone);
-
     // Don't use replaceAll, it's not widely supported
     const tstampmod = timestamp.replace(" ", "T");
 
+    const str2parse = tstampmod + "-00:00";
+    // console.log(str2parse);
 
-    const str2parse = tstampmod + tzstr;
+    const utcmillis = Date.parse(str2parse);
+    const hourmod = TIME_ZONE_OFFSET_MAP[timezone];
+    // console.log("Hour Mod is " + hourmod);
 
-    const millis = Date.parse(str2parse);
-    return new ExactMoment(millis);
+    return new ExactMoment(utcmillis - (hourmod * 3600 * 1000));
 }
+
 

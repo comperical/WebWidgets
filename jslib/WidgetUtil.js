@@ -5,10 +5,10 @@
 // Redisplays on success, if you don't want this behavior, do not use this method.
 function genericDeleteItem(tablename, itemid)
 {
-    massert(haveItem(tablename, itemid), 
+    massert(W.haveItem(tablename, itemid), 
         "Could not find item " + itemid + " in table " + tablename);
     
-    lookupItem(tablename, itemid).deleteItem();
+    W.lookupItem(tablename, itemid).deleteItem();
     redisplay();    
 }
 
@@ -17,7 +17,7 @@ function genericDeleteItem(tablename, itemid)
 // Syncs and redisplays on success, if you don't want this behavior, do not use this method.
 function genericToggleActive(tablename, itemid)
 {
-    const theitem = lookupItem(tablename, itemid);
+    const theitem = W.lookupItem(tablename, itemid);
     const newactive = theitem.getIsActive() == 1 ? 0 : 1;
     theitem.setIsActive(newactive);
     theitem.syncItem();
@@ -29,7 +29,7 @@ function genericToggleActive(tablename, itemid)
 // Syncs and redisplays on success, if you don't want this behavior, do not use this method.
 function genericEditTextField(tablename, fieldname, itemid)
 {
-    const theitem = lookupItem(tablename, itemid);
+    const theitem = W.lookupItem(tablename, itemid);
     const newval = prompt("Please enter a new value for field " + fieldname + ": ", theitem[fieldname]);
     
     if(newval)
@@ -46,7 +46,7 @@ function genericEditTextField(tablename, fieldname, itemid)
 // Syncs and redisplays on success, if you don't want this behavior, do not use this method.
 function genericEditIntField(tablename, fieldname, itemid) 
 {
-    const theitem = lookupItem(tablename, itemid);
+    const theitem = W.lookupItem(tablename, itemid);
     const newval = prompt("Please enter a new value for field " + fieldname + ": ", theitem[fieldname]);
     
     if(!newval)
@@ -254,6 +254,9 @@ function decodeQString2Hash(qstring)
     return params;
 }
 
+// Create a query string of the form ?key1=value1&key2=value2 from the given hash.
+// This string is suitable for being used to compose a new URL
+// by appending it to a prefix such as "https://webwidgets.io/u/dburfoot/mywidget/widget.jsp" + qstring
 function encodeHash2QString(submitpack)
 {
     var qlist = new Array();
@@ -311,3 +314,5 @@ function submit2Current(submitpack)
     
     window.location.href = newloc;
 }
+
+
