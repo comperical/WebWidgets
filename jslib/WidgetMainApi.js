@@ -1,5 +1,4 @@
 
-
 const W = {
 
 // Map of table name to get full item list
