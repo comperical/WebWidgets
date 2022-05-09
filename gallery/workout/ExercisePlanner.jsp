@@ -5,8 +5,18 @@
 
 <%= DataServer.basicInclude(request) %>
 
+<script src="WorkoutLogger.js"></script>
+
+
 <script>
 
+
+function handleNavBar() 
+{
+    const current = "W/O Planner";
+
+    populateTopNavBar(WO_HEADER_INFO, current);
+}
 
 function deleteItem(killid)
 {
@@ -102,6 +112,8 @@ function getMondayList()
 
 function redisplay()
 {
+	handleNavBar();
+
 	var mainlog = "";
 	const workoutlist = W.getItemList("ex_week_goal");
 	const mondaylist = getMondayList().sort().reverse();
@@ -180,14 +192,9 @@ function redisplay()
 
 <center>
 
-<h2>Exercise Planner</h2>
+<div class="topnav"></div>
 
-<a href="ExerciseTemplate.jsp"><button>template</button></a> 
-&nbsp;
-&nbsp;
-&nbsp;
-<a href="widget.jsp"><button>workouts</button></a>
-
+<br/>
 
 <center>
 

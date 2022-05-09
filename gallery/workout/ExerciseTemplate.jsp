@@ -5,6 +5,8 @@
 
 <%= DataServer.basicInclude(request) %>
 
+<script src="WorkoutLogger.js"></script>
+
 <script>
 
 function createNew()
@@ -36,8 +38,17 @@ function toggleItemActive(itemid)
 	redisplay();
 }
 
+function handleNavBar() 
+{
+    const current = "W/O Template";
+
+    populateTopNavBar(WO_HEADER_INFO, current);
+}
+
 function redisplay()
 {	
+
+	handleNavBar();
 	
 	var tablestr = `
 		<table class="basic-table" width="60%">
@@ -103,16 +114,10 @@ function redisplay()
 
 <center>
 
-<h2>Exercise Template</h2>
+<div class="topnav"></div>
 
-<a href="ExercisePlanner.jsp"><button>planner</button></a>
-&nbsp;
-&nbsp;
-&nbsp;
-<a href="widget.jsp"><button>workouts</button></a>
-
-
-<br/><br/>
+<br/>
+<br/>
 
 <div id="activetable"></div>
 

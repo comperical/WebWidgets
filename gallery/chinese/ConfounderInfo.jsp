@@ -6,29 +6,29 @@
 
 <script src="ChineseTech.js"></script>
 
-<%= DataServer.basicIncludeOnly(request, "confounder", "hanzi_data") %>
+<%= DataServer.basicIncludeOnly(request, "confounder", "hanzi_data", "palace_item") %>
 
-<script src="ChineseTech.js"></script>
+
+
 
 <script>
 
 EDIT_STUDY_ITEM = -1;
 
+SEARCH_INPUT = "";
+
 function createNew()
 {   
-    const newid = newBasicId("confounder");
-    
     // created_on, active_on, completed_on, dead_line
     const newrec = {
-        "id" : newid,
         "left_char" : "L",
         "rght_char" : "R",
         "extra_info" : "..."
     };      
     
-    const newitem = buildItem("confounder", newrec);
+    const newitem = W.buildItem("confounder", newrec);
     newitem.syncItem();
-    EDIT_STUDY_ITEM = newid;
+    EDIT_STUDY_ITEM = newitem.getId();
     redisplay();    
 }
 
@@ -36,7 +36,7 @@ function deleteItem(killid)
 {
     if(confirm("Are you sure you want to delete this item?"))
     {
-        lookupItem("confounder", killid).deleteItem();
+        W.lookupItem("confounder", killid).deleteItem();
         redisplay();
     }
 }
@@ -50,6 +50,7 @@ function inspectItem(itemid)
 function back2Main()
 {
     EDIT_STUDY_ITEM = -1;
+    SEARCH_INPUT = "";
     redisplay();
 }
 
@@ -72,7 +73,7 @@ function redisplayMain()
 
     `;
 
-    var itemlist = getItemList("confounder");
+    var itemlist = W.getItemList("confounder");
 
     itemlist.forEach(function(item) {
 
@@ -113,7 +114,7 @@ function redisplayEdit()
     if(EDIT_STUDY_ITEM == -1)
         { return; }
 
-    const studyitem = lookupItem("confounder", EDIT_STUDY_ITEM);
+    const studyitem = W.lookupItem("confounder", EDIT_STUDY_ITEM);
 
     populateSpanData({
         "left_char" : studyitem.getLeftChar(),
@@ -157,12 +158,131 @@ function getCharTable(charitem, tablename)
 	`;
 }
 
+function updateSearchInput()
+{
+    const newsearch = prompt("Search for ");
+
+    if (newsearch)
+    {
+        SEARCH_INPUT = newsearch;
+    }
+
+    redisplay();
+}
+
+
+function clearSearchInput()
+{
+    SEARCH_INPUT = "";
+    redisplay();
+}
+
+function markCharacter(palaceid, isleft)
+{
+    const palitem = W.lookupItem("palace_item", palaceid);
+    const confitem = W.lookupItem("confounder", EDIT_STUDY_ITEM);
+
+
+    if(isleft)
+        { confitem.setLeftChar(palitem.getHanziChar()); }
+    else
+        { confitem.setRghtChar(palitem.getHanziChar()); }
+
+    confitem.syncItem();
+    redisplay();
+}
+
+function findSearchHitList()
+{
+    if (SEARCH_INPUT.length == 0)
+        { return []; }
+
+
+    function searchHit(item) {
+        const meanhit = item.getMeaning().toLowerCase().indexOf(SEARCH_INPUT.toLowerCase()) > -1;
+        const charhit = item.getHanziChar().indexOf(SEARCH_INPUT) > -1;
+        return meanhit || charhit;
+    }
+
+    //getItemList("palace_item").
+
+    return W.getItemList("palace_item").filter(searchHit);
+}
+
+
+function redisplaySearchInfo()
+{
+    var searchstr = `
+
+        <br/>
+        <br/>
+
+        <a href="javascript:updateSearchInput()"><button>search</button></a>
+
+        &nbsp;
+        &nbsp;
+        &nbsp;
+
+        <a href="javascript:clearSearchInput()"><button>clear</button></a>
+
+
+    `;
+
+
+    if (SEARCH_INPUT.length > 0)
+    {
+
+        const hitlist = findSearchHitList();
+
+        searchstr += `
+
+            <br/>
+            <br/>
+
+            <table class="basic-table" width="50%">
+            <tr>
+            <th>Character</th>
+            <th>Meaning</th>
+            <th>+L</th>
+            <th>+R</th>
+            </tr>
+        `;
+
+        hitlist.forEach(function(item) {
+
+            const rowstr = `
+                <tr>
+                <td>${item.getMeaning()}</td>
+                <td>${item.getHanziChar()}</td>
+                <td>
+                <a href="javascript:markCharacter(${item.getId()}, true)"><img src="/u/shared/image/checkmark.png" height="18"</a>
+                </td>
+                <td>
+                <a href="javascript:markCharacter(${item.getId()}, false)"><img src="/u/shared/image/checkmark.png" height="18"</a>
+                </td>
+                </tr>
+            `;
+
+            searchstr += rowstr;
+        });
+
+        searchstr += `
+            </table>
+        `;
+    }
+
+
+    populateSpanData({"search_info" : searchstr});
+}
+
 
 function redisplay()
 {
     redisplayMain();
 
     redisplayEdit();
+
+    redisplaySearchInfo();
 
     setPageComponent(getPageComponent());
 }
@@ -277,9 +397,9 @@ Right
 
 <span id="extra_info_rght"></span>
 
+<span id="search_info"></span>
 
 </span>
-
 
 
 <br/>

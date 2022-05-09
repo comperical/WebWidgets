@@ -15,6 +15,13 @@ SHOW_LINEAR_MODE = false;
 
 EXERCISE_TYPE = "body";
 
+function handleNavBar() 
+{
+    const current = "W/O Log";
+
+    populateTopNavBar(WO_HEADER_INFO, current);
+}
+
 function deleteItem(killid)
 {
 	if(confirm("Are you sure you want to remove this record?"))
@@ -232,6 +239,8 @@ function buildInitial()
 
 function redisplay()
 {		
+    handleNavBar();
+
 	redispControls();
 
 	const wologger = new WorkoutLogger(W.getItemList("workout_log"), W.getItemList("ex_week_goal"));
@@ -465,15 +474,7 @@ function getWeeklyGoalTable(wologger, themonday)
 		
 		`;
 	}
-	
-	goalstr += `
-	<br/><br/><br/>
-	<a href="ExerciseTemplate.jsp"><button>template</button></a>
-	&nbsp;	&nbsp;
-	&nbsp;	&nbsp;
-	<a href="ExercisePlanner.jsp"><button>planner</button></a>
-	`;
-	
+
 
 
 	return goalstr;
@@ -490,8 +491,9 @@ function getWeeklyGoalTable(wologger, themonday)
 
 <center>
 
-<h2>Workout Log &nbsp;&nbsp;&nbsp; <a href="WorkoutStats.jsp"><button>stats</button></a></h2>
+<div class="topnav"></div>
 
+<br/>
 
 <center>
 

@@ -11,6 +11,9 @@
 
 STUDY_PALACE_ID = 21;
 
+BAYESIAN_STAT_MAP = fullBuildBayesStatMap("palace_item", "review_log");		
+
+
 function markStudyItem(palaceid)
 {
 	STUDY_PALACE_ID = palaceid;
@@ -47,14 +50,14 @@ function reDispAggTable()
 		</tr>
 	`;
 	
-	const statinfo = computeStatInfo();
+	const statinfo = BAYESIAN_STAT_MAP;
 	
 	const sortedids = Object.keys(statinfo).sort(proxySort(myid => [statinfo[myid]["net_score"]]));	
 	
 	sortedids.forEach(function(palaceid) {
 			
 		const statpack = statinfo[palaceid];			
-		const palaceitem = lookupItem("palace_item", palaceid);
+		const palaceitem = W.lookupItem("palace_item", palaceid);
 		
 		if(palaceitem == undefined)
 			{ return; }
@@ -91,14 +94,14 @@ function reDispBdTable()
 {
 	const bditem = STUDY_PALACE_ID;
 	
-	const itemlist = getItemList("review_log").filter(ritem => ritem.getItemId() == bditem);
+	const itemlist = W.getItemList("review_log").filter(ritem => ritem.getItemId() == bditem);
 	itemlist.sort(proxySort(a => [a.getTimeStamp()])).reverse();
 
-	const palaceitem = lookupItem("palace_item", bditem);
+	const palaceitem = W.lookupItem("palace_item", bditem);
 	
 	var netscore = 0;
 	
-	var principlist = getItemList("palace_item");
+	var principlist = W.getItemList("palace_item");
 		
 	var tablestr = `
 		<table  class="basic-table" width="40%">	
@@ -135,7 +138,8 @@ function reDispBdTable()
 	});
 	
 
-	const jitter = (Math.random() - 0.5) * JITTER_SCALE;
+	// const jitter = (Math.random() - 0.5) * JITTER_SCALE;
+	const jitter = 0;
 		
 	populateSpanData({
 		"bd_numreview" : itemlist.length,

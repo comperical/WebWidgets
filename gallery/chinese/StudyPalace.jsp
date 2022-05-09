@@ -3,7 +3,7 @@
 <head>
 <title>Memory Palace Listing</title>
 
-<script src="ChineseTech.js"></script>
+<script src="ChineseTech.js?bust_cache=16"></script>
 <script src="../hanyu/pin_yin_converter.js"></script>
 
 
@@ -17,9 +17,13 @@
 
 TARGET_REVIEWS_PER_DAY = 30;
 
+// Do the full build only once, then do quick updates from data that comes in later.
+BAYESIAN_STAT_MAP = fullBuildBayesStatMap("palace_item", "review_log");		
+
 CURRENT_PROMPT_ITEM = computePromptItem();
 
 CHARACTER_VOCAB_MAP = buildChar2VocabMap(W.getItemList("word_memory"));
+
 
 function markResult(resultcode)
 {	
@@ -35,6 +39,10 @@ function markResult(resultcode)
 	
 	const newitem = W.buildItem("review_log", newrec);
 	newitem.syncItem();
+
+	// Update the stat map, from the new item result.
+	updateStatFromReview(BAYESIAN_STAT_MAP, newitem);
+	reComputeFinalProb(BAYESIAN_STAT_MAP, newitem.getItemId());
 	
 	CURRENT_PROMPT_ITEM = computePromptItem();
 	redisplay();	
@@ -150,7 +158,7 @@ function getRecentPromptIdSet(backup)
 function computePromptItem()
 {
 	// Okay this is the computation of the item with the lowest score
-	const statinfo = computeStatInfo();
+	const statinfo = BAYESIAN_STAT_MAP;
 	const recentids = getRecentPromptIdSet(TARGET_REVIEWS_PER_DAY);
 	
 	// console.log("Stat Info size is " + Object.keys(statinfo).length);

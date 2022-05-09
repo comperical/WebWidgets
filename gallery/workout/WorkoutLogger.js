@@ -1,4 +1,13 @@
 
+const WO_HEADER_INFO = [
+    ["W/O Log", "widget.jsp"],
+    ["W/O Planner", "ExercisePlanner.jsp"],
+    ["W/O Template", "ExerciseTemplate.jsp"],
+    ["W/O Stats", "WorkoutStats.jsp"],
+
+];
+
+
 function WorkoutLogger(workouts, goals)
 {
 	const mondaylist = getMondayList();

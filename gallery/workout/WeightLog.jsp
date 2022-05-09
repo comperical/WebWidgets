@@ -17,7 +17,6 @@ EFFORT_CODE_MAP = {
     "X" : "Too Hard"
 }
 
-
 // Eventually need to have a separate page for this, but hopefully can get away with this for a while
 function createNewMovement()
 {
@@ -39,9 +38,11 @@ function createNewMovement()
     }
 }
 
+
+
 function lookupRecent(moveid)
 {
-    const movelist = getItemList("weight_log")
+    const movelist = W.getItemList("weight_log")
                             .filter(item => item.getMoveId() == moveid)
                             .sort(proxySort(item => [item.getDayCode()])).reverse();
 
@@ -69,14 +70,14 @@ function copyFromClone(clonefrom, moveid)
         "day_code" : SELECTED_DAY_CODE      
     };      
     
-    const newitem = buildItem("weight_log", newrec);
+    const newitem = W.buildItem("weight_log", newrec);
     newitem.syncItem();
 }
 
 function copyFromPrevious()
 {
     const prevday = getDocFormValue("copy_from_sel");
-    const prevlist = getItemList("weight_log").filter(item => item.getDayCode() == prevday);
+    const prevlist = W.getItemList("weight_log").filter(item => item.getDayCode() == prevday);
 
     prevlist.forEach(item => {
         copyFromClone(item, -1);
@@ -87,7 +88,7 @@ function copyFromPrevious()
 
 function editEffortLevel(itemid) 
 {
-    const item = lookupItem("weight_log", itemid);
+    const item = W.lookupItem("weight_log", itemid);
     const effort = prompt("Enter effort level as E/M/H/X", item.getEffort());
 
     if(!effort) 
@@ -120,7 +121,7 @@ function editShortName()
 
 function editWeight(itemid)
 {
-    const item = lookupItem("weight_log", itemid);
+    const item = W.lookupItem("weight_log", itemid);
     const nweight = prompt("Please enter a weight: ", item.getWeight());
 
     if(nweight)
@@ -157,10 +158,6 @@ function removeItem(itemid)
 function redisplay()
 {
     redisplayMainTable();
-
-    // redisplayStudyItem();
-
-    // setPageComponent(getPageComponent());
 }
 
 
@@ -186,7 +183,7 @@ function getDataByMonday()
 
     const mondaymap = {};
 
-    getItemList("weight_log").forEach(function(item) {
+    W.getItemList("weight_log").forEach(function(item) {
 
         const relmonday = getMonday4Date(lookupDayCode(item.getDayCode()));
 
@@ -204,7 +201,7 @@ function getWeightNameMap() {
 
     const nmap = {};
 
-    getItemList("movement").forEach(function(item) {
+    W.getItemList("movement").forEach(function(item) {
         nmap[item.getId()] = item.getShortName();
     });
 
@@ -215,7 +212,7 @@ function getWeightNameMap() {
 
 function getCopyFromDisplayMap()
 {
-    const itemlist = getItemList("weight_log").sort(proxySort(item => [item.getDayCode()])).reverse();
+    const itemlist = W.getItemList("weight_log").sort(proxySort(item => [item.getDayCode()])).reverse();
     const displaymap = {"---" : "---"};
 
     itemlist.forEach(item => {
@@ -312,7 +309,7 @@ function redisplayMainTable()
 
         itemlist.forEach(function(item) {
                           
-            const move = lookupItem("movement", item.getMoveId()); 
+            const move = W.lookupItem("movement", item.getMoveId()); 
             const effortshow = item.getEffort() in EFFORT_CODE_MAP ? EFFORT_CODE_MAP[item.getEffort()] : "????";
 
             if(item.getDayCode() != prevDay)
@@ -371,68 +368,6 @@ function redisplayMainTable()
         pagestr += "</table>";
     });
 
-
-    /*
-    pagestr += `
-        <table class="basic-table"  width="80%">
-        <tr>
-        <th width="7%">Date</th>
-        <th>Movement</th>
-        <th>Sets / Reps</th>
-        <th colspan="2">Weight</th>
-        <th colspan="2">Effort</th>
-        <th colspan="2">Notes</th>
-        <th></th>
-        </tr>
-    `;
-    
-    const itemlist = getItemList("weight_log").sort(proxySort(item => [item.getDayCode()])).reverse();
-    const breaker = "&nbsp;&nbsp;&nbsp;";
-
-
-    itemlist.forEach(function(item) {
-                      
-        const move = lookupItem("movement", item.getMoveId()); 
-        const effortshow = item.getEffort() in EFFORT_CODE_MAP ? EFFORT_CODE_MAP[item.getEffort()] : "????";
-
-        const rowstr = `
-            <tr>
-            <td>${item.getDayCode().substr(5)}</td>
-            <td>${move.getShortName()}</td>
-            <td>
-            ${item.getNumSets()}x
-            ${item.getRepsPerSet()}
-            <td>
-            ${item.getWeight()}
-            </td>
-            <td>
-            <a href="javascript:editWeight(${item.getId()})"><img src="/u/shared/image/edit.png" height="18"/></a>
-            </td>
-
-            <td>${effortshow}</td>
-            <td>
-            <a href="javascript:editEffortLevel(${item.getId()})"><img src="/u/shared/image/edit.png" height="18"/></a>
-            </td>
-
-            <td width="20%">${item.getNotes()}</td>
-            <td width="5%">
-            <a href="javascript:editItemNotes(${item.getId()})"><img src="/u/shared/image/edit.png" height="18"/></a>
-            </td>
-
-            <td>
-            <a href="javascript:removeItem(${item.getId()})"><img src="/u/shared/image/remove.png" height="16"></a>
-            </td>
-
-            </tr>
-        `;
-
-        pagestr += rowstr;
-    });
-
-    pagestr += "</table>";
-
-    */
-
     populateSpanData({"main_page" : pagestr });
 }
 
@@ -443,8 +378,6 @@ function redisplayMainTable()
 <body onLoad="javascript:redisplay()">
 
 <center>
-
-<h2>Weight Log</h2>
 
 <br/>
 

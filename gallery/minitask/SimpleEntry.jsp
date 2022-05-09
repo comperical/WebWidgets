@@ -15,13 +15,10 @@ function createNewTask()
     var itemname = getDocFormValue("simple_item")
     
     if(itemname)
-    {   
-        var newid = newBasicId("mini_task_list");
-        
+    {           
         var todaycode = getTodayCode().getDateString();
         
         const newrec = {
-            "id" : newid,
             "task_type" : "life",
             "short_desc" : "SimpleEntry::" + itemname,
             "extra_info" : "",

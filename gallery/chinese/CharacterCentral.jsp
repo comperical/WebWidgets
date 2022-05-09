@@ -1,21 +1,10 @@
 
-<%@ page import="net.danburfoot.shared.*" %>
-<%@ page import="net.danburfoot.shared.HtmlUtil.*" %>
-
-<%
-	
-	OptSelector hskSelector = new OptSelector(Util.range(1, 6)).addKey("---");
-	
-	OptSelector palaceSelector = new OptSelector(Util.listify(true, false)).addKey("---");
-	
-%>
-
 
 <html>
 <head>
 <title>Character Central</title>
 
-<script src="ChineseTech.js?bust_cache=12"></script>
+<script src="ChineseTech.js?bust_cache=13"></script>
 <script src="../hanyu/pin_yin_converter.js"></script>
 
 <%= DataServer.basicIncludeOnly(request, "confounder", "palace_item", "hanzi_data", "review_log", "word_memory") %>
@@ -26,18 +15,19 @@
 
 EDIT_STUDY_ITEM = -1;
 
-CHARACTER_VOCAB_MAP = buildChar2VocabMap(getItemList("word_memory"));
+CHARACTER_VOCAB_MAP = buildChar2VocabMap(W.getItemList("word_memory"));
+
+HSK_LEVEL_SELECT = "---";
+
+HAVE_PALACE_SELECT = "---";
 
 function createPalaceItem(hdid) 
 {
 
 	const createfrom = lookupItem("hanzi_data", hdid);
 	console.log(createfrom);
-
-	const newid = newBasicId("palace_item");
 	
 	const newrec = {
-		"id" : newid,
 		"hanzi_char" : createfrom.getHanziChar(),
 		"palace_note": "EnterNoteHere",
 		"extra_note" : "...",
@@ -47,8 +37,15 @@ function createPalaceItem(hdid)
 	
 	clearHanziDataCache();
 
-	const newitem = buildItem("palace_item", newrec);
+	const newitem = W.buildItem("palace_item", newrec);
 	newitem.syncItem();
+	redisplay();
+}
+
+function updateFromSelect()
+{
+	HSK_LEVEL_SELECT = getDocFormValue("hsk_level_sel");
+	HAVE_PALACE_SELECT = getDocFormValue("have_palace_sel");
 	redisplay();
 }
 
@@ -57,8 +54,9 @@ function filterDisplayList(hdlist)
 {
 	const results = [];
 	
-	const hsklevel = getDocFormValue("hsk_level");
-	const havepalace = getDocFormValue("have_palace");
+	const hsklevel = HSK_LEVEL_SELECT;
+	const havepalace = HAVE_PALACE_SELECT;
+
 	const searchdef = getDocFormValue("search4_define");
 	const searchpin = getDocFormValue("search4_pinyin");
 	
@@ -155,7 +153,7 @@ function redisplayEditItem()
 	if(EDIT_STUDY_ITEM == -1)
 		{ return; }
 
-	const showitem = lookupItem("palace_item", EDIT_STUDY_ITEM);
+	const showitem = W.lookupItem("palace_item", EDIT_STUDY_ITEM);
 
 	const characteritem = lookupHanziDataByChar(showitem.getHanziChar());
 	const pinyin = characteritem ? characteritem.getPinYin() : "---";	
@@ -236,33 +234,13 @@ function redisplayEditItem()
 
 	tablestr += "</table>";
 
-
-
-	/*
-
-	populateSpanData({
-		"hanzi_char" : showitem.getHanziChar(),
-		"meaning" : showitem.getMeaning(),
-		"extra_note" : showitem.getExtraNote(),
-		"confounder_info" : confounderstr,
-		"hanzi_char_big" : showitem.getHanziChar(),
-		"example_info" : examplestr
-	});
-	*/
-
 	populateSpanData({
 		"main_edit_table" : tablestr,
 		"hanzi_char_big" : showitem.getHanziChar()
-		// "example_info" : examplestr
 	});
-
-
-
 
 	const palacetext = showitem.getPalaceNote();
 	const palacehtml = palacetext.replace(/\n/g, "<br/>");
-	
-
 
 	populateSpanData({
 		"palace_note1" : palacehtml
@@ -273,7 +251,7 @@ function redisplayEditItem()
 
 function redisplayMainList()
 {
-	var hanzilist = getItemList("hanzi_data");
+	var hanzilist = W.getItemList("hanzi_data");
 
 	var maintable = `
 		<table  class="basic-table" width="80%">
@@ -293,7 +271,7 @@ function redisplayMainList()
 	
 	hanzilist = hanzilist.slice(0, 400);
 	
-	statinfo = computeStatInfo();
+	statinfo = fullBuildBayesStatMap("palace_item", "review_log");	
 	
 	hanzilist.forEach(function(hditem) {
 
@@ -339,6 +317,20 @@ function redisplayMainList()
 		"maintable" : maintable,
 		"itemcount" : hanzilist.length
 	});
+
+	buildOptSelector()
+		.setKeyList(["---", "true", "false"])
+		.setElementName("have_palace_sel")
+		.setSelectedKey(HAVE_PALACE_SELECT)
+		.setOnChange("javascript:updateFromSelect()")		
+		.autoPopulate();
+
+	buildOptSelector()
+		.setKeyList(["---", "1", "2", "3", "4", "5", "6"])
+		.setElementName("hsk_level_sel")
+		.setSelectedKey(HSK_LEVEL_SELECT)
+		.setOnChange("javascript:updateFromSelect()")
+		.autoPopulate();		
 }
 
 function savePalaceNote()
@@ -376,8 +368,8 @@ function editItemMeaning()
 
 function getShouldConvertList()
 {
-	const examples = getItemList("hanzi_example");
-	const vocablist = getItemList("word_memory");
+	const examples = W.getItemList("hanzi_example");
+	const vocablist = W.getItemList("word_memory");
 
 	const haveset = new Set(vocablist.map(item => item.getSimpHanzi()));
 
@@ -440,15 +432,9 @@ function convertExample2Vocab()
 
 <br/>
 
-#HSK Level : 
-<select name="hsk_level" onChange="javascript:redisplay()">
-<%= hskSelector.getSelectStr("---") %>
-</select>
+#HSK Level : <span id="hsk_level_sel_span"></span>
 
-Have Palace : 
-<select name="have_palace" onChange="javascript:redisplay()">
-<%= palaceSelector.getSelectStr("---") %>
-</select>
+Have Palace : <span id="have_palace_sel_span"></span>
 
 <br/>
 
@@ -511,7 +497,9 @@ Showing <span id="itemcount"></span> items
 
 <a class="css3button" onclick="javascript:savePalaceNote()">save</a>
 
-<%= HtmlUtil.nbsp(4) %>
+&nbsp;
+&nbsp;
+&nbsp;
 
 
 <a class="css3button" onclick="javascript:toggleHidden4Class('edit_info')">cancel</a>

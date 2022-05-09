@@ -5,14 +5,27 @@
 
 <%= DataServer.basicInclude(request) %>
 
+<script src="WorkoutLogger.js"></script>
+
 <script>
 
 DATE_SEL_CODE = "last_270";
 
 function redisplay()
 {
+    handleNavBar();
+
     redisplayMainTable();
 }
+
+function handleNavBar() 
+{
+    const current = "W/O Stats";
+
+    populateTopNavBar(WO_HEADER_INFO, current);
+}
+
+
 
 function getDateSelCodeMap()
 {
@@ -176,7 +189,10 @@ function redisplayMainTable()
 
 <center>
 
-<h2>Workout Stats &nbsp;&nbsp;&nbsp; <a href="widget.jsp"><button>log</button></a></h2>
+<div class="topnav"></div>
+
+<br/>
+
 
 Dates: <span id="date_sel_span"></span>
 <br/>

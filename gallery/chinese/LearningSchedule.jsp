@@ -22,17 +22,50 @@ function handleNavBar()
     populateTopNavBar(headerinfo, "Learning Schedule");
 }
 
+function addPalaceItem(charid)
+{
+
+    const charitem = W.lookupItem("hanzi_data", charid);
+
+    // <td>${charitem.getHanziChar()}</td>
+    // <td>${charitem.getPinYin()}</td>
+
+    const mssg = `
+        Going to add a palace item for ${charitem.getHanziChar()}
+
+        Character will disappear from this screen, but will be present in character list
+
+        Okay to proceed?
+    `;
+
+    if(confirm(mssg))
+    {
+        const newrec = {
+            "hanzi_char" : charitem.getHanziChar(),
+            "palace_note": "NotYetSet",
+            "extra_note" : "...",
+            "is_active" : 1,
+            "meaning": charitem.getDefinition()
+        };      
+        
+        clearHanziDataCache();
+
+        const newitem = W.buildItem("palace_item", newrec);
+        newitem.syncItem();
+        redisplay();
+    }
+}
+
 
 
 // Get the Hanzi characters that are in words in the vocab log but not currently in the character study system.
 function getVocabRequiredItems()
 {
-    const palaceset = new Set([getItemList("palace_item").map(item => item.getHanziChar())]);
-    console.log(palaceset);
+    const palaceset = new Set([W.getItemList("palace_item").map(item => item.getHanziChar())]);
 
     const requiredset = new Set();
 
-    getItemList("word_memory").forEach(function(worditem) {
+    W.getItemList("word_memory").forEach(function(worditem) {
 
         if(worditem.getIsActive() == 0)
             { return; }
@@ -73,7 +106,7 @@ function getVocabCharCountMap()
 {
     const counts = {};
 
-    getItemList("word_memory").forEach(function(worditem) {
+    W.getItemList("word_memory").forEach(function(worditem) {
 
         if(worditem.getIsActive() == 0)
             { return; }
@@ -96,7 +129,7 @@ function getVocabCharCountMap()
 function getRemainingCount() 
 {
     var numshow = 0;
-    const schedlist = getItemList("learning_schedule");
+    const schedlist = W.getItemList("learning_schedule");
     const today = getTodayCode().getDateString();
 
     schedlist.forEach(function(scheditem) {
@@ -137,6 +170,7 @@ function generateVocabTableInfo()
         <th>Character</th>
         <th>PinYin</th>
         <th>HSK Level</th>
+        <th>Requested</th>
         <th>Freq Rank</th>
         </tr>
     `;
@@ -151,6 +185,7 @@ function generateVocabTableInfo()
             <td>${charitem.getHanziChar()}</td>
             <td>${charitem.getPinYin()}</td>
             <td>${charitem.getHskLevel()}</td>
+            <td>${charitem.getIsRequested()}</td>
             <td>${charitem.getFreqRank()}</td>
             </tr>
         `;
@@ -165,6 +200,8 @@ function generateVocabTableInfo()
     return tablestr;
 }
 
+
+
 function generateTableInfo()
 {
 
@@ -175,9 +212,10 @@ function generateTableInfo()
         <tr>
         <th>Character</th>
         <th>PinYin</th>
-        <th>#Vocab</th>
+        <th>#Vocab / Req'd</th>
         <th>HSK Level</th>
-        <th>Freq Rank</th>        
+        <th>Freq Rank</th>   
+        <th>...</th>
         </tr>
     `;
 
@@ -188,7 +226,7 @@ function generateTableInfo()
         return (thechar in vocabcount) ? vocabcount[thechar] : 0;
     }
 
-    const sortlist = getItemList("hanzi_data").sort(proxySort(charitem => [-getVc(charitem)]));
+    const sortlist = W.getItemList("hanzi_data").sort(proxySort(charitem => [-charitem.getIsRequested(), -getVc(charitem)]));
     sortlist.forEach(charitem => {
 
         const thechar = charitem.getHanziChar();
@@ -204,16 +242,23 @@ function generateTableInfo()
             { return; }
 
         // Don't have any vocab entries
-        if(!(thechar in vocabcount)) 
-            { return; }
+        // if(!(thechar in vocabcount)) 
+        //    { return; }
+
+        const thecount = (thechar in vocabcount ? vocabcount[thechar] : 0);
 
         const rowstr = `
             <tr>
             <td>${thechar}</td>
             <td>${charitem.getPinYin()}</td>            
-            <td>${vocabcount[thechar]}</td>
+            <td>${thecount}/ ${charitem.getIsRequested()}</td>
             <td>${charitem.getHskLevel()}</td>
             <td>${charitem.getFreqRank()}</td>
+            <td>
+
+            <a href="javascript:addPalaceItem(${charitem.getId()})"><img src="/u/shared/image/add.png" height="18"/></a>
+
+            </td>            
             </tr>
         `;
 

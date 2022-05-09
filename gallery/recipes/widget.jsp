@@ -110,27 +110,25 @@ function newRecipe()
 
 function addRecipe2List(recid)
 {
-	const recipe = lookupItem("recipe_item", recid);
+	const recipe = W.lookupItem("recipe_item", recid);
 	
 	if(confirm(`Add recipe ${recipe.getRecipeName()} to your shopping list?`))
 	{
 		const todaycode = getTodayCode().getDateString();
 				
-		getItemList("ingredient").forEach(function(ingr) {
+		W.getItemList("ingredient").forEach(function(ingr) {
 				
 			if(ingr.getRecipeId() != recipe.getId())
 				{ return; }
 			
-			const newid = newBasicId("shopping_list");
 			const newrec = {
-				"id" : newid,
 				"ingr_id" : ingr.getId(),
 				"is_active" : 1,
 				"created_on" : todaycode
 			};
 			// sqlite> create table shopping_list(id int, ingr_id int, is_active smallint, created_on varchar(10), primary key(id));                   
 			
-			const newitem = buildItem("shopping_list", newrec);
+			const newitem = W.buildItem("shopping_list", newrec);
 			newitem.syncItem();
 		});
 		
@@ -145,12 +143,9 @@ function addIngredient()
 	const itemname = prompt("Name of new ingredient: ");
 	
 	if(itemname)
-	{
-		const newid = newBasicId("ingredient");
-		
+	{		
 		// created_on, active_on, completed_on, dead_line
 		const newrec = {
-			"id" : newid,
 			"recipe_id" : STUDY_RECIPE_ID,
 			"ingr_name" : itemname,
 			"category" : "produce",
@@ -158,7 +153,7 @@ function addIngredient()
 			"notes" : "..."
 		};		
 		
-		const newitem = buildItem("ingredient", newrec);
+		const newitem = W.buildItem("ingredient", newrec);
 		newitem.syncItem();
 		redisplay();		
 	}
@@ -166,7 +161,7 @@ function addIngredient()
 
 function deleteIngredient(killid)
 {
-	const ingritem = lookupItem("ingredient", killid);
+	const ingritem = W.lookupItem("ingredient", killid);
 	
 	if(confirm("Are you sure you want to delete item " + ingritem.getIngrName() + "?"))
 	{
@@ -178,7 +173,7 @@ function deleteIngredient(killid)
 
 function deleteShoppingItem(killid)
 {
-	const shopitem = lookupItem("shopping_list", killid);
+	const shopitem = W.lookupItem("shopping_list", killid);
 	
 	if(confirm("Are you sure you want to delete this item ? "))
 	{
@@ -191,7 +186,7 @@ function clearShoppingList()
 {
 	if(confirm("Are you sure you want to clear your shopping list?"))
 	{
-		getItemList("shopping_list").forEach(function(shop) {
+		W.getItemList("shopping_list").forEach(function(shop) {
 			shop.deleteItem();
 		});
 	}	
@@ -229,7 +224,7 @@ function reDispIngredient()
 	if(STUDY_INGR_ID == -1)
 		{ return; }
 
-	const myingr = lookupItem("ingredient", STUDY_INGR_ID);
+	const myingr = W.lookupItem("ingredient", STUDY_INGR_ID);
 	
 	const datastr = `
 		<table  class="basic-table" width="50%">
@@ -301,7 +296,7 @@ function reDispRecipeItem()
 	if(STUDY_RECIPE_ID == -1)
 		{ return; }
 	
-	const recipeitem = lookupItem("recipe_item", STUDY_RECIPE_ID);
+	const recipeitem = W.lookupItem("recipe_item", STUDY_RECIPE_ID);
 	
 	var tablestr = `
 		<table class="basic-table"  width="70%">
@@ -314,7 +309,7 @@ function reDispRecipeItem()
 		</tr>
 	`;
 	
-	const ingrlist = getItemList("ingredient");
+	const ingrlist = W.getItemList("ingredient");
 	
 	ingrlist.forEach(function(ritem) {
 		
@@ -371,7 +366,7 @@ function reDispMainTable()
 		</tr>
 	`;
 	
-	const recipes = getItemList("recipe_item");
+	const recipes = W.getItemList("recipe_item");
 	
 	const counts = getRecipeItemCounts();
 	
@@ -413,7 +408,7 @@ function reDispMainTable()
 	
 	populateSpanData({
 		"main_table" : tablestr ,
-		"shopping_list_count" : getItemList("shopping_list").length
+		"shopping_list_count" : W.getItemList("shopping_list").length
 	});
 	
 }
@@ -422,24 +417,24 @@ function reDispMainTable()
 // added to shopping list, then deleted ingredient.
 function getCategoryOrEmpty(ingrid)
 {
-	return haveItem("ingredient", ingrid) ? lookupItem("ingredient", ingrid).getCategory() : "";
+	return W.haveItem("ingredient", ingrid) ? W.lookupItem("ingredient", ingrid).getCategory() : "";
 }
 
 function getNameOrEmpty(ingrid)
 {
 
-	return haveItem("ingredient", ingrid) ? lookupItem("ingredient", ingrid).getIngrName() : "";
+	return W.haveItem("ingredient", ingrid) ? W.lookupItem("ingredient", ingrid).getIngrName() : "";
 }
 
 function getRecipeItemCounts()
 {
 	var counts = {};
 
-	getItemList("recipe_item").forEach(function(ritem) {
+	W.getItemList("recipe_item").forEach(function(ritem) {
 		counts[ritem.getId()] = 0;
 	});
 	
-	getItemList("ingredient").forEach(function(ingr) {
+	W.getItemList("ingredient").forEach(function(ingr) {
 				
 		const recpid = ingr.getRecipeId();
 
@@ -467,18 +462,18 @@ function reDispShoppingList()
 		</tr>
 	`;
 	
-	const shoplist = getItemList("shopping_list");
+	const shoplist = W.getItemList("shopping_list");
 	
 	shoplist.sort(proxySort(shop => [getCategoryOrEmpty(shop.getIngrId()), getNameOrEmpty(shop.getIngrId())]));
 	
 	shoplist.forEach(function(shop) {
 
-		if(!haveItem("ingredient", shop.getIngrId()))
+		if(!W.haveItem("ingredient", shop.getIngrId()))
 			{ return; }
 			
-		const ingr = lookupItem("ingredient", shop.getIngrId());
+		const ingr = W.lookupItem("ingredient", shop.getIngrId());
 
-		const recipe = lookupItem("recipe_item", ingr.getRecipeId());
+		const recipe = W.lookupItem("recipe_item", ingr.getRecipeId());
 			
 		const rowstr = `
 			<tr>
