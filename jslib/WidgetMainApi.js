@@ -137,14 +137,41 @@ __augmentWithCheckSum : function(opurl)
     // console.log("Query string is " + querystring);
 
     // TODO: these decoded/encode functions should be in a namespace also
-    const params = decodeQString2Hash(querystring);
+    const allparams = decodeQString2Hash(querystring);
     // console.log(params);
+
+    const combined = new Object();
+    combined.smllpms = new Object();
+    combined.biggpms = new Object();
+
+    for(var k in allparams) 
+    {
+        const v = allparams[k];
+        const relpms = v.length > MAX_GET_PARAM_VALUE ? combined.biggpms : combined.smllpms;
+        relpms[k] = v;
+    }
 
     const cksumkey = params["wowner"]+ "::" + params["wname"];
     const cksumval = W.__databaseCheckSum[cksumkey];
-    params["checksum"] = cksumval;
+    combined.smllpms["checksum"] = cksumval;
+
+
     return W.CALLBACK_URL + "?" + encodeHash2QString(params);
 },
+
+
+// Destructure the OPURL back into the params that were used to compose it
+__paramsFromCallBackUrl : function(opurl)
+{
+    massert(opurl.indexOf(W.CALLBACK_URL) == 0, 
+        "Expected OP URL to start with callback URL, found " + W.CALLBACK_URL);
+
+    const querystring = opurl.substring((W.CALLBACK_URL + "?").length);
+    // console.log("Query string is " + querystring);
+
+    // TODO: these decoded/encode functions should be in a namespace also
+    return decodeQString2Hash(querystring);
+}
 
 __getTableCoords : function(tablemaster)
 {
