@@ -24,7 +24,7 @@ HAVE_PALACE_SELECT = "---";
 function createPalaceItem(hdid) 
 {
 
-	const createfrom = lookupItem("hanzi_data", hdid);
+	const createfrom = W.lookupItem("hanzi_data", hdid);
 	console.log(createfrom);
 	
 	const newrec = {
@@ -50,6 +50,28 @@ function updateFromSelect()
 }
 
 
+function matchSearchSingleTag(hditem, stag)
+{
+
+	// Empty tag has no effect
+	if(stag == null || stag.length == 0) 
+		{ return true; }
+
+	const matchdef = hditem.getDefinition().toLowerCase().indexOf(stag.toLowerCase()) > -1;
+
+	const nodiac = stripDiacritics(hditem.getPinYin());
+	const matchpin = nodiac.toLowerCase().indexOf(stag.toLowerCase()) > -1;
+
+	const matchfull = hditem.getPinYin().indexOf(stag.toLowerCase()) > -1;
+
+	// don't need to lowercase here!
+	const matchhanzi = hditem.getHanziChar().indexOf(stag) > -1;
+
+	// console.log(`Have mdef=${matchdef}, mpin=${matchpin} for stag=${stag}`);
+
+	return (matchdef || matchpin || matchhanzi || matchfull);
+}
+
 function filterDisplayList(hdlist)
 {
 	const results = [];
@@ -57,8 +79,10 @@ function filterDisplayList(hdlist)
 	const hsklevel = HSK_LEVEL_SELECT;
 	const havepalace = HAVE_PALACE_SELECT;
 
-	const searchdef = getDocFormValue("search4_define");
-	const searchpin = getDocFormValue("search4_pinyin");
+	const searchtag1 = getDocFormValue("search_tag1");
+	const searchtag2 = getDocFormValue("search_tag2");
+
+	console.log(`Matching vs ${searchtag1} and ${searchtag2}`);
 	
 	hdlist.forEach(function(hditem) {
 					
@@ -76,6 +100,13 @@ function filterDisplayList(hdlist)
 				{ return; }
 		}
 		
+		if(!matchSearchSingleTag(hditem, searchtag1))
+			{ return; }
+
+		if(!matchSearchSingleTag(hditem, searchtag2))
+			{ return; }
+
+		/*
 		if(searchdef.length > 0 && hditem.getDefinition().indexOf(searchdef) == -1)
 			{ return; }
 		
@@ -86,6 +117,7 @@ function filterDisplayList(hdlist)
 			if(nodiac != searchpin)
 				{ return; }
 		}
+		*/
 			
 		results.push(hditem);		
 			
@@ -438,9 +470,9 @@ Have Palace : <span id="have_palace_sel_span"></span>
 
 <br/>
 
-Definition: <input type="text" name="search4_define" onChange="javascript:redisplay()" />
+Search1: <input type="text" name="search_tag1" onChange="javascript:redisplay()" />
 
-PinYin: <input type="text" name="search4_pinyin" onChange="javascript:redisplay()" />
+Search2: <input type="text" name="search_tag2" onChange="javascript:redisplay()" />
 
 
 <br/><br/>

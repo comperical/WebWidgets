@@ -1,0 +1,121 @@
+body
+{
+	line-height: 1.6em;
+	background: #ADD8E6;
+	/* background: CadetBlue; */
+	
+	/* font-family: Verdana, Geneva, sans-serif;*/
+}
+
+.basic-table
+{
+	background: #000;
+}
+
+.basic-table tr
+{
+	background: #fff;
+}
+
+.basic-table td
+{
+	text-align: center;
+}
+
+/*
+Big Button
+*/
+.css3button
+{
+	font-family:Arial,Helvetica,sans-serif;
+	font-size:14px;
+	color:#fff;
+	padding:10px 20px;
+	margin-left:0;
+	margin-right:3px;
+	text-decoration:none;
+	background:-moz-linear-gradient(top,#38d 0,#16b);
+	background:-webkit-gradient(linear,left top,left bottom,from(#38d),to(#16b));
+	-moz-border-radius:5px;
+	-webkit-border-radius:5px;
+	border-radius:5px;
+	border:1px solid #16b;
+	-moz-box-shadow:0 0 0 rgba(000,000,000,0),inset 0 0 2px rgba(255,255,255,1);
+	-webkit-box-shadow:0 0 0 rgba(000,000,000,0),inset 0 0 2px rgba(255,255,255,1);
+	box-shadow:0 0 0 rgba(000,000,000,0),inset 0 0 2px rgba(255,255,255,1);
+	text-shadow:0 1px 0 rgba(025,084,167,1),0px 0 0 rgba(255,255,255,0);
+	background-color:#16B
+}
+
+
+/* Add a black background color to the top navigation */
+.doc_top_nav {
+  background-color: #0080ff;
+  overflow: hidden;
+  width: 80%;
+  display: flex; /* or inline-flex */
+}
+
+/* Style the links inside the navigation bar */
+.doc_top_nav a {
+  margin: auto;
+  float: left;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+}
+
+/* Change the color of links on hover */
+.doc_top_nav a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+/* Add a color to the active/current link */
+.doc_top_nav a.active {
+  background-color: #0000ff;
+  color: white;
+}
+
+
+/* extra */
+
+.doc_section code {
+    font-size: .7em;
+    font-family: "Liberation Mono",Menlo,Courier,monospace;
+    font-weight: 400;
+    padding-top: 3px;
+    line-height: 1.42;
+    border-radius: 2px;
+    padding-bottom: 3px;
+    background-color: #e5e5e5;
+    color: rgba(0, 0, 0, 0.87);
+}
+
+.doc_section pre {
+    font-size: .7em;
+    font-family: "Liberation Mono",Menlo,Courier,monospace;
+    font-weight: 400;
+    padding-top: 3px;
+    line-height: 1.42;
+    border-radius: 2px;
+    padding-bottom: 3px;
+    background-color: #e5e5e5;
+    color: rgba(0, 0, 0, 0.87);
+}
+
+code.doc {
+    padding: 2px 4px;
+    font-size: 80%;
+    color: #c7254e;
+    background-color: #f9f2f4;
+    border-radius: 4px;
+    font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
+}
+
+
+
+
+
