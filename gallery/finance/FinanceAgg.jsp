@@ -1,21 +1,4 @@
 
-<%@ page import="java.util.*" %>
-
-<%@ page import="net.danburfoot.shared.*" %>
-<%@ page import="net.danburfoot.shared.HtmlUtil.*" %>
-
-<%@ page import="lifedesign.basic.*" %>
-<%@ page import="lifedesign.classic.*" %>
-<%@ page import="lifedesign.basic.LifeUtil.*" %>
-<%@ page import="lifedesign.classic.FinanceSystem.*" %>
-
-<%@include file="../../admin/AuthInclude.jsp_inc" %>
-
-<%		
-	Set<String> financeNeed = FinanceSystem.getNeedUploadMonthSet();
-
-%>
-
 <html>
 <head>
 <title>Finance Agg</title>
@@ -415,13 +398,6 @@ function getHiddenTableString()
 <center>
 
 <div class="topnav"></div>
-
-<% 
-	if(!financeNeed.isEmpty())
-	{
-%>
-Should upload for month : <b><%= Util.join(financeNeed, " , ") %></b>
-<% } %>
 
 <br/>
 

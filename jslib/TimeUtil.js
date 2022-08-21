@@ -50,6 +50,14 @@ function lookupDayCode(dcstr)
     return dcmap[dcstr];    
 }
 
+// True if we have a day code for the given string
+// This can be used as a form of primitive date format checking
+function haveDayCodeForString(dcstr)
+{
+    const dcmap = getDayCodeMap();
+    return (dcstr in dcmap);
+}
+
 
 
 function DayCode(longmilli, dayidx)

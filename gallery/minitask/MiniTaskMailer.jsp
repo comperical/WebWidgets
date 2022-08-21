@@ -34,7 +34,7 @@ function createTaskMail()
     if(confirm("This will create an WidgetMail message for the task items shown below, okay?"))
     {
         const sendtarget = exactMomentNow().asIsoLongBasic("UTC");        
-        const tableinfo = getActiveTableInfo(2);
+        const tableinfo = getActiveTableInfo(1000000);
 
         const content = `
             ${tableinfo}

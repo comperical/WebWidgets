@@ -316,3 +316,39 @@ function submit2Current(submitpack)
 }
 
 
+// Set a cookie with the given name=value pair
+function setCookieNoExpiration(name, value) {
+    const cookiestr = `${name}=${value}; path=/`;
+    // document.cookie = name + "=" + value + expires + "; path=/";
+    document.cookie = cookiestr;
+}
+
+
+// Returns full set of document cookies.
+function getDocumentCookieInfo()
+{
+    const cookies = {}
+
+    document.cookie.split(";").forEach(function(cstr) {
+
+        const pairtoks = cstr.trim().split("=");
+
+        if(pairtoks.length != 2)
+            { return; }
+
+        cookies[pairtoks[0]] = pairtoks[1];
+    });
+
+    return cookies;
+}
+
+
+
+// Return username of logged-in user
+// This is pulled from the full cookie package
+function getWidgetUserName()
+{
+    return getDocumentCookieInfo()['username'];
+}
+
+

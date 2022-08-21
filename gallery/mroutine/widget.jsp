@@ -109,7 +109,35 @@ function redisplay()
 {
 	handleNavBar();
 
+    // activephase = null impliies we're done with the day
+    const activephase = getActivePhase();
+    var activetext = "complete";
+    var activelink = "";
+    
+    if(activephase != null)
+    {
+        activetext = activephase.getShortName();
+        activelink = `<a href="${activephase.getWebLink()}">LINK</a>`
+    }
+
     var mtstr = `
+        <h3>${activetext}</h3>
+        ${activelink}
+        <br/>
+        <br/>
+    `;
+
+    if(activephase != null) {
+
+        mtstr += `
+            <a href="javascript:markDone()" class="css3button">done</a>
+            <br/>
+            <br/>
+        `;
+    }
+
+    mtstr += `
+
         <table  class="basic-table" width="30%">
         <tr>
         <th>Name</th>
@@ -142,27 +170,9 @@ function redisplay()
         
     mtstr += "</table>";
     
-    document.getElementById("logtable").innerHTML = mtstr;
-    
-    
-    {
-        const activephase = getActivePhase();
-        var activetext = "complete";
-        var activelink = "";
-        
-        if(activephase != null)
-        {
-            activetext = activephase.getShortName();
-            activelink = `<a href="${activephase.getWebLink()}">LINK</a>`
-        }
-        
-        const spandata = {
-            "activephase" : activetext,
-            "web_link" : activelink
-        };
-        
-        populateSpanData(spandata);
-    }
+    populateSpanData({
+        "mainpage" : mtstr
+    });
 }
 
 
@@ -181,18 +191,7 @@ function redisplay()
 
 <br/>
 
-<h3><div id="activephase">complete</div></h3>
-
-<div id="web_link"></div>
-
-<br/>
-
-<a href="javascript:markDone()" class="css3button">done</a>
-
-<br/><br/>
-
-<div id="logtable"></div>
-
+<div id="mainpage"></div>
 
 <br/>
 

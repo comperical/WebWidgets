@@ -17,7 +17,10 @@ __itemLookupFuncMap : {},
 __haveItemFuncMap : {},
 
 // Map of of username::widgetname --> Unix checksum for the Widget DB
-__databaseCheckSum : {},    
+__databaseCheckSum : {},
+
+// List of tables for which the current user has read access only
+__readOnlyAccess : [], 
 
 CALLBACK_URL : "/u/callback",
 
@@ -26,6 +29,8 @@ __REQUEST_QUEUE : [],
 __REQUEST_IN_FLIGHT : false,
 
 __RAW_DEP_WARNING_COUNT : 0,
+
+MAX_GET_PARAM_VALUE : 10000,
 
 // Find the item with the given ID for the given table and return it.
 // Error if the item does not exist, if you are uncertain whether the ID exists or not,
@@ -84,6 +89,16 @@ haveTable : function(tabname)
     return tabname in W.__buildItemFuncMap;   
 },
 
+// True if the current user has write access to the given table
+// Widgets that serve multiple users, some of whom have write access and some of whom do not,
+// should check this function before displaying UI options that will perform write actions.
+// The backend will disallow such writes anyway, but it will be a less pleasing user experience
+haveWriteAccess : function(tabname)
+{
+    return W.__readOnlyAccess.indexOf(tabname) == -1;
+},
+
+
 // Get all the tables that have been registered on this page.
 getWidgetTableList : function()
 {
@@ -99,6 +114,12 @@ newBasicId : function(tabname)
     W.checkTableName(tabname);
     const idfunc = W.__newBasicFuncMap[tabname];
     return idfunc();    
+},
+
+
+getBlobStoreUrl : function(username, widgetname, tablename, recordid)
+{
+    return `/u/blobstore?username=${username}&widgetname=${widgetname}&tablename=${tablename}&id=${recordid}`;
 },
 
 getHaveItemFunc : function(tabname)
@@ -147,31 +168,17 @@ __augmentWithCheckSum : function(opurl)
     for(var k in allparams) 
     {
         const v = allparams[k];
-        const relpms = v.length > MAX_GET_PARAM_VALUE ? combined.biggpms : combined.smllpms;
+        const relpms = v.length > W.MAX_GET_PARAM_VALUE ? combined.biggpms : combined.smllpms;
         relpms[k] = v;
     }
 
-    const cksumkey = params["wowner"]+ "::" + params["wname"];
+    const cksumkey = combined.smllpms["wowner"]+ "::" + combined.smllpms["wname"];
     const cksumval = W.__databaseCheckSum[cksumkey];
     combined.smllpms["checksum"] = cksumval;
 
+    return combined;
 
-    return W.CALLBACK_URL + "?" + encodeHash2QString(params);
 },
-
-
-// Destructure the OPURL back into the params that were used to compose it
-__paramsFromCallBackUrl : function(opurl)
-{
-    massert(opurl.indexOf(W.CALLBACK_URL) == 0, 
-        "Expected OP URL to start with callback URL, found " + W.CALLBACK_URL);
-
-    const querystring = opurl.substring((W.CALLBACK_URL + "?").length);
-    // console.log("Query string is " + querystring);
-
-    // TODO: these decoded/encode functions should be in a namespace also
-    return decodeQString2Hash(querystring);
-}
 
 __getTableCoords : function(tablemaster)
 {
@@ -250,14 +257,13 @@ __maybeSendNewRequest : function()
     const reqlist = W.__REQUEST_QUEUE.shift();
 
     // This needs to be augmented just-in-time
-    const opurl = W.__augmentWithCheckSum(reqlist[0]);
+    const combinedParams = W.__augmentWithCheckSum(reqlist[0]);
+    const opurl = W.CALLBACK_URL + "?" + encodeHash2QString(combinedParams.smllpms);
+
     // console.log(reqlist[0]);
     // console.log(opurl);
     const opname = reqlist[1];
     const itempk = reqlist[2];
-    
-    // console.log("sending new request, queue length is now " + __REQUEST_QUEUE.length);
-    // console.log("Opname " + opname + ", PK: " + itempk);
     
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
@@ -271,9 +277,22 @@ __maybeSendNewRequest : function()
             W.__maybeSendNewRequest();
         }
     };
-    
-    xhttp.open("GET", opurl, true);
-    xhttp.send();
+
+    const havebig = Object.keys(combinedParams.biggpms).length > 0;
+
+    if (havebig) {
+
+        const bigparamstr = encodeHash2QString(combinedParams.biggpms);
+        xhttp.open("POST", opurl, true);
+
+        // Send the proper header information along with the request
+        xhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+        xhttp.send(bigparamstr);
+
+    } else {
+        xhttp.open("GET", opurl, true);
+        xhttp.send();    
+    }
 },
 
 __checkAjaxResponse : function(op, itemid, rtext)
