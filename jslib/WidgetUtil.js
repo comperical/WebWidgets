@@ -17,9 +17,18 @@ function genericDeleteItem(tablename, itemid)
 // Syncs and redisplays on success, if you don't want this behavior, do not use this method.
 function genericToggleActive(tablename, itemid)
 {
+    genericToggleField(tablename, "is_active", itemid);
+}
+
+// Toggles the given field name for the given item
+// Item must have the given field, and the value must be 0/1
+// Syncs and redisplays on success, if you don't want this behavior, do not use this method.
+function genericToggleField(tablename, fieldname, itemid)
+{
     const theitem = W.lookupItem(tablename, itemid);
-    const newactive = theitem.getIsActive() == 1 ? 0 : 1;
-    theitem.setIsActive(newactive);
+    const curstat = theitem.getField(fieldname);
+    const newstat = curstat == 1 ? 0 : 1;
+    theitem.setField(fieldname, newstat);
     theitem.syncItem();
     redisplay();
 }

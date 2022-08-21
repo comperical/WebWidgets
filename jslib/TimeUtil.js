@@ -8,6 +8,10 @@ const __DAY_CODE_MAP = {};
 // This list contains about 15K records, about plus/minus ten years from the present date.
 const __DAY_CODE_LIST = [];
 
+// Regex to match ISO "basic" timestamps.
+// Unlike standard one, do not use the central "T"
+const __LONG_ISO_BASIC_PATTERN = /\d{4}-[01]\d-[0-3]\d [0-2]\d:[0-5]\d:[0-5]\d/;
+
 const DAY_MILLI = (1000 * 60 * 60 * 24);
 
 const SHORT_DAY_WEEK_LIST = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -297,6 +301,8 @@ function maybePad(pdstr)
     return pdstr.length == 1 ? "0" + pdstr : pdstr;
 }
 
+
+
 // Construct an exact Moment using the given millisecond argument.
 // This is the number of milliseconds since the Unix epoch.
 // https://en.wikipedia.org/wiki/Unix_time
@@ -346,8 +352,31 @@ ExactMoment.prototype.asIsoLongBasic = function(timezone)
     return isoformat;
 }
 
+
+// Return true if the given timestamp is a valid "Long basic" ISO timestamp
+// The pattern is "YYYY-MM-DD HH:MM:SS", note there is whitespace between the date and time fields (not a T)
+// This check is implemented as a regular expression
+// If this test returns true, the given string should be successfully converted to an ExactMoment
+// Using the exactMomentFromIsoBasic method below
+function isLongIsoTimeValid(timestamp)
+{
+    return __LONG_ISO_BASIC_PATTERN.test(timestamp);
+}
+
+
+// Convert a timestamp, timezone pair into an ExactMoment object
+// This is the canonical conversion from timestamp/TZ info into ExactMoments
+// The timestamp must be a valid "Long ISO basic" string, of the form "YYYY-MM-DD HH:MM:SS"
+// The timezone must be present in the TIME_ZONE_MAP structure
 function exactMomentFromIsoBasic(timestamp, timezone)
 {
+    const hourmod = TIME_ZONE_OFFSET_MAP[timezone];
+    massert(hourmod != null, 
+        `Time Zone string ${timezone} not present in the time zone map, options are\n${Object.keys(TIME_ZONE_MAP)}`);
+
+    massert(isLongIsoTimeValid(timestamp),
+        `The timestamp string ${timestamp} is not valid, format is YYYY-MM-DD HH:MM:SS`);
+
     // Don't use replaceAll, it's not widely supported
     const tstampmod = timestamp.replace(" ", "T");
 
@@ -355,8 +384,6 @@ function exactMomentFromIsoBasic(timestamp, timezone)
     // console.log(str2parse);
 
     const utcmillis = Date.parse(str2parse);
-    const hourmod = TIME_ZONE_OFFSET_MAP[timezone];
-    // console.log("Hour Mod is " + hourmod);
 
     return new ExactMoment(utcmillis - (hourmod * 3600 * 1000));
 }
