@@ -7,20 +7,15 @@ __getListFuncMap : {},
 // table name to builder function
 __buildItemFuncMap : {},
 
-// table name to newBasicId function
-__newBasicFuncMap : {},
-
-// table name to Item lookup
-__itemLookupFuncMap : {},
-
-// table name to haveItem func
-__haveItemFuncMap : {},
-
 // Map of of username::widgetname --> Unix checksum for the Widget DB
-__databaseCheckSum : {},
+// Sept 2022: removing old naive checksum technique
+// __databaseCheckSum : {},
 
 // List of tables for which the current user has read access only
 __readOnlyAccess : [], 
+
+// Map of short table name to Widget Table objects
+__tableNameIndex : new Map(),
 
 CALLBACK_URL : "/u/callback",
 
@@ -30,7 +25,9 @@ __REQUEST_IN_FLIGHT : false,
 
 __RAW_DEP_WARNING_COUNT : 0,
 
-MAX_GET_PARAM_VALUE : 10000,
+// https://stackoverflow.com/questions/417142/what-is-the-maximum-length-of-a-url-in-different-browsers
+// Could actually be much smaller than this
+MAX_GET_PARAM_VALUE : 2000,
 
 // Find the item with the given ID for the given table and return it.
 // Error if the item does not exist, if you are uncertain whether the ID exists or not,
@@ -38,7 +35,7 @@ MAX_GET_PARAM_VALUE : 10000,
 lookupItem : function(tabname, itemid)
 {
     W.checkTableName(tabname);
-    return W.__itemLookupFuncMap[tabname](itemid);
+    return W.__tableNameIndex.get(tabname)._dataMap.get(itemid);
 },
 
 // Get the full list of records associated with given table.
@@ -48,8 +45,7 @@ lookupItem : function(tabname, itemid)
 getItemList : function(tabname) 
 {
     W.checkTableName(tabname);
-    const itemfunc = W.__getListFuncMap[tabname];
-    return itemfunc();        
+    return [... W.__tableNameIndex.get(tabname)._dataMap.values()];
 }, 
 
 // Create a new record for the given table.
@@ -79,14 +75,13 @@ buildItem : function(tabname, record)
 haveItem : function(tabname, itemid)
 {
     W.checkTableName(tabname);
-    const havefunc = W.__haveItemFuncMap[tabname];
-    return havefunc(itemid);
+    return W.__tableNameIndex.get(tabname)._dataMap.has(itemid);
 },
 
 // Return true if the table is in the data for the page.
 haveTable : function(tabname)
 {
-    return tabname in W.__buildItemFuncMap;   
+    return W.__tableNameIndex.has(tabname); 
 },
 
 // True if the current user has write access to the given table
@@ -112,36 +107,60 @@ getWidgetTableList : function()
 newBasicId : function(tabname)
 {
     W.checkTableName(tabname);
-    const idfunc = W.__newBasicFuncMap[tabname];
-    return idfunc();    
+    const datamap = W.__tableNameIndex.get(tabname)._dataMap;
+    return W.createNewIdRandom(datamap);
 },
 
 
+// Queries the server to obtain a new unused database ID for the given table
+// In other words, this is a server-side version of newBasicId(...)
+// It is generally better to use the client-side version. This method is intended to be used
+// in cases where you do not have all the records for the given table loaded in the client
+// For example, if you use the no_data=true option to load the table manager without loading any records
+serverSideNewDbId : function(tabname, callback)
+{ 
+    W.checkTableName(tabname);
+
+    const xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        
+        if (this.readyState == 4) {         
+            massert(this.status == 200, "Unexpected error code on Ajax operation: " + this.status);
+
+            // The actual ID is in the extra_info field
+            const response = JSON.parse(this.responseText);            
+            const newid = parseInt(response["extra_info"]);
+            callback(newid);
+        }
+    };
+
+    const tableObject = W.__tableNameIndex.get(tabname);
+    // This URL must agree with the Java code.
+    const opurl = `/u/extend?openum=GetNewDbId&widgetowner=${tableObject.widgetOwner}&widgetname=${tableObject.widgetName}&tablename=${tabname}`;
+    
+    xhttp.open("GET", opurl, true);
+    xhttp.send();
+},
+
+
+// Gets the Blob Store URL for the given item
+// NOTE: you should not use this function directly, instead call method with same name, but no arguments
+// that is attached to the Widget Blob item
+// Example : W.lookupItem("my_blob_table", itemid).getBlobStoreUrl()
 getBlobStoreUrl : function(username, widgetname, tablename, recordid)
 {
     return `/u/blobstore?username=${username}&widgetname=${widgetname}&tablename=${tablename}&id=${recordid}`;
-},
-
-getHaveItemFunc : function(tabname)
-{
-    W.checkTableName(tabname);    
-    return W.__haveItemFuncMap[tabname];  
 },
 
 // Checks that the given table name exists and is loaded.
 // Error if it is not.
 checkTableName : function(tabname)
 {
-    // Trying to be very careful here with older browsers.
-    if(W.__haveItemFuncMap.hasOwnProperty(tabname)) {
+    if(W.__tableNameIndex.has(tabname)) {
         return;
     }
 
-    var tlist = [];
-    for(tname in W.__haveItemFuncMap) {
-        tlist.push(tname);
-    }
-
+    const tlist = [... W.__tableNameIndex.keys()];
     massert(false, "Could not find table name " + tabname + ", options are " + tlist);
 },
 
@@ -172,9 +191,10 @@ __augmentWithCheckSum : function(opurl)
         relpms[k] = v;
     }
 
-    const cksumkey = combined.smllpms["wowner"]+ "::" + combined.smllpms["wname"];
-    const cksumval = W.__databaseCheckSum[cksumkey];
-    combined.smllpms["checksum"] = cksumval;
+    // Sept 2022 : remove checksum
+    // const cksumkey = combined.smllpms["wowner"]+ "::" + combined.smllpms["wname"];
+    // const cksumval = W.__databaseCheckSum[cksumkey];
+    // combined.smllpms["checksum"] = cksumval;
 
     return combined;
 
@@ -220,26 +240,50 @@ genericDeleteUrl : function(tablemaster, item, keylist)
     return W.CALLBACK_URL + "?" + encodeHash2QString(subpack);
 },
 
-createNewIdBasic : function(datamap, idcol)
+createNewIdBasic : function(datamap)
+{    
+    return W.createNewIdRandom(datamap);
+},
+
+createNewIdRandom : function(datamap) 
 {
-    var idlist = Object.keys(datamap).map(function(k) {
-        return datamap[k][idcol];   
-    });
-    
-    if(idlist.length == 0)
-        { return 0; }
-    
-    var maxid = idlist.reduce(function(a, b) {
+    // Gotcha!! Don't use 'try' as a variable name!!
+    //for(var try = 0; try < 10; try++)
+
+    for(var attempt = 0; attempt < 10; attempt++)
+    {
+        // These numbers are Java Integer MAX_VALUE and MIN_VALUE
+        const max =  2147483647;
+        const min = -2147483648;
+        const newid = Math.floor(Math.random() * (max - min) + min);
+
+        // Reserve this small range for "magic" ID numbers like -1
+        if(-1000 <= newid && newid <= 0)
+            { continue; }
+
+        if(!datamap.has(newid))
+            { return newid; }
+    }
+
+    massert(false, "Could not find new unused ID after ten tries, maybe your table is too big, size = " + datamap.size);
+},
+
+createNewIdIncremental : function(datamap) 
+{
+    if(datamap.size == 0) {
+        return 0;
+    }
+
+    const maxid = [... datamap.keys()].reduce(function(a, b) {
         return Math.max(a, b);      
     });
     
     return maxid+1;
 },
 
-
-__submitNewRequest : function(opurl, opname, itempk) 
+__submitNewRequest : function(opurl, opname, itemid) 
 {
-    const reqlist = [opurl, opname, itempk];
+    const reqlist = [opurl, opname, itemid];
     W.__REQUEST_QUEUE.push(reqlist);  
     W.__maybeSendNewRequest();
 },
@@ -263,7 +307,7 @@ __maybeSendNewRequest : function()
     // console.log(reqlist[0]);
     // console.log(opurl);
     const opname = reqlist[1];
-    const itempk = reqlist[2];
+    const itemid = reqlist[2];
     
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
@@ -272,8 +316,14 @@ __maybeSendNewRequest : function()
         // It is ready. readyState == 4 implies the request completed.
         if (this.readyState == 4) {         
             massert(this.status == 200, "Unexpected error code on Ajax operation: " + this.status);
-            W.__checkAjaxResponse(opname, itempk, this.responseText);
+            W.__checkAjaxResponse(opname, itemid, this.responseText);
             W.__REQUEST_IN_FLIGHT = false;
+
+
+            // This allows user widget to take actions when the sync's finish
+            if (typeof ajaxRequestUserCallBack == "function") 
+                { ajaxRequestUserCallBack(opurl, opname, itemid); }
+
             W.__maybeSendNewRequest();
         }
     };
@@ -306,7 +356,7 @@ __checkAjaxResponse : function(op, itemid, rtext)
         // These field names must match Java code.
         const cksumkey = response.checksum_key;
         const cksumval = parseInt(response.checksum_val);
-        W.__databaseCheckSum[cksumkey] = cksumval;
+        // W.__databaseCheckSum[cksumkey] = cksumval;
 
         const logmssg = `AjaxOp for itemid ${itemid} worked, new val for key ${cksumkey} is ${cksumval}`;
         console.log(logmssg);
@@ -317,6 +367,19 @@ __checkAjaxResponse : function(op, itemid, rtext)
     const fcode = response.failure_code;
     const umssg = response.user_message;
     const einfo = response.extra_info;
+
+    // Special error message for this one
+    if (fcode == "SyncError")
+    {
+        const syncmssg = `
+            Error: your update was rejected because the widget data has been modified by another user.
+            
+            Please reload the page and try again.
+        `;
+
+        alert(syncmssg);
+        throw syncmssg;
+    }
     
     var errmssg = `Problem with sync operation: ${fcode} \n ${umssg}`;
     

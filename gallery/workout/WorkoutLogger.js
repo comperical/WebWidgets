@@ -2,11 +2,22 @@
 const WO_HEADER_INFO = [
     ["W/O Log", "widget.jsp"],
     ["W/O Planner", "ExercisePlanner.jsp"],
+    ["W/O Layout", "PlanLayout.jsp"],
     ["W/O Template", "ExerciseTemplate.jsp"],
     ["W/O Stats", "WorkoutStats.jsp"],
 
 ];
 
+
+function getActiveLayoutName()
+{
+	const names = new Set(W.getItemList("plan_layout")
+								.filter(item => item.getIsActive() == 1)
+								.map(item => item.getLayoutName()));
+
+	massert(names.size == 1, `Have too many recent layout names ${[... names]}`);
+	return [... names][0];
+}
 
 function WorkoutLogger(workouts, goals)
 {
@@ -133,6 +144,46 @@ WorkoutLogger.prototype.getSummaryData = function(mondaycode)
 	
 	return summap;
 }
+
+function rebuildFromActiveLayout(mondaycode)
+{
+	if(!confirm("This will delete all the previous goal items for this week, and rebuild them from the template. Okay?"))
+		{ return; }
+
+	// NO LONGER AN ISSUE with random ID allocation
+	// Gotcha here: if you delete before create, the new items will get reallocated the IDs deleted previously.
+	// So if the delete operations get processed after the create operations because of race condition,
+	// you will end up deleting the records you just built.	
+	W.getItemList("ex_week_goal").filter(exitem => exitem.getMondayCode() == mondaycode).forEach(function(item) {
+		item.deleteItem();
+	});
+
+
+	const layout = getActiveLayoutName();
+
+	const wotypemap = buildGenericDict(W.getItemList("exercise_plan"), item => item.getShortCode(), item => item);
+
+	const activeplan = W.getItemList("plan_layout").filter(item => item.getIsActive() == 1);
+	
+	activeplan.forEach(function(planitem) {
+			
+		// this is a foreign key error
+		massert(planitem.getWoCode() in wotypemap, `Workout code ${planitem.getWoCode()} not in the type map`);
+		
+		const newrec = {
+			"mini_note" : `Layout : ${layout}`,
+			"monday_code" : mondaycode,
+			"short_code" : planitem.getWoCode(),
+			"weekly_goal" : planitem.getGoalDistance()
+		};
+		
+		const newitem = W.buildItem("ex_week_goal", newrec);
+		newitem.syncItem();			
+	});
+	
+	redisplay();	
+}
+
 
 
 

@@ -186,18 +186,9 @@ function getPlanDayItemList()
 
 function getTemplateIdMap()
 {
-	var idmap = {};
-	idmap[-1] = "----";
+	return buildGenericDict(W.getItemList("day_template").filter(item => item.getIsActive() == 1), 
+		item => item.getId(), item => item.getShortName());
 
-	W.getItemList("day_template").forEach(function(item) {
-
-		if(item.getIsActive() == 0)
-			{ return; }
-
-		idmap[item.getId()] = item.getShortName();
-	});
-
-	return idmap;
 }
 
 function redisplay()
@@ -291,12 +282,15 @@ function redisplay()
 
 	const timeminsel = buildOptSelector()
 							.setFromMap(getHourTimeMap())
-							.setSelectOpener(`<select name="time_spent_min">`)
+							.setElementName("time_spent_min")
 							.getSelectString()
 	
 	const tempsel = buildOptSelector()
 						.setFromMap(getTemplateIdMap())
-						.setSelectOpener(`<select name="temp_id" onChange="javascript:doTemplateImport()">`)
+						.sortByDisplay()
+						.insertStartingPair(-1, "---")
+						.setElementName("temp_id")
+						.setOnChange("javascript:doTemplateImport()")
 						.setSelectedKey(-1)
 
 
@@ -306,7 +300,8 @@ function redisplay()
 	const datesel = buildOptSelector()
 					.setFromMap(displaymap)
 					.setSelectedKey(PLAN_DAY_CODE.getDateString())
-					.setSelectOpener(`<select name="plan_day_sel" onChange="javascript:updatePlanDay()">`)
+					.setOnChange("javascript:updatePlanDay()")
+					.setElementName("plan_day_sel")
 					.getSelectString();
 
 

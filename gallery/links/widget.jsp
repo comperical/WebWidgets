@@ -1,7 +1,7 @@
 
 <html>
 <head>
-<title>Link Manager</title>
+<title>&#x1F517</title>
 
 <%= DataServer.basicInclude(request) %>
 

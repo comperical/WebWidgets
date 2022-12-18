@@ -62,7 +62,7 @@ function getPageComponent()
 function redisplayMain()
 {
     var mainstr = `
-        <table  class="basic-table" width="60%">
+        <table  class="basic-table" width="70%">
         <tr>
         <th>Char 1</th>
         <th>Char 2</th>

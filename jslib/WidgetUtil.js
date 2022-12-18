@@ -120,6 +120,20 @@ function proxySort(proxyfun)
     }
 }
 
+function dictFromExtractor(itemlist, extractor) 
+{
+
+    const table = {};
+
+    itemlist.forEach(function(item) {
+        const pr = extractor(item);
+        massert(Array.isArray(pr) && pr.length == 2, "The extractor function must return a length-2 array, got " + pr);
+        table[pr[0]] = pr[1];
+    })
+
+    return table;
+}
+
 
 
 // Given map of span ID :: HTML data, 
@@ -357,7 +371,40 @@ function getDocumentCookieInfo()
 // This is pulled from the full cookie package
 function getWidgetUserName()
 {
-    return getDocumentCookieInfo()['username'];
+    const result = getDocumentCookieInfo()['username'];
+    return result == null || result == "" ? null : result;
+}
+
+
+// This implements a basic logout operation by clearing the user's WWIO-relevant cookies
+// If the application has set additional cookies, it must implement clearing logic on its own
+function basicWidgetLogout()
+{
+    setCookieNoExpiration("username", "");
+    setCookieNoExpiration("accesshash", "");
+}
+
+
+// Toggle Hidden value for given element.
+function toggleHidden(theitem)
+{
+    theitem.hidden = !theitem.hidden;
+}
+
+// Toggle Hidden value for element with given ID.
+function toggleHidden4Id(itemid)
+{
+    var theitem = document.getElementById(itemid);
+    toggleHidden(theitem);
+}
+
+
+// Toggle Hidden value for all elements with given class.
+function toggleHidden4Class(classname)
+{
+    var clist = document.getElementsByClassName(classname);
+    for(var ci in clist)
+        { toggleHidden(clist[ci]); }
 }
 
 

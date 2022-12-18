@@ -3,7 +3,7 @@
 <head>
 <title>Memory Palace Listing</title>
 
-<script src="ChineseTech.js?bust_cache=16"></script>
+<script src="ChineseTech.js?bust_cache=17"></script>
 <script src="../hanyu/pin_yin_converter.js"></script>
 
 
@@ -65,7 +65,7 @@ function createMiniTaskNote()
 	// 	<td>${hanzidata.getPinYin()}</td>
 
 	
-	const basicprompt = `MiniTaskNote for character=${CURRENT_PROMPT_ITEM.getHanziChar()} (${hanzidata.getPinYin()}), ID=${CURRENT_PROMPT_ITEM.getId()}`;
+	const basicprompt = `Note for character=${CURRENT_PROMPT_ITEM.getHanziChar()} (${hanzidata.getPinYin()}): `;
 	
 	const notename = prompt("Enter note : ", basicprompt);
 	
@@ -170,14 +170,9 @@ function computePromptItem()
 	// you get STRINGS instead of integers, even though the keys of statinfo are integers!!!!
 	// Since the recent ID set holds integers, the containment check will return false
 	// Okay, the point is that Javascript objects have property NAMES
-	const okayids = Object.keys(statinfo).filter(function(charid) { return !recentids.has(parseInt(charid)); });	
-	const lowestid = minWithProxy(okayids, it => statinfo[it]["net_score"]);
-
-	// console.log("All IDS " + Object.keys(statinfo).length);
-
-	// console.log("Recents IDS " + recentids.size);
-	// console.log("Okay IDS " + okayids.length);
-
+	// Update, Sept 2022: this now uses normal Set/Map operations, the situation is less fraught
+	const okayids = [... statinfo.keys()].filter(function(charid) { return !recentids.has(charid); });	
+	const lowestid = minWithProxy(okayids, it => statinfo.get(it)["net_score"]);
 	
 	// const allitems = getItemList("palace_item");	
 	// return allitems[Math.floor(Math.random()*allitems.length)];

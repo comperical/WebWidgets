@@ -1,7 +1,7 @@
 
 <html>
 <head>
-<title>Questions</title>
+<title>&#x2754 &#x2753</title>
 
 <%= DataServer.basicInclude(request) %>
 
@@ -17,6 +17,17 @@ function createNew()
 {	
 	var qtext = prompt("Enter the text of the question: ");
 	
+	createNewSub(qtext);
+}
+
+function createNewSub(qtext)
+{	
+	if(!qtext.endsWith("?"))
+	{
+		alert("By convention, questions must end with a question mark");
+		return;
+	}
+
 	if(qtext)
 	{	
 		const todaycode = getTodayCode().getDateString();
@@ -31,7 +42,7 @@ function createNew()
 			"has_answer" : 0
 		};
 		
-		const newitem = buildItem("question_log", comrecord);
+		const newitem = W.buildItem("question_log", comrecord);
 		newitem.syncItem();
 		redisplay();
 	}
@@ -39,7 +50,7 @@ function createNew()
 
 function deleteItem(killid)
 {
-	var myitem = lookupItem("question_log", killid);
+	var myitem = W.lookupItem("question_log", killid);
 	
 	if(confirm("Are you sure you want to delete question: " + myitem.getQuestionText()))
 	{
@@ -50,7 +61,7 @@ function deleteItem(killid)
 
 function markAnswered(editid)
 {
-	var myitem = lookupItem("question_log", editid);
+	var myitem = W.lookupItem("question_log", editid);
 	myitem.setHasAnswer(1);
 	syncSingleItem(myitem);
 	redisplay();
@@ -133,7 +144,7 @@ function getScore2IdList()
 {
 	var score2id = [];
 	
-	getItemList("question_log").forEach(function(item) {
+	W.getItemList("question_log").forEach(function(item) {
 		const score = [scoreQuestion(item), item.getId()];
 		score2id.push(score);
 	});
@@ -150,6 +161,23 @@ function enterSearchTerm()
 	
 	if(newinput)
 	{
+		if(newinput.length > 15 && newinput.endsWith("?"))
+		{
+			const mssg = `
+It looks like you wanted to create a new question
+(you clicked Search)
+Do you want to do that instead?
+Question is:
+${newinput}
+`
+			if(confirm(mssg))
+			{
+				createNewSub(newinput);
+				return;
+			}
+		}
+
+
 		SEARCH_INPUT = newinput;
 		redisplay();
 	}
@@ -298,7 +326,7 @@ function getQuestionTableSub(hasanswer)
 	
 	// console.log("Running with hasanswer = " + hasanswer);
 	
-	const openlist = getItemList("question_log").filter(fitem => fitem.getHasAnswer() == hasanswer);
+	const openlist = W.getItemList("question_log").filter(fitem => fitem.getHasAnswer() == hasanswer);
 	const datecutoff = getTodayCode().nDaysBefore(60);
 		
 	openlist.forEach(function(openitem) {		

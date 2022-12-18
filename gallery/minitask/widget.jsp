@@ -80,7 +80,7 @@ function archiveItem(itemid)
 		var theitem = lookupItem("mini_task_list", itemid);
 		theitem.setAlphaDate('2000-01-01');
 		theitem.setIsBacklog(1);
-		syncSingleItem(theitem);		
+		theitem.syncItem();
 		redisplay();
 	}
 }
@@ -106,28 +106,24 @@ function markItemComplete(markid)
 	const markitem = lookupItem("mini_task_list", markid);
 	const todaycode = getTodayCode().getDateString();
 	markitem.setOmegaDate(todaycode);
-	syncSingleItem(markitem);					
+	markitem.syncItem();
 	redisplay();
 }
 
 function updateItemPriority(markid, delta)
 {
-	var markitem = lookupItem("mini_task_list", markid);
-			
-	var newpriority = markitem.getPriority() + delta;
+	const markitem = W.lookupItem("mini_task_list", markid);
+	const newpriority = markitem.getPriority() + delta;
 	
 	markitem.setPriority(newpriority);
-	
-	syncSingleItem(markitem);		
-			
+	markitem.syncItem();			
 	redisplay();
 }
 
 function editItemPriority(markid)
 {
-	var markitem = lookupItem("mini_task_list", markid);
-			
-	var newpriority = prompt("Enter new priority: ", markitem.getPriority());
+	const markitem = W.lookupItem("mini_task_list", markid);	
+	const newpriority = prompt("Enter new priority: ", markitem.getPriority());
 	
 	if(!newpriority)
 		{ return; }
@@ -141,7 +137,7 @@ function editItemPriority(markid)
 	}
 	
 	markitem.setPriority(newpriority);
-	syncSingleItem(markitem);		
+	markitem.syncItem();		
 	redisplay();
 }
 
@@ -149,14 +145,10 @@ function editItemPriority(markid)
 
 function refreshStartDate(markid)
 {
-	var markitem = lookupItem("mini_task_list", markid);
-		
-	// console.log("Today code is : " + getTodayCode().getDateString());
-	
+	const markitem = W.lookupItem("mini_task_list", markid);
 	markitem.setAlphaDate(getTodayCode().getDateString());
 	
-	syncSingleItem(markitem);		
-			
+	markitem.syncItem();			
 	redisplay();
 }
 

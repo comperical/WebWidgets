@@ -1,7 +1,8 @@
 
 <html>
 <head>
-<title>Junk Food Log</title>
+<title>&#x1F9C1 &#x1F36C</title>
+
 
 <%= DataServer.basicInclude(request) %>
 

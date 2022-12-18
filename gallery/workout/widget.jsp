@@ -1,7 +1,7 @@
 
 <html>
 <head>
-<title>Workout Log</title>
+<title>&#x1F605 &#x1F4A6</title>
 
 <%= DataServer.basicInclude(request) %>
 
@@ -26,39 +26,9 @@ function deleteItem(killid)
 {
 	if(confirm("Are you sure you want to remove this record?"))
 	{
-		lookupItem("workout_log", killid).deleteItem();
+		W.lookupItem("workout_log", killid).deleteItem();
 		redisplay();		
 	}
-}
-
-function reBuildGoalFromTemplate(mondaycode)
-{
-	const message = "This will (re)-build your weekly goal for " + mondaycode + " from the template. Okay?";
-	
-	if(!confirm(message))
-		{ return; }
-	
-	const todaycode = getTodayCode().getDateString();
-	const planitems = W.getItemList("exercise_plan");
-	
-	planitems.forEach(function(pitem) {
-			
-		// Skip inactive
-		if(pitem.getIsActive() == 0)
-			{ return; }
-		
-		const newrec = {
-			"mini_note" : "Created on : " + todaycode,
-			"monday_code" : mondaycode,
-			"short_code" : pitem.getShortCode(),
-			"weekly_goal" : pitem.getWeeklyGoal()
-		};
-		
-		const newitem = buildItem("ex_week_goal", newrec);
-		newitem.syncItem();
-	});
-	
-	redisplay();
 }
 
 function enterFailedRecordList(mondaycode)
@@ -85,9 +55,7 @@ function enterFailedRecordList(mondaycode)
 		if(getExType4Code(wotype) != EXERCISE_TYPE)
 			{ return; }
 		
-		const newrec = {
-			
-			"id" : newBasicId("workout_log"),
+		const newrec = {			
 			"day_code" : yesterday,
 			"wo_type" : wotype,
 			"wo_units" : shortfall,
@@ -132,7 +100,7 @@ function createItem()
 		"wo_units" : getDocFormValue("wo_units_sel")
 	};
 	
-	const newitem = buildItem("workout_log", payload);		
+	const newitem = W.buildItem("workout_log", payload);		
 	newitem.syncItem();
 	redisplay();
 }
@@ -398,7 +366,7 @@ function getWeeklyGoalTable(wologger, themonday)
 			<br/>
 			<br/>
 			
-			<a class="css3button" onclick="javascript:reBuildGoalFromTemplate('${themonday}')">ADD</a>
+			<a class="css3button" onclick="javascript:rebuildFromActiveLayout('${themonday}')">ADD</a>
 		`;
 	}
 	

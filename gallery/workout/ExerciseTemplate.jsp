@@ -9,14 +9,16 @@
 
 <script>
 
+var EDIT_STUDY_ITEM = 1;
+
 function createNew()
 {	
-	var shortcode = prompt("ShortCode for item: ");
+	const shortcode = prompt("ShortCode for item: ");
 	
 	if(shortcode)
 	{					
 		// created_on, active_on, completed_on, dead_line
-		var comrecord = {
+		const comrecord = {
 			"ex_type" : "body",
 			"unit_code" : "hours",
 			"weekly_goal" : 2,
@@ -26,10 +28,22 @@ function createNew()
 			"is_active" : 1
 		};
 		
-		var newitem = buildItem("exercise_plan", comrecord);
+		const newitem = W.buildItem("exercise_plan", comrecord);
 		newitem.syncItem();
 		redisplay();
 	}
+}
+
+function editStudyItem(itemid)
+{
+	EDIT_STUDY_ITEM = itemid;
+	redisplay();
+}
+
+function back2Main()
+{
+	EDIT_STUDY_ITEM = -1;
+	redisplay();
 }
 
 function toggleItemActive(itemid)
@@ -45,51 +59,88 @@ function handleNavBar()
     populateTopNavBar(WO_HEADER_INFO, current);
 }
 
+function editUnitCode()
+{
+	genericEditTextField("exercise_plan", "unit_code", EDIT_STUDY_ITEM);
+}
+
 function redisplay()
+{
+	handleNavBar();
+
+	const pageinfo = EDIT_STUDY_ITEM == -1 ? getMainPageInfo() : getEditPageInfo();
+	populateSpanData({
+		"pageinfo" : pageinfo
+	});
+}
+
+function getEditPageInfo()
+{
+
+	const studyitem = W.lookupItem("exercise_plan", EDIT_STUDY_ITEM);
+
+	var pageinfo = `
+
+		<table class="basic-table" width="40%">
+		<tr>
+		<td>Back</td>
+		<td></td>
+		<td><a href="javascript:back2Main()"><img src="/u/shared/image/leftarrow.png" height="18"/></td>
+		</tr>
+
+		<tr>
+		<td>Short Code</td>
+		<td>${studyitem.getShortCode()}</td>
+		<td></td>
+		</tr>
+
+
+		<tr>
+		<td>Units</td>
+		<td>${studyitem.getUnitCode()}</td>
+		<td><a href="javascript:editUnitCode()"><img src="/u/shared/image/edit.png" height=18/></a></td>
+		</tr>
+
+
+		</table>
+	`;
+
+	return pageinfo;
+
+}
+
+function getMainPageInfo()
 {	
 
-	handleNavBar();
 	
 	var tablestr = `
 		<table class="basic-table" width="60%">
 		<tr>
-		<th>ID</th>
 		<th>Category</th>
 		<th>ShortName</th>
-		<th>Weekly Goal</th>
-		<th>Active?</th>
+		<th>Unit</th>
 		<th>---</th>
 		</tr>		
 	`
 
 	
 		
-	var activelist = getItemList("exercise_plan");
+	var activelist = W.getItemList("exercise_plan");
 	activelist.sort(proxySort(a => [a.getExType(), a.getId()]));
 
 	activelist.forEach(function(activitem) {
 
-		const actstr = activitem.getIsActive() == 1 ? "YES" : "NO";
 		const studylink = "StudyExerciseItem.jsp?item_id=" + activitem.getId();
 		const rowstr = `
 			<tr>
-			<td width="5%">${activitem.getId()}</td>
 			<td>${activitem.getExType()}</td>
 			<td>${activitem.getShortCode()}</td>
-			<td>${activitem.getWeeklyGoal() + "  " + activitem.getUnitCode()}</td>
-			<td>${actstr}</td>
+			<td>${activitem.getUnitCode()}</td>
 			<td>
 
 
-			<a href="${studylink}">
+			<a href="javascript:editStudyItem(${activitem.getId()})">
 			<img src="/u/shared/image/inspect.png" height="18"/></a>
-
-			&nbsp;
-			&nbsp;
-			&nbsp;
-
-			<a href="javascript:toggleItemActive(${activitem.getId()}">
-			<img src="/u/shared/image/cycle.png" height="18"/></a>
 
 			</td>
 			</tr>
@@ -99,7 +150,7 @@ function redisplay()
 
 	});
 
-	populateSpanData({"activetable" : tablestr});
+	return tablestr;
 }
 
 
@@ -119,14 +170,7 @@ function redisplay()
 <br/>
 <br/>
 
-<div id="activetable"></div>
-
-<br/><br/>
-
-
-<a class="css3button" onclick="javascript:createNew()">new</a>
-
-</form>
+<div id="pageinfo"></div>
 
 
 </body>

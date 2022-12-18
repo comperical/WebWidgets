@@ -189,7 +189,8 @@ function fullBuildBayesStatMap(itemtable, logtable)
     const palacelist = W.getItemList(itemtable).filter(item => item.getIsActive() == 1);
     const reviewlist = W.getItemList(logtable).sort(proxySort(item => [item.getTimeStamp()]));
 
-    var statmap = {};
+
+    const statmap = new Map();
     
     palacelist.forEach(function(pitem) {
         var statpack = new Object();
@@ -197,7 +198,7 @@ function fullBuildBayesStatMap(itemtable, logtable)
         statpack["log_prob_good"] = Math.log(PRIOR_PROB_GOOD);
         statpack["log_prob_badd"] = Math.log(1 - PRIOR_PROB_GOOD);
         statpack["last_review"] = "2000";
-        statmap[pitem.getId()] = statpack;                      
+        statmap.set(pitem.getId(), statpack);                   
     });
     
     reviewlist.forEach(function(ritem) {
@@ -214,11 +215,11 @@ function fullBuildBayesStatMap(itemtable, logtable)
 function updateStatFromReview(statMap, reviewItem) {
 
     // This is an FKEY error            
-    if(!statMap.hasOwnProperty(reviewItem.getItemId()))
+    if(!statMap.has(reviewItem.getItemId()))
         { return; }
     
-    const myitem = statMap[reviewItem.getItemId()];
-    const goodbadd = bayesianUpdate(reviewItem);
+    const goodbadd = bayesianUpdate(reviewItem);    
+    const myitem = statMap.get(reviewItem.getItemId());
     // console.log("Update Good/Badd is " + goodbadd);
     
     // Sort by review timestamp
@@ -231,7 +232,7 @@ function updateStatFromReview(statMap, reviewItem) {
 
 function reComputeFinalProb(statMap, palaceId) {
 
-    const statpack = statMap[palaceId];
+    const statpack = statMap.get(palaceId);
 
     // These are unnormalized.
     var probgood = Math.exp(statpack["log_prob_good"]);

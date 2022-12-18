@@ -55,7 +55,7 @@ function newBasicId(tabname)
 function syncSingleItem(item)
 {
     console.log(`Warning, function syncSingleItem is deprecated, please use item.syncItem()`)
-    W.__submitNewRequest(item.getUpsertUrl(), "sync", item.getPkeyStr());
+    item.syncItem();
 }
 
 // Deletes the given item from the server.
@@ -63,8 +63,8 @@ function syncSingleItem(item)
 // There is also a convenience method called deleteItem() on the JS object.
 function deleteSingleItem(item)
 {
-    console.log(`Warning, function deleteSingleItem is deprecated, please use item.deleteItem()`)
-    W.__submitNewRequest(item.getDeleteUrl(), "delete", item.getPkeyStr());
+    console.log(`Warning, function deleteSingleItem is deprecated, please use item.deleteItem()`);
+    item.deleteItem();
 }
 
 // Set the page component to the selected ID.
@@ -110,26 +110,7 @@ function setHidden2Value(itemid, ishidden)
     theitem.hidden = ishidden;
 }
 
-// Toggle Hidden value for given element.
-function toggleHidden(theitem)
-{
-    theitem.hidden = !theitem.hidden;
-}
 
-// Toggle Hidden value for element with given ID.
-function toggleHidden4Id(itemid)
-{
-    var theitem = document.getElementById(itemid);
-    toggleHidden(theitem);
-}
-
-// Toggle Hidden value for all elements with given class.
-function toggleHidden4Class(classname)
-{
-    var clist = document.getElementsByClassName(classname);
-    for(var ci in clist)
-        { toggleHidden(clist[ci]); }
-}
 
 
 

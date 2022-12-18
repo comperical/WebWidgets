@@ -48,6 +48,17 @@ OptSelector.prototype.setKeyList = function(kdisp)
 {
     return this.setKeyDispList(kdisp, kdisp);
 }
+
+// Insert a starting pair into the key/display list
+// This is useful for creating drop-downs with starter/dummy values that don't do anything
+// Often use this AFTER sortByValue
+OptSelector.prototype.insertStartingPair = function(kinit, dinit)
+{
+    this._keyList.splice(0, 0, kinit);
+    this._dspList.splice(0, 0, dinit);
+    return this;
+}
+
               
 // Sets the opening select statement for the selector
 // Provide the attributes etc you need for the select here.

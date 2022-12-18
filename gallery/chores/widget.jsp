@@ -17,8 +17,8 @@ var SHOW_BASIC_LOG = true;
 
 function swap2MiniTask(choreid)
 {
-	const choreitem = lookupItem("chore_def", choreid);
-	const newid = newBasicId("mini_task_list");
+	const choreitem = W.lookupItem("chore_def", choreid);
+	const newid = W.newBasicId("mini_task_list");
 	const todaycode = getTodayCode().getDateString();
 	const shortdesc =  "LifeChore:" + choreitem.getShortName();
 	
@@ -33,7 +33,7 @@ function swap2MiniTask(choreid)
 		"is_backlog" : 0
 	};
 	
-	const newitem = buildItem("mini_task_list", newrec);
+	const newitem = W.buildItem("mini_task_list", newrec);
 	newitem.syncItem();
 		
 	if(confirm("Created MTL item, should I mark the chore as complete?")) 
@@ -43,7 +43,7 @@ function swap2MiniTask(choreid)
 			"day_code" : todaycode
 		};
 		
-		const compitem = buildItem("chore_comp", comprec);
+		const compitem = W.buildItem("chore_comp", comprec);
 		compitem.syncItem();
 	}
 	
@@ -57,7 +57,7 @@ function markComplete(choreid)
 		"day_code" : getTodayCode().getDateString()
 	};
 	
-	const newitem = buildItem("chore_comp", newrec);
+	const newitem = W.buildItem("chore_comp", newrec);
 	newitem.syncItem();
 	redisplay();
 }
@@ -65,7 +65,7 @@ function markComplete(choreid)
 
 function getLastCompletedMap()
 {
-	var bigloglist = getItemList("chore_comp");
+	var bigloglist = W.getItemList("chore_comp");
 	
 	bigloglist.sort(proxySort(logitem => [logitem.getDayCode()])).reverse();
 
@@ -106,19 +106,20 @@ function createNew()
 	const chorename = prompt("Enter a name for the chore: ");
 	
 	if(chorename)
-	{
-		const newid = newBasicId("chore_def");		
-		
+	{		
+		const newid = W.newBasicId("chore_def");
+
 		const newrec = {
 			"chore_id" : newid,
 			"day_freq" : 30,
 			"short_name" : chorename,
 			"extra_info" : "",
+			"promoted_on" : "",
 			"is_active" : 1,
 			"web_link" : ""
 		};
 		
-		const newitem = buildItem("chore_def", newrec);
+		const newitem = W.buildItem("chore_def", newrec);
 		newitem.syncItem();
 		redisplay();
 	}
@@ -173,7 +174,7 @@ function redisplayChoreList()
 {
 	const showinact = getUniqElementByName("show_inactive").checked;
 	
-	var itemlist = getItemList("chore_def");
+	var itemlist = W.getItemList("chore_def");
 	itemlist.sort(proxySort(a => [a.getShortName()]));
 	
 	var tablestr = `
@@ -279,25 +280,58 @@ function goToDefinition()
 	redisplay();
 }
 
+function promoteItem(choreid)
+{
+	const chore = W.lookupItem("chore_def", choreid);
+	chore.setPromotedOn(getTodayCode().getDateString());
+	chore.syncItem();
+	redisplay();
+
+}
+
 function redisplayChoreLog()
 {
 	const lastcompmap = getLastCompletedMap();
 	const showall = getUniqElementByName("show_all").checked;
 
 	
-	var itemlist = getItemList("chore_def");
+	var itemlist = W.getItemList("chore_def");
 	itemlist.sort(proxySort(a => [a.getShortName()]));
 	
 	// var lastlogmap = getLastLogMap();
+	const maintable = getChoreLogTable(itemlist, lastcompmap, showall, false);	
+	const promotable = getChoreLogTable(itemlist, lastcompmap, showall, true);	
 	
+	populateSpanData({
+		'chore_log_table' : maintable,
+		'promoted_table' : promotable
+	});
+}
+
+function isPromoValid(chore, lastupdate)
+{
+	if(chore.getPromotedOn() == "")
+		{ return false; }
+
+	return lastupdate == "never" ? true : chore.getPromotedOn() > lastupdate;
+}
+
+function getChoreLogTable(itemlist, lastcompmap, showall, ispromo)
+{
+
+	const header = ispromo ? "Promoted" : "Main";
+
 	var activetable = `
+
+		<h3>${header}</h3>
+
+
 		<table class="basic-table"  width="70%">
 		<tr>
-		<th width="7%">ID</th>
 		<th>Chore Name</th>
 		<th>Last Completed</th>
 		<th>Overdue</th>
-		<th width="18%">...</th>
+		<th width="24%">...</th>
 		</tr>
 	`;
 
@@ -307,6 +341,11 @@ function redisplayChoreLog()
 		
 		const choreage = getChoreAge(chore, lastcompmap);
 		const lastupdate = lastcompmap.hasOwnProperty(chore.getId()) ? lastcompmap[chore.getId()] : "never";
+
+		const okaypromo = isPromoValid(chore, lastupdate);
+
+		if (okaypromo != ispromo) 
+			{ return; }
 
 		if(chore.getIsActive() == 0)
 			{ return; }
@@ -324,12 +363,16 @@ function redisplayChoreLog()
 					
 		const rowstr = `
 			<tr>
-			<td>${chore.getId()}</td>
 			<td>${chore.getShortName()}</td>
 			<td>${lastupdate.substring(5)}</td>
 			<td>${choreage}</td>
 			
-			<td width="10%">
+			<td>
+
+				<a href="javascript:promoteItem(${chore.getId()})">
+				<img src="/u/shared/image/upicon.png" height=18"/a></a>
+				
+				&nbsp;&nbsp;
 
 				<a href="javascript:swap2MiniTask(${chore.getId()})">
 				<img src="/u/shared/image/swap2mtl.png" height=18"/a></a>
@@ -345,6 +388,7 @@ function redisplayChoreLog()
 				<img src="/u/shared/image/inspect.png" height=18"/a></a>
 				
 				&nbsp;&nbsp;
+
 												
 				${weblinkstr}
 			</td>
@@ -355,8 +399,8 @@ function redisplayChoreLog()
 	});
 	
 	activetable += `</table>`;
-	
-	populateSpanData({'chore_log_table' : activetable });
+
+	return activetable;
 }
 
 
@@ -467,7 +511,15 @@ Show InActive
 Show All: <input type="checkbox" name="show_all" onChange="javascript:redisplay()"/>
 </form>
 
+<div id="promoted_table"></div>
+
+<br/>
+<br/>
+
+
 <div id="chore_log_table"></div>
+
+
 </span>
 
 

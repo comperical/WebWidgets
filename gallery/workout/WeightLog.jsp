@@ -4,6 +4,8 @@
 
 <%= DataServer.basicInclude(request) %>
 
+<script src="WorkoutLogger.js"></script>
+
 <script>
 
 // Need to maintain this as state
@@ -54,7 +56,7 @@ function logNewMove()
     const moveid = parseInt(getDocFormValue("move_select"));
     const clonefrom = lookupRecent(moveid);
 
-    copyFromClone(clonefrom);
+    copyFromClone(clonefrom, moveid);
     redisplay();
 }
 
