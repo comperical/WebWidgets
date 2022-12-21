@@ -3,8 +3,6 @@
 <head>
 <title>Finance Log</title>
 
-<script src="FinanceTech.js"/></script>
-
 <%= DataServer.basicInclude(request) %>
 
 <script>
@@ -58,7 +56,7 @@ function getDollarFormat(centamount)
 
 function doCat4Id(id)
 {
-	var noteitem = lookupItem("finance_note", id);
+	var noteitem = W.lookupItem("finance_note", id);
 	
 	var newvalue = document.getElementById("catselect" + id).value;
 	
@@ -191,12 +189,12 @@ function reDispCatOkTable()
 function reDispNoCatTable()
 {
 	var tablestr = `
-		<table class="basic-table"  width="75%">
+		<table class="basic-table"  width="85%">
 		<tr>
 		<th>Date</th>
 		<th>Statement</th>
 		<th>Amount</th>
-		<th>Note</th>
+		<th width="20%">Note</th>
 		<th>---</th>
 		</tr>
 	
@@ -312,13 +310,7 @@ function reDispInspectItem()
 
 function handleNavBar() 
 {
-    const headerinfo = [
-        ["Finance Log", "FinanceLog.jsp"],  
-        ["Finance Agg", "FinanceAgg.jsp"],
-        ["Finance Plan", "FinancePlanner.jsp"]
-    ];
-
-    populateTopNavBar(headerinfo, "Finance Log");
+    populateTopNavBar(getFinanceHeaderInfo(), "Finance Log");
 }
 
 

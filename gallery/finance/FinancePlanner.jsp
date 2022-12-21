@@ -72,13 +72,7 @@ function back2Main()
 
 function handleNavBar() 
 {
-    const headerinfo = [
-        ["Finance Log", "FinanceLog.jsp"],  
-        ["Finance Agg", "FinanceAgg.jsp"],
-        ["Finance Plan", "FinancePlanner.jsp"]
-    ];
-
-    populateTopNavBar(headerinfo, "Finance Plan");
+    populateTopNavBar(getFinanceHeaderInfo(), "Finance Plan");
 }
 
 function redisplay()

@@ -352,13 +352,7 @@ __checkAjaxResponse : function(op, itemid, rtext)
     
     if(response.status_code == "okay")
     {
-        // Read out the new CKSUM data from the response.
-        // These field names must match Java code.
-        const cksumkey = response.checksum_key;
-        const cksumval = parseInt(response.checksum_val);
-        // W.__databaseCheckSum[cksumkey] = cksumval;
-
-        const logmssg = `AjaxOp for itemid ${itemid} worked, new val for key ${cksumkey} is ${cksumval}`;
+        const logmssg = `AjaxOp for itemid ${itemid} worked`;
         console.log(logmssg);
         return;     
     }

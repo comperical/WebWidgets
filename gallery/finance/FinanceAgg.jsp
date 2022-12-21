@@ -3,8 +3,6 @@
 <head>
 <title>Finance Agg</title>
 
-<script src="FinanceTech.js"/></script>
-
 <%= DataServer.basicInclude(request) %>
 
 <style>
@@ -237,13 +235,7 @@ function getAggWindowInfo()
 
 function handleNavBar() 
 {
-	const headerinfo = [
-        ["Finance Log", "FinanceLog.jsp"],	
-        ["Finance Agg", "FinanceAgg.jsp"],
-        ["Finance Plan", "FinancePlanner.jsp"]
-    ];
-
-    populateTopNavBar(headerinfo, "Finance Agg");
+    populateTopNavBar(getFinanceHeaderInfo(), "Finance Agg");
 }
 
 function redisplay()
