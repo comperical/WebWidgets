@@ -21,6 +21,13 @@ function newFromBump()
     createNewSub(lastitem.getRating(), lastitem.getNotes());
 }
 
+function copyFromId(copyid)
+{
+    const copysrc = W.lookupItem("health_log", copyid);
+
+    createNewSub(copysrc.getRating(), copysrc.getNotes());
+}
+
 function createNewSub(rating, notestr)
 {    
     const todaycode = getTodayCode().getDateString();
@@ -61,6 +68,7 @@ function redisplay()
 }
 
 
+
 function redisplayMainTable()
 {
 
@@ -88,6 +96,12 @@ function redisplayMainTable()
             </td>
             <td>${item.getNotes()}</td>
             <td>
+
+            <a href="javascript:copyFromId(${item.getId()})"><img src="/u/shared/image/upicon.png" height="18"/></a>
+
+            &nbsp;
+            &nbsp;
+
 
             <a href="javascript:editItemDesc(${item.getId()})"><img src="/u/shared/image/edit.png" height="18"/></a>
 
@@ -122,13 +136,6 @@ function redisplayMainTable()
 <br/>
 
 <a href="javascript:newGood()"><button>good</button></a>
-
-&nbsp;
-&nbsp;
-&nbsp;
-
-<a href="javascript:newFromBump()"><button>copy</button></a>
-
 
 <br/>
 <br/>
