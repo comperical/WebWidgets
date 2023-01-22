@@ -84,6 +84,13 @@ haveTable : function(tabname)
     return W.__tableNameIndex.has(tabname); 
 },
 
+// Return the owner of the given table
+getTableOwner : function(tabname)
+{
+    W.checkTableName(tabname);
+    return W.__tableNameIndex.get(tabname).widgetOwner;
+},
+
 // True if the current user has write access to the given table
 // Widgets that serve multiple users, some of whom have write access and some of whom do not,
 // should check this function before displaying UI options that will perform write actions.

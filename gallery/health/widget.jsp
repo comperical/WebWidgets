@@ -1,7 +1,8 @@
 
 <html>
 <head>
-<title>Health Log</title>
+<title>&#x1F321 &#x1F922</title>
+
 
 <%= DataServer.basicInclude(request) %>
 

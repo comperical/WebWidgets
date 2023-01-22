@@ -1,7 +1,7 @@
 
 <html>
 <head>
-<title>Morning Routine</title>
+<title>&#x1F305 &#x2600</title>
 
 <%= DataServer.basicInclude(request)  %>
 

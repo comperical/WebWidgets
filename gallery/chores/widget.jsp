@@ -1,7 +1,7 @@
 
 <html>
 <head>
-<title>Chore Listing</title>
+<title>&#x1FA92 &#x1FAA3</title>
 
 <%= DataServer.basicInclude(request) %>
 
