@@ -407,19 +407,19 @@ function redisplayStudyItem()
 
 	const endsel = buildOptSelector()
 					.setKeyList(endhourlist)
-					.setSelectOpener(`<select name="end_hour">`)
-					.setSelectedKey(8);
+					.setElementName("end_hour")
+					.setSelectedKey(8)
+					.autoPopulate();
 
 	const timesel = buildOptSelector()
 						.setFromMap(getHourTimeMap())
-						.setSelectOpener(`<select name="time_spent_min">`)
-						.setSelectedKey(60);
+						.setElementName("time_spent_min")
+						.setSelectedKey(60)
+						.autoPopulate();
 
 	populateSpanData({
 		"dayplantable" : mainstr,
-		"templatename" : getSelectedTemplate().getShortName(),
-		"end_hour_sel_span" : endsel.getSelectString(),
-		"time_spent_sel_span" : timesel.getSelectString()
+		"templatename" : getSelectedTemplate().getShortName()
 	});
 
 
@@ -472,7 +472,7 @@ Inactive? <input type="checkbox" name="show_inactive" onChange="javascript:redis
 <br/><br/>
 
 End Time: 
-<span id="end_hour_sel_span"></span>
+<span id="end_hour_span"></span>
 
 <a href="javascript:createNew()">
 <img src="/u/shared/image/add.png" width="18"/></a>
@@ -480,7 +480,7 @@ End Time:
 <br/><br/>
 
 Hour Spent: 
-<span id="time_spent_sel_span"></span>
+<span id="time_spent_min_span"></span>
 
 <a href="javascript:newByHourSpent()">
 <img src="/u/shared/image/add.png" width="18"/></a>

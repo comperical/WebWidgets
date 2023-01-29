@@ -10,7 +10,7 @@
 
 EDIT_STUDY_ITEM = -1;
 
-SELECTED_CATEGORY = "all";
+initGenericSelect(new Map([["category_sel", "all"]]));
 
 function getPageComponent()
 {
@@ -36,7 +36,7 @@ function markItemComplete(itemid)
         return;
     }
 
-    const myitem = lookupItem("media_item", itemid);
+    const myitem = W.lookupItem("media_item", itemid);
     myitem.setIsComplete(1);
     syncSingleItem(myitem);
     redisplay();
@@ -67,7 +67,7 @@ function editItemLink()
 
 function editItemPriority()
 {
-    const myitem = lookupItem("media_item", EDIT_STUDY_ITEM);
+    const myitem = W.lookupItem("media_item", EDIT_STUDY_ITEM);
     const newpri = prompt("Enter new Priority: ", myitem.getPriority());
 
     if(!okayInt(newpri))
@@ -108,12 +108,9 @@ function createNew()
     const shortname = prompt(`Enter name for new ${SELECTED_CATEGORY.toUpperCase()}: `);
     
     if(shortname)
-    {
-        const newid = newBasicId("media_item");
-        
+    {        
         // created_on, active_on, completed_on, dead_line
         const newrec = {
-            "id" : newid,
             "name" : shortname,
             "link" : "",
             "priority" : 5,
@@ -123,7 +120,7 @@ function createNew()
             "is_complete" : 0
         };      
         
-        const newitem = buildItem("media_item", newrec);
+        const newitem = W.buildItem("media_item", newrec);
         newitem.syncItem();
         redisplay();
     }
@@ -151,12 +148,13 @@ function redisplayEdit()
         return;
     }
 
-    const item = lookupItem("media_item", EDIT_STUDY_ITEM);
+    const item = W.lookupItem("media_item", EDIT_STUDY_ITEM);
 
 
     const catsel = buildOptSelector()
                     .setKeyList(getCategoryList())
-                    .setSelectOpener(`<select name="item_category" onChange="javascript:editItemCategory()">`)
+                    .setElementName("item_category")
+                    .setOnChange("javascript:editItemCategory()")
                     .setSelectedKey(item.getCategory())
 
     const bigstr = `
@@ -252,15 +250,14 @@ function redisplayMain()
 
     const catsel = buildOptSelector()
                         .setKeyList(catlist)
-                        .setSelectOpener(`<select name="category_sel" onChange="javascript:updateCategory()">`)
-                        .setSelectedKey(SELECTED_CATEGORY)
-                        .getSelectString();
+                        .setElementName("category_sel")
+                        .useGenericUpdater()
+                        .autoPopulate();
 
 
     populateSpanData({
         "maintable" : maintable,
-        "comptable" : comptable,
-        "category_sel_span" : catsel
+        "comptable" : comptable
     })
 
 }
@@ -286,6 +283,7 @@ function getTableData(iscomplete)
     itemlist = itemlist.sort(proxySort(item => [-item.getPriority()]));
 
     const breaker = `&nbsp; &nbsp;`
+    const selectedCat = getGenericSelectValue("category_sel")
 
 
     itemlist.forEach(function(item) {
@@ -293,7 +291,7 @@ function getTableData(iscomplete)
         if(item.getIsComplete() != iscomplete)
             { return; }
 
-        if(SELECTED_CATEGORY != "all" && item.getCategory() != SELECTED_CATEGORY)
+        if(selectedCat != "all" && item.getCategory() != selectedCat)
             { return; }
 
         var linkstr = "";
