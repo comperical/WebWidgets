@@ -1,8 +1,8 @@
 <html>
 <head>
-<title>Weight Log</title>
+<title>&#x1F4AA   &#x1F9B5</title>
 
-<%= DataServer.basicInclude(request) %>
+<%= DataServer.include(request) %>
 
 <script src="WorkoutLogger.js"></script>
 
@@ -301,7 +301,6 @@ function redisplayMainTable()
             <th>Movement</th>
             <th colspan="2">Sets / Reps</th>
             <th colspan="2">Weight</th>
-            <th colspan="2">Effort</th>
             <th colspan="2">Notes</th>
             <th></th>
             </tr>
@@ -345,11 +344,6 @@ function redisplayMainTable()
                 </td>
                 <td>
                 <a href="javascript:editWeight(${item.getId()})"><img src="/u/shared/image/edit.png" height="18"/></a>
-                </td>
-
-                <td>${effortshow}</td>
-                <td>
-                <a href="javascript:editEffortLevel(${item.getId()})"><img src="/u/shared/image/edit.png" height="18"/></a>
                 </td>
 
                 <td width="20%">${item.getNotes()}</td>

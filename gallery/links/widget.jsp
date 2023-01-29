@@ -39,12 +39,18 @@ function getDefaultCategory()
 
 }
 
+const SELECTED_CATEGORY = "selected_catg";
 
-var MAIN_CATEGORY = getDefaultCategory();
+initGenericSelect(new Map([[SELECTED_CATEGORY, getDefaultCategory()]]));
+
+function getMainCategory()
+{
+	return parseInt(getGenericSelectValue(SELECTED_CATEGORY));
+}
 
 function createNew()
 {
-	const categid = MAIN_CATEGORY;
+	const categid = getMainCategory();
 		
 	const newrec = {
 		"link_url" : "http://danburfoot.net",
@@ -205,9 +211,8 @@ function clearSearch()
 function updateCategory()
 {
 	const edititem = getEditRecord();
-	const myval = getDocFormValue("item_category_sel");		
-	edititem["cat_id"] = myval;
-	syncSingleItem(edititem);
+	edititem.setCatId(parseInt(getDocFormValue("item_category_sel")));
+	edititem.syncItem();
 	redisplay();
 }
 
@@ -265,33 +270,22 @@ function redisplayEditItem()
 	
 	const edititem = getEditRecord();
 	const optmap = getCategoryMap();
-	const categlist = getSortedCategoryList();
 
-	// const selectstr = getSelectString(optmap, edititem.getCatId());
-	const selectstr = ""
+	buildOptSelector()
+			.setFromMap(optmap)
+			.sortByDisplay()
+			.setSelectedKey(getMainCategory())
+			.setElementName("item_category_sel")
+			.setOnChange("javascript:updateCategory()")
+			.setSelectedKey(edititem.getCatId())
+			.autoPopulate();
 
-	const optsel = buildOptSelector()
-						.setFromMap(optmap)
-						.sortByDisplay()
-						.setSelectedKey(MAIN_CATEGORY)
-						.setSelectOpener(`<select name="item_category_sel" onChange="javascript:updateCategory()">`)
-						.getSelectString();
-
-	const spanstr = `
-		<select name="item_category_sel" onChange="javascript:updateCategory()">
-		${selectstr}
-		</select>
-	`;
 	
 	populateSpanData({
 		"item_id" : edititem.getId(),
 		"short_desc" : edititem.getShortDesc(),
 		"link_url" : edititem.getLinkUrl(), 
-		"item_category_sel_span" : optsel
 	});
-		
-	const opsel = getUniqElementByName("item_category_sel");
-	opsel.value = edititem.getCatId();
 }
 
 function redisplayCategoryTable()
@@ -356,14 +350,6 @@ function redisplayCategoryTable()
 	
 }
 
-function updateMainCatSelect()
-{
-	const catcode = getDocFormValue("main_category_sel");
-	const hits = W.getItemList("link_categ").filter(ctg => ctg.getShortCode() == catcode);
-	MAIN_CATEGORY = hits[0].getId();
-	redisplay();
-}
-
 // TODO: put this in a generic file...?
 function buildOptionMap(items, labelfunc)
 {
@@ -426,30 +412,31 @@ function getLinkTableStr(linkmainlist)
 	return tablestr;
 }
 
-function getSortedCategoryList() 
+function getCategoryMap()
 {
-	return W.getItemList("link_categ")
-				.filter(ctg => ctg.getIsActive() == 1)
-				.map(ctg => ctg.getShortCode())
-				.sort();
+	// TODO: make this a real Map!!!
+	const catmap = {};
+	W.getItemList("link_categ").forEach(function(item) {
+		catmap[item.getId()] = item.getShortCode();
+	});
+	return catmap;
 }
 
 
 function redisplayMainTable()
 {		
-	const categlist = getSortedCategoryList();
-
-	const curcatname = W.lookupItem("link_categ", MAIN_CATEGORY).getShortCode();
+	const curcatname = W.lookupItem("link_categ", getMainCategory()).getShortCode();
 
 	const optmap = getCategoryMap();
 	const optsel = buildOptSelector()
-						.setKeyList(categlist)
-						.setSelectedKey(curcatname)
-						.setSelectOpener(`<select name="main_category_sel" onChange="javascript:updateMainCatSelect()">`)
+						.setFromMap(getCategoryMap())
+						.setElementName(SELECTED_CATEGORY)
+						.useGenericUpdater()
+						.sortByDisplay()
 						.getSelectString();
 
 	
-	const linkmainlist = W.getItemList("link_main").filter(lmi => lmi.getCatId() == MAIN_CATEGORY);
+	const linkmainlist = W.getItemList("link_main").filter(lmi => lmi.getCatId() == getMainCategory());
 
 	const tablestr = getLinkTableStr(linkmainlist);
 

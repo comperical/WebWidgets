@@ -1,4 +1,5 @@
 
+
 // Utility to help with create HTML selectors (drop-down menus)
 // Contains a variety of methods to control the data, keys, and displays that are shown in the menu
 function OptSelector()
@@ -143,6 +144,8 @@ OptSelector.prototype.autoPopulate = function()
 
 
 
+
+
 // Sets the key that will be selected by default
 // You must set the key list first.
 // One of the keys must match the input.
@@ -244,4 +247,46 @@ OptSelector.prototype.getSingleOptionStr = function(idx)
     const extra = (k == this._selectedKey) ? " selected " : "";
     
     return `<option value="${k}" ${extra}>${d}</option>`;
+}
+
+// Map of Element name to selected KEYS for OptSelector objects that use this feature
+const __GENERIC_OPT_SELECT_MAP = new Map();
+
+// 
+OptSelector.prototype.useGenericUpdater = function()
+{
+    massert("name" in this._myAttributes, 
+        "You must set the element name of the OptSelector before calling useGenericUpdater()");
+
+    const myname = this._myAttributes["name"];
+    massert(__GENERIC_OPT_SELECT_MAP.has(myname),
+        `You must initialize the OptSelector data for ${myname} before creating the selector, call initGenericSelect method`);
+
+    this.setSelectedKey(__GENERIC_OPT_SELECT_MAP.get(myname));
+
+    // Need to check that myname is suitable for putting into quotes...
+    const jsopt = `javascript:__genericOptSelectorUpdate('${myname}')`
+
+    this.setOnChange(jsopt);
+
+    return this;
+}
+
+function initGenericSelect(copymap)
+{
+    [... copymap.keys()].forEach(function(k) {
+        __GENERIC_OPT_SELECT_MAP.set(k, copymap.get(k));
+    });
+}
+
+// Big question: is the data in here going to come out of the map with its original types...?
+function getGenericSelectValue(k) {
+    return __GENERIC_OPT_SELECT_MAP.get(k);
+}
+
+function __genericOptSelectorUpdate(selectname)
+{
+    const value = getDocFormValue(selectname);
+    __GENERIC_OPT_SELECT_MAP.set(selectname, value);
+    redisplay();
 }

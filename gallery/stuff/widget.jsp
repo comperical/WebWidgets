@@ -17,6 +17,8 @@ var EDIT_NOTES_FIELD = false;
 
 var SHOW_CONTAINED_ITEM = false;
 
+var SEARCH_TERM = null;
+
 function createNew()
 {
     const itemname = prompt("Enter name of item: ");
@@ -186,6 +188,20 @@ function toggleContainer()
     const newisc = item.getIsContainer() == 1 ? 0 : 1;
     item.setIsContainer(newisc);
     item.syncItem();
+    redisplay();
+}
+
+function runSearch()
+{
+    SEARCH_TERM = prompt("Search for ", SEARCH_TERM);
+    if(SEARCH_TERM) 
+        { SEARCH_TERM = SEARCH_TERM.toLowerCase(); }
+    redisplay();
+}
+
+function clearSearch()
+{
+    SEARCH_TERM = null;
     redisplay();
 }
 
@@ -458,41 +474,92 @@ function getMainListing()
 
         <h3>Stuff Manager</h3>
 
-        <br/>
-
-        <a href="javascript:createNew()"><button>+item</button></a>
-
-        <br/>
-        <br/>
-
-        Location: ${showLocation}
-
-        &nbsp;
-        &nbsp;
-        &nbsp;
-        &nbsp;
-
-        Container: ${showContainer}
-
-        &nbsp;
-        &nbsp;
-        &nbsp;
-
-        ${showContainedButton}
-
-        <br/>
-        <br/>
-
-        <table class="basic-table" width="70%">
-        <tr>
-        <th>Name</th>
-        <th>Location</th>
-        <th>Container</th>
-        <th>Depth</th>
-        <th>...</th>
-        </tr>
     `;
 
+
+    if(SEARCH_TERM == null) {
+
+        pageinfo += `
+
+            Location: ${showLocation}
+
+            &nbsp;
+            &nbsp;
+            &nbsp;
+            &nbsp;
+
+            Container: ${showContainer}
+
+            &nbsp;
+            &nbsp;
+            &nbsp;
+
+            ${showContainedButton}
+
+            &nbsp;
+            &nbsp;
+            &nbsp;
+
+            <a href="javascript:runSearch()"><button>search</button></a>        
+
+            <br/>
+            <br/>
+        `;
+
+    } else {
+
+        pageinfo += `
+
+            <table class="basic-table" width="30%">
+            <tr>
+            <td>Search Term</td>
+            <td><b>${SEARCH_TERM}</b></td>
+            </tr>
+            </table>
+
+            <br/>
+
+            <a href="javascript:runSearch()"><button>re-search</button></a>        
+
+            &nbsp;
+            &nbsp;
+            &nbsp;
+            &nbsp;
+
+            <a href="javascript:clearSearch()"><button>clear</button></a>        
+
+            <br/>
+            <br/>
+
+        `;
+    }
+
+    const hitlist = SEARCH_TERM == null ? getMainDisplayList() : getSearchHitList();
+    pageinfo += getListingTable(hitlist, depthmap, cnamemap, locnamemap);
+
+
+    pageinfo += `
+        <br/>
+        <a href="javascript:createNew()"><button>+item</button></a>
+    `;
+
+    return pageinfo;
+}
+
+function getSearchHitList()
+{
+    massert(SEARCH_TERM != null && SEARCH_TERM.toLowerCase() == SEARCH_TERM);
+
+    function ishit(item) {
+        return item.getShortName().toLowerCase().includes(SEARCH_TERM) || item.getNotes().toLowerCase().includes(SEARCH_TERM);
+    }
+
+    return W.getItemList("stuff_item").filter(ishit);
+}
+
+function getMainDisplayList()
+{
+    const hitlist = [];
     const itemlist = W.getItemList("stuff_item").sort(proxySort(getSortTuple));
     itemlist.forEach(function(item) {
 
@@ -506,7 +573,35 @@ function getMainListing()
         if(SHOW_LOCATION_ID != -1 && locateid != SHOW_LOCATION_ID)
             { return; }
 
+
+        hitlist.push(item);
+
+    });
+
+    return hitlist;
+
+
+}
+
+
+function getListingTable(stufflist, depthmap, cnamemap, locnamemap)
+{
+
+    var tablestr = `
+        <table class="basic-table" width="70%">
+        <tr>
+        <th>Name</th>
+        <th>Location</th>
+        <th>Container</th>
+        <th>Depth</th>
+        <th>...</th>
+        </tr>
+    `;
+
+    stufflist.forEach(function(item) {
+
         const itemdepth = depthmap.get(item.getId());
+        const locateid = getLocationId(item);
         var locname = locateid == -1 ? "---" : W.lookupItem("stuff_loc", locateid).getLocName();
 
         const rowstr = `
@@ -530,14 +625,14 @@ function getMainListing()
             </tr>
         `;
 
-        pageinfo += rowstr;
-    })
+        tablestr += rowstr;
+    });
 
-    pageinfo += "</table>";
+    tablestr += `
+        </table>
+    `;
 
-    return pageinfo;
-
-
+    return tablestr;
 }
 
 </script>
