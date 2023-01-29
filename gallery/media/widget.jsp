@@ -231,12 +231,6 @@ function redisplayEdit()
     })
 }
 
-function updateCategory()
-{
-    SELECTED_CATEGORY = getDocFormValue("category_sel");
-    redisplay();
-}
-
 function redisplayMain()
 {
 
@@ -278,7 +272,7 @@ function getTableData(iscomplete)
         </tr>
     `;
 
-    var itemlist = getItemList("media_item");
+    var itemlist = W.getItemList("media_item");
 
     itemlist = itemlist.sort(proxySort(item => [-item.getPriority()]));
 
