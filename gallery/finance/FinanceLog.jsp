@@ -30,15 +30,14 @@ function back2Main()
 
 function getUncatRecList()
 {
-	return getItemList("finance_note")
+	return W.getItemList("finance_main")
 			.filter(it => it.getExpenseCat() == "uncategorized");
 }
 
 function getHaveCatRecList()
 {
-	return getItemList("finance_note")
+	return W.getItemList("finance_main")
 			.filter(it => it.getExpenseCat() != "uncategorized");
-
 }
 
 
@@ -56,14 +55,10 @@ function getDollarFormat(centamount)
 
 function doCat4Id(id)
 {
-	var noteitem = W.lookupItem("finance_note", id);
-	
+	var item = W.lookupItem("finance_main", id);
 	var newvalue = document.getElementById("catselect" + id).value;
-	
-	noteitem.setExpenseCat(newvalue);
-
-	syncSingleItem(noteitem);
-
+	item.setExpenseCat(newvalue);
+	item.syncItem();
 	redisplay();	
 }
 
@@ -74,15 +69,7 @@ function editUserNoteInspect()
 
 function editUserNote(itemid)
 {
-	const noteitem = lookupItem("finance_note", itemid);
-	const newnote = prompt("Enter a new note for this item: ", noteitem.getTheNote());
-	
-	if(newnote)
-	{
-		noteitem.setTheNote(newnote);
-		syncSingleItem(noteitem);
-		redisplay();		
-	}
+	genericEditTextField("finance_main", "the_note", itemid);
 }
 
 function composeCatOptionSelectStr(itemid)
@@ -130,9 +117,7 @@ function reDispCatOkTable()
 	
 	catreclist.forEach(function(recitem) {
 			
-		const noteitem = lookupItem("finance_note", recitem.getId());
-			
-		if(targcat != "all" && noteitem.getExpenseCat() != targcat)
+		if(targcat != "all" && recitem.getExpenseCat() != targcat)
 			{ return; }
 			
 		if(cutoffdate != "---" && recitem.getTransactDate().localeCompare(cutoffdate) < 0)
@@ -144,19 +129,19 @@ function reDispCatOkTable()
 		const rowstr = `
 			<tr>
 			<td>${recitem.getTransactDate().substring(5)}</td>
-			<td>${noteitem.getExpenseCat()}</td>
+			<td>${recitem.getExpenseCat()}</td>
 			<td>${dollarstr}</td>
 			<td>${recitem.getFullDesc()}</td>
-			<td>${noteitem.getTheNote()}</td>
+			<td>${recitem.getTheNote()}</td>
 			<td width="7%">
 			
-			<a href="javascript:editUserNote(${noteitem.getId()})">
+			<a href="javascript:editUserNote(${recitem.getId()})">
 			<img src="/u/shared/image/edit.png" height="18"/></a>
 
 			&nbsp;
 			&nbsp;
 						
-			<a href="javascript:editStudyItem(${noteitem.getId()})">
+			<a href="javascript:editStudyItem(${recitem.getId()})">
 			<img src="/u/shared/image/inspect.png" height="18"/></a>
 			
 			</td>
@@ -211,12 +196,11 @@ function reDispNoCatTable()
 	nocatfinlist.forEach(function(onerec) {
 		
 		const dollarstr = getDollarFormat(onerec.getCentAmount());
-		const nterec = lookupItem("finance_note", onerec.getId());
 		
 		const catsel = buildOptSelector()
 				.setKeyList(categorylist)
 				.setSelectOpener(`<select id="catselect${onerec.getId()}" onChange="javascript:doCat4Id(${onerec.getId()})">`)
-				.setSelectedKey(nterec.getExpenseCat());
+				.setSelectedKey(onerec.getExpenseCat());
 					
 		
 		// const catsel = composeCatOptionSelectStr(onerec.getId());
@@ -226,7 +210,7 @@ function reDispNoCatTable()
 			<td>${onerec.getTransactDate().substring(5)}</td>
 			<td>${onerec.getFullDesc()}</td>
 			<td>${dollarstr}</td>
-			<td>${nterec.getTheNote()}</td>	
+			<td>${onerec.getTheNote()}</td>	
 			<td>
 			
 			<a href="javascript:editUserNote(${onerec.getId()})">
@@ -253,10 +237,10 @@ function reDispNoCatTable()
 
 function updateNoteCategory()
 {
-	const noterec = lookupItem("finance_note", EDIT_STUDY_ITEM);
+	const noterec = W.lookupItem("finance_main", EDIT_STUDY_ITEM);
 	const newcat = getDocFormValue("item_expense_cat_select");
 	noterec.setExpenseCat(newcat);
-	syncSingleItem(noterec);
+	noterec.syncItem();
 	redisplay();
 }
 
@@ -290,21 +274,21 @@ function reDispInspectItem()
 	if(EDIT_STUDY_ITEM == -1)
 		{ return; }
 	
-	const mainrec = lookupItem("finance_main", EDIT_STUDY_ITEM);
-	const noterec = lookupItem("finance_note", EDIT_STUDY_ITEM);
+	const mainrec = W.lookupItem("finance_main", EDIT_STUDY_ITEM);
 	
-	const optselect = buildOptSelector()
+	buildOptSelector()
 				.setKeyList(getExpenseCategoryList())
-				.setSelectedKey(noterec.getExpenseCat())
-				.setSelectOpener(`<select name="item_expense_cat_select" onChange="javascript:updateNoteCategory()">`);
+				.setSelectedKey(mainrec.getExpenseCat())
+				.setElementName("item_expense_cat_select")
+				.setOnChange("javascript:updateNoteCategory()")
+				.autoPopulate();
 	
 	populateSpanData({
 		"itemdesc" : mainrec.getFullDesc(),
 		"pur_date" : mainrec.getTransactDate(),
 		"amount" : getDollarFormat(mainrec.getCentAmount()),
-		"user_note" : noterec.getTheNote(),
-		"category" : noterec.getExpenseCat(),
-		"expense_cat_sel_span" : optselect.getSelectString()
+		"user_note" : mainrec.getTheNote(),
+		"category" : mainrec.getExpenseCat()
 	});
 }
 
@@ -403,7 +387,7 @@ Expense Type:
 <td width="50%">Category</td>
 
 <td colspan="2">
-<span id="expense_cat_sel_span"></span>
+<span id="item_expense_cat_select_span"></span>
 </td>
 </tr>
 

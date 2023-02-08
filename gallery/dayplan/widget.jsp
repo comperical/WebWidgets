@@ -3,7 +3,7 @@
 <head>
 <title>Day Planner</title>
 
-<%= DataServer.basicInclude(request) %>
+<%= DataServer.include(request, "view_prefixes=recent") %>
 
 <script>
 

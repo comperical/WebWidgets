@@ -3,8 +3,7 @@
 <head>
 <title>&#x1F305 &#x2600</title>
 
-<%= DataServer.basicInclude(request)  %>
-
+<%= DataServer.include(request, "view_prefixes=recent") %>
 
 <script>
 

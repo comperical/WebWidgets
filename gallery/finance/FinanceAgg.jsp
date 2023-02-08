@@ -27,7 +27,7 @@
 function getLastMonthDay() 
 {
 	// Last day of month of last record
-	const items = getItemList("finance_main").sort(proxySort(item => [item.getTransactDate()]));
+	const items = W.getItemList("finance_main").sort(proxySort(item => [item.getTransactDate()]));
 
 	const lastrec = lookupDayCode(items[items.length-1].getTransactDate());
 	var daypntr = lastrec;
@@ -89,7 +89,7 @@ function getDailyTargetMap()
 {
 	const tmap = {};
 
-	getItemList("finance_plan").forEach(function(item) {
+	W.getItemList("finance_plan").forEach(function(item) {
 		tmap[item.getCategory()] = -(item.getMonthlyTarget() / 30) * 100;
 	});
 
@@ -99,28 +99,23 @@ function getDailyTargetMap()
 
 function getCat2NoteMap(startday, endday)
 {
-	var catmap = {};
+	var catmap = {};	
+
+	W.getItemList("finance_main").forEach(function(mainitem) {
 	
-	var fnilist = getItemList("finance_note");
-	
-	for(var fni in fnilist)
-	{
-		var noteitem = fnilist[fni];
-		var reccitem = lookupItem("finance_main", noteitem.getId());
-	
-		if(!(startday <= reccitem.getTransactDate() && reccitem.getTransactDate() <= endday))
-			{ continue; }
+		if(!(startday <= mainitem.getTransactDate() && mainitem.getTransactDate() <= endday))
+			{ return; }
 		
-		var expcat = noteitem.getExpenseCat();
+		const expcat = mainitem.getExpenseCat();
 		
 		if(!catmap.hasOwnProperty(expcat))
 		{
 			catmap[expcat] = [];	
 		}
 		
-		catmap[expcat].push(noteitem);
-	}
-	
+		catmap[expcat].push(mainitem);
+	});
+
 	return catmap;
 }
 

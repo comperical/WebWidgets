@@ -37,6 +37,7 @@ function getFinanceHeaderInfo()
         ["Finance Agg", "FinanceAgg.jsp"],
         ["Finance Plan", "FinancePlanner.jsp"],
         ["Uploader", "DataUploader.jsp"],
+        ["Upload Stats", "UploadStats.jsp"],
         ["Tagger", "TagRecords.jsp"],
         ["Tag Rules", "AutoTagRules.jsp"]
     ];
@@ -220,7 +221,7 @@ function parseCreditData(csvtext)
 
         const posted = lookupDayCode(tokens[1]);
         const cardfour = tokens[2];
-        massert(parseInt(cardfour) == 4773, `Got card four-digit=${cardfour}`);
+        massert(cardfour.length == 4 && okayInt(cardfour), `Bad card four-digit ${cardfour}`);
 
         creditrecord.desc = tokens[3];
 

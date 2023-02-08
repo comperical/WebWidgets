@@ -99,13 +99,15 @@ function getCategoryList()
 
 function createNew()
 {
-    if(SELECTED_CATEGORY == "all")
+    const selcat = getGenericSelectValue("category_sel");
+
+    if(selcat == "all")
     {
         alert("Please selected a specific category");
         return;
     }
 
-    const shortname = prompt(`Enter name for new ${SELECTED_CATEGORY.toUpperCase()}: `);
+    const shortname = prompt(`Enter name for new ${selcat.toUpperCase()}: `);
     
     if(shortname)
     {        
@@ -114,7 +116,7 @@ function createNew()
             "name" : shortname,
             "link" : "",
             "priority" : 5,
-            "category": SELECTED_CATEGORY,
+            "category": selcat,
             "extra_info" : "NotYetSet",
             "is_active" : 1,
             "is_complete" : 0

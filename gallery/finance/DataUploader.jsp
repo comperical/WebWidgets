@@ -114,7 +114,9 @@ function ingestFilteredRecords()
             "full_desc" : rec.desc,
             "cent_amount" : rec.centamount,
             "log_source" : rec.logsource,
-            "transact_date" : rec.transact.getDateString()
+            "transact_date" : rec.transact.getDateString(),
+            "expense_cat" : "uncategorized",
+            "the_note" : ""
         }
 
         const fmitem = W.buildItem("finance_main", item);

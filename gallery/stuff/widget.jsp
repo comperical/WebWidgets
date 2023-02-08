@@ -19,6 +19,15 @@ var SHOW_CONTAINED_ITEM = false;
 
 var SEARCH_TERM = null;
 
+const SHOW_CONTAINER_KEY = "show_container";
+
+const SHOW_LOCATION_KEY = "show_location";
+
+initGenericSelect(new Map([
+    [SHOW_CONTAINER_KEY, -1],
+    [SHOW_LOCATION_KEY, -1]
+]));
+
 function createNew()
 {
     const itemname = prompt("Enter name of item: ");
@@ -38,12 +47,6 @@ function createNew()
         EDIT_STUDY_ITEM = newitem.getId();
         redisplay();
     }
-}
-
-function updateDepthSelect()
-{
-    SHOW_DEPTH_SELECT = parseInt(getDocFormValue("depth_select"));
-    redisplay();
 }
 
 function back2Main()
@@ -225,21 +228,6 @@ function updateContainAndLoc(contid, locid)
     item.setContainerId(contid);
     item.setLocationId(locid);
     item.syncItem();
-    redisplay();
-}
-
-
-function updateShowContainer()
-{
-    SHOW_LOCATION_ID = -1;
-    SHOW_CONTAINER_ID = parseInt(getDocFormValue("show_container_sel"));
-    redisplay();
-}
-
-function updateShowLocation()
-{
-    SHOW_LOCATION_ID = parseInt(getDocFormValue("show_location_sel"));
-    SHOW_CONTAINER_ID = -1;
     redisplay();
 }
 
@@ -447,20 +435,18 @@ function getMainListing()
     const cnamemap = getContainerNameMap();
     const locnamemap = getLocationNameMap();
 
-    const showContainer = buildOptSelector()
+    const showContainerSel = buildOptSelector()
                         .setFromMap(cnamemap)
                         .sortByDisplay()
-                        .setSelectedKey(SHOW_CONTAINER_ID)
-                        .setElementName("show_container_sel")
-                        .setOnChange("javascript:updateShowContainer()")
+                        .setElementName(SHOW_CONTAINER_KEY)
+                        .useGenericUpdater()
                         .getSelectString();
 
-    const showLocation = buildOptSelector()
+    const showLocationSel = buildOptSelector()
                         .setFromMap(locnamemap)
                         .sortByDisplay()
-                        .setSelectedKey(SHOW_LOCATION_ID)
-                        .setElementName("show_location_sel")
-                        .setOnChange("javascript:updateShowLocation()")
+                        .setElementName(SHOW_LOCATION_KEY)
+                        .useGenericUpdater()
                         .getSelectString();
 
 
@@ -481,14 +467,14 @@ function getMainListing()
 
         pageinfo += `
 
-            Location: ${showLocation}
+            Location: ${showLocationSel}
 
             &nbsp;
             &nbsp;
             &nbsp;
             &nbsp;
 
-            Container: ${showContainer}
+            Container: ${showContainerSel}
 
             &nbsp;
             &nbsp;
@@ -561,18 +547,19 @@ function getMainDisplayList()
 {
     const hitlist = [];
     const itemlist = W.getItemList("stuff_item").sort(proxySort(getSortTuple));
+
+    // Careful on types!!!
+    const showContainer = parseInt(getGenericSelectValue(SHOW_CONTAINER_KEY));
+    const showLocation = parseInt(getGenericSelectValue(SHOW_LOCATION_KEY));
+
     itemlist.forEach(function(item) {
 
-        if(SHOW_CONTAINER_ID != -1 && item.getContainerId() != SHOW_CONTAINER_ID) 
-            { return; }
-
-        if(!SHOW_CONTAINED_ITEM && item.getContainerId() != -1)
+        if(!([-1, item.getContainerId()].includes(showContainer)))
             { return; }
 
         const locateid = getLocationId(item);
-        if(SHOW_LOCATION_ID != -1 && locateid != SHOW_LOCATION_ID)
+        if(!([-1, locateid].includes(showLocation)))
             { return; }
-
 
         hitlist.push(item);
 

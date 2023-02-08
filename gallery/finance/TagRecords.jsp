@@ -80,57 +80,40 @@ function redisplay()
     populateSpanData({ "mainpage" : pageinfo});
 }
 
-function findOrphanMainList()
+function findNoCatList()
 {
-    return W.getItemList("finance_main")
-                .filter(item => !W.haveItem("finance_note", item.getId()));
+    return W.getItemList("finance_main").filter(item => item.getExpenseCat() == "uncategorized");
 }
 
 
 function createTagRecordInfo()
 {
     alert(`
-        This will create the finance note records from the main records
+        This will tag the main records with the auto-inferred expense category.
         This may take a minute or two. Please open the javascript console
         and observe the records being created
     `);
 
-    var created = 0;
+    var tagged = 0;
 
-    const orphanlist = findOrphanMainList();
+    const orphanlist = findNoCatList();
 
     orphanlist.forEach(function(mainitem) {
 
-        if(created >= 30)
-            { return; }
-
         const taghits = findTagHitList(mainitem);
 
-        if (taghits.length > 1)
+        if (taghits.length != 1)
             { return; }
 
-        const category = taghits.length == 0 ? "uncategorized" : taghits[0].getCategory();
+        const category = taghits[0].getCategory();
+        mainitem.setExpenseCat(category);
+        mainitem.syncItem();
 
-        created++;
-
-        const payload = {
-            "id" : mainitem.getId(),
-            "expense_cat" : category,
-            "full_desc" : mainitem.getFullDesc(),
-            "log_source" : mainitem.getLogSource(),
-            "the_note" : "",
-            "cent_amount" : mainitem.getCentAmount(),
-            "transact_date" : mainitem.getTransactDate()
-        }
-
-        const noteitem = W.buildItem("finance_note", payload);
-        noteitem.syncItem();
-
-        console.log("Created note with category : " + category);
-        // alert("Created note with category " + category);
+        tagged++;
     });
 
 
+    alert(`Tagged ${tagged} records`);
     redisplay();
 }
 
@@ -156,11 +139,14 @@ function getMainPageInfo()
     `;
 
 
-    const orphanlist = findOrphanMainList();
+    const orphanlist = findNoCatList();
 
     orphanlist.forEach(function(item) {
 
         const taghits = findTagHitList(item);
+
+        if(taghits.length == 0)
+            { return; }
 
         const candstr = taghits.length > 0 ? taghits.map(tag => tag.getCategory()).join(",") : "----";
 
