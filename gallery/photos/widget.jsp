@@ -4,7 +4,7 @@
 <head>
 <title>Photo Manager</title>
 
-<%= DataServer.basicInclude(request) %>
+<%= DataServer.include(request) %>
 
 <script>
 
@@ -55,6 +55,21 @@ function getBlobFileSize(blobitem)
 
   const tokens = base64.split("::");
   return parseInt(tokens[1]);
+}
+
+function editEventDate()
+{
+  const item = W.lookupItem("photo_main", EDIT_STUDY_ITEM);
+
+  const newdate = prompt("Enter a new date for photo", item.getPhotoDate());
+
+  if(newdate)
+  {
+    // TODO: check the date format!!
+    item.setPhotoDate(newdate);
+    item.syncItem();
+    redisplay();
+  }
 }
 
 function refreshAfterUpload()
@@ -246,7 +261,6 @@ function redisplayMain()
 
     <table class="basic-table" width="60%">
     <tr>
-    <th>ID</th>
     <th>Ready?</th>
     <th>File Size</th>
     <th>FileName</th>
@@ -266,7 +280,6 @@ function redisplayMain()
 
     const rowinfo = `
       <tr>
-      <td>${item.getId()}</td>
       <td>${readystr}</td> 
       <td>${filesize}</td>
       <td>${item.getBlobFileName()}</td>

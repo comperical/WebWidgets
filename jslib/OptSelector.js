@@ -250,19 +250,22 @@ OptSelector.prototype.getSingleOptionStr = function(idx)
 }
 
 // Map of Element name to selected KEYS for OptSelector objects that use this feature
-const __GENERIC_OPT_SELECT_MAP = new Map();
+const GENERIC_OPT_SELECT_MAP = new Map();
 
-// 
+// Configure this select to use a generic update function
+// This function will pull the value of the OptSelector into the GENERIC_OPT_SELECT_MAP
+// when the selector is changed
+// You must provide an element name before calling this function
 OptSelector.prototype.useGenericUpdater = function()
 {
     massert("name" in this._myAttributes, 
         "You must set the element name of the OptSelector before calling useGenericUpdater()");
 
     const myname = this._myAttributes["name"];
-    massert(__GENERIC_OPT_SELECT_MAP.has(myname),
-        `You must initialize the OptSelector data for ${myname} before creating the selector, call initGenericSelect method`);
+    massert(GENERIC_OPT_SELECT_MAP.has(myname),
+        `You must initialize the OptSelector data for ${myname} before creating the selector, place data in GENERIC_OPT_SELECT_MAP`);
 
-    this.setSelectedKey(__GENERIC_OPT_SELECT_MAP.get(myname));
+    this.setSelectedKey(GENERIC_OPT_SELECT_MAP.get(myname));
 
     // Need to check that myname is suitable for putting into quotes...
     const jsopt = `javascript:__genericOptSelectorUpdate('${myname}')`
@@ -272,21 +275,27 @@ OptSelector.prototype.useGenericUpdater = function()
     return this;
 }
 
+// Deprecated, just set data in GENERIC_OPT_SELECT_MAP directly
 function initGenericSelect(copymap)
 {
     [... copymap.keys()].forEach(function(k) {
-        __GENERIC_OPT_SELECT_MAP.set(k, copymap.get(k));
+        GENERIC_OPT_SELECT_MAP.set(k, copymap.get(k));
     });
 }
 
+// Deprecated, just access GENERIC_OPT_SELECT_MAP directly
 // Big question: is the data in here going to come out of the map with its original types...?
 function getGenericSelectValue(k) {
-    return __GENERIC_OPT_SELECT_MAP.get(k);
+    return GENERIC_OPT_SELECT_MAP.get(k);
 }
 
+// Update the GENERIC_OPT_SELECT_MAP from the form value with given name
+// The key of the map is the given name
+// Also call redisplay()
+// This is the method called by OptSelectors that are configured with the useGenericUpdater option
 function __genericOptSelectorUpdate(selectname)
 {
     const value = getDocFormValue(selectname);
-    __GENERIC_OPT_SELECT_MAP.set(selectname, value);
+    GENERIC_OPT_SELECT_MAP.set(selectname, value);
     redisplay();
 }

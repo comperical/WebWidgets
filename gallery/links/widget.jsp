@@ -21,6 +21,7 @@ massert(W.getItemList("link_categ").length > 0,
 // Very crude method of picking a default category.
 // On a workday, select LNKD (work)
 // On weekend, select YogaVideo
+// Test eidt
 function getDefaultCategory()
 {
 	/*

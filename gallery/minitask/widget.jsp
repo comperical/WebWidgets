@@ -171,8 +171,7 @@ function getStudyItem()
 	if(EDIT_STUDY_ITEM == -1)
 		{ return null; }
 	
-	const hits = W.getItemList("mini_task_list").filter(item => item.getId() == EDIT_STUDY_ITEM);
-	return hits[0];
+	return W.lookupItem("mini_task_list", EDIT_STUDY_ITEM);
 }
 
 function getTaskItemList(wantcompleted)
@@ -271,6 +270,13 @@ function setDefaultShow()
 	
 	if(!foundit) {
 		alert(`Warning, requested default show ${params['default_show']}, but options are ${MASTER_TYPE_LIST}`);
+	}
+
+	if('item_id' in params)
+	{
+		editStudyItem(parseInt(params['item_id']));
+
+		// console.log("EDIT_STUDY_ITEM is " + EDIT_STUDY_ITEM + " from params");
 	}
 
 	redisplay();

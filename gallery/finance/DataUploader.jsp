@@ -4,9 +4,7 @@
 <head>
 <title>Upload Finance Data</title>
 
-
 <%= DataServer.include(request) %>
-
 
 <script>
 
