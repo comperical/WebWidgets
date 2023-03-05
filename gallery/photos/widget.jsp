@@ -12,6 +12,10 @@ var EDIT_STUDY_ITEM = -1;
 
 var SYNC_TARGET_ID = -1;
 
+var SEARCH_TERM = null;
+
+const TAG_SEPARATOR = ";;;";
+
 function deleteBlobItem(itemid)
 {
   const victim = W.lookupItem("photo_main", itemid);
@@ -30,14 +34,61 @@ function back2Main()
   redisplay();
 }
 
-function editShortName()
-{
-  genericEditTextField("photo_main", "short_name", EDIT_STUDY_ITEM);
-}
-
 function editNoteInfo()
 {
   genericEditTextField("photo_main", "full_desc", EDIT_STUDY_ITEM);
+}
+
+function addCompleteNewTag()
+{
+  const item = W.lookupItem("photo_main", EDIT_STUDY_ITEM);
+  const newtag = prompt("Add a new tag name: ");
+
+  const curlist = getItemTagList(item);
+  curlist.push(newtag);
+  saveItemTagList(item, curlist);
+  redisplay();
+}
+
+function getFullTagSet()
+{
+  const tagset = new Set();
+
+  W.getItemList("photo_main").forEach(function(item) {
+    getItemTagList(item).forEach(tag => tagset.add(tag));
+  });
+
+  return tagset;
+}
+
+function saveItemTagList(item, taglist)
+{
+  const tagstr = taglist.filter(tg => tg.trim().length > 0).join(TAG_SEPARATOR);
+  item.setTagList(tagstr);
+  item.syncItem();
+}
+
+function getItemTagList(item)
+{
+  return item.getTagList().split(TAG_SEPARATOR).filter(tag => tag.trim().length > 0);
+}
+
+function removeItemTag(remtag)
+{
+  const item = W.lookupItem("photo_main", EDIT_STUDY_ITEM);
+  const newlist = getItemTagList(item).filter(tg => tg != remtag);
+  saveItemTagList(item, newlist);
+  redisplay();
+}
+
+function addTagFromSel()
+{
+  const addtag = getDocFormValue("tag_selector");
+  const item = W.lookupItem("photo_main", EDIT_STUDY_ITEM);  
+  const newlist = getItemTagList(item)
+  newlist.push(addtag);
+  saveItemTagList(item, newlist);
+  redisplay();
 }
 
 
@@ -145,6 +196,22 @@ function getCoreFileName(photoitem)
   return getFileThenExtension(photoitem)[0];
 }
 
+function getFileExtension(photoitem)
+{
+  return getFileThenExtension(photoitem)[1];
+}
+
+function runSearch()
+{
+  SEARCH_TERM = getDocFormValue("new_search");
+  redisplay();
+}
+
+function clearSearch()
+{
+  SEARCH_TERM = null;
+  redisplay();
+}
 
 function editCoreFileName()
 {
@@ -175,6 +242,25 @@ function redisplayEdit()
   const blobstore = item.getBlobStoreUrl();
 
 
+  var taginfo = ``;
+
+  getItemTagList(item).forEach(function(tag) {
+
+    taginfo += `<b>${tag}</b> 
+      <a href="javascript:removeItemTag('${tag}')"><img src="/u/shared/image/trashbin.png" height="14"/></a>
+      &nbsp;&nbsp;&nbsp;
+    `;
+
+  });
+
+  const tagsel = buildOptSelector()
+                    .setKeyList([... getFullTagSet()])
+                    .sortByDisplay()
+                    .insertStartingPair("---", "---")
+                    .setElementName("tag_selector")
+                    .setOnChange("javascript:addTagFromSel()")
+                    .getSelectString();
+
 
   var pageinfo = `
       <h3>Photo Details</h3>
@@ -186,25 +272,16 @@ function redisplayEdit()
 
       <tr>
       <td><b>Back</b></td>
-      <td></td>
+      <td colspan="2"></td>
       <td>
       <a href="javascript:back2Main()"><img src="/u/shared/image/leftarrow.png" height="18"/></a>
       </td>
       </tr>
 
-
-      <tr>
-      <td><b>Name</b></td>
-      <td>${item.getShortName()}</td>
-      
-      <td>
-      <a href="javascript:editShortName()"><img src="/u/shared/image/edit.png" height="18"/></a>
-      </td>
-
       </tr>
       <tr>
       <td><b>Description</b></td>
-      <td>${item.getFullDesc()}</td>
+      <td colspan="2">${item.getFullDesc()}</td>
       <td>
 
       <a href="javascript:editNoteInfo()"><img src="/u/shared/image/edit.png" height="18"/></a>
@@ -213,22 +290,41 @@ function redisplayEdit()
 
       <tr>
       <td><b>File Name</b></td>
-      <td>${getCoreFileName(item)}</td>
+      <td colspan="2">${getCoreFileName(item)}
+
+      &nbsp;
+      &nbsp;
+      &nbsp;
+
+      (${getFileExtension(item)})
+      </td>
       <td>
 
       <a href="javascript:editCoreFileName()"><img src="/u/shared/image/edit.png" height="18"/></a>
       </td>
       </tr>
 
-
       <tr>
       <td><b>Activity Date</b></td>
-      <td>${item.getPhotoDate()}</td>
+      <td colspan="2">${item.getPhotoDate()}</td>
       <td>
 
       <a href="javascript:editEventDate()"><img src="/u/shared/image/edit.png" height="18"/></a>
       </td>
       </tr>
+
+      <tr>
+      <td><b>Tags</b></td>
+      <td width="35%">${taginfo}</td>
+      <td width="35%">
+      ${tagsel}
+
+      </td>
+      <td>
+      <a href="javascript:addCompleteNewTag()"><img src="/u/shared/image/add.png" height="18"/></a>
+      </td>
+      </tr>
+
 
       </table>
 
@@ -244,8 +340,31 @@ function redisplayEdit()
   return pageinfo;
 }
 
+
+function searchHit(item)
+{
+  if(SEARCH_TERM == null)
+    { return true; }
+
+  if(item.getBlobFileName().toLowerCase().includes(SEARCH_TERM))
+    { return true; }
+
+  if(item.getFullDesc().toLowerCase().includes(SEARCH_TERM))
+    { return true; }
+
+  return false;
+}
+
 function redisplayMain()
 {
+
+  const searchdef = SEARCH_TERM == null ? "" : SEARCH_TERM.toLowerCase();
+
+  const clearbutton = SEARCH_TERM == null ? "" : `
+    &nbsp;
+    &nbsp;
+    <a href="javascript:clearSearch()"><button>clear</button></a>
+  `;
 
   var pageinfo = `
 
@@ -259,15 +378,22 @@ function redisplayMain()
     <br/>
 
 
-    <table class="basic-table" width="60%">
+    <input type="text" name="new_search" value="${searchdef}" />
+    <a href="javascript:runSearch()"><button>search</button></a>
+
+    ${clearbutton}
+
+    <br/>
+    <br/>
+
+    <table class="basic-table" width="70%">
     <tr>
-    <th>Ready?</th>
-    <th>File Size</th>
     <th>FileName</th>
+    <th>Tags</th>    
     <th>...</th>
   `;
 
-  W.getItemList("photo_main").forEach(function(item) {
+  W.getItemList("photo_main").filter(searchHit).forEach(function(item) {
 
     const startblob = item.getBase64BlobData().substring(0,10);
 
@@ -280,9 +406,8 @@ function redisplayMain()
 
     const rowinfo = `
       <tr>
-      <td>${readystr}</td> 
-      <td>${filesize}</td>
       <td>${item.getBlobFileName()}</td>
+      <td>${getItemTagList(item).join(" ")}</td>
       <td>
 
       <a href="javascript:editStudyItem(${item.getId()})"><img src="/u/shared/image/inspect.png" height="18"/></a>
