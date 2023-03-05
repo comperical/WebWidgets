@@ -408,3 +408,24 @@ function toggleHidden4Class(classname)
 }
 
 
+// Convert iterator to an array.
+// This is not used in main WWIO code, it is a compatibility trick
+// for testing with Nashorn Java JS engine, which does not have the spread operator [... ]
+function spreadConvert(it)
+{
+    const result = [];
+
+    while(true)
+    {
+        const newitem = it.next();
+
+        if(newitem.done)
+            { break; }
+
+        result.push(newitem.value);
+    }
+
+    return result;
+}
+
+
