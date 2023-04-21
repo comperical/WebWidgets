@@ -79,6 +79,12 @@ function copyFromClone(clonefrom, moveid)
 function copyFromPrevious()
 {
     const prevday = getDocFormValue("copy_from_sel");
+    copyFromPrevDay(prevday);
+
+}
+
+function copyFromPrevDay(prevday)
+{
     const prevlist = W.getItemList("weight_log").filter(item => item.getDayCode() == prevday);
 
     prevlist.forEach(item => {
@@ -87,6 +93,7 @@ function copyFromPrevious()
 
     redisplay();
 }
+
 
 function editEffortLevel(itemid) 
 {
@@ -210,7 +217,19 @@ function getWeightNameMap() {
     return nmap;
 }
 
+// Unique list of recent workout days
+function getRecentLogDayList()
+{
+    const theset = new Set(W.getItemList("weight_log").map(item => item.getDayCode()));
+    return [... theset].sort().reverse();
+}
 
+function copyFromThreeDaysAgo()
+{
+    const loglist = getRecentLogDayList();
+    const last3 = loglist[2];
+    copyFromPrevDay(last3);
+}
 
 function getCopyFromDisplayMap()
 {
@@ -227,7 +246,6 @@ function getCopyFromDisplayMap()
     });
 
     return displaymap;
-
 }
 
 function redisplayMainTable()
@@ -276,6 +294,14 @@ function redisplayMainTable()
         <br/>
         <br/>
         Copy From: ${copysel}
+
+        &nbsp;
+        &nbsp;
+        &nbsp;
+        &nbsp;
+
+        <a href="javascript:copyFromThreeDaysAgo()"><button>3Day Prev</button></a>
+
     `;
 
     const mondayMap = getDataByMonday();

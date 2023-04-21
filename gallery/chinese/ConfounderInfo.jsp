@@ -6,9 +6,7 @@
 
 <script src="ChineseTech.js"></script>
 
-<%= DataServer.basicIncludeOnly(request, "confounder", "hanzi_data", "palace_item") %>
-
-
+<%= DataServer.include(request, "tables=confounder,hanzi_data,palace_item") %>
 
 
 <script>
@@ -201,7 +199,12 @@ function findSearchHitList()
     function searchHit(item) {
         const meanhit = item.getMeaning().toLowerCase().indexOf(SEARCH_INPUT.toLowerCase()) > -1;
         const charhit = item.getHanziChar().indexOf(SEARCH_INPUT) > -1;
-        return meanhit || charhit;
+
+        const hanzi = lookupHanziDataByChar(item.getHanziChar());
+        const basichit = stripDiacritics(hanzi.getPinYin()).indexOf(SEARCH_INPUT) > -1;
+        const cmplxhit = hanzi.getPinYin().indexOf(SEARCH_INPUT) > -1;
+
+        return meanhit || charhit || basichit || cmplxhit;
     }
 
     //getItemList("palace_item").
@@ -241,7 +244,8 @@ function redisplaySearchInfo()
 
             <table class="basic-table" width="50%">
             <tr>
-            <th>Character</th>
+            <th>Character</th>            
+                        <th>PinYin</th>            
             <th>Meaning</th>
             <th>+L</th>
             <th>+R</th>
@@ -250,10 +254,13 @@ function redisplaySearchInfo()
 
         hitlist.forEach(function(item) {
 
+            const hanitem = lookupHanziDataByChar(item.getHanziChar());
+
             const rowstr = `
                 <tr>
+                <td>${item.getHanziChar()}</td>                
+                <td>${hanitem.getPinYin()}</td>
                 <td>${item.getMeaning()}</td>
-                <td>${item.getHanziChar()}</td>
                 <td>
                 <a href="javascript:markCharacter(${item.getId()}, true)"><img src="/u/shared/image/checkmark.png" height="18"</a>
                 </td>

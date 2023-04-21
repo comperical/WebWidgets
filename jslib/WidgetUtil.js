@@ -49,6 +49,29 @@ function genericEditTextField(tablename, fieldname, itemid)
     }
 }
 
+// Same as genericEditIntField, but can be a float/real, instead of just an int
+function genericEditFloatField(tablename, fieldname, itemid) 
+{
+    const theitem = W.lookupItem(tablename, itemid);
+    const newval = prompt("Please enter a new value for field " + fieldname + ": ", theitem[fieldname]);
+    
+    if(!newval)
+        { return; }
+
+
+    if(!okayFloat(newval))
+    {
+        alert("Please enter a valid float");
+        return;
+    }
+
+    theitem[fieldname] = newval;
+    theitem.syncItem();
+    redisplay();
+}
+
+
+
 // Prompts user to enter a new value for the given INT field. 
 // The previous value will be used as a prompt default.
 // If user enters a non-int, displays an error message and rejects the change.

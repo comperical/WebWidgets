@@ -9,11 +9,15 @@
 
 <script>
 
+
+
 var EDIT_STUDY_ITEM = -1;
 
 var STUDY_CATEGORY = false;
 
 var SEARCH_TERM = "";
+
+
 
 massert(W.getItemList("link_categ").length > 0,
 	"You must add some link categories by hand first!!");

@@ -14,6 +14,8 @@ var SYNC_TARGET_ID = -1;
 
 var SEARCH_TERM = null;
 
+const SEARCH_TAG_LIST = [];
+
 const TAG_SEPARATOR = ";;;";
 
 function deleteBlobItem(itemid)
@@ -37,6 +39,13 @@ function back2Main()
 function editNoteInfo()
 {
   genericEditTextField("photo_main", "full_desc", EDIT_STUDY_ITEM);
+}
+
+function addSearchTag()
+{
+  const newtag = getDocFormValue("search_tag");
+  SEARCH_TAG_LIST.push(newtag);
+  redisplay();
 }
 
 function addCompleteNewTag()
@@ -203,12 +212,17 @@ function getFileExtension(photoitem)
 
 function runSearch()
 {
+
+
   SEARCH_TERM = getDocFormValue("new_search");
   redisplay();
 }
 
 function clearSearch()
 {
+  while(SEARCH_TAG_LIST.length > 0)
+    { SEARCH_TAG_LIST.pop(); }
+
   SEARCH_TERM = null;
   redisplay();
 }
@@ -343,6 +357,11 @@ function redisplayEdit()
 
 function searchHit(item)
 {
+  return searchTermHit(item) && searchTagHit(item);
+}
+
+function searchTermHit(item)
+{
   if(SEARCH_TERM == null)
     { return true; }
 
@@ -355,16 +374,33 @@ function searchHit(item)
   return false;
 }
 
+function searchTagHit(item)
+{
+  const misses = SEARCH_TAG_LIST.filter(stag => !getItemTagList(item).includes(stag));
+  return misses == 0;
+}
+
 function redisplayMain()
 {
 
   const searchdef = SEARCH_TERM == null ? "" : SEARCH_TERM.toLowerCase();
 
-  const clearbutton = SEARCH_TERM == null ? "" : `
-    &nbsp;
-    &nbsp;
+  const clearbutton = SEARCH_TERM == null && SEARCH_TAG_LIST.length == 0 ? "" : `
+
+    <br/>
+    <br/>
+    
     <a href="javascript:clearSearch()"><button>clear</button></a>
   `;
+
+  const tagsel = buildOptSelector()
+                    .setKeyList([... getFullTagSet()])
+                    .sortByDisplay()
+                    .insertStartingPair("---", "---")
+                    .setElementName("search_tag")
+                    .setOnChange("javascript:addSearchTag()")
+                    .getSelectString();
+
 
   var pageinfo = `
 
@@ -376,6 +412,11 @@ function redisplayMain()
     <input id="file-upload" type="file" name="uploadMe" onChange="javascript:checkUploadAndGo()"/>
     <br/>
     <br/>
+
+    ${tagsel}
+
+    &nbsp;
+    &nbsp;
 
 
     <input type="text" name="new_search" value="${searchdef}" />

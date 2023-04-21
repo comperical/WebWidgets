@@ -3,7 +3,7 @@
 <head>
 <title>&#x1FA92 &#x1FAA3</title>
 
-<%= DataServer.basicInclude(request) %>
+<%= DataServer.include(request) %>
 
 <%= DataServer.includeIfAvailable(request, "minitask", "mini_task_list") %>
 
@@ -18,12 +18,10 @@ var SHOW_BASIC_LOG = true;
 function swap2MiniTask(choreid)
 {
 	const choreitem = W.lookupItem("chore_def", choreid);
-	const newid = W.newBasicId("mini_task_list");
 	const todaycode = getTodayCode().getDateString();
 	const shortdesc =  "LifeChore:" + choreitem.getShortName();
 	
 	const newrec = {
-		"id" : newid,
 		"task_type" : "life",
 		"short_desc" : shortdesc,
 		"extra_info" : "",
@@ -107,10 +105,7 @@ function createNew()
 	
 	if(chorename)
 	{		
-		const newid = W.newBasicId("chore_def");
-
 		const newrec = {
-			"chore_id" : newid,
 			"day_freq" : 30,
 			"short_name" : chorename,
 			"extra_info" : "",
@@ -180,7 +175,6 @@ function redisplayChoreList()
 	var tablestr = `
 		<table  class="basic-table" width="60%">
 		<tr>
-		<th width="7%">ID</th>
 		<th>Name</th>
 		<th>Frequency</th>
 		<th>Active?</th>
@@ -210,7 +204,6 @@ function redisplayChoreList()
 		
 		const rowstr = `
 			<tr>
-			<td>${chore.getId()}</td>
 			<td>${chore.getShortName()}</td>
 			<td>${chore.getDayFreq()}</td>
 			<td>${activestr}</td>

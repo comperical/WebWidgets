@@ -1,0 +1,57 @@
+
+
+// Get effective priority of item, given its intrinsic priority and its age.
+function getEffectivePriority(actitem)
+{   
+    var dayage = getTaskAge(actitem);
+    
+    var intprior = actitem.getPriority();
+    
+    var LAMBDA = Math.log(2)/5;
+    
+    return intprior * Math.exp(LAMBDA*dayage);
+}
+
+
+function getTaskItemList(wantcompleted)
+{
+    var tasklist = [];
+    
+    var biglist = W.getItemList("mini_task_list").filter(item => item.getIsBacklog() == 0);
+        
+    biglist.sort(proxySort(item => [item.getAlphaDate()])).reverse();
+    
+    for(var bi in biglist)
+    {   
+        var taskitem = biglist[bi];
+        
+        // console.log(taskitem.getAlphaDate());
+        
+        var taskcomplete = taskitem.getOmegaDate().length > 0;
+        
+        if(!wantcompleted && !taskcomplete)
+        { 
+            tasklist.push(taskitem);
+            continue; 
+        }
+        
+        if(wantcompleted && taskcomplete)
+        {
+            tasklist.push(taskitem);
+        }
+        
+        if(wantcompleted && tasklist.length > 50)
+            { break; }
+    }
+    
+    // Sort completed tasks by finish date.
+    if(wantcompleted)
+    {
+        // tasklist.sort(function(a, b) { return b.getOmegaDate().localeCompare(a.getOmegaDate()); });
+        
+        tasklist.sort(proxySort(item => [item.getOmegaDate()])).reverse();
+    }
+    
+
+    return tasklist;
+}
