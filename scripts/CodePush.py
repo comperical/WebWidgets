@@ -209,11 +209,17 @@ class BaseUploader(AssetUploader):
 
 		with ZipFile(zpath, 'w') as myzip:
 			for myfile in os.listdir(self.basedir):
+
+				# Big gotcha!! The __base.zip goes into this directory, so you will be trying to
+				# Add the zip file to itself!!
+				if myfile.endswith(".zip"):
+					continue
+
 				fullpath = os.sep.join([self.basedir, myfile])
 				if os.path.isdir(fullpath):
 					continue
 					
-				print("Full path is {}".format(fullpath))
+				#print("Full path is {}".format(fullpath))
 				# Need the arcname= argument to give the files the right location in the archive.
 				myzip.write(fullpath, arcname=myfile)
 
