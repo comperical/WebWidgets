@@ -210,8 +210,7 @@ class BaseUploader(AssetUploader):
 		with ZipFile(zpath, 'w') as myzip:
 			for myfile in os.listdir(self.basedir):
 
-				# Big gotcha!! The __base.zip goes into this directory, so you will be trying to
-				# Add the zip file to itself!!
+				# Gotcha: the __base.zip goes into this directory, avoid recursively adding the file to itself
 				if myfile.endswith(".zip"):
 					continue
 
