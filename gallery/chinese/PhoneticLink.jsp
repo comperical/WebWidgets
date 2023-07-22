@@ -1,53 +1,49 @@
-
-
 <html>
 <head>
-<title>Confounders!!</title>
 
-<%= DataServer.include(request, "tables=confounder,hanzi_data,palace_item") %>
+<%= DataServer.include(request, "tables=phonetic_link,hanzi_data,palace_item") %>
 
+
+<title>Phonetic Link</title>
 
 <script>
 
-EDIT_STUDY_ITEM = -1;
+var EDIT_STUDY_ITEM = -1;
 
-SEARCH_INPUT = "";
+var SEARCH_INPUT = "";
 
-function createNew()
-{   
-    // created_on, active_on, completed_on, dead_line
-    const newrec = {
-        "left_char" : "L",
-        "rght_char" : "R",
-        "extra_info" : "..."
-    };      
-    
-    const newitem = W.buildItem("confounder", newrec);
-    newitem.syncItem();
+function deleteItem(itemid) {
+	const item = W.lookupItem('phonetic_link', itemid)
+	item.deleteItem();
+	redisplay();
+}
+
+// Auto-generated create new function
+function createNew() {
+
+	const newrec = {
+		'left_char' : '',
+		'rght_char' : '',
+		'extra_info' : ''
+	};
+	const newitem = W.buildItem('phonetic_link', newrec);
+	newitem.syncItem();
+
     EDIT_STUDY_ITEM = newitem.getId();
-    redisplay();    
+	redisplay();
 }
 
-function deleteItem(killid)
-{
-    if(confirm("Are you sure you want to delete this item?"))
-    {
-        W.lookupItem("confounder", killid).deleteItem();
-        redisplay();
-    }
+
+// Auto-generated redisplay function
+function editStudyItem(itemid) {
+	EDIT_STUDY_ITEM = itemid;
+	redisplay();
 }
 
-function inspectItem(itemid)
-{
-    EDIT_STUDY_ITEM = itemid;
-    redisplay();
-}
-
-function back2Main()
-{
-    EDIT_STUDY_ITEM = -1;
-    SEARCH_INPUT = "";
-    redisplay();
+function back2Main() {
+	EDIT_STUDY_ITEM = -1;
+	SEARCH_INPUT = "";
+	redisplay();
 }
 
 function getPageComponent()
@@ -55,62 +51,23 @@ function getPageComponent()
     return EDIT_STUDY_ITEM == -1 ? "main_display" : "edit_item";
 }
 
-function redisplayMain()
+function redisplay()
 {
-    var mainstr = `
-        <table  class="basic-table" width="70%">
-        <tr>
-        <th>Char 1</th>
-        <th>Char 2</th>
-        <th>Notes</th>
-        <th>...</th>
+    redisplayMain();
 
-        </tr>
+    redisplayEdit();
 
-    `;
+    redisplaySearchInfo();
 
-    var itemlist = W.getItemList("confounder");
-
-    itemlist.forEach(function(item) {
-
-        const rowstr = `
-            <tr>
-            <td>${item.getLeftChar()}</td>
-            <td>${item.getRghtChar()}</td>
-            <td>${item.getExtraInfo()}</td>
-            <td>
-            <a href="javascript:inspectItem(${item.getId()})">
-            <img src="/u/shared/image/inspect.png" height="18"/></a>
-
-            &nbsp;&nbsp;&nbsp;
-
-            <a href="javascript:deleteItem(${item.getId()})">
-            <img src="/u/shared/image/remove.png" height="18"/></a>
-
-            </td>
-            </tr>
-        `;
-
-        mainstr += rowstr;
-
-    });
-
-
-    mainstr += `</table>`;
-
-    populateSpanData({
-        "maintable" : mainstr
-    });
-
-
+    setPageComponent(getPageComponent());
 }
 
-function redisplayEdit()
-{
+function redisplayEdit() {
+
     if(EDIT_STUDY_ITEM == -1)
         { return; }
 
-    const studyitem = W.lookupItem("confounder", EDIT_STUDY_ITEM);
+    const studyitem = W.lookupItem("phonetic_link", EDIT_STUDY_ITEM);
 
     populateSpanData({
         "left_char" : studyitem.getLeftChar(),
@@ -129,7 +86,7 @@ function redisplayEdit()
     	"extra_info_left" : getCharTable(leftchar, "Left"),	    
     	"extra_info_rght" : getCharTable(rghtchar, "Right")
     });
-    
+
 }
 
 function getCharTable(charitem, tablename) 
@@ -154,6 +111,28 @@ function getCharTable(charitem, tablename)
 	`;
 }
 
+
+
+function editRghtChar()
+{
+	genericEditTextField("phonetic_link", "rght_char", EDIT_STUDY_ITEM);
+}
+
+function editLeftChar()
+{
+	genericEditTextField("phonetic_link", "left_char", EDIT_STUDY_ITEM);
+}
+
+function editExtraInfo()
+{
+	genericEditTextField("phonetic_link", "extra_info", EDIT_STUDY_ITEM);
+}
+
+function redisplayMain()
+{
+	populateSpanData({ "maintable" : getMainPageInfo() });
+}
+
 function updateSearchInput()
 {
     const newsearch = prompt("Search for ");
@@ -166,7 +145,6 @@ function updateSearchInput()
     redisplay();
 }
 
-
 function clearSearchInput()
 {
     SEARCH_INPUT = "";
@@ -175,46 +153,52 @@ function clearSearchInput()
 
 function markCharacter(palaceid, isleft)
 {
-    markCharacterSub(palaceid, isleft, "confounder");
+    markCharacterSub(palaceid, isleft, "phonetic_link");
 }
 
-function redisplay()
-{
-    redisplayMain();
+// Auto-generated getMainPageInfo function
+function getMainPageInfo() {
 
-    redisplayEdit();
+	var pageinfo = `
 
-    redisplaySearchInfo();
+		<br/>
+		<table class="basic-table" width="50%">
+		<tr>
+		<th width="15%">L</th>
+		<th width="15%">R</th>
+		<th>Notes</th>
+		<th>..</th></tr>`
 
-    setPageComponent(getPageComponent());
-}
+	const itemlist = W.getItemList('phonetic_link');
 
+	itemlist.forEach(function(item) {
+		const rowstr = `
+			<tr>
+			<td>${item.getLeftChar()}</td>
+			<td>${item.getRghtChar()}</td>
+			<td>${item.getExtraInfo()}</td>
+			<td>
+			<a href="javascript:editStudyItem(${item.getId()})"><img src="/u/shared/image/inspect.png" height="16"/></a>
+			&nbsp;&nbsp;&nbsp;
+			<a href="javascript:deleteItem(${item.getId()})"><img src="/u/shared/image/remove.png" height="16"/></a>
+			</td>
+			</tr>
+		`;
+		pageinfo += rowstr;
+	});
 
-function editLeftChar()
-{
-    genericEditTextField("confounder", "left_char", EDIT_STUDY_ITEM);
-}
-
-function editRghtChar()
-{
-    genericEditTextField("confounder", "rght_char", EDIT_STUDY_ITEM);
-}
-
-function editExtraInfo()
-{
-    genericEditTextField("confounder", "extra_info", EDIT_STUDY_ITEM);
+	pageinfo += `</table>`;
+	return pageinfo;
 }
 
 </script>
-</head>
-
 <body onLoad="javascript:redisplay()">
 
 <center>
 
 <span class="page_component" id="main_display">
 
-<h2>Confounder List</h2>
+<h2>Phonetic Link</h2>
 <a class="css3button" onclick="javascript:createNew()">NEW</a>
 
 <br/>

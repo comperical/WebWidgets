@@ -3,8 +3,6 @@
 <head>
 <title>AUDIO Palace Listing</title>
 
-<script src="ChineseTech.js"></script>
-
 <%= DataServer.basicIncludeOnly(request, "palace_item", "review_log", "hanzi_data", "confounder") %>
 
 <%= DataServer.includeIfAvailable(request, "minitask", "mini_task_list") %>

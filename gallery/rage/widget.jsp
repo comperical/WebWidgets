@@ -9,25 +9,25 @@
 
 var EDIT_STUDY_ITEM = -1;
 
+var SHOW_YEAR_INFO = true;
+
 function createNew()
 {
 	const shortname = prompt("ENRAGED about what?? : ");
 	
 	if(shortname)
 	{
-		const newid = newBasicId("rage_log");
 		const todaycode = getTodayCode().getDateString();
 		
 		// created_on, active_on, completed_on, dead_line
 		const newrec = {
-			"id" : newid,
 			"short_name" : shortname,
 			"category": 'misc',
 			"full_desc": "NotYetSet",
 			"day_code" : todaycode		
 		};		
 		
-		const newitem = buildItem("rage_log", newrec);
+		const newitem = W.buildItem("rage_log", newrec);
 		newitem.syncItem();
 		redisplay();
 	}
@@ -37,7 +37,7 @@ function deleteItem(killid, shortname)
 {
 	if(confirm("Are you sure you want to delete item " + shortname + "?"))
 	{
-		lookupItem("rage_log", killid).deleteItem();
+		W.lookupItem("rage_log", killid).deleteItem();
 		
 		redisplay();
 	}
@@ -204,9 +204,9 @@ function redisplayMainTable()
 	ragelist.sort(proxySort(a => [a.getDayCode()])).reverse();
 
 	var tablestr = `
-		<table class="basic-table"  width="80%">
+		<table class="basic-table"  width="85%">
 		<tr>
-		<th width="7%">Date</th>
+		<th width="10%">Date</th>
 		<th>Tags</th>
 		<th>Name</th>
 		<th>Desc</th>
@@ -218,9 +218,12 @@ function redisplayMainTable()
 				
 		const taglist = tagListFromItem(item).join(", ");
 				
+		var datedisp = item.getDayCode();
+		datedisp = SHOW_YEAR_INFO ? datedisp : datedisp.substring(5);
+
 		const rowstr = `
 			<tr>
-			<td>${item.getDayCode().substring(5)}</td>	
+			<td>${datedisp}</td>	
 			<td>${taglist}</td>			
 			<td>${item.getShortName()}</td>
 			<td width="50%">${getBasicDesc(item)}</td>

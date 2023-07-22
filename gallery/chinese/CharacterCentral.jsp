@@ -2,9 +2,8 @@
 
 <html>
 <head>
-<title>Character Central</title>
+<title>&#128270; &#23383;</title>
 
-<script src="ChineseTech.js?bust_cache=13"></script>
 <script src="../hanyu/pin_yin_converter.js"></script>
 
 <%= DataServer.basicIncludeOnly(request, "confounder", "palace_item", "hanzi_data", "review_log", "word_memory") %>
@@ -460,7 +459,7 @@ function convertExample2Vocab()
 
 <span class="page_component" id="main_list">
 
-<h2>Character Central</h2>
+<h2>Character Lookup</h2>
 
 <br/>
 

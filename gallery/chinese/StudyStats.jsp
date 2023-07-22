@@ -4,8 +4,6 @@
 <head>
 <title>Character Learning Schedule</title>
 
-<script src="ChineseTech.js"></script>
-
 <%= DataServer.basicIncludeOnly(request, "palace_item", "hanzi_data", "learning_schedule", "word_memory", "review_log", "vocab_log") %>
 
 <script>

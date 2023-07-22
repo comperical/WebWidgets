@@ -1,5 +1,31 @@
 
 
+// In this widget, this list is hardcoded
+const MASTER_TYPE_LIST = ["chinese", "crm", "life", "work"];
+
+
+function getHeaderInfo()
+{
+    return [
+        ["Mini Task List", "widget.jsp"],
+        ["Mini Task Search", "MiniTaskSearch.jsp"]
+    ];
+}
+
+// Gets the task's age. 
+// For purposes of efficiency, caller should supply a reference to todaycode
+function getTaskAge(thetask)
+{
+    // console.log("Task alpha is " + thetask.getAlphaDate());
+    
+    var alphadc = lookupDayCode(thetask.getAlphaDate());
+    
+    return alphadc.daysUntil(TODAY_CODE);
+}
+
+
+
+
 // Get effective priority of item, given its intrinsic priority and its age.
 function getEffectivePriority(actitem)
 {   

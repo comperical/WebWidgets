@@ -166,8 +166,8 @@ function removeTimeFromItem(itemid)
 
 function deleteItem(killid)
 {
-	lookupItem("day_plan_main", killid).deleteItem();
-	
+	genericDeleteItem("day_plan_main", killid);
+
 	redisplay();
 }
 
@@ -190,6 +190,24 @@ function getTemplateIdMap()
 		item => item.getId(), item => item.getShortName());
 
 }
+
+
+// This is a copy of a function in my personal shared JS code
+function getDateDisplayMap()
+{
+
+	var dayptr = getTodayCode().dayAfter().dayAfter();
+    const displaymap = {};
+
+	for(var idx = 0; idx < 14; idx++)
+	{
+		displaymap[dayptr.getDateString()] = dayptr.getNiceDisplay();
+		dayptr = dayptr.dayBefore();
+	}
+
+    return displaymap;
+}
+
 
 function redisplay()
 {
@@ -294,8 +312,7 @@ function redisplay()
 						.setSelectedKey(-1)
 
 
-	// TODO: this should give a day ahead, the whole point of the day plan is to do it the day before
-	const displaymap = getNiceDateDisplayMap(14);
+	const displaymap = getDateDisplayMap();
 
 	const datesel = buildOptSelector()
 					.setFromMap(displaymap)

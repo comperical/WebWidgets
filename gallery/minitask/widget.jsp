@@ -3,27 +3,13 @@
 <head>
 <title>Mini Task List</title>
 
-<%= DataServer.basicInclude(request) %>
+<%= DataServer.include(request) %>
 
 <script>
 
 var TODAY_CODE = getTodayCode();
 
 var EDIT_STUDY_ITEM = 3763;
-
-// In this widget, this list is hardcoded
-const MASTER_TYPE_LIST = ["chinese", "crm", "life", "work"];
-
-// Gets the task's age. 
-// For purposes of efficiency, caller should supply a reference to todaycode
-function getTaskAge(thetask)
-{
-	// console.log("Task alpha is " + thetask.getAlphaDate());
-	
-	var alphadc = lookupDayCode(thetask.getAlphaDate());
-	
-	return alphadc.daysUntil(TODAY_CODE);
-}
 
 function createNewTask()
 {
@@ -38,16 +24,11 @@ function createNewTask()
 	
 	if(itemname)
 	{	
-		var newid = newBasicId("mini_task_list");
-		
-		var todaycode = getTodayCode().getDateString();
-		
 		const newrec = {
-			"id" : newid,
 			"task_type" : showtypelist[0],
 			"short_desc" : itemname,
 			"extra_info" : "",
-			"alpha_date" : todaycode,
+			"alpha_date" : getTodayCode().getDateString(),
 			"omega_date" : "",
 			"priority" : 5,
 			"is_backlog" : 0
@@ -55,7 +36,7 @@ function createNewTask()
 	
 		// CREATE TABLE mini_task_list (id int, task_type varchar(10), short_desc varchar(30), extra_info varchar(400), alpha_date varchar(10), omega_date varchar(10), priority int, is_backlog smallint default 0, primary key(id));
 		
-		const newtaskitem = buildItem("mini_task_list", newrec);
+		const newtaskitem = W.buildItem("mini_task_list", newrec);
 		newtaskitem.syncItem();
 		redisplay();
 	}
@@ -66,7 +47,7 @@ function archiveItem(itemid)
 {
 	if(confirm("Are you sure you want to archive this item " + itemid + " ?"))
 	{
-		var theitem = lookupItem("mini_task_list", itemid);
+		var theitem = W.lookupItem("mini_task_list", itemid);
 		theitem.setAlphaDate('2000-01-01');
 		theitem.setIsBacklog(1);
 		theitem.syncItem();
@@ -78,7 +59,7 @@ function archiveItem(itemid)
 
 function deleteItem(killid)
 {
-	var theitem = lookupItem("mini_task_list", killid);
+	var theitem = W.lookupItem("mini_task_list", killid);
 	
 	if(confirm("Are you sure you want to delete item " + theitem.getShortDesc() + " ?"))
 	{
@@ -89,7 +70,7 @@ function deleteItem(killid)
 
 function markItemComplete(markid)
 {
-	const markitem = lookupItem("mini_task_list", markid);
+	const markitem = W.lookupItem("mini_task_list", markid);
 	const todaycode = getTodayCode().getDateString();
 	markitem.setOmegaDate(todaycode);
 	markitem.syncItem();
@@ -277,11 +258,15 @@ function reDispActiveTable()
 	
 	// Sort by effective priority
 	activelist.sort(proxySort(actrec => [-actrec.getPriority()]));
+
+	const showtypelist = getShowTypeList();
+
+	const showtypecol = showtypelist.length > 1;	
 	
 	var tablestr = `
 		<table class="basic-table"  width="80%">
 		<tr>
-		<th>Type</th>
+		${showtypecol ? "<th>Type</th>" : ""}
 		<th>ShortDesc</th>
 		<th>Start</th>
 		<th>Age</th>
@@ -290,7 +275,6 @@ function reDispActiveTable()
 		</tr>
 	`;
 	
-	const showtypelist = getShowTypeList();
 	
 	activelist.forEach(function(activitem) {
 			
@@ -299,10 +283,12 @@ function reDispActiveTable()
 	
 		const dayage = getTaskAge(activitem);
 		
+		const tdcell = showtypecol ? `<td width="7">${activitem.getTaskType()}</td>` : "";
+
 		var rowstr = `
 			<tr>
-			<td width="7">${activitem.getTaskType()}</td>
-			<td width="40%">${activitem.getShortDesc()}</td>			
+			${tdcell}
+			<td width="60%">${activitem.getShortDesc()}</td>			
 			<td width="10%">${activitem.getAlphaDate().substring(5)}</td>	
 			<td>${dayage}</td>			
 		`;
@@ -326,14 +312,9 @@ function reDispActiveTable()
 			const breaker = "&nbsp; &nbsp;";
 			
 			rowstr += `
-				<td width="18%">
+				<td>
 				<a href="javascript:markItemComplete(${activitem.getId()})">
 				<img src="/u/shared/image/checkmark.png" height="18"/></a>
-			
-				${breaker}
-				
-				<a href="javascript:refreshStartDate(${activitem.getId()})">
-				<img src="/u/shared/image/cycle.png" height="18"></a>
 			
 				${breaker}
 					
@@ -374,7 +355,7 @@ function reDispCompleteTable()
 {
 	
 	var tablestr = `
-		<table class="basic-table"  width="70%">
+		<table class="basic-table"  width="80%">
 		<tr>
 		<th>Type</th>
 		<th>Desc</th>
@@ -448,10 +429,17 @@ function reDispEditItem()
 }
 
 
+function handleTopNav()
+{
+    populateTopNavBar(getHeaderInfo(), "Mini Task List");
+}
+
 function redisplay()
 {
 	_TASK_AGE_MAP = {};
 	
+	handleTopNav();
+
 	reDispEditItem();
 	
 	reDispActiveTable();
@@ -471,11 +459,12 @@ function redisplay()
 
 <center>
 
+<div class="topnav"></div>
+
+<br/>
+
 <span class="main2edit">
 
-
-
-<h3>Mini Task List</h3>
 
 <br/>
 
@@ -523,8 +512,6 @@ function redisplay()
 
 
 </form>  
-
-<h3>Active Items &nbsp; &nbsp; &nbsp; <a href="MiniTaskArchive.jsp">backlog</a></h3>
 
 <br/>
 

@@ -38,6 +38,8 @@ function getDateSelCodeMap()
         "all" : "all",
         "year_2020" : "2020",
         "year_2021" : "2021",
+        "year_2022" : "2022",
+        "year_2023" : "2023",
         "last_365" : "last year",
         "last_270" : "last 9 months",
         "last_180" : "last 6 months",

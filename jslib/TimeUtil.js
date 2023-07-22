@@ -337,6 +337,9 @@ ExactMoment.prototype.withAddedMilli = function(milli)
 }
 
 
+// Create an ISO "long basic" timestamp string of the form  YYYY-MM-DD HH:MM:SS
+// Example: 2020-05-15 14:21:45
+// Use the given timezone to produce the timestamp
 ExactMoment.prototype.asIsoLongBasic = function(timezone)
 {
     massert(timezone in TIME_ZONE_OFFSET_MAP, "Unknown timezone " + timezone + " options are " + TIME_ZONE_OFFSET_MAP);
@@ -344,11 +347,8 @@ ExactMoment.prototype.asIsoLongBasic = function(timezone)
     const hourmod = TIME_ZONE_OFFSET_MAP[timezone];
 
     const mydate = new Date(this.__epochTimeMilli + (hourmod * 3600 * 1000));
-    // console.log("Milli time: " + this.__epochTimeMilli);
 
     const isoformat = mydate.toISOString().substring(0, "2022-04-14T21:20:00".length).replace("T", " ");
-    // console.log(isoformat);
-
     return isoformat;
 }
 

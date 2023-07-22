@@ -3,8 +3,6 @@
 <head>
 <title>Memory Palace Listing</title>
 
-<script src="ChineseTech.js"></script>
-
 <%= DataServer.basicIncludeOnly(request, "palace_item", "review_log") %>
 
 <script>

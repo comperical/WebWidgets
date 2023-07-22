@@ -37,6 +37,9 @@ __HANZI_DATA_BY_CHAR = null;
 
 __CONFOUNDER_INDEX = null;
 
+__PHONETIC_LINK_IDX = null;
+
+
 // Simp Hanzi Word to vocab item
 __WORD2_VOCAB_ITEM = null;
 
@@ -44,25 +47,44 @@ function getConfounderIndex()
 {
 	if(__CONFOUNDER_INDEX == null)
 	{
-		__CONFOUNDER_INDEX = {};
-
-		W.getItemList("confounder").forEach(function(conf) {
-
-			const charlist = [conf.getLeftChar(), conf.getRghtChar()];
-
-			charlist.forEach(function(char) {
-
-				if(!(char in __CONFOUNDER_INDEX)) 
-					{ __CONFOUNDER_INDEX[char] = []; }
-
-				__CONFOUNDER_INDEX[char].push(conf);
-
-			});
-		});
+        __CONFOUNDER_INDEX = getCharIndexSub("confounder");
 	}
 
 	return __CONFOUNDER_INDEX;
 }
+
+function getPhoneticLinkIndex()
+{
+    if(__PHONETIC_LINK_IDX == null)
+    {
+        __PHONETIC_LINK_IDX = getCharIndexSub("phonetic_link");
+    }
+
+    return __PHONETIC_LINK_IDX;
+}
+
+function getCharIndexSub(chartable)
+{
+    const charidx = {}
+
+    W.getItemList(chartable).forEach(function(conf) {
+
+        const charlist = [conf.getLeftChar(), conf.getRghtChar()];
+
+        charlist.forEach(function(char) {
+
+            if(!(char in charidx)) 
+                { charidx[char] = []; }
+
+            charidx[char].push(conf);
+
+        });
+    });
+
+    return charidx;
+}
+
+
 
 function lookupHanziDataByChar(hanzichar)
 {
@@ -336,6 +358,115 @@ function buildChar2VocabMap(vocablist)
 
 	return mymap;
 }
+
+
+function redisplaySearchInfo()
+{
+    var searchstr = `
+
+        <br/>
+        <br/>
+
+        <a href="javascript:updateSearchInput()"><button>search</button></a>
+
+        &nbsp;
+        &nbsp;
+        &nbsp;
+
+        <a href="javascript:clearSearchInput()"><button>clear</button></a>
+
+
+    `;
+
+
+    if (SEARCH_INPUT.length > 0)
+    {
+
+        const hitlist = findSearchHitList();
+
+        searchstr += `
+
+            <br/>
+            <br/>
+
+            <table class="basic-table" width="50%">
+            <tr>
+            <th>Character</th>            
+                        <th>PinYin</th>            
+            <th>Meaning</th>
+            <th>+L</th>
+            <th>+R</th>
+            </tr>
+        `;
+
+        hitlist.forEach(function(item) {
+
+            const hanitem = lookupHanziDataByChar(item.getHanziChar());
+
+            const rowstr = `
+                <tr>
+                <td>${item.getHanziChar()}</td>                
+                <td>${hanitem.getPinYin()}</td>
+                <td>${item.getMeaning()}</td>
+                <td>
+                <a href="javascript:markCharacter(${item.getId()}, true)"><img src="/u/shared/image/checkmark.png" height="18"</a>
+                </td>
+                <td>
+                <a href="javascript:markCharacter(${item.getId()}, false)"><img src="/u/shared/image/checkmark.png" height="18"</a>
+                </td>
+                </tr>
+            `;
+
+            searchstr += rowstr;
+        });
+
+        searchstr += `
+            </table>
+        `;
+    }
+
+
+    populateSpanData({"search_info" : searchstr});
+}
+
+function findSearchHitList()
+{
+    if (SEARCH_INPUT.length == 0)
+        { return []; }
+
+
+    function searchHit(item) {
+        const meanhit = item.getMeaning().toLowerCase().indexOf(SEARCH_INPUT.toLowerCase()) > -1;
+        const charhit = item.getHanziChar().indexOf(SEARCH_INPUT) > -1;
+
+        const hanzi = lookupHanziDataByChar(item.getHanziChar());
+        const basichit = stripDiacritics(hanzi.getPinYin()).indexOf(SEARCH_INPUT) > -1;
+        const cmplxhit = hanzi.getPinYin().indexOf(SEARCH_INPUT) > -1;
+
+        return meanhit || charhit || basichit || cmplxhit;
+    }
+
+    //getItemList("palace_item").
+
+    return W.getItemList("palace_item").filter(searchHit);
+}
+
+function markCharacterSub(palaceid, isleft, linktable)
+{
+    const palitem = W.lookupItem("palace_item", palaceid);
+    const confitem = W.lookupItem(linktable, EDIT_STUDY_ITEM);
+
+
+    if(isleft)
+        { confitem.setLeftChar(palitem.getHanziChar()); }
+    else
+        { confitem.setRghtChar(palitem.getHanziChar()); }
+
+    confitem.syncItem();
+    redisplay();
+}
+
+
 
 
 

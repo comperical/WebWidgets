@@ -1,13 +1,11 @@
 
 <html>
 <head>
-<title>Memory Palace Listing</title>
+<title>Study Hanzi</title>
 
-<script src="ChineseTech.js?bust_cache=17"></script>
 <script src="../hanyu/pin_yin_converter.js"></script>
 
-
-<%= DataServer.include(request, "tables=palace_item,review_log,hanzi_data,confounder,word_memory") %>
+<%= DataServer.include(request, "tables=palace_item,review_log,hanzi_data,confounder,word_memory,phonetic_link") %>
 
 <%= DataServer.includeIfOkay(request, "widgetname=minitask&tables=mini_task_list") %>
 
@@ -24,9 +22,13 @@ CURRENT_PROMPT_ITEM = computePromptItem();
 
 CHARACTER_VOCAB_MAP = buildChar2VocabMap(W.getItemList("word_memory"));
 
+RECENT_REP_COUNT = getPalaceProgress("review_log")[0];
 
 function markResult(resultcode)
 {	
+
+
+
 	// This creates a review_log item and then redisplays the quiz.
 	const timestamp = exactMomentNow().asIsoLongBasic(MY_TIME_ZONE);
 	const newrec = {
@@ -45,9 +47,20 @@ function markResult(resultcode)
 	reComputeFinalProb(BAYESIAN_STAT_MAP, newitem.getItemId());
 	
 	CURRENT_PROMPT_ITEM = computePromptItem();
-	redisplay();	
+	redisplay();
 
 	toggleHidden4Class('prompt_answer');	
+
+
+	{
+		RECENT_REP_COUNT += 1;
+		const modcount = RECENT_REP_COUNT % 10;
+		if(modcount == 0)
+		{
+			const mssg = `${RECENT_REP_COUNT} reps complete!`;
+			alert(mssg);
+		}
+	}
 }
 
 function createMiniTaskNote()
@@ -220,6 +233,27 @@ function redisplay()
 			});
 		}
 	}
+
+	{
+		const confidx = getPhoneticLinkIndex();
+		if(CURRENT_PROMPT_ITEM.getHanziChar() in confidx) 
+		{
+			// TODO: should eventually show ALL of these, there might be many.
+			const conflist = confidx[CURRENT_PROMPT_ITEM.getHanziChar()];
+			conflist.forEach(function(confitem) {
+
+				infotable += `
+					<tr>
+					<td width="20%"><b>Phonetic</b></td>
+					<td>
+					${confitem.getLeftChar()} / ${confitem.getRghtChar()}  :
+					${confitem.getExtraInfo()}
+					</td>
+					</tr>
+				`;
+			});
+		}
+	}	
 
 
 	const vocabex = CHARACTER_VOCAB_MAP[CURRENT_PROMPT_ITEM.getHanziChar()] || [];

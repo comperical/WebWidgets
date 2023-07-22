@@ -16,7 +16,7 @@ var SEARCH_TERM = null;
 
 const SEARCH_TAG_LIST = [];
 
-const TAG_SEPARATOR = ";;;";
+const SIMPLE_SEPARATOR = ";;;";
 
 function deleteBlobItem(itemid)
 {
@@ -72,14 +72,14 @@ function getFullTagSet()
 
 function saveItemTagList(item, taglist)
 {
-  const tagstr = taglist.filter(tg => tg.trim().length > 0).join(TAG_SEPARATOR);
+  const tagstr = taglist.filter(tg => tg.trim().length > 0).join(SIMPLE_SEPARATOR);
   item.setTagList(tagstr);
   item.syncItem();
 }
 
 function getItemTagList(item)
 {
-  return item.getTagList().split(TAG_SEPARATOR).filter(tag => tag.trim().length > 0);
+  return item.getTagList().split(SIMPLE_SEPARATOR).filter(tag => tag.trim().length > 0);
 }
 
 function removeItemTag(remtag)
@@ -168,7 +168,8 @@ function updateAttachmentContent(base64data, filename)
         "photo_date" : getTodayCode().getDateString(),
         "description" : "---",
         "base64_blob_data" : base64data,
-        "blob_file_name" : filename
+        "blob_file_name" : filename,
+        "rotation" : 0
     };
 
 
@@ -242,12 +243,24 @@ function editCoreFileName()
   }
 }
 
+function addRotation()
+{
+  const studyitem = W.lookupItem("photo_main", EDIT_STUDY_ITEM);
+  var r = studyitem.getRotation() + 1;
+  r = (r == 4 ? 0 : r);
+  studyitem.setRotation(r);
+  studyitem.syncItem();
+  redisplay();
+}
+
+
 function redisplay()
 {
   const pageinfo = EDIT_STUDY_ITEM == -1 ? redisplayMain() : redisplayEdit();
 
   populateSpanData({"pageinfo" : pageinfo});
 }
+
 
 function redisplayEdit()
 {
@@ -328,6 +341,16 @@ function redisplayEdit()
       </tr>
 
       <tr>
+      <td><b>Rotation</b></td>
+      <td colspan="2">${item.getRotation()}</td>
+      <td>
+
+      <a href="javascript:addRotation()"><img src="/u/shared/image/cycle.png" height="18"/></a>
+      </td>
+      </tr>
+
+
+      <tr>
       <td><b>Tags</b></td>
       <td width="35%">${taginfo}</td>
       <td width="35%">
@@ -347,8 +370,17 @@ function redisplayEdit()
       <br/>
       <br/>
 
-      <img src="${blobstore}&download=false" width="60%"/>
+  `;
 
+  const rotate90 = 90 * item.getRotation();
+
+  const breakem = item.getRotation() == 1 || item.getRotation() == 3 ? "<br/><br/><br/>" : "";
+
+  pageinfo += `
+
+    ${breakem}
+
+    <img src="${blobstore}&download=false" style="transform: rotate(${rotate90}deg);" width="60%"/>
   `;
 
   return pageinfo;

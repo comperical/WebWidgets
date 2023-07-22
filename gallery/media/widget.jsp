@@ -94,7 +94,8 @@ function editItemCategory()
 
 function getCategoryList()
 {
-    return ["book", "blog", "podcast", "movie", "TV show", "video", "manga", "course"];
+    // park = kind of a geographical media...?
+    return ["book", "blog", "podcast", "movie", "TV show", "video", "manga", "course", "park"];
 }
 
 function createNew()

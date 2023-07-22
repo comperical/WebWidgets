@@ -3,12 +3,12 @@
 <head>
 <title>Mini Task List</title>
 
-<%= DataServer.basicInclude(request) %>
+<%= DataServer.include(request) %>
 
 <script>
 
 
-function createNewTask()
+function createNewTask(priority)
 {
 
     
@@ -24,11 +24,11 @@ function createNewTask()
             "extra_info" : "",
             "alpha_date" : todaycode,
             "omega_date" : "",
-            "priority" : 5,
+            "priority" : priority,
             "is_backlog" : 0
         };
             
-        const newtaskitem = buildItem("mini_task_list", newrec);
+        const newtaskitem = W.buildItem("mini_task_list", newrec);
         newtaskitem.syncItem();
         redisplay();
 
@@ -48,7 +48,8 @@ function doClear()
 
 function redisplay()
 {
-    getUniqElementByName("simple_item").value="..";
+    getUniqElementByName("simple_item").value = "";
+    getUniqElementByName("simple_item").focus();
 }
 
 
@@ -70,13 +71,30 @@ function redisplay()
 
 <br/><br/>
 
-<a class="css3button" href="javascript:createNewTask()">create</a>
+<a class="css3button" style="background:-webkit-gradient(linear,left top,left bottom,from(#f39),to(#f39));"
+href="javascript:createNewTask(20)">TOP</a>
 
 &nbsp;
 &nbsp;
 &nbsp;
 
-<a class="css3button" href="javascript:doClear()">clear</a>
+&nbsp;
+&nbsp;
+
+
+
+<a class="css3button" href="javascript:createNewTask(10)"
+style="background:-webkit-gradient(linear,left top,left bottom,from(#c0c),to(#c0c));">HIGH</a>
+
+&nbsp;
+&nbsp;
+
+
+&nbsp;
+&nbsp;
+&nbsp;
+
+<a class="css3button" href="javascript:createNewTask(5)">REG.</a>
 
 
 </center>
