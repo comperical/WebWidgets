@@ -499,7 +499,6 @@ Category:
 
 <br/>
 
-
 <a class="css3button" href="javascript:createNew()">NEW</a>
 
 
