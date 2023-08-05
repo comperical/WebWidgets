@@ -20,17 +20,9 @@ const LONG_DAY_WEEK_LIST = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursda
 
 const MONTH_NAMES = ["January", "February", "March", "April",  "May", "June", "July", "August", "September", "October", "November", "December"];
 
-const TIME_ZONE_MAP = {
-    "UTC" : "+00:00",
-    "EST" : "-05:00",
-    "PST" : "-08:00",
-    "PDT" : "-07:00",
-    // "CST" : "-06:00", This fucking thing just doesnt work
-    "GMT" : "+00:00"
-}
-
 const TIME_ZONE_OFFSET_MAP = {
     "UTC" : 0,
+    "AST" : -4,
     "EST" : -5,
     "PST" : -8,
     "PDT" : -7,
@@ -38,7 +30,7 @@ const TIME_ZONE_OFFSET_MAP = {
 }
 
 
-const TIME_ZONE_LIST = Object.keys(TIME_ZONE_MAP);
+const TIME_ZONE_LIST = Object.keys(TIME_ZONE_OFFSET_MAP);
 
 // This is the main way to create DayCodes.
 // The input argument is an ISO formatted string of the form YYYY-MM-DD, such as 2021-01-10
@@ -289,13 +281,6 @@ function checkTimeZoneOkay(timezone)
     massert(TIME_ZONE_LIST.includes(timezone), "Unknown timezone " + timezone + " options are " + TIME_ZONE_LIST);
 }
 
-function __timeZone2OffSet(timezone) 
-{
-    checkTimeZoneOkay(timezone);
-
-    return TIME_ZONE_MAP[timezone];
-}
-
 function maybePad(pdstr)
 {
     return pdstr.length == 1 ? "0" + pdstr : pdstr;
@@ -372,7 +357,7 @@ function exactMomentFromIsoBasic(timestamp, timezone)
 {
     const hourmod = TIME_ZONE_OFFSET_MAP[timezone];
     massert(hourmod != null, 
-        `Time Zone string ${timezone} not present in the time zone map, options are\n${Object.keys(TIME_ZONE_MAP)}`);
+        `Time Zone string ${timezone} not present in the time zone map, options are\n${TIME_ZONE_LIST}`);
 
     massert(isLongIsoTimeValid(timestamp),
         `The timestamp string ${timestamp} is not valid, format is YYYY-MM-DD HH:MM:SS`);
