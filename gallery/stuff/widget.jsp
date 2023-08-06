@@ -5,6 +5,20 @@
 
 <%= DataServer.basicInclude(request) %>
 
+
+<style>
+/* 
+on a wide screen, use 80% of width, but on narrow screen use at least 800 pixel 
+Goal here is to work with laptop and tablet, but not phone
+*/
+.tasktable {
+
+    min-width: 800px;
+    width: 80%;
+}
+</style>
+
+
 <script>
 
 var EDIT_STUDY_ITEM = -1;
@@ -575,7 +589,7 @@ function getListingTable(stufflist, depthmap, cnamemap, locnamemap)
 {
 
     var tablestr = `
-        <table class="basic-table" width="70%">
+        <table class="basic-table tasktable">
         <tr>
         <th>Name</th>
         <th>Location</th>

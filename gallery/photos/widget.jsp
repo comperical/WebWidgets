@@ -213,8 +213,6 @@ function getFileExtension(photoitem)
 
 function runSearch()
 {
-
-
   SEARCH_TERM = getDocFormValue("new_search");
   redisplay();
 }

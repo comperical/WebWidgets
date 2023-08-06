@@ -5,6 +5,20 @@
 
 <%= DataServer.include(request) %>
 
+<style>
+
+/* 
+on a wide screen, use 80% of width, but on narrow screen use at least 800 pixel 
+Goal here is to work with laptop and tablet, but not phone
+*/
+.tasktable {
+
+	min-width: 800px;
+	width: 80%;
+}
+
+</style>
+
 <script>
 
 var TODAY_CODE = getTodayCode();
@@ -264,7 +278,7 @@ function reDispActiveTable()
 	const showtypecol = showtypelist.length > 1;	
 	
 	var tablestr = `
-		<table class="basic-table"  width="80%">
+		<table class="basic-table tasktable">
 		<tr>
 		${showtypecol ? "<th>Type</th>" : ""}
 		<th>ShortDesc</th>
@@ -355,7 +369,7 @@ function reDispCompleteTable()
 {
 	
 	var tablestr = `
-		<table class="basic-table"  width="80%">
+		<table class="basic-table tasktable"  width="80%">
 		<tr>
 		<th>Type</th>
 		<th>Desc</th>
