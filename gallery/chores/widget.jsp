@@ -321,10 +321,11 @@ function getChoreLogTable(itemlist, lastcompmap, showall, ispromo)
 
 		<table class="basic-table"  width="70%">
 		<tr>
-		<th>Chore Name</th>
+		<th width="25%">Chore Name</th>
 		<th>Last Completed</th>
+		<th>Days Since</th>		
 		<th>Overdue</th>
-		<th width="24%">...</th>
+		<th width="25%">...</th>
 		</tr>
 	`;
 
@@ -336,6 +337,7 @@ function getChoreLogTable(itemlist, lastcompmap, showall, ispromo)
 		const lastupdate = lastcompmap.hasOwnProperty(chore.getId()) ? lastcompmap[chore.getId()] : "never";
 
 		const okaypromo = isPromoValid(chore, lastupdate);
+		const overdue = choreage - chore.getDayFreq();
 
 		if (okaypromo != ispromo) 
 			{ return; }
@@ -343,14 +345,14 @@ function getChoreLogTable(itemlist, lastcompmap, showall, ispromo)
 		if(chore.getIsActive() == 0)
 			{ return; }
 				
-		if(!showall && choreage <= chore.getDayFreq())
+		if(!showall && overdue <= 0)
 			{ return; }
-			
-		var weblinkstr = "--";
+
+		var weblinkstr = `<a href="#"><img src="/u/shared/image/purewhite.png" height="18" width="18"></a>`;
 		
 		if(chore.getWebLink().length > 0) 
-		{
-			weblinkstr = `<a href="${chore.getWebLink()}"><img src="/u/shared/image/chainlink.png" height=18"></a>`;
+		{	
+			weblinkstr = weblinkstr.replace("purewhite", "chainlink").replace("#", chore.getWebLink());
 		}
 		
 					
@@ -359,7 +361,7 @@ function getChoreLogTable(itemlist, lastcompmap, showall, ispromo)
 			<td>${chore.getShortName()}</td>
 			<td>${lastupdate.substring(5)}</td>
 			<td>${choreage}</td>
-			
+			<td>${overdue}</td>
 			<td>
 
 				<a href="javascript:promoteItem(${chore.getId()})">
