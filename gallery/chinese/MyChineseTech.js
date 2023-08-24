@@ -466,7 +466,16 @@ function markCharacterSub(palaceid, isleft, linktable)
     redisplay();
 }
 
+// Header for planning tabs
+function getPlanningHeader()
+{
+    return [
+        ["Learning Schedule", "LearningSchedule.jsp"],
+        ["Study Stats", "StudyStats.jsp"],
+        ["Vocab Learning", "VocabLearningPlan.jsp"]
+    ];
 
+}
 
 
 

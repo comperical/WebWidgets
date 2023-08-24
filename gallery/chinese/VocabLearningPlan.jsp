@@ -2,7 +2,7 @@
 
 <html>
 <head>
-<title>Character Learning Schedule</title>
+<title>Vocab Learning Schedule</title>
 
 <%= DataServer.include(request, "tables=palace_item,hanzi_data,learning_schedule,word_memory") %>
 
@@ -21,6 +21,10 @@ const HAVE_CHAR_KEY = "HaVEChaR";
 
 const WORD_PRESENT_KEY = "WordPReSEnt";
 
+// Gotcha, if you try to hardcode this, it won't work
+// var CHARACTER_SEARCH = "爱";
+var CHARACTER_SEARCH = null;
+
 
 const SHOW_WORD_LIMIT = 20;
 
@@ -35,14 +39,7 @@ var __VOCAB_STUDY_MAP = null;
 
 function handleNavBar() 
 {
-    const headerinfo = [
-        ["Learning Schedule", "LearningSchedule.jsp"],
-        ["Study Stats", "StudyStats.jsp"]
-    ];
-
-    // const current = STUDY_CATEGORY ? "Link Categories" : "Link Main"; 
-
-    populateTopNavBar(headerinfo, "Learning Schedule");
+    populateTopNavBar(getPlanningHeader(), "Vocab Learning");
 }
 
 // Hanzi word -> ID
@@ -104,8 +101,34 @@ function getHaveCharCount(vocabword)
     return getHaveCharList(vocabword).length;
 }
 
+function clearCharacterSearch()
+{
+    CHARACTER_SEARCH = null;
+    redisplay();
+}
+
+function runCharacterSearch()
+{
+    const charsearch = prompt("Enter character to search for: ");
+
+    if(charsearch)
+    {
+        CHARACTER_SEARCH = charsearch;
+        redisplay();
+    }
+
+}
+
 function getVocabTargetList()
 {
+    if(CHARACTER_SEARCH != null)
+    {
+        // This SHORT-CIRCUITS the other select options
+        return W.getItemList("hsk_vocab_info")
+                            .filter(item => item.getSimpHanzi().includes(CHARACTER_SEARCH));
+    }
+
+
     const havechar = GENERIC_OPT_SELECT_MAP.get(HAVE_CHAR_KEY);
     const charfilter = function(vocabitem)
     {
@@ -156,6 +179,48 @@ function getVocabTargetList()
 
 }
 
+function getCharSearchBlock()
+{
+    var block = `
+        <table class="basic-table" width="30%">
+        <tr>
+        <td>Search</td>
+    `;
+
+    if(CHARACTER_SEARCH == null) 
+    {
+        block += `
+            <td>
+            <a href="javascript:runCharacterSearch()"><button>run</button></a>
+            </td>
+        `;
+    } else {
+
+        block += `
+            <td>
+            ${CHARACTER_SEARCH}
+
+            &nbsp;
+            &nbsp;
+            &nbsp;
+            &nbsp;
+
+            <a href="javascript:clearCharacterSearch()"><button>clear</button></a>
+            </td>
+        `;
+
+    }
+
+
+    block += `
+        </tr>
+        </table>
+    `
+
+    return block;
+
+}
+
 
 function generateVocabTableInfo()
 {
@@ -188,6 +253,10 @@ function generateVocabTableInfo()
     var tablestr = `
         <h3>Vocab Items</h3>
 
+
+        <br/>
+        ${getCharSearchBlock()}
+        <br/>
 
         <br/>
         HSK Level: ${levelsel} 

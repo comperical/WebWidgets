@@ -14,12 +14,7 @@ const NUM_CHAR_LIST = [1, 2, 3, 4, 5];
 
 function handleNavBar() 
 {
-    const headerinfo = [
-        ["Learning Schedule", "LearningSchedule.jsp"],
-        ["Study Stats", "StudyStats.jsp"]
-    ];
-
-    populateTopNavBar(headerinfo, "Study Stats");
+    populateTopNavBar(getPlanningHeader(), "Study Stats");
 }
 
 

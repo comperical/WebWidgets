@@ -10,14 +10,7 @@
 
 function handleNavBar() 
 {
-    const headerinfo = [
-        ["Learning Schedule", "LearningSchedule.jsp"],
-        ["Study Stats", "StudyStats.jsp"]
-    ];
-
-    // const current = STUDY_CATEGORY ? "Link Categories" : "Link Main"; 
-
-    populateTopNavBar(headerinfo, "Learning Schedule");
+    populateTopNavBar(getPlanningHeader(), "Learning Schedule");
 }
 
 function addPalaceItem(charid)

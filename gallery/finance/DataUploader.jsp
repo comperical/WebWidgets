@@ -70,12 +70,14 @@ function getMissingInfo()
         <table class="basic-table" width="50%">
         <tr>
         <th>LogSource</th>
+        <th>1st Missing</th>
         <th>Alpha</th>
         <th>Omega</th>
         </tr>
     `
 
     const padomega = findRecentPadDate();
+    const noupload_cutoff = padomega.nDaysBefore(30);
 
 
     getLogSourceList().forEach(function(logsource) {
@@ -83,11 +85,24 @@ function getMissingInfo()
         const missing = findFirstMissingDay(logsource);
         const padalpha = missing.nDaysBefore(15);
 
+        var infocell = `
+            <td colspan="2">Up To Date</td>
+        `;
+
+        if(padalpha.isBefore(noupload_cutoff))
+        {
+            infocell = `
+                <td>${annoyingDateFormat(padalpha)}</td>
+                <td>${annoyingDateFormat(padomega)}</td>
+            `;
+
+        } 
+
         const rowstr = `
             <tr>
             <td><b>${logsource}</b></td>
-            <td>${annoyingDateFormat(padalpha)}</td>
-            <td>${annoyingDateFormat(padomega)}</td>
+            <td>${missing.getDateString()}</td>
+            ${infocell}
             </tr>
         `;
 

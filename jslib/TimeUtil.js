@@ -75,6 +75,18 @@ DayCode.prototype.getDateString = function()
     return this.dateString;
 }
 
+// True if THIS DayCode object is before the argument DayCode
+DayCode.prototype.isBefore = function(other)
+{
+    return this.getDateString() < other.getDateString();
+}
+
+// True if THIS DayCode object is AFTER the argument DayCode
+DayCode.prototype.isAfter = function(other)
+{
+    return this.getDateString() > other.getDateString();
+}
+
 // Return the day after the given object.
 DayCode.prototype.dayAfter = function()
 {
