@@ -128,4 +128,5 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# Download scripts place JAR files from MAVEN here. Ignore them
 server/jarfiles/
