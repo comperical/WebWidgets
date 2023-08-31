@@ -12,9 +12,6 @@ import net.danburfoot.shared.TimeUtil.*;
 import net.danburfoot.shared.CollUtil.*;
 import net.danburfoot.shared.CoreDb.QueryCollector;
 
-import javax.mail.*;
-import javax.mail.internet.*;
-
 import io.webwidgets.core.LifeUtil.*;
 import io.webwidgets.core.WidgetOrg.*;
 

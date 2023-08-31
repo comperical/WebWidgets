@@ -130,3 +130,6 @@ dmypy.json
 
 # Download scripts place JAR files from MAVEN here. Ignore them
 server/jarfiles/
+
+
+server/workdir/
