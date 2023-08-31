@@ -31,6 +31,40 @@ import io.webwidgets.core.ActionJackson.*;
 
 public class LifeCli
 {
+
+	public static void main(String[] args) throws Exception
+	{
+		ArgMap amap = ArgMap.getClArgMap(args);
+		String simpleclass = args[0].replace("__", "$");
+		
+		ArgMapRunnable amr = getAmr(simpleclass);
+		amr.initFromArgMap(amap);
+		amr.runOp();
+	}
+		
+	@SuppressWarnings("deprecation")
+	private static ArgMapRunnable getAmr(String fullclass)
+	{
+		try {
+			Class runnerclass = Class.forName(fullclass);
+			Object runnerobj = runnerclass.newInstance();
+			ArgMapRunnable amr = (ArgMapRunnable) runnerobj;
+			return amr;
+		} catch (ClassNotFoundException cnfex) {
+			Util.pferr("Failed to find class %s\n", fullclass);
+			throw new RuntimeException(cnfex);
+		} catch (ClassCastException ccex) {
+			Util.pferr("Failed to convert class %s into an ArgMapRunnable\n", fullclass);	
+			throw new RuntimeException(ccex);
+		} catch (InstantiationException inex) {
+			Util.pferr("Failed to instantiate class %s with newInstance call, does it have 0-arg constructor?\n", fullclass);	
+			throw new RuntimeException(inex);
+		} catch (IllegalAccessException illex) {
+			Util.pferr("Failed to instantiate class %s with newInstance call do to protection violation\n", fullclass);	
+			throw new RuntimeException(illex);
+		}
+	}	
+
 	public static class DropLiteColumnOp extends ArgMapRunnable
 	{
 		public void runOp()
@@ -355,9 +389,7 @@ public class LifeCli
 		public void runOp()
 		{
 			Util.pf("GOing to run some code!!\n");
-
 		}
-
 	}
 	
 	public static class DeleteWidget extends ArgMapRunnable
@@ -1613,6 +1645,8 @@ public class LifeCli
 		}
 
 	}
+
+
 
 }
 

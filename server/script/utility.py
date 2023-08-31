@@ -15,6 +15,11 @@ def get_install_base_dir():
 	return str(thisdir.parent.parent)
 
 
+# TODO: this should probably go in a client/ subdirectory
+# It is important to know this path to import the ArgMap utility
+def get_client_script_dir():
+	return os.path.sep.join([get_install_base_dir(), "scripts"])
+
 def get_java_src_dir():
 	return os.path.sep.join([get_install_base_dir(), "server", "java"])
 
@@ -41,6 +46,42 @@ def get_compile_class_path():
 
 	classlist = [] + get_jar_list() + [get_java_class_dir()]
 	return ":".join(classlist)
+
+
+def build_subclass_lookup():
+
+	topdir = get_java_class_dir()
+
+	def gen_lookup():
+		for reldir, _, fnames in os.walk(topdir):
+			for fn in fnames:
+				if not fn.endswith(".class"):
+					continue
+
+				if not "$" in fn:
+					continue
+				
+				# Peel off ".class" suffix
+				fullpath = "{}/{}".format(reldir, fn[:-len(".class")])
+				assert fullpath.startswith(topdir)
+				relpath = fullpath[len(topdir):]
+				
+				classtoks = relpath.split("/")
+				if len(classtoks[0]) == 0:
+					classtoks = classtoks[1:]
+					
+				fullclass = ".".join(classtoks)
+				shortname = fullclass.split("$")
+				assert len(shortname) == 2
+				yield (shortname[1], fullclass)
+
+
+	lookup = {}
+	for shortname, fullclass in gen_lookup():
+		lookup.setdefault(shortname, [])
+		lookup[shortname].append(fullclass)
+
+	return lookup
 
 
 def classes_from_dir(topdir):
