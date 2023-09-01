@@ -5,6 +5,7 @@ import sys
 import hashlib
 from pathlib import Path
 
+import utility as UTIL
 
 DOWNLOAD_DATA = [
 	{
@@ -65,6 +66,8 @@ def confirm_checksum(jaritem):
 
 if __name__ == "__main__":
 	
+	UITL.od_setup_working_dir()
+
 	for jaritem in DOWNLOAD_DATA:
 		print(f"Going to grab JAR {get_jar_filename(jaritem)}")
 

@@ -27,7 +27,7 @@ def get_working_dir():
 	return os.path.sep.join([get_install_base_dir(), "server", "workdir"])
 
 def get_jar_file_dir():
-	return os.path.sep.join([get_install_base_dir(), "server", "jarfiles"])
+	return os.path.sep.join([get_working_dir(), "jarfiles"])
 
 def get_java_class_dir():
 	return os.path.sep.join([get_working_dir(), "jclass"])
@@ -41,6 +41,13 @@ def get_jar_list():
 				yield os.path.sep.join([jardir, onefile])
 
 	return list(genjar())
+
+
+def od_setup_working_dir():
+	for mydir in [get_working_dir(), get_jar_file_dir(), get_java_class_dir()]:
+		if not os.path.exists(mydir):
+			os.mkdir(mydir)
+			print(f"Created directory {mydir}")
 
 def get_compile_class_path():
 
