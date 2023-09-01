@@ -21,16 +21,6 @@ DOWNLOAD_DATA = [
 ]
 
 
-def get_jar_dir():
-
-	myparent = Path(__file__).parent.parent
-	jardir = os.path.sep.join([str(myparent), "jarfiles"])
-
-	assert myparent.name == "server", "Expected to be at the server directory"
-	assert os.path.exists(jardir), f"Jar directory {jardir} does not exist in expected location"
-	return jardir
-
-
 def get_jar_filename(jaritem):
 	jarurl = jaritem["mavenurl"]
 	assert jarurl.endswith(".jar")
@@ -40,7 +30,7 @@ def get_jar_filename(jaritem):
 def get_jar_destination(jaritem):
 
 	filename = get_jar_filename(jaritem)
-	return os.path.sep.join([get_jar_dir(), filename])
+	return os.path.sep.join([UTIL.get_jar_file_dir(), filename])
 
 def get_curl_command(jaritem):
 
