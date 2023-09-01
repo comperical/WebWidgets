@@ -49,9 +49,9 @@ def od_setup_working_dir():
 			os.mkdir(mydir)
 			print(f"Created directory {mydir}")
 
-def get_compile_class_path():
+def get_compile_class_path(jclassdir=get_java_class_dir()):
 
-	classlist = [] + get_jar_list() + [get_java_class_dir()]
+	classlist = [] + get_jar_list() + [jclassdir]
 	return ":".join(classlist)
 
 

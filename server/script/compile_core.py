@@ -32,27 +32,28 @@ def findTargetClass(partial, exact=True):
 		yield oneclass
 	
 
-def build_directory(shortpack, srcdir):
+def build_directory(shortpack, outputdir=UTIL.get_java_class_dir()):
 
-	jclassdir = UTIL.get_java_class_dir()
-	assert os.path.exists(jclassdir)
+	pack2src = UTIL.get_package_info()
+	assert shortpack in pack2src, f"Could not find short package name {shortpack} in package layout, options are {pack2src.keys()}"
+	srcdir = pack2src[shortpack]
+
+	assert os.path.exists(srcdir), f"Source directory {srcdir} does not exist"
+	assert os.path.exists(outputdir), f"Output directory {outputdir} does not exist"
+
+	classpath = UTIL.get_compile_class_path(jclassdir=outputdir)
 
 	jcompcall = f"""
-	javac -Xlint:deprecation -Xlint:unchecked -d {jclassdir} -cp {UTIL.get_compile_class_path()} {srcdir}/*.java
+	javac -Xlint:deprecation -Xlint:unchecked -d {outputdir} -cp {classpath} {srcdir}/*.java
 	"""
 	print(jcompcall)
 	os.system(jcompcall)
 
 if __name__ == "__main__":
 
-	print("Going to look at compile info")
-	print(UTIL.get_java_src_dir())
 
-	packinfo = UTIL.get_package_info()
-	print(packinfo)
-
+	# For now, no special options here, just compile both the small packages
 
 	for shortpack in UTIL.get_core_package_list():
-		assert shortpack in packinfo, f"Missing directory for package {shortpack}"
-		build_directory(shortpack, packinfo[shortpack])
+		build_directory(shortpack)
 
