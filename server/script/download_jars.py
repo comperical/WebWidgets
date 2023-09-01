@@ -66,7 +66,7 @@ def confirm_checksum(jaritem):
 
 if __name__ == "__main__":
 	
-	UITL.od_setup_working_dir()
+	UTIL.od_setup_working_dir()
 
 	for jaritem in DOWNLOAD_DATA:
 		print(f"Going to grab JAR {get_jar_filename(jaritem)}")
