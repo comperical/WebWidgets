@@ -3,7 +3,7 @@
 <head>
 <title>Auto Tag Rules</title>
 
-<%= DataServer.basicInclude(request) %>
+<%= DataServer.include(request) %>
 
 <script>
 

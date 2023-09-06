@@ -3,7 +3,7 @@
 <head>
 <title>Mistakes</title>
 
-<%= DataServer.basicInclude(request) %>
+<%= DataServer.include(request) %>
 
 <script src="MistakeLib.js"></script>
 

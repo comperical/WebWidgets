@@ -3,7 +3,7 @@
 <head>
 <title>Mini Task List</title>
 
-<%= DataServer.basicInclude(request) %>
+<%= DataServer.include(request) %>
 
 <%= DataServer.include(request, "widgetname=mailbox") %>
 

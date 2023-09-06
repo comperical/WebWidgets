@@ -1,17 +1,12 @@
 
-<%@include file="../../admin/AuthInclude.jsp_inc" %>
-
-
 <html>
 <head>
 
 <title>Audio Phrase Study</title>
 
-<%@include file="../../admin/AssetInclude.jsp_inc" %>
-
 <script src="../chinese/ChineseTech.js"></script>
 
-<%= DataServer.basicInclude(request) %>
+<%= DataServer.include(request) %>
 
 <script>
 

@@ -3,7 +3,7 @@
 <head>
 <title>Stuff Manager</title>
 
-<%= DataServer.basicInclude(request) %>
+<%= DataServer.include(request) %>
 
 
 <style>

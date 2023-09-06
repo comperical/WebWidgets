@@ -3,7 +3,7 @@
 <head>
 <title>Exercise Template</title>
 
-<%= DataServer.basicInclude(request) %>
+<%= DataServer.include(request) %>
 
 <script src="WorkoutLogger.js"></script>
 

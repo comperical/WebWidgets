@@ -3,7 +3,7 @@
 <head>
 <title>Exercise Planner</title>
 
-<%= DataServer.basicInclude(request) %>
+<%= DataServer.include(request) %>
 
 <script src="WorkoutLogger.js"></script>
 

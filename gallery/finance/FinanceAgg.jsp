@@ -3,7 +3,7 @@
 <head>
 <title>Finance Agg</title>
 
-<%= DataServer.basicInclude(request) %>
+<%= DataServer.include(request) %>
 
 <style>
 

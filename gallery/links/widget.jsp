@@ -3,7 +3,7 @@
 <head>
 <title>&#x1F517</title>
 
-<%= DataServer.basicInclude(request) %>
+<%= DataServer.include(request) %>
 
 <script src="LinkDisplay.js"></script>
 

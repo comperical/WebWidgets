@@ -3,7 +3,7 @@
 <head>
 <title>AUDIO Palace Listing</title>
 
-<%= DataServer.basicIncludeOnly(request, "palace_item", "review_log", "hanzi_data", "confounder") %>
+<%= DataServer.includeOnly(request, "palace_item", "review_log", "hanzi_data", "confounder") %>
 
 <%= DataServer.includeIfAvailable(request, "minitask", "mini_task_list") %>
 

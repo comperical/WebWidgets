@@ -5,7 +5,7 @@
 
 <%= DataServer.include(request) %>
 
-<%= DataServer.includeIfAvailable(request, "minitask", "mini_task_list") %>
+<%= DataServer.include(request, "widgetname=minitask&tables=mini_task_list&okay_if_absent=true") %>
 
 <script>
 

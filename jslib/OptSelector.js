@@ -244,7 +244,10 @@ OptSelector.prototype.getSingleOptionStr = function(idx)
     const k = this._keyList[idx];
     const d = this._dspList[idx];
     
-    const extra = (k == this._selectedKey) ? " selected " : "";
+    // Be very careful here. HTML selects don't really preserve types
+    const skstring = `${this._selectedKey}`;
+
+    const extra = (`${k}` == skstring) ? " selected " : "";
     
     return `<option value="${k}" ${extra}>${d}</option>`;
 }

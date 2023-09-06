@@ -3,7 +3,7 @@
 <head>
 <title>Recipes</title>
 
-<%= DataServer.basicInclude(request) %>
+<%= DataServer.include(request) %>
 
 <script>
 

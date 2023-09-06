@@ -1,20 +1,17 @@
 
-<%@ page import="net.danburfoot.shared.*" %>
-<%@ page import="net.danburfoot.shared.HtmlUtil.*" %>
-
-<%
-	OptSelector boolSelector = (new OptSelector(Util.listify(true,false)));	
-%>
-
 <html>
 <head>
 <title>Morning Routine Phases</title>
 
-<%= DataServer.basicInclude(request) %>
+<%= DataServer.include(request, "tables=mroutine_phase") %>
 
 <script>
 
 var EDIT_STUDY_ITEM = -1;
+
+const SHOW_INACTIVE_KEY = "ShowInactiveKey";
+
+GENERIC_OPT_SELECT_MAP.set(SHOW_INACTIVE_KEY, 'false');
 
 function changeShowType()
 {
@@ -26,17 +23,17 @@ function deleteItem(killid)
 {
 	if(confirm("Are you sure you want to delete item " + killid + " ?"))
 	{
-		lookupItem("mroutine_phase", killid).deleteItem();
+		W.lookupItem("mroutine_phase", killid).deleteItem();
 		redisplay();
 	}
 }
 
 function cycleStatus(cycid)
 {
-	var item = lookupItem("mroutine_phase", cycid);
+	var item = W.lookupItem("mroutine_phase", cycid);
 	item.setIsActive(item.getIsActive() == 1 ? 0 : 1);
 	syncSingleItem(item);
-	redisplay();	
+	redisplay();
 }
 
 function createNew()
@@ -45,7 +42,7 @@ function createNew()
 	const neworder = 0;
 	
 	if(shortname)
-	{				
+	{
 		const comrecord = {
 			"is_active" : 1,
 			"short_name" : shortname,
@@ -55,7 +52,7 @@ function createNew()
 			"on_day_list" : "all"
 		};
 		
-		const newitem = buildItem("mroutine_phase", comrecord);
+		const newitem = W.buildItem("mroutine_phase", comrecord);
 		newitem.syncItem();
 		redisplay();
 	}	
@@ -63,7 +60,7 @@ function createNew()
 
 function editOrderKey(itemid)
 {
-	const phaseitem = lookupItem("mroutine_phase", itemid);
+	const phaseitem = W.lookupItem("mroutine_phase", itemid);
 	const newokstr = prompt("Please enter a number to control this item's order in the checklist: ", phaseitem.getOrderKey());
 	
 	if(!newokstr)
@@ -154,7 +151,7 @@ function editWebLink()
 
 function getEditStudyItem()
 {
-	return lookupItem("mroutine_phase", EDIT_STUDY_ITEM);
+	return W.lookupItem("mroutine_phase", EDIT_STUDY_ITEM);
 }
                       
 function setEditStudyItem(studyid)
@@ -256,66 +253,72 @@ function redisplayMainTable()
 	</tr>
 	`;
 
-	var biglist = getItemList("mroutine_phase");
+	var biglist = W.getItemList("mroutine_phase");
 	biglist.sort(proxySort(item => [item.getOrderKey()]));
 
-	var showInActive = getDocFormValue("show_inactive") == "true";
+
 	
-		
-	{
-		for(var bi in biglist)
-		{
-			var onephase = biglist[bi];
-			
-			if(onephase.getIsActive() == 0 && !showInActive)
-				{ continue; }
-						
-			const opstuff = `
-				<a href="javascript:setEditStudyItem(${onephase.getId()})"><img src="/u/shared/image/inspect.png" height="18"></a>
-				&nbsp;&nbsp;&nbsp;
-				<a href="${onephase.getWebLink()}"><img src="/u/shared/image/chainlink.png" height="18"></a>
-				&nbsp;&nbsp;&nbsp;
-				<a href="javascript:cycleStatus(${onephase.getId()})">
-				<img src="/u/shared/image/cycle.png" height="18"></a>
-			`;
-			
-			
-			var datalist = [onephase.getId(), onephase.getShortName(), onephase.getOrderKey(),
-					onephase.getWebLink(),
-					onephase.getIsActive(), opstuff];
-			
-			
-			const activstr = onephase.getIsActive() == 1 ? "Y" : "N";
+	const boolSelector = buildOptSelector()
+							// Big gotcha. We can use JS boolean literals here, but the genericUpdater turns them into strings
+							.setKeyList([true, false])
+							.setElementName(SHOW_INACTIVE_KEY)
+							.useGenericUpdater()
+							.getSelectString();
+
+
+
+	// Okay, the issue is that when the object goes through getDocFormValue(...) in genericUpdater function,
+	// It gets transformed into a string
+	const showInActive = GENERIC_OPT_SELECT_MAP.get(SHOW_INACTIVE_KEY) == true.toString();
+
+	biglist.forEach(function(onephase) {
+
+		if(onephase.getIsActive() == 0 && !showInActive)
+			{ return; }
 					
-			const daylist = getDayList4Item(onephase);
-			var dayshow = daylist.length == 7 ? "all" : daylist;
+		const opstuff = `
+			<a href="javascript:setEditStudyItem(${onephase.getId()})"><img src="/u/shared/image/inspect.png" height="18"></a>
+			&nbsp;&nbsp;&nbsp;
+			<a href="${onephase.getWebLink()}"><img src="/u/shared/image/chainlink.png" height="18"></a>
+			&nbsp;&nbsp;&nbsp;
+			<a href="javascript:cycleStatus(${onephase.getId()})">
+			<img src="/u/shared/image/cycle.png" height="18"></a>
+		`;
 
-			if(daylist.length == 5 && !daylist.includes("Sun") && !daylist.includes("Sat")) 
-				{ dayshow = "workdays"; }
 
-			// dayshow = daylist.length == 5 && !daylist.includes("Sun") && !daylist.includes("Sat") ? "workdays" : dayshow;
+		const activstr = onephase.getIsActive() == 1 ? "Y" : "N";
+				
+		const daylist = getDayList4Item(onephase);
+		var dayshow = daylist.length == 7 ? "all" : daylist;
 
-			const mainrow = `
+		if(daylist.length == 5 && !daylist.includes("Sun") && !daylist.includes("Sat")) 
+			{ dayshow = "workdays"; }
+
+		const mainrow = `
 			<tr>
 			<td>${onephase.getOrderKey()}
 			&nbsp;&nbsp;&nbsp;
 			<a href="javascript:editOrderKey(${onephase.getId()})"><img src="/u/shared/image/edit.png" height="18"></a>
-			</td>			
+			</td>
 			<td>${onephase.getShortName()}</td>
 			<td>${dayshow}</td>
-			<td>${activstr}</td>			
+			<td>${activstr}</td>
 			<td>${opstuff}</td>
 			</tr>
-			`;
-			
-			mtstr += mainrow;
-		}	
-	
-	}
+		`;
+		
+		mtstr += mainrow;
+
+
+	});
 	
 	mtstr += `</table>`;
 	
-	document.getElementById("maintable").innerHTML = mtstr;
+
+	populateSpanData({
+		"show_inactive" : boolSelector,
+		"maintable" : mtstr
+	});
 }
 
 function getEditDayListData(daylist) 
@@ -351,7 +354,8 @@ function redisplayEditItem()
 
 	const dayaddsel = buildOptSelector()
 						.setKeyList(addDays)
-						.setSelectOpener(`<select name="on_day_sel" onChange="javascript:addOnDayItem()">`)
+						.setElementName("on_day_sel")
+						.setOnChange("javascript:addOnDayItem()")
 						.getSelectString();
 
 	const showSelStr = currentDays.length == 7 ? "" : dayaddsel;
@@ -389,13 +393,10 @@ function redisplayEditItem()
 <br/>
 
 
-<form>
-Show InActive: 
-<select name="show_inactive" onChange="javascript:redisplay()">
-<%= boolSelector.getSelectStr("false") %>
-</select>
+Show InActive: <span id="show_inactive"></span>
 
-</form>
+<br/>
+<br/>
 
 <a href="javascript:createNew()" class="css3button">NEW</a>
 

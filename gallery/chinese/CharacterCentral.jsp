@@ -6,7 +6,7 @@
 
 <script src="../hanyu/pin_yin_converter.js"></script>
 
-<%= DataServer.basicIncludeOnly(request, "confounder", "palace_item", "hanzi_data", "review_log", "word_memory") %>
+<%= DataServer.includeOnly(request, "confounder", "palace_item", "hanzi_data", "review_log", "word_memory") %>
 
 <%= DataServer.includeIfAvailable(request, "cedict", "hanzi_example") %>
 

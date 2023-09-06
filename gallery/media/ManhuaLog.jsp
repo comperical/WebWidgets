@@ -2,7 +2,7 @@
 <head>
 <title>Manhua Log</title>
 
-<%= DataServer.basicInclude(request) %>
+<%= DataServer.include(request) %>
 
 <script src="../links/LinkDisplay.js"></script>
 

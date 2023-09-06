@@ -3,7 +3,7 @@
 <head>
 <title>Day Plan Templates</title>
 
-<%= DataServer.basicInclude(request) %>
+<%= DataServer.include(request) %>
 
 <script>
 

@@ -2,7 +2,7 @@
 <head>
 <title>Mandarin Corner</title>
 
-<%= DataServer.basicInclude(request) %>
+<%= DataServer.include(request) %>
 
 <script src="../links/LinkDisplay.js"></script>
 

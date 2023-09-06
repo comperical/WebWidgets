@@ -3,9 +3,9 @@
 <head>
 <title>SampleTime</title>
 
-<%= DataServer.basicInclude(request) %>
+<%= DataServer.include(request) %>
 
-<%= DataServer.includeIfAvailable(request, "sms_box", "outbox") %>
+<%= DataServer.include(request, "widgetname=sms_box&tables=outbox") %>
 
 <script>
 

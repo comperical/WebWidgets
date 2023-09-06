@@ -3,7 +3,7 @@
 <head>
 <title>&#x2754 &#x2753</title>
 
-<%= DataServer.basicInclude(request) %>
+<%= DataServer.include(request) %>
 
 <script>
 

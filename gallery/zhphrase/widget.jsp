@@ -1,14 +1,10 @@
 
-<%@include file="../../admin/AuthInclude.jsp_inc" %>
-
 
 <html>
 <head>
 <title>Zh-Phrase Data Entry</title>
 
-<%@include file="../../admin/AssetInclude.jsp_inc" %>
-
-<%= DataServer.basicInclude(request) %>
+<%= DataServer.include(request) %>
 
 <script>
 

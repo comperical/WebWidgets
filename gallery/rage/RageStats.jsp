@@ -2,7 +2,7 @@
 <head>
 <title>Rage Log</title>
 
-<%= DataServer.basicInclude(request) %>
+<%= DataServer.include(request) %>
 
 <script>
 

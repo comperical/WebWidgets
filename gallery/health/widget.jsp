@@ -4,7 +4,7 @@
 <title>&#x1F321 &#x1F922</title>
 
 
-<%= DataServer.basicInclude(request) %>
+<%= DataServer.include(request) %>
 
 <script>
 

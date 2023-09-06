@@ -133,11 +133,11 @@ public class FastTest4Basic
 		}
 
 		private static Set<String> getFolderKidSet(File basedir)
-		{	
+		{
 			Util.massert(basedir.exists() && basedir.isDirectory(), "Basedir must be a directory");
 			return Util.map2set(Util.listify(basedir.listFiles()), file -> file.getName());
 		}
-	}	
+	}
 
 
 	public static class TestWuserDataLoad extends ArgMapRunnable

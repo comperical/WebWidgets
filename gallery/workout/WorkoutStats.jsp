@@ -3,7 +3,7 @@
 <head>
 <title>Workout Stats</title>
 
-<%= DataServer.basicInclude(request) %>
+<%= DataServer.include(request) %>
 
 <script src="WorkoutLogger.js"></script>
 

@@ -3,7 +3,7 @@
 <head>
 <title>Record Tagger</title>
 
-<%= DataServer.basicInclude(request) %>
+<%= DataServer.include(request) %>
 
 <script>
 

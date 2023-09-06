@@ -8,10 +8,7 @@
 
 <%= DataServer.include(request, "widgetname=hanyu&tables=hsk_vocab_info") %>
 
-
-
 <script src="../hanyu/pin_yin_converter.js"></script>
-
 
 <script>
 

@@ -3,7 +3,7 @@
 <head>
 <title>Junk Food Log</title>
 
-<%= DataServer.basicInclude(request) %>
+<%= DataServer.include(request) %>
 
 <%= DataServer.include(request, "widgetname=other&tables=alc_log") %>
 

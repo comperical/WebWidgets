@@ -3,7 +3,7 @@
 <head>
 <title>Finance Log</title>
 
-<%= DataServer.basicInclude(request) %>
+<%= DataServer.include(request) %>
 
 <script>
 

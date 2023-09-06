@@ -57,7 +57,7 @@ public class LifeUtil
 	// Widget admin directory
 	// Special non-widget code, running on server. Not controlled by users.
 	// Served from /admin
-	static final String WIDGET_ADMIN_DIR = WIDGETS_DIR + "/admin";
+	public static final String WIDGET_ADMIN_DIR = WIDGETS_DIR + "/admin";
 
 	public static final String CONFIG_DIR = MAIN_LIFECODE_DIR + "/configfile";
 	
