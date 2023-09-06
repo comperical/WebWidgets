@@ -25,10 +25,17 @@ import	io.webwidgets.core.MailSystem.*;
 import	io.webwidgets.core.BlobDataManager.*;
 
 public class FastTest4Basic
-{ 	
+{
 
-	public static class CheckUserHardReference extends ArgMapRunnable
+	public static class CheckUserHardReference extends DescRunnable
 	{
+		public String getDesc()
+		{
+			return 
+				"WidgetUser objects are immutable and unique\n" + 
+				"This test checks that if you load a WidgetUser object twice, you get the same object back";
+		}
+
 
 		public void runOp()
 		{
@@ -160,12 +167,18 @@ public class FastTest4Basic
 
 	// At some point, had an issue where I copied the AutoGen from one user to another
 	// That is bad news, because now I'm updating a different user's data!!!
-	public static class TestUserNameAutoGen extends ArgMapRunnable
+	public static class TestUserNameAutoGen extends DescRunnable
 	{
 
 		int _lineCount = 0;
 		int _fileCount = 0;
 		int _userCount = 0;
+
+		public String getDesc()
+		{
+			return "Test that the username of the widget Owner is present in all of the autogen JS files";
+		}
+
 
 		public void runOp()
 		{
@@ -746,16 +759,19 @@ public class FastTest4Basic
 		}
 	}
 	
-	public static class TestGuessMimeType extends ArgMapRunnable
+	public static class TestGuessMimeType extends DescRunnable
 	{
+
+		public String getDesc()
+		{
+			// https://stackoverflow.com/questions/19845213/how-to-get-the-methodinfo-of-a-java-8-method-reference
+			return 
+				"Simple test of the method java.net.URLConnection::guessContentTypeFromName" + 
+				"Blob Storage code relies on this method to assign mime types based on file names";
+		}
+
 		public void runOp()
 		{
-
-			// String mimetype = 
-
-
-			// Util.pf("Mime type is %s\n", mimetype);
-
 			LinkedList<String> data = buildInputData();
 
 			while(!data.isEmpty())
@@ -767,11 +783,6 @@ public class FastTest4Basic
 				Util.massertEqual(expected, observed, "Expected %s but found %s for input %s", input);
 
 			}
-
-
-
-
-
 		}
 
 		private static LinkedList<String> buildInputData() 
@@ -794,13 +805,13 @@ public class FastTest4Basic
 	public static class CheckNewBlobAddress extends DescRunnable
 	{
 		public String getDesc()
-		{	
+		{
 			return "Simple Check of new blob address tech";
 		}
 		
 		
 		public void runOp()
-		{			
+		{
 			LinkedList<Object> input = buildInputData();
 			
 			while(!input.isEmpty())

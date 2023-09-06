@@ -4,7 +4,7 @@
 <head>
 <title>Character Learning Schedule</title>
 
-<%= DataServer.includeOnly(request, "palace_item", "hanzi_data", "learning_schedule", "word_memory", "review_log", "vocab_log") %>
+<%= DataServer.include(request, "tables=palace_item,hanzi_data,learning_schedule,word_memory,review_log,vocab_log") %>
 
 <script>
 

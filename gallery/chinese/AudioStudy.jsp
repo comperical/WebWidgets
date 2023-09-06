@@ -3,11 +3,11 @@
 <head>
 <title>AUDIO Palace Listing</title>
 
-<%= DataServer.includeOnly(request, "palace_item", "review_log", "hanzi_data", "confounder") %>
+<%= DataServer.include(request, "tables=palace_item,review_log,hanzi_data,confounder") %>
 
-<%= DataServer.includeIfAvailable(request, "minitask", "mini_task_list") %>
+<%= DataServer.include(request, "widgetname=minitask&tables=mini_task_list") %>
 
-<%= DataServer.includeIfAvailable(request, "cedict", "hanzi_example") %>
+<%= DataServer.include(request, "widgetname=cedict&tables=hanzi_example") %>
 
 
 <script>

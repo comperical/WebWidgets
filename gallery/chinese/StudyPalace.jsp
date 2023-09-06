@@ -7,9 +7,9 @@
 
 <%= DataServer.include(request, "tables=palace_item,review_log,hanzi_data,confounder,word_memory,phonetic_link") %>
 
-<%= DataServer.includeIfOkay(request, "widgetname=minitask&tables=mini_task_list") %>
+<%= DataServer.include(request, "widgetname=minitask&tables=mini_task_list&okay_if_absent=true") %>
 
-<%= DataServer.includeIfOkay(request, "widgetname=cedict&tables=hanzi_example") %>
+<%= DataServer.include(request, "widgetname=cedict&tables=hanzi_example&okay_if_absent=true") %>
 
 <script>
 

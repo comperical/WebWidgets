@@ -3,7 +3,7 @@
 <head>
 <title>Memory Palace Listing</title>
 
-<%= DataServer.includeOnly(request, "palace_item", "review_log") %>
+<%= DataServer.include(request, "tables=palace_item,review_log") %>
 
 <script>
 
