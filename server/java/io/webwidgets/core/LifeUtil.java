@@ -1,5 +1,4 @@
-
-package io.webwidgets.core; 
+package io.webwidgets.core;
 
 import java.io.*; 
 import java.util.*; 
@@ -25,6 +24,9 @@ import io.webwidgets.core.WidgetOrg.*;
 
 public class LifeUtil
 { 
+	// This string is spliced into the code by the Python script when it is compiled
+	// The compile script detects it's install directory
+	public static final String WWIO_BASE_CONFIG_DIR = "WWIO_CONFIG_DIR_GOES_HERE";
 
 	public static String BASE_WIDGET_NAME = "base";
 
@@ -35,6 +37,9 @@ public class LifeUtil
 		SMS_WIDGET_NAME,
 		BASE_WIDGET_NAME
 	);
+
+
+
 
 	public static final String USER_DATA_DIR = "/opt/userdata";
 	public static final String MAIN_LIFECODE_DIR = USER_DATA_DIR + "/lifecode";
@@ -54,6 +59,8 @@ public class LifeUtil
 	// However, the authentication does not work until the password is set to something new
 	public static final String DUMMY_PASSWORD = "DummyPass";
 
+	// TODO: need to either remove these paths, move them to extension directory, 
+	// or make them relative to the main install config dir
 	// Widget admin directory
 	// Special non-widget code, running on server. Not controlled by users.
 	// Served from /admin

@@ -1547,6 +1547,15 @@ public class LifeCli
 	}
 
 
+	public static class ShowBaseConfigInfo extends ArgMapRunnable
+	{
+		public void runOp()
+		{
+			Util.pf("Have config directory %s\n", LifeUtil.WWIO_BASE_CONFIG_DIR);
+		}
+
+	}
+
 
 }
 

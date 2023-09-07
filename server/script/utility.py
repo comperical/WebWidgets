@@ -26,6 +26,9 @@ def get_java_src_dir():
 def get_working_dir():
 	return os.path.sep.join([get_install_base_dir(), "server", "workdir"])
 
+def get_base_config_dir():
+	return os.path.sep.join([get_working_dir(), "config"])
+
 def get_jar_file_dir():
 	return os.path.sep.join([get_working_dir(), "jarfiles"])
 
