@@ -464,4 +464,22 @@ public class LifeUtil
 		char c = word.charAt(0);
 		return (""+c).toUpperCase() + word.substring(1);
 	}	
+	
+	
+	public static interface IAdminExtension
+	{
+		public String getExtendedSideBar(Optional<WidgetUser> user);
+	}	
+	
+	
+	public static IAdminExtension getAdminExtensionTool()
+	{
+		try {
+			Class<?> blobclass = Class.forName("io.webwidgets.extend.AdminExtender");
+			return Util.cast(blobclass.getDeclaredConstructor().newInstance()); 
+		} catch (Exception ex) {
+			throw new RuntimeException("Misconfiguration error when loading admin extension plugin " + ex.getMessage());
+		}
+
+	}
 } 
