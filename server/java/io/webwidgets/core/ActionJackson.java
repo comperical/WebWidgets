@@ -475,7 +475,7 @@ public class ActionJackson extends HttpServlet
 	{
 		Map<String, String> themap = Util.treemap();
 		themap.put("admin", LifeUtil.WIDGET_ADMIN_DIR);
-		themap.put("pubdocs", LifeUtil.WWIO_PUBDOCS_DIR);
+		themap.put("exadmin", LifeUtil.WIDGET_ADMIN_DIR.replaceAll("/admin", "/exadmin"));
 		return themap;
 	}
 	
