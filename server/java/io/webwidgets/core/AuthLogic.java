@@ -19,9 +19,10 @@ import net.danburfoot.shared.CoreDb.QueryCollector;
 import io.webwidgets.core.LifeUtil.*;
 import io.webwidgets.core.WidgetOrg.*;
 
+// dummy edit 
 
 public class AuthLogic
-{	
+{
 	public static final String WIDGET_PASSWORD_SALT = "the pelagic argosy sights land";
 	
 	public static String ACCESS_HASH_COOKIE = "accesshash";
