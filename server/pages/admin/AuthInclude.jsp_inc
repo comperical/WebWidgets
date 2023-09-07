@@ -1,0 +1,33 @@
+
+<%@include file="CoreImport.jsp_inc" %>
+
+<%
+    // Need to allow non-secure for local dev work
+    if(!request.isSecure())
+    {
+        String insecure = request.getRequestURL().toString();
+        String oksecure = "https://" + insecure.substring("http://".length());
+        response.sendRedirect(oksecure);
+        return;
+    }
+
+    {
+        AuthChecker loadChecker = AuthChecker.build().widgetFromRequestUrl(request).userFromRequest(request);
+
+        if(!loadChecker.allowRead())
+        {
+            String bounce2url = request.getRequestURL().toString();
+            String redirect = String.format("%s?bounceback=%s", 
+                            WebUtil.LOGIN_RELATIVE_URL, request.getRequestURL().toString());
+            
+            response.sendRedirect(redirect);
+            return;
+        }
+    }
+
+
+
+
+    WebUtil.logPageLoad(request);
+    
+%>

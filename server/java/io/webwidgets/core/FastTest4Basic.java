@@ -122,6 +122,7 @@ public class FastTest4Basic
 			Set<String> codeset = getFolderKidSet(new File(LifeUtil.WIDGETS_DIR));
 			{
 				codeset.remove("admin");
+				codeset.remove("exadmin");
 				codeset.remove("resin-data");
 				codeset.remove("WEB-INF");
 			}

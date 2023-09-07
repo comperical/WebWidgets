@@ -1,0 +1,75 @@
+      <nav class="sidebar sidebar-offcanvas" id="sidebar">
+        <ul class="nav">
+          <%
+            // this is necessary for the Email Control page, which doesn't
+            // necessarily have a currentUser.
+            if(currentUser.isPresent())
+            {
+          %>
+          <li class="nav-item">
+            <a class="nav-link" href="<%= WebUtil.getUserHomeRelative(currentUser.get()) %>">
+              <i class="mdi mdi-home menu-icon"></i>
+              <span class="menu-title">User Home</span>
+            </a>
+          </li>          
+          <% } %>
+          <li class="nav-item">
+            <a class="nav-link" href="/u/admin/AdminMain.jsp">
+              <i class="mdi mdi-crown menu-icon"></i>
+              <span class="menu-title">Admin Main</span>
+            </a>
+          </li>          
+          <li class="nav-item">
+            <a class="nav-link" href="/docs/JsFileDoc.jsp">
+              <i class="mdi mdi-file-document menu-icon"></i>
+              <span class="menu-title">Tech Docs</span>
+            </a>
+          </li>          
+          <li class="nav-item">
+            <a class="nav-link" href="/u/admin/ChangePass.jsp">
+              <i class="mdi mdi-key-change menu-icon"></i>
+              <span class="menu-title">Change Password</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/u/admin/TemplateGenerator.jsp">
+              <i class="mdi mdi-content-duplicate menu-icon"></i>
+              <span class="menu-title">Template Generator</span>
+            </a>
+          </li>            
+          <li class="nav-item">
+            <a class="nav-link" href="/u/admin/PermissionControl.jsp">
+              <i class="mdi mdi-lock menu-icon"></i>
+              <span class="menu-title">Permission Control</span>
+            </a>
+          </li>       
+          <li class="nav-item">
+            <a class="nav-link" href="/u/admin/SchemaViewer.jsp">
+              <i class="mdi mdi-database menu-icon"></i>
+              <span class="menu-title">DB Schema Viewer</span>
+            </a>
+          </li> 
+          <li class="nav-item">
+            <a class="nav-link" href="/u/admin/ImportWidget.jsp">
+              <i class="mdi mdi-import menu-icon"></i>
+              <span class="menu-title">Import Widget</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/u/admin/MailRunner.jsp">
+              <i class="mdi mdi-email menu-icon"></i>
+              <span class="menu-title">Email Manager</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/u/admin/GetConfig.jsp">
+              <i class="mdi mdi-download menu-icon"></i>
+              <span class="menu-title">Download Config</span>
+            </a>
+          </li>
+
+
+          <%= LifeUtil.getAdminExtensionTool().getExtendedSideBar(currentUser) %>
+
+        </ul>
+      </nav>

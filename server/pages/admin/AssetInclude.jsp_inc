@@ -1,0 +1,56 @@
+
+
+<!-- Asset Include -->
+
+<link rel="stylesheet" href="<%= WebUtil.includeCheckRelativePath("/u/shared/css/BasicWidget.css") %>" />
+
+<script src="<%= WebUtil.includeCheckRelativePath("/u/shared/jslib/WidgetMainApi.js") %>"></script>
+<script src="<%= WebUtil.includeCheckRelativePath("/u/shared/jslib/WidgetUtil.js") %>"></script>
+<script src="<%= WebUtil.includeCheckRelativePath("/u/shared/jslib/TimeUtil.js") %>"></script>
+<script src="<%= WebUtil.includeCheckRelativePath("/u/shared/jslib/OptSelector.js") %>"></script>
+<script src="<%= WebUtil.includeCheckRelativePath("/u/shared/jslib/LegacyApi.js") %>"></script>
+
+
+<%
+    {
+        // The point of doing this within a special scope is that we don't
+        // want to add clutter to the namespace of other files
+        Optional<WidgetUser> optUser = AuthLogic.getLoggedInUser(request);
+
+        if(optUser.isPresent())
+        {
+%>
+
+<script>
+// The user name of the user who is logged in. 
+// Could be loading a different widget
+WIDGET_USER_NAME = "<%= optUser.get() %>";
+
+function bounce2WidgetHome()
+{
+    window.location.href = "<%= WebUtil.getUserHomeRelative(optUser.get()) %>";
+}
+
+</script>
+
+<%
+
+
+
+            List<String> includeList = WebUtil.getAutoIncludeStatement(optUser.get());
+            for(String inc : includeList)
+            {
+%>
+<!-- AutoIncluded file -->
+<%= inc %>
+<%
+            }
+        }
+    }
+%>
+
+<%
+    // Tell DataServer not to double-include
+    DataServer.markAssetIncludeComplete(request);
+%>
+
