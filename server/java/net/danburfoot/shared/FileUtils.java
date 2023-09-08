@@ -521,6 +521,20 @@ public class FileUtils
     		return this;
     	}
     	
+    	public Properties getPropertiesE()
+    	{
+    		try { return getProperties(); }
+    		catch (IOException ioex) { throw new RuntimeException(ioex); }
+    	}
+    	
+    	public Properties getProperties() throws IOException
+    	{
+    		try (BufferedReader bread = getReader()) {
+    			Properties result = new Properties();
+    			result.load(bread);
+    			return result;
+    		}
+    	}    	
 
     	public BufferedReader getReader() throws IOException
     	{

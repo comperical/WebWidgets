@@ -39,7 +39,10 @@ public class LifeUtil
 	);
 
 
-
+	public static File getParentDirLevelN(File curfile, int n)
+	{
+		return n == 0 ? curfile : getParentDirLevelN(curfile.getParentFile(), n-1);		
+	}
 
 	public static final String USER_DATA_DIR = "/opt/userdata";
 	public static final String MAIN_LIFECODE_DIR = USER_DATA_DIR + "/lifecode";

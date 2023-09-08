@@ -95,7 +95,7 @@ def swap_install_dir_string(shortpack, swapin):
 	srcpath = os.path.sep.join([srcdir, "io", "webwidgets", "core", "LifeUtil.java"])
 	assert os.path.exists(srcpath)
 
-	searchfor, swapinstr = (JAVA_CODE_INSTALL_DIR_TAG, UTIL.get_install_base_dir())
+	searchfor, swapinstr = (JAVA_CODE_INSTALL_DIR_TAG, UTIL.get_base_config_dir())
 	if not swapin:
 		searchfor, swapinstr = (swapinstr, searchfor)
 
@@ -118,7 +118,7 @@ def swap_install_dir_string(shortpack, swapin):
 			fh.write(line)
 
 	if not swapin:
-		print(f"Swapped install dir {UTIL.get_install_base_dir()} into src code, and back out again")
+		print(f"Swapped install dir {UTIL.get_base_config_dir()} into src code, and back out again")
 
 
 if __name__ == "__main__":

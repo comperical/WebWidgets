@@ -978,5 +978,15 @@ public class FastTest4Basic
 		}
 
 	}
+	
+	public static class TestLoadPluginInfo extends ArgMapRunnable
+	{
+		public void runOp()
+		{
+			var classmap = PluginCentral.getPluginClassMap();
+			Util.pf("Success, loaded plugins successfully, map is %s\n", classmap);
+		}
+		
+	}
 } 
 
