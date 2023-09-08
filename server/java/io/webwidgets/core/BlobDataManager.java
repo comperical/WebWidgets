@@ -19,6 +19,7 @@ import net.danburfoot.shared.CoreDb.QueryCollector;
 import io.webwidgets.core.LifeUtil.*;
 import io.webwidgets.core.WidgetOrg.*;
 import io.webwidgets.core.AuthLogic.*;
+import io.webwidgets.core.PluginCentral.*;
 
 public class BlobDataManager
 {
@@ -98,7 +99,7 @@ public class BlobDataManager
 			File fullpath = getFullBlobLocalPath(blobaddr);
 			FileUtils.getWriterUtil().setFile(fullpath).writeBytes(filedata);
 			
-			getStorageTool().uploadLocalPath(fullpath);
+			PluginCentral.getStorageTool().uploadLocalPath(fullpath);
 			
 		} catch (IOException ioex) {
 			throw new RuntimeException(ioex);
@@ -121,7 +122,7 @@ public class BlobDataManager
 			if(localfile.exists())
 				{ localfile.delete(); }
 
-			getStorageTool().deleteFromLocalPath(localfile);
+			PluginCentral.getStorageTool().deleteFromLocalPath(localfile);
 			
 		} catch (IOException ioex) {
 			throw new RuntimeException(ioex);
@@ -189,7 +190,7 @@ public class BlobDataManager
 			
 			if(!blobfile.exists())
 			{
-				IBlobStorage blobtool = getStorageTool();
+				IBlobStorage blobtool = PluginCentral.getStorageTool();
 				Util.massert(blobtool.blobPathExists(blobfile),
 						"Widget blob sync error: full blob path %s does not exist in blob storage", blobfile);
 
@@ -219,33 +220,5 @@ public class BlobDataManager
 			Util.massert(qcol.getNumRec() > 0, "No record found for Widget %s, table %s, ID %d", dbitem, tablename, recordid);
 			return qcol.getSingleArgMap();
 		}
-	}
-
-
-	public static IBlobStorage getStorageTool()
-	{
-		try {
-			Class<?> blobclass = Class.forName("io.webwidgets.extend.S3BasedBlob");
-			return Util.cast(blobclass.getDeclaredConstructor().newInstance()); 
-		} catch (Exception ex) {
-			throw new RuntimeException("Misconfiguration error when handling the blob storage plugin " + ex.getMessage());
-		}
-
-	}
-
-	public static interface IBlobStorage
-	{
-		public default void uploadLocalPath(File localpath) throws IOException
-		{
-			uploadLocalToTarget(localpath, localpath);
-		}
-
-		public void uploadLocalToTarget(File localpath, File remotepath) throws IOException;
-
-		public boolean blobPathExists(File localpath) throws IOException;
-
-		public void downloadToLocalPath(File localpath) throws IOException;
-
-		public void deleteFromLocalPath(File localpath) throws IOException;
 	}
 }

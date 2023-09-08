@@ -22,6 +22,7 @@ import	io.webwidgets.core.LifeUtil.*;
 import	io.webwidgets.core.WidgetOrg.*;
 import	io.webwidgets.core.AuthLogic.*;
 import	io.webwidgets.core.MailSystem.*;
+import	io.webwidgets.core.PluginCentral.*;
 import	io.webwidgets.core.BlobDataManager.*;
 
 public class FastTest4Basic
@@ -405,10 +406,10 @@ public class FastTest4Basic
 
 		public void runOp()
 		{
-			IBlobStorage blobtool = BlobDataManager.getStorageTool();
+			IBlobStorage blobtool = PluginCentral.getStorageTool();
 			Util.pf("Loaded blob storage tool %s\n", blobtool.getClass().getName());
 
-			IMailSender mailtool = MailSystem.getMailPlugin();
+			IMailSender mailtool = PluginCentral.getMailPlugin();
 			Util.pf("Loaded mail plugin %s\n", mailtool.getClass().getName());
 
 		}
@@ -963,7 +964,7 @@ public class FastTest4Basic
 		{
 			return Arrays.asList(
 				"",
-				"/u/admin/EmailControl.jsp?sender=dburfoot",				
+				"/u/admin/EmailControl.jsp?sender=dburfoot",
 				"/docs/JsFileDoc.jsp",
 				"/docs/PythonDoc.jsp",
 				"/docs/WidgetSetup.jsp",
@@ -979,8 +980,13 @@ public class FastTest4Basic
 
 	}
 	
-	public static class TestLoadPluginInfo extends ArgMapRunnable
+	public static class TestLoadPluginInfo extends DescRunnable
 	{
+		public String getDesc()
+		{
+			return "Confirm that the Plugin config and classes can be successfully loaded";
+		}
+
 		public void runOp()
 		{
 			var classmap = PluginCentral.getPluginClassMap();

@@ -14,7 +14,7 @@ public class PluginCentral
 	private static Map<PluginType, Class> __PLUGIN_CLASS_MAP;
 	
 	public enum PluginType
-	{	
+	{
 		blob_store,
 		mail_sender,
 		admin_extend;
@@ -25,12 +25,40 @@ public class PluginCentral
 		}
 	}
 	
-	public IMailSender getMailPlugin()
-	{	
+
+    public interface IMailSender
+    {
+        public <T extends Comparable<T>> void sendMailPackage(Map<T, WidgetMail> mailmap, Consumer<T> onSuccess) throws Exception;
+    }
+
+	public static IMailSender getMailPlugin()
+	{
 		return Util.cast(getPluginSub(PluginType.mail_sender));
 	}
 	
-	private Object getPluginSub(PluginType ptype)
+	public static interface IBlobStorage
+	{
+		public default void uploadLocalPath(File localpath) throws IOException
+		{
+			uploadLocalToTarget(localpath, localpath);
+		}
+
+		public void uploadLocalToTarget(File localpath, File remotepath) throws IOException;
+
+		public boolean blobPathExists(File localpath) throws IOException;
+
+		public void downloadToLocalPath(File localpath) throws IOException;
+
+		public void deleteFromLocalPath(File localpath) throws IOException;
+	}
+	
+	public static IBlobStorage getStorageTool()
+	{
+		return Util.cast(getPluginSub(PluginType.blob_store));
+	}
+	
+	
+	private static Object getPluginSub(PluginType ptype)
 	{
 		var classmap = getPluginClassMap();
 		Class<?> cls = classmap.get(ptype);
@@ -82,8 +110,4 @@ public class PluginCentral
 		
 		return FileUtils.getReaderUtil().setFile(pluginpath).getPropertiesE();
 	}
-	
-	
-	
-
 }

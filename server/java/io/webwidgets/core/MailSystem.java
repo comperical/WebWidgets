@@ -14,6 +14,8 @@ import net.danburfoot.shared.CoreDb.QueryCollector;
 
 import io.webwidgets.core.LifeUtil.*;
 import io.webwidgets.core.WidgetOrg.*;
+import io.webwidgets.core.PluginCentral.*;
+
 
 public class MailSystem {
 
@@ -272,7 +274,7 @@ public class MailSystem {
 
         Util.massert(mymap.size() == 1, "Expected exactly one item here, otherwise the LIMIT statement isn't working properly");
         // MailerUtil<Integer> mailutil = new MailerUtil<Integer>(mid -> markMailSentAt(user, mid));
-        IMailSender sender = getMailPlugin();
+        IMailSender sender = PluginCentral.getMailPlugin();
 
         try {
             sender.sendMailPackage(mymap, mid -> markMailSentAt(user, mid));
@@ -345,21 +347,6 @@ public class MailSystem {
         public String getProxy()
         {
             return emailAddr;
-        }
-    }    
-
-    public interface IMailSender
-    {
-        public <T extends Comparable<T>> void sendMailPackage(Map<T, WidgetMail> mailmap, Consumer<T> onSuccess) throws Exception;
-    }
-
-    public static IMailSender getMailPlugin()
-    {
-        try {
-            Class<?> mailclass = Class.forName("io.webwidgets.extend.AmazonMail");
-            return Util.cast(mailclass.getDeclaredConstructor().newInstance()); 
-        } catch (Exception ex) {
-            throw new RuntimeException("Misconfiguration error when handling the EMail storage plugin " + ex.getMessage());
         }
     }
 }

@@ -26,6 +26,7 @@ import io.webwidgets.core.LifeUtil.*;
 import io.webwidgets.core.AuthLogic.*;
 import io.webwidgets.core.WidgetOrg.*;
 import io.webwidgets.core.MailSystem.*;
+import io.webwidgets.core.PluginCentral.*;
 import io.webwidgets.core.ActionJackson.*;
 
 
@@ -979,12 +980,12 @@ public class LifeCli
 			Map<Integer, WidgetMail> mymap = Util.treemap();
 			mymap.put(444, mail);
 			
-			IMailSender sender = MailSystem.getMailPlugin();
+			IMailSender sender = PluginCentral.getMailPlugin();
 
 			sender.sendMailPackage(mymap, mid -> Util.pf("Email %d sent okay\n", mid));
 			
 			Util.pf("mailing was successful!!!\n");
-		}		
+		}
 	}
 	
 	public static class CreateMailBoxWidget extends ArgMapRunnable
@@ -1190,7 +1191,7 @@ public class LifeCli
 				return;
 			}
 			
-			IMailSender sender = MailSystem.getMailPlugin();
+			IMailSender sender = PluginCentral.getMailPlugin();
 			sender.sendMailPackage(bigMailMap, idpair -> MailSystem.markMailSentAt(idpair._1, idpair._2));
 			
 			Util.pf("Sent %d emails successfully, first %s, last %s\n", 
@@ -1274,7 +1275,7 @@ public class LifeCli
 				{
 					File localdb = dbitem.getLocalDbFile();
 					File archfile = getDbArchiveFile(dbitem, dc);
-					BlobDataManager.getStorageTool().uploadLocalToTarget(localdb, archfile);
+					PluginCentral.getStorageTool().uploadLocalToTarget(localdb, archfile);
 				}
 			}
 		}
