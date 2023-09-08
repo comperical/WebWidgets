@@ -16,7 +16,7 @@ import net.danburfoot.shared.TimeUtil;
 import net.danburfoot.shared.CollUtil.*;
 import net.danburfoot.shared.CoreDb.QueryCollector;
 
-import io.webwidgets.core.LifeUtil.*;
+import io.webwidgets.core.CoreUtil.*;
 import io.webwidgets.core.WidgetOrg.*;
 
 public class AuthLogic
@@ -158,7 +158,7 @@ public class AuthLogic
 	static synchronized void reloadPermTable()
 	{
 		_PERMISSION_MAP.clear();
-		QueryCollector qcol = LifeUtil.fullTableQuery(LifeUtil.getMasterWidget(), PERM_GRANT_TABLE);
+		QueryCollector qcol = CoreUtil.fullTableQuery(CoreUtil.getMasterWidget(), PERM_GRANT_TABLE);
 
 		for(ArgMap onemap : qcol.recList())
 		{
@@ -378,7 +378,7 @@ public class AuthLogic
 		private synchronized void save2Db()
 		{
 
-			CoreDb.deleteFromColMap(LifeUtil.getMasterWidget(), AuthLogic.PERM_GRANT_TABLE, CoreDb.getRecMap(
+			CoreDb.deleteFromColMap(CoreUtil.getMasterWidget(), AuthLogic.PERM_GRANT_TABLE, CoreDb.getRecMap(
 				"owner", dbItem.theOwner.toString(),
 				"widget_name", dbItem.theName
 			));
@@ -397,9 +397,9 @@ public class AuthLogic
 
 			for(Pair<String, PermLevel> permpair : updates)
 			{
-				int id = LifeUtil.getNewDbId(LifeUtil.getMasterWidget(), AuthLogic.PERM_GRANT_TABLE);
+				int id = CoreUtil.getNewDbId(CoreUtil.getMasterWidget(), AuthLogic.PERM_GRANT_TABLE);
 
-				CoreDb.upsertFromRecMap(LifeUtil.getMasterWidget(), AuthLogic.PERM_GRANT_TABLE, 1, CoreDb.getRecMap(
+				CoreDb.upsertFromRecMap(CoreUtil.getMasterWidget(), AuthLogic.PERM_GRANT_TABLE, 1, CoreDb.getRecMap(
 					"id", id,
 					"owner", dbItem.theOwner.toString(),
 					"widget_name", dbItem.theName,

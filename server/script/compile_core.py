@@ -92,7 +92,7 @@ def swap_install_dir_string(shortpack, swapin):
 	opt_create_dummy_config()
 
 	srcdir = UTIL.get_java_src_dir()
-	srcpath = os.path.sep.join([srcdir, "io", "webwidgets", "core", "LifeUtil.java"])
+	srcpath = os.path.sep.join([srcdir, "io", "webwidgets", "core", "CoreUtil.java"])
 	assert os.path.exists(srcpath)
 
 	searchfor, swapinstr = (JAVA_CODE_INSTALL_DIR_TAG, UTIL.get_base_config_dir())

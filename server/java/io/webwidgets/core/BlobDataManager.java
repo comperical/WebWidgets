@@ -16,7 +16,7 @@ import net.danburfoot.shared.FileUtils;
 import net.danburfoot.shared.CollUtil.*;
 import net.danburfoot.shared.CoreDb.QueryCollector;
 
-import io.webwidgets.core.LifeUtil.*;
+import io.webwidgets.core.CoreUtil.*;
 import io.webwidgets.core.WidgetOrg.*;
 import io.webwidgets.core.AuthLogic.*;
 import io.webwidgets.core.PluginCentral.*;
@@ -67,7 +67,7 @@ public class BlobDataManager
 	
 	public static File getFullBlobLocalPath(String blobaddr)
 	{
-		return new File(LifeUtil.WWIO_BLOB_BASE_DIR + blobaddr);
+		return new File(CoreUtil.WWIO_BLOB_BASE_DIR + blobaddr);
 	}
 	
 	static boolean isBlobStorageTable(Set<String> columnset)

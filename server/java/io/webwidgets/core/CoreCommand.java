@@ -22,7 +22,7 @@ import net.danburfoot.shared.RunnableTech.*;
 import net.danburfoot.shared.Util.SyscallWrapper;
 import net.danburfoot.shared.CoreDb.QueryCollector;
 
-import io.webwidgets.core.LifeUtil.*;
+import io.webwidgets.core.CoreUtil.*;
 import io.webwidgets.core.AuthLogic.*;
 import io.webwidgets.core.WidgetOrg.*;
 import io.webwidgets.core.MailSystem.*;
@@ -30,7 +30,7 @@ import io.webwidgets.core.PluginCentral.*;
 import io.webwidgets.core.ActionJackson.*;
 
 
-public class LifeCli
+public class CoreCommand
 {
 
 	public static void main(String[] args) throws Exception
@@ -123,7 +123,7 @@ public class LifeCli
 		private Set<String> getGimpColumnSet(WidgetItem dbitem, String tabname)
 		{
 			try {
-				QueryCollector qcol = LifeUtil.fullTableQuery(dbitem, tabname);
+				QueryCollector qcol = CoreUtil.fullTableQuery(dbitem, tabname);
 				
 				if(qcol.getNumRec() > 0)
 				{
@@ -161,7 +161,7 @@ public class LifeCli
 			String widgetname = _argMap.getStr("widgetname");
 			
 			WidgetItem witem = new WidgetItem(username, widgetname);
-			LifeUtil.convert2Excel(witem);
+			CoreUtil.convert2Excel(witem);
 			
 			Util.pf("Conversion took %.03f seconds\n", (Util.curtime()-alphatime)/1000);
 		}
@@ -232,7 +232,7 @@ public class LifeCli
 		
 		private Object getArchiveDir()
 		{
-			// String archpath = Util.sprintf("%s/archive/", LifeUtil.SQLITE_DIR);
+			// String archpath = Util.sprintf("%s/archive/", CoreUtil.SQLITE_DIR);
 			// return CleverPath.buildFromPath(archpath);	
 			return null;
 		}
@@ -585,7 +585,7 @@ public class LifeCli
 			WidgetItem source = new WidgetItem(WidgetUser.getDburfootUser(), dbname);
 			WidgetItem destin = new WidgetItem(wuser, wname);
 			
-			String create = LifeUtil.getCreateTableSql(source, tabname);
+			String create = CoreUtil.getCreateTableSql(source, tabname);
 			Util.pf("CREATE statement is:\n\t%s\n", create);
 			
 			if(Util.checkOkay("Okay to run?"))
@@ -607,7 +607,7 @@ public class LifeCli
 			WidgetItem source = new WidgetItem(WidgetUser.getDburfootUser(), srcdb);
 			WidgetItem destin = new WidgetItem(WidgetUser.getDburfootUser(), dstdb);
 			
-			String create = LifeUtil.getCreateTableSql(source, tabname);
+			String create = CoreUtil.getCreateTableSql(source, tabname);
 			Util.pf("CREATE statement is:\n\t%s\n", create);
 			
 			if(!Util.checkOkay("okay to run?"))
@@ -618,7 +618,7 @@ public class LifeCli
 			
 			CoreDb.execSqlUpdate(create, destin);
 			
-			QueryCollector qcol = LifeUtil.fullTableQuery(source, tabname);
+			QueryCollector qcol = CoreUtil.fullTableQuery(source, tabname);
 			Util.pf("Loaded %d records for admin table %s\n", qcol.recList().size(), tabname);
 			Util.pf("Copying data to widget DB...\n");
 			
@@ -706,10 +706,10 @@ public class LifeCli
 			String username = _argMap.getStr("username");
 			dumbCheckUnique(username);
 						
-			QueryCollector qcol = QueryCollector.buildAndRun("SELECT max(id) FROM user_main", LifeUtil.getMasterWidget());
+			QueryCollector qcol = QueryCollector.buildAndRun("SELECT max(id) FROM user_main", CoreUtil.getMasterWidget());
 			int curmaxid = qcol.getSingleArgMap().getSingleInt();
 			
-			CoreDb.upsertFromRecMap(LifeUtil.getMasterWidget(), "user_main", 1, CoreDb.getRecMap(
+			CoreDb.upsertFromRecMap(CoreUtil.getMasterWidget(), "user_main", 1, CoreDb.getRecMap(
 				"id", curmaxid+1,
 				"username", username,
 				"accesshash", WidgetUser.getDummyHash(),
@@ -777,7 +777,7 @@ public class LifeCli
 
 		private static void deleteMasterRecord(String username)
 		{	
-			int numdel = CoreDb.deleteFromColMap(LifeUtil.getMasterWidget(), "user_main", CoreDb.getRecMap(
+			int numdel = CoreDb.deleteFromColMap(CoreUtil.getMasterWidget(), "user_main", CoreDb.getRecMap(
 				"username", username
 			));
 
@@ -902,7 +902,7 @@ public class LifeCli
 			/*
 			WidgetItem widget = new WidgetItem(WidgetUser.getDburfootUser(), "media");
 			String tablename = _argMap.getStr("tablename");
-			List<String> ordercol = LifeUtil.getOrderedColumnList(widget, tablename);
+			List<String> ordercol = CoreUtil.getOrderedColumnList(widget, tablename);
 			Util.pf("Ordered column list is %s\n", ordercol);
 			*/
 			
@@ -914,7 +914,7 @@ public class LifeCli
 	{
 		public void runOp()
 		{
-			TreeMap<Pair<Double, String>, List<String>> info = LifeUtil.getSnippetInfoMap("docs");
+			TreeMap<Pair<Double, String>, List<String>> info = CoreUtil.getSnippetInfoMap("docs");
 			
 			for(Pair<Double, String> subcode : info.keySet())
 			{
@@ -1284,7 +1284,7 @@ public class LifeCli
 		// It is just a coordinate that gets passed to the blob storage
 		private static File getDbArchiveFile(WidgetItem dbitem, DayCode dc)
 		{
-			String localpath = Util.sprintf("%s/%s/%s/%s", LifeUtil.DB_ARCHIVE_DIR, 
+			String localpath = Util.sprintf("%s/%s/%s/%s", CoreUtil.DB_ARCHIVE_DIR, 
 				dc, dbitem.theOwner, dbitem.getLocalDbFile().getName());
 
 			return new File(localpath);
@@ -1300,7 +1300,7 @@ public class LifeCli
 			DayCode daycode = DayCode.lookup(_argMap.getStr("daycode"));
 			int grabCount = 0;
 
-			String archivebase = String.format("%s/%s", LifeUtil.DB_ARCHIVE_DIR, daycode);
+			String archivebase = String.format("%s/%s", CoreUtil.DB_ARCHIVE_DIR, daycode);
 			Util.pf("Going to examine base directory %s\n", archivebase);
 
 			//TODO: rebuild this to use single S3 cmd
@@ -1333,7 +1333,7 @@ public class LifeCli
 
 					Util.massert(filename.endsWith("_DB.sqlite"), "Expected _DB.sqlite suffix, found %s", filename);
 
-					String widgetname = LifeUtil.peelSuffix(filename, "_DB.sqlite").toLowerCase();
+					String widgetname = CoreUtil.peelSuffix(filename, "_DB.sqlite").toLowerCase();
 
 					// Util.pf("Found wiget name %s\n", widgetname);
 
@@ -1384,7 +1384,7 @@ public class LifeCli
 		public void runOp()
 		{
 			int maxkill = _argMap.getInt("maxkill", 1);
-			LinkedList<File> bloblist = Util.linkedlistify(LifeUtil.getAllFileList(new File(LifeUtil.WWIO_BLOB_BASE_DIR)));
+			LinkedList<File> bloblist = Util.linkedlistify(CoreUtil.getAllFileList(new File(CoreUtil.WWIO_BLOB_BASE_DIR)));
 			CollUtil.sortListByFunction(bloblist, f -> f.lastModified());
 			Util.pf("Got %d blob files\n", bloblist.size());
 
@@ -1441,7 +1441,7 @@ public class LifeCli
 		{
 			WidgetItem permdb = new WidgetItem(WidgetUser.getDburfootUser(), "master");
 
-			QueryCollector qcol = LifeUtil.fullTableQuery(permdb, "perm_grant");
+			QueryCollector qcol = CoreUtil.fullTableQuery(permdb, "perm_grant");
 
 			Set<WidgetItem> dbset = Util.map2set(qcol.recList(), 
 				amap -> new WidgetItem(WidgetUser.lookup(amap.getStr("owner")), amap.getStr("widget_name")));
@@ -1552,7 +1552,7 @@ public class LifeCli
 	{
 		public void runOp()
 		{
-			Util.pf("Have config directory %s\n", LifeUtil.WWIO_BASE_CONFIG_DIR);
+			Util.pf("Have config directory %s\n", CoreUtil.WWIO_BASE_CONFIG_DIR);
 		}
 
 	}

@@ -12,7 +12,7 @@ import net.danburfoot.shared.FileUtils;
 
 import io.webwidgets.core.*;
 import io.webwidgets.core.WidgetOrg.*;
-import io.webwidgets.core.LifeUtil.*;
+import io.webwidgets.core.CoreUtil.*;
 
 
 public class JsDocExtractor

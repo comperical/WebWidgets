@@ -8,7 +8,7 @@ import java.sql.*;
 import net.danburfoot.shared.Util;
 import net.danburfoot.shared.CollUtil.*;
 
-import io.webwidgets.core.LifeUtil.*;
+import io.webwidgets.core.CoreUtil.*;
 import io.webwidgets.core.WidgetOrg.*;
 import io.webwidgets.core.LiteTableInfo.*;
 
@@ -238,7 +238,7 @@ public class CodeGenerator
 			if(onecol.startsWith("_"))
 				{ continue; }
 			
-			String colname = LifeUtil.snake2CamelCase(onecol);
+			String colname = CoreUtil.snake2CamelCase(onecol);
 			add("%s.prototype.get%s = function()", _liteTable.getRecordName(), colname);
 			add("{");
 			add("\treturn this.%s;", onecol);

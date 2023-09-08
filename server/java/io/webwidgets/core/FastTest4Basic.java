@@ -18,7 +18,7 @@ import net.danburfoot.shared.Util.SyscallWrapper;
 import net.danburfoot.shared.CoreDb.QueryCollector;
 
 
-import	io.webwidgets.core.LifeUtil.*;
+import	io.webwidgets.core.CoreUtil.*;
 import	io.webwidgets.core.WidgetOrg.*;
 import	io.webwidgets.core.AuthLogic.*;
 import	io.webwidgets.core.MailSystem.*;
@@ -120,7 +120,7 @@ public class FastTest4Basic
 		public void runOp()
 		{
 
-			Set<String> codeset = getFolderKidSet(new File(LifeUtil.WIDGETS_DIR));
+			Set<String> codeset = getFolderKidSet(new File(CoreUtil.WIDGETS_DIR));
 			{
 				codeset.remove("admin");
 				codeset.remove("exadmin");
@@ -129,7 +129,7 @@ public class FastTest4Basic
 			}
 
 			{
-				Set<String> checkset = getFolderKidSet(new File(LifeUtil.WIDGET_DB_DIR));
+				Set<String> checkset = getFolderKidSet(new File(CoreUtil.WIDGET_DB_DIR));
 				Util.massert(checkset.equals(codeset), "Have Check set:\n%s\nCode set:\n%s\n", checkset, codeset);
 				Util.pf("Success, DB set equals code-dir set, have %d items\n", checkset.size());
 			}
@@ -224,14 +224,14 @@ public class FastTest4Basic
 		
 		public String getDesc()
 		{
-			return "Check that all the JSPs in the directory  " + LifeUtil.WIDGETS_DIR + "\n"  +
+			return "Check that all the JSPs in the directory  " + CoreUtil.WIDGETS_DIR + "\n"  +
 				"Contain the Auth Include tag " + SEARCH_TAG + "\n" + 
 				"This is the crucial include file to ensure proper authentication checks";
 		}
 		
 		public void runOp()
 		{
-			File startdir = new File(LifeUtil.WIDGETS_DIR);
+			File startdir = new File(CoreUtil.WIDGETS_DIR);
 			
 			recurseCheck(startdir, 0);
 			
@@ -243,7 +243,7 @@ public class FastTest4Basic
 		
 		private void recurseCheck(File thefile, int depth)
 		{			
-			if(thefile.getAbsolutePath().contains(LifeUtil.WIDGET_ADMIN_DIR))
+			if(thefile.getAbsolutePath().contains(CoreUtil.WIDGET_ADMIN_DIR))
 				{ return; }
 
 			if(thefile.getAbsolutePath().contains("dburfoot/docview"))
@@ -532,7 +532,7 @@ public class FastTest4Basic
 	
 	public static class SuiteRunner extends DescRunnable implements CrontabRunnable
 	{
-		public static final String FAST_TEST_MARKER = LifeUtil.peelSuffix(FastTest4Basic.class.getSimpleName(), "Basic");
+		public static final String FAST_TEST_MARKER = CoreUtil.peelSuffix(FastTest4Basic.class.getSimpleName(), "Basic");
 
 		public String getDesc()
 		{
@@ -556,7 +556,7 @@ public class FastTest4Basic
 		public List<ArgMapRunnable> getTestList()
 		{
 			
-			List<String> allclass = Util.loadClassNameListFromDir(new File(LifeUtil.JCLASS_BASE_DIR));
+			List<String> allclass = Util.loadClassNameListFromDir(new File(CoreUtil.JCLASS_BASE_DIR));
 
 			List<String> biglist = Util.filter2list(allclass, s -> s.contains(FAST_TEST_MARKER));			
 			
@@ -583,7 +583,7 @@ public class FastTest4Basic
 		{
 			checkPath(GoogleSyncUtil.CREDENTIAL_PATH);
 
-			checkPath(LifeUtil.PYTHON_AUTOGEN_DOC);
+			checkPath(CoreUtil.PYTHON_AUTOGEN_DOC);
 		}
 
 		private void checkPath(String path) 
@@ -626,7 +626,7 @@ public class FastTest4Basic
 			String folder = VIMS_SCRIPT_SET.contains(base) ? "vims" : "utility";
 
 			// TODO: this should not be a hardcoded path
-			return String.format("%s/%s/%s.py", LifeUtil.SCRIPT_DIR, folder, base);
+			return String.format("%s/%s/%s.py", CoreUtil.SCRIPT_DIR, folder, base);
 		}
 
 		public void runOp() 
@@ -688,7 +688,7 @@ public class FastTest4Basic
 
 				Util.pf("Found mailbox for user %s, checking configuration\n", probe);
 
-				QueryCollector qcol = LifeUtil.tableQuery(mailbox, MailSystem.MAILBOX_DB_TABLE, Optional.of(10));
+				QueryCollector qcol = CoreUtil.tableQuery(mailbox, MailSystem.MAILBOX_DB_TABLE, Optional.of(10));
 
 				for(ArgMap onemap : qcol.recList())
 				{
@@ -859,7 +859,7 @@ public class FastTest4Basic
 		}
 	}
 
-	public static class GoogleSyncTest extends LifeCli.GoogleSyncAdmin
+	public static class GoogleSyncTest extends CoreCommand.GoogleSyncAdmin
 	{
 		WidgetItem DB_CHORE_WIDGET = new WidgetItem(WidgetUser.getDburfootUser(), "chores");
 
@@ -927,8 +927,8 @@ public class FastTest4Basic
 		private static void backAndForthTest(String original)
 		{
 
-			String encoded = LifeUtil.base64Encode(original);
-			String decoded = LifeUtil.base64Decode(encoded);
+			String encoded = CoreUtil.base64Encode(original);
+			String decoded = CoreUtil.base64Decode(encoded);
 
 			Util.massert(decoded.equals(original), "Encoded %s but decoded %s", original, decoded);
 		}

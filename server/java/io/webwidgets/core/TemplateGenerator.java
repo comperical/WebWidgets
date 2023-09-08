@@ -9,7 +9,7 @@ import net.danburfoot.shared.ArgMap;
 import net.danburfoot.shared.CollUtil;
 import net.danburfoot.shared.RunnableTech.*;
 
-import io.webwidgets.core.LifeUtil.*;
+import io.webwidgets.core.CoreUtil.*;
 import io.webwidgets.core.WidgetOrg.*;
 import io.webwidgets.core.AuthLogic.*;
 
@@ -232,8 +232,8 @@ public class TemplateGenerator
             Class colclass = LiteTableInfo.getJavaTypeFromLite(_liteTable.getColTypeMap().get(col));
             String genericfunc = getGenericEditFunc(colclass);
 
-            add("\t<tr><td>%s</td>", LifeUtil.snake2CamelCase(col));
-            add("\t<td>${item.get%s()}</td>", LifeUtil.snake2CamelCase(col));
+            add("\t<tr><td>%s</td>", CoreUtil.snake2CamelCase(col));
+            add("\t<td>${item.get%s()}</td>", CoreUtil.snake2CamelCase(col));
 
             String tdcell = "\t<td></td>";
 
@@ -287,7 +287,7 @@ public class TemplateGenerator
 
         for(String col : _liteTable.getColTypeMap().keySet()) {
 
-            add("\t\t\t<td>${shorten4Display(item.get%s())}</td>", LifeUtil.snake2CamelCase(col));
+            add("\t\t\t<td>${shorten4Display(item.get%s())}</td>", CoreUtil.snake2CamelCase(col));
         }
 
             // "\t\t<td></td>"

@@ -11,7 +11,7 @@ import net.danburfoot.shared.Util;
 import net.danburfoot.shared.ArgMap;
 import net.danburfoot.shared.CollUtil;
 
-import io.webwidgets.core.LifeUtil.*;
+import io.webwidgets.core.CoreUtil.*;
 import io.webwidgets.core.WidgetOrg.*;
 import io.webwidgets.core.AuthLogic.*;
 
@@ -303,7 +303,7 @@ public class DataServer
 			sb.append("<!-- Widget Core Asset Include -->\n");
 			{
 				// Sort list by file name length for pleasing effect
-				List<File> csslist = Util.listify(LifeUtil.SHARED_CSS_ASSET_DIR.listFiles());
+				List<File> csslist = Util.listify(CoreUtil.SHARED_CSS_ASSET_DIR.listFiles());
 				CollUtil.sortListByFunction(csslist, cssfile -> cssfile.getName().length());
 				
 				for(File cssfile : csslist)
@@ -323,7 +323,7 @@ public class DataServer
 
 			{
 				// Sort list by file name length for pleasing effect
-				List<File> jslist = Util.listify(LifeUtil.SHARED_JSLIB_ASSET_DIR.listFiles());
+				List<File> jslist = Util.listify(CoreUtil.SHARED_JSLIB_ASSET_DIR.listFiles());
 				CollUtil.sortListByFunction(jslist, jsfile -> jsfile.getName().length());
 				
 				for(File jsfile : jslist)

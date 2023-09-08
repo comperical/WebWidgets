@@ -103,7 +103,7 @@ public class PluginCentral
 	private static Properties loadPluginProps()
 	{
 		String pluginpath = Util.sprintf("%s%sPluginConfig.props", 
-			LifeUtil.WWIO_BASE_CONFIG_DIR, File.separator);
+			CoreUtil.WWIO_BASE_CONFIG_DIR, File.separator);
 	
 		Util.massert(new File(pluginpath).exists(), 
 			"Missing Plugin props file, expected at %s", pluginpath);

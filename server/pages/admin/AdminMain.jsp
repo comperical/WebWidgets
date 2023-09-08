@@ -104,7 +104,7 @@ function maybeAlertMessage()
 function isReservedName(myname)
 {
   <%
-    for(String rname : LifeUtil.RESERVED_WIDGET_NAMES)
+    for(String rname : CoreUtil.RESERVED_WIDGET_NAMES)
     {
   %>
 

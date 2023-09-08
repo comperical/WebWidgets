@@ -24,7 +24,7 @@ public class GoogleSyncUtil
 { 	
 	public static final String GDOC_TSV_TABLE = "gdoc_tsv_upload";
 
-	public static final String GDOC_SCRIPT_DIR = LifeUtil.SCRIPT_DIR + "/gdocs";	
+	public static final String GDOC_SCRIPT_DIR = CoreUtil.SCRIPT_DIR + "/gdocs";	
 	
 	public static final String CREDENTIAL_PATH = "/home/ec2-user/.ssh/gcp-api-widget-quickstart.json";
 	
@@ -33,7 +33,7 @@ public class GoogleSyncUtil
 	{
 		Map<WidgetUser, String> result = Util.treemap();
 		String query = "SELECT * FROM user_main";
-		QueryCollector qcol = QueryCollector.buildAndRun(query, LifeUtil.getMasterWidget());
+		QueryCollector qcol = QueryCollector.buildAndRun(query, CoreUtil.getMasterWidget());
 		
 		for(ArgMap amap : qcol.recList())
 		{
@@ -112,10 +112,10 @@ public class GoogleSyncUtil
 			String syncfolder = _argMap.getStr("syncfolder");
 			
 			String query = String.format("SELECT id FROM user_main WHERE username = '%s'", username);
-			QueryCollector qcol = QueryCollector.buildAndRun(query, LifeUtil.getMasterWidget());
+			QueryCollector qcol = QueryCollector.buildAndRun(query, CoreUtil.getMasterWidget());
 			int userid = qcol.getSingleArgMap().getSingleInt();
 			
-			CoreDb.upsertFromRecMap(LifeUtil.getMasterWidget(), "user_main", 1, CoreDb.getRecMap(
+			CoreDb.upsertFromRecMap(CoreUtil.getMasterWidget(), "user_main", 1, CoreDb.getRecMap(
 				"id", userid,
 				"gdrive_folder", syncfolder
 			));

@@ -280,7 +280,7 @@ public class ActionJackson extends HttpServlet
 						continue;
 					}
 					
-					long cksum = killme.isDirectory() ? -1L : LifeUtil.getFileCkSum(killme);
+					long cksum = killme.isDirectory() ? -1L : CoreUtil.getFileCkSum(killme);
 					_oldCkMap.put(killme.getAbsolutePath(), cksum);
 
 					// logpf("Deleted old file %s\n", killme);
@@ -301,7 +301,7 @@ public class ActionJackson extends HttpServlet
 				if(kid.isDirectory())
 					{ continue; }
 
-				long cksum = LifeUtil.getFileCkSum(kid);
+				long cksum = CoreUtil.getFileCkSum(kid);
 				_newCkMap.put(kid.getAbsolutePath(), cksum);
 			}
 		}
@@ -355,7 +355,7 @@ public class ActionJackson extends HttpServlet
 		{
 			int samecount = 0;
 			
-			for(String pathkey : LifeUtil.combine2set(_newCkMap.keySet(), _oldCkMap.keySet()))
+			for(String pathkey : CoreUtil.combine2set(_newCkMap.keySet(), _oldCkMap.keySet()))
 			{
 				Long newck = _newCkMap.get(pathkey);
 				Long oldck = _oldCkMap.get(pathkey);
@@ -474,8 +474,8 @@ public class ActionJackson extends HttpServlet
 	public static Map<String, String> getSpecialRemapDir()
 	{
 		Map<String, String> themap = Util.treemap();
-		themap.put("admin", LifeUtil.WIDGET_ADMIN_DIR);
-		themap.put("exadmin", LifeUtil.WIDGET_ADMIN_DIR.replaceAll("/admin", "/exadmin"));
+		themap.put("admin", CoreUtil.WIDGET_ADMIN_DIR);
+		themap.put("exadmin", CoreUtil.WIDGET_ADMIN_DIR.replaceAll("/admin", "/exadmin"));
 		return themap;
 	}
 	
@@ -601,7 +601,7 @@ public class ActionJackson extends HttpServlet
 	{
 		String checkname = widgetname.toLowerCase().trim();
 
-		if(LifeUtil.RESERVED_WIDGET_NAMES.contains(widgetname))
+		if(CoreUtil.RESERVED_WIDGET_NAMES.contains(widgetname))
 		{
 			String mssg = String.format("The Widget %s is a special system widget, it cannot be uploaded", widgetname);
 			throw new RuntimeException(mssg);
@@ -659,7 +659,7 @@ public class ActionJackson extends HttpServlet
 			String widgetname = innmap.getStr("widgetname");
 
 			WidgetItem witem = new WidgetItem(wuser, widgetname);
-			File result = LifeUtil.convert2Excel(witem);			
+			File result = CoreUtil.convert2Excel(witem);			
 
 			FileUtils.in2out(new FileInputStream(result), response.getOutputStream());
 		}

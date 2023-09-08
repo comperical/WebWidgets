@@ -69,7 +69,7 @@
           </li>
 
 
-          <%= LifeUtil.getAdminExtensionTool().getExtendedSideBar(currentUser) %>
+          <%= CoreUtil.getAdminExtensionTool().getExtendedSideBar(currentUser) %>
 
         </ul>
       </nav>

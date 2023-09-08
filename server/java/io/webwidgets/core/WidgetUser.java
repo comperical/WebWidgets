@@ -61,7 +61,7 @@ public class WidgetUser implements Comparable<WidgetUser>
 
     public String getDbDirPath()
     {
-        return String.format("%s/%s", LifeUtil.WIDGET_DB_DIR, toString());
+        return String.format("%s/%s", CoreUtil.WIDGET_DB_DIR, toString());
     }
 
     public File getDbDir()
@@ -169,7 +169,7 @@ public class WidgetUser implements Comparable<WidgetUser>
             
     public File getUserBaseDir()
     {
-        String basedir = Util.sprintf("%s/%s", LifeUtil.WIDGETS_DIR, toString());
+        String basedir = Util.sprintf("%s/%s", CoreUtil.WIDGETS_DIR, toString());
         return new File(basedir);
     }
 
@@ -204,7 +204,7 @@ public class WidgetUser implements Comparable<WidgetUser>
         Util.massert(masterid != null, 
             "User entry is missing an ID, please contact administrator");
         
-        CoreDb.upsertFromRecMap(LifeUtil.getMasterWidget(), "user_main", 1, CoreDb.getRecMap(
+        CoreDb.upsertFromRecMap(CoreUtil.getMasterWidget(), "user_main", 1, CoreDb.getRecMap(
             "id", masterid,
             AuthLogic.ACCESS_HASH_COOKIE, newhash
         ));
@@ -317,7 +317,7 @@ public class WidgetUser implements Comparable<WidgetUser>
     {
         if(target.isFile())
         {
-            long cksum = LifeUtil.getFileCkSum(target);
+            long cksum = CoreUtil.getFileCkSum(target);
             Util.putNoDup(ckmap, target.getAbsolutePath(), cksum);
             return;
         }
@@ -370,7 +370,7 @@ public class WidgetUser implements Comparable<WidgetUser>
     static synchronized String getDummyHash()
     {
         if(__DUMMY_HASH == null)
-            { __DUMMY_HASH = AuthLogic.canonicalHash(LifeUtil.DUMMY_PASSWORD); }
+            { __DUMMY_HASH = AuthLogic.canonicalHash(CoreUtil.DUMMY_PASSWORD); }
 
         return __DUMMY_HASH;
     }    

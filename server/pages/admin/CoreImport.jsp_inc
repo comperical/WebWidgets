@@ -15,7 +15,7 @@
 <%@ page import="net.danburfoot.miscutil.HtmlUtil.*" %>
 
 <%@ page import="io.webwidgets.core.*" %>
-<%@ page import="io.webwidgets.core.LifeUtil.*" %>
+<%@ page import="io.webwidgets.core.CoreUtil.*" %>
 <%@ page import="io.webwidgets.core.WidgetOrg.*" %>
 <%@ page import="io.webwidgets.core.AuthLogic.*" %>
 <%@ page import="io.webwidgets.core.MailSystem.*" %>

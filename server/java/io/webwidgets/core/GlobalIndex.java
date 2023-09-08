@@ -78,11 +78,11 @@ public class GlobalIndex
     }
 
     // This is a special "back-door" that is used only to load the indexes
-    // The gotcha is that LifeUtil.getMasterWidget requires a reference to WidgetUser.dburfoot
+    // The gotcha is that CoreUtil.getMasterWidget requires a reference to WidgetUser.dburfoot
     // But WidgetUser objects are generally only created by the GlobalIndex code
     private static WidgetItem getLoadOnlyMaster()
     { 
         WidgetUser admin = new WidgetUser(WidgetUser.DBURFOOT_USER_NAME);
-        return new WidgetItem(admin, LifeUtil.MASTER_WIDGET_NAME);
+        return new WidgetItem(admin, CoreUtil.MASTER_WIDGET_NAME);
     }
 }

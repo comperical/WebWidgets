@@ -30,7 +30,7 @@
 
     OptSelector widgetSelect = OptSelector.build(widgetNameList).sortByValue();
 
-    Map<String, String> schemaInfo = LifeUtil.getCreateTableMap(selectedItem);
+    Map<String, String> schemaInfo = CoreUtil.getCreateTableMap(selectedItem);
 %>
 
 

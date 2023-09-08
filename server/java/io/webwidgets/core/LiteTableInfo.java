@@ -17,7 +17,7 @@ import net.danburfoot.shared.CoreDb.QueryCollector;
 import net.danburfoot.shared.CoreDb.ConnectionSource;
 
 
-import io.webwidgets.core.LifeUtil.*;
+import io.webwidgets.core.CoreUtil.*;
 import io.webwidgets.core.WidgetOrg.*;
 
 public class LiteTableInfo
@@ -220,7 +220,7 @@ public class LiteTableInfo
 	
 	public String getBasicName()
 	{
-		return LifeUtil.snake2CamelCase(dbTabPair._2);	
+		return CoreUtil.snake2CamelCase(dbTabPair._2);	
 	}
 	
 	public String getSimpleTableName()
@@ -409,7 +409,7 @@ public class LiteTableInfo
 	/*
 	public static String encodeURIComponent(String s)
 	{
-		return LifeUtil.encodeURIComponent(s);
+		return CoreUtil.encodeURIComponent(s);
 	}  
 	*/
 	
@@ -597,7 +597,7 @@ public class LiteTableInfo
 	{	
 		String fname = thefile.getName();
 		String[] toks = fname.split("__");
-		String justnum = LifeUtil.peelSuffix(toks[1], ".js");
+		String justnum = CoreUtil.peelSuffix(toks[1], ".js");
 		return Integer.valueOf(justnum);
 	}
 
@@ -667,7 +667,7 @@ public class LiteTableInfo
 			
 			return fastReplace(encoded);
 						
-			// String other = LifeUtil.encodeURIComponent(s);
+			// String other = CoreUtil.encodeURIComponent(s);
 			
 			// Util.massert(result.equals(other),
 			//	"Got result/other: \n\t%s\n\t%s", result, other);

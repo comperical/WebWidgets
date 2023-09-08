@@ -45,7 +45,7 @@ public class WidgetOrg
 		public Connection createConnection() throws SQLException
 		{
 			
-			LifeUtil.maybeInitClass();
+			CoreUtil.maybeInitClass();
 			
 			return DriverManager.getConnection(geJdbcUrl());
 		}
@@ -57,7 +57,7 @@ public class WidgetOrg
 		
 		public long getDbCheckSum()
 		{
-			return LifeUtil.getFileCkSum(getLocalDbFile());
+			return CoreUtil.getFileCkSum(getLocalDbFile());
 		}
 		
 		public String getLocalMachinePath() 

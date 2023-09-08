@@ -22,7 +22,7 @@ import net.danburfoot.shared.CoreDb.ConnectionSource;
 import io.webwidgets.core.WidgetOrg.*;
 
 
-public class LifeUtil
+public class CoreUtil
 { 
 	// This string is spliced into the code by the Python script when it is compiled
 	// The compile script detects it's install directory
@@ -269,7 +269,7 @@ public class LifeUtil
 		Util.massert(witem.getLocalDbFile().exists(), "Widget Item DB not found at %s", witem.getLocalDbFile());
 
 		/*
-		String xlpath = String.format("%s/%s__%s.xlsx", LifeUtil.TEMP_EXCEL_DIR, witem.theOwner, witem.theName);
+		String xlpath = String.format("%s/%s__%s.xlsx", CoreUtil.TEMP_EXCEL_DIR, witem.theOwner, witem.theName);
 
 		String pycall = String.format("python3 /opt/userdata/lifecode/script/utility/Lite2Excel.py litepath=%s xlpath=%s",
 									witem.getLocalDbPath(), xlpath);
@@ -410,7 +410,7 @@ public class LifeUtil
 	{
 		return Util.listify(snakestr.split("_"))
 				.stream()
-				.map(s -> LifeUtil.capitalizeFirst(s))
+				.map(s -> CoreUtil.capitalizeFirst(s))
 				.collect(CollUtil.joining());
 	}
 	
