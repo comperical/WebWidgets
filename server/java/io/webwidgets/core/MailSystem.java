@@ -205,7 +205,7 @@ public class MailSystem {
         String timenow = ExactMoment.build().asLongBasicTs(TimeZoneEnum.UTC);        
         return String.format("SELECT * FROM %s WHERE sent_at_utc = '' AND send_target_utc < '%s' ORDER BY send_target_utc %s ", 
                                     MAILBOX_DB_TABLE, timenow, limcls);
-    }    
+    }
 
     public static String composeReadyMailQuery()
     {
