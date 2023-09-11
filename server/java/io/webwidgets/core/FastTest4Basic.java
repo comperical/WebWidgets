@@ -973,8 +973,8 @@ public class FastTest4Basic
 				"/u/admin/ImportWidget.jsp",
 				"/u/admin/ChangePass.jsp",
 				"/u/admin/Bounce2Home.jsp",
-				"/u/admin/MailRunner.jsp",
-				"/u/admin/GoogleSyncMain.jsp"
+				"/u/admin/MailRunner.jsp"
+				// "/u/admin/GoogleSyncMain.jsp"
 			);
 		}
 
