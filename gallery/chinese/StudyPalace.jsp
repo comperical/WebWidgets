@@ -363,15 +363,6 @@ function redisplay()
 
 <br/><br/>
 
-<a class="css3button" onclick="javascript:markResult('easy')">TOO EASY</a> 
-
-
-&nbsp; 
-&nbsp; 
-&nbsp; 
-&nbsp; 
-&nbsp; 
-
 <a class="css3button" onclick="javascript:markResult('good')">GOOD</a> 
 
 
