@@ -168,6 +168,32 @@ function getRecentPromptIdSet(backup)
     return recentset;
 }
 
+function getStoryBlock()
+{
+	var story = `
+		<table class="basic-table" width="50%" border="0">
+		<tr>
+		<td width="20%"><b>Story</b></td>
+		<td>${CURRENT_PROMPT_ITEM.getPalaceNote()}</td>
+		</tr>
+	`;
+
+	if(CURRENT_PROMPT_ITEM.getExtension().length > 0)
+	{
+		story += `
+			<tr>
+			<td width="20%"><b>Extension</b></td>
+			<td>${CURRENT_PROMPT_ITEM.getExtension()}</td>
+			</tr>
+		`;
+	}
+
+	story += `</table>`;
+
+	return story;
+
+}
+
 function computePromptItem()
 {
 	// Okay this is the computation of the item with the lowest score
@@ -204,6 +230,7 @@ function redisplay()
 		<tr>
 		<td width="20%"><b>Meaning</b></td>
 		<td>${CURRENT_PROMPT_ITEM.getMeaning()}</td>
+		</tr>
 		<tr>
 		<td width="20%"><b>PinYin</b></td>
 		<td>${hanzidata.getPinYin()}</td>
@@ -278,7 +305,7 @@ function redisplay()
 
 
 	populateSpanData({
-		"thestory" : storyhtml,
+		"story_block" : getStoryBlock(),
 		"info_table" : infotable,
 		"thecharacter" : CURRENT_PROMPT_ITEM.getHanziChar()
 	});
@@ -326,11 +353,8 @@ function redisplay()
 
 <span class="prompt_answer" hidden>
 
-<table class="basic-table" width="50%" border="0">
-<tr>
-<td width="20%"><b>Story</b></td>
-<td><span id="thestory"></span></td></tr>
-</table>
+<span id="story_block"></span>
+
 
 <br/>
 <br/>

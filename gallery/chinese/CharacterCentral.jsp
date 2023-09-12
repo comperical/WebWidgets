@@ -31,8 +31,9 @@ function createPalaceItem(hdid)
 		"palace_note": "EnterNoteHere",
 		"extra_note" : "...",
 		"is_active" : 1,
+		"extension" : "",
 		"meaning": createfrom.getDefinition()
-	};		
+	};
 	
 	clearHanziDataCache();
 
@@ -212,11 +213,20 @@ function redisplayEditItem()
 		<td>${showitem.getMeaning()}</td>
 		<td><a href="javascript:editItemMeaning()"><img src="/u/shared/image/edit.png" height=18/></a></td>
 		</tr>
+
+		<tr>
+		<td>Extension</td>
+		<td>${showitem.getExtension()}</td>
+		<td><a href="javascript:editExtendedMeaning()"><img src="/u/shared/image/edit.png" height=18/></a></td>
+		</tr>
+
 		<tr>
 		<td>PinYin</td>
 		<td>${pinyin}</td>
 		<td></td>
 		</tr>
+
+
 		<tr>
 		<td>Extra Note</td>
 		<td>${showitem.getExtraNote()}</td>
@@ -372,6 +382,12 @@ function savePalaceNote()
 	syncSingleItem(showitem);
 	toggleHidden4Class('edit_info');
 	redisplay();
+}
+
+function editExtendedMeaning()
+{
+	genericEditTextField("palace_item", "extension", EDIT_STUDY_ITEM);
+
 }
 
 function editCharacter()

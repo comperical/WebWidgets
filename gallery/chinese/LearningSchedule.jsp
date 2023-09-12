@@ -36,6 +36,7 @@ function addPalaceItem(charid)
             "palace_note": "NotYetSet",
             "extra_note" : "...",
             "is_active" : 1,
+            "extension" : "",
             "meaning": charitem.getDefinition()
         };      
         
