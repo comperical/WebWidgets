@@ -118,11 +118,26 @@ function runCharacterSearch()
 
 function getVocabTargetList()
 {
+    const search_hit = function(item)
+    {
+        const p1list = [item.getSimpHanzi(), item.getEnglishNotes(), item.getPinyin()].filter(s => s.includes(CHARACTER_SEARCH));
+
+        if(p1list.length > 0)
+            { return true; }
+
+        const convpy = PinyinConverter.convert(item.getPinyin());
+
+        //console.log(`converted search term is ${PinyinConverter.convert(CHARACTER_SEARCH)}, word is ${convpy}`)
+
+        return convpy.includes(CHARACTER_SEARCH) 
+                || removeDiacritics(convpy).includes(CHARACTER_SEARCH)
+                // || PinyinConverter.convert(CHARACTER_SEARCH).includes(convpy);
+    }
+
     if(CHARACTER_SEARCH != null)
     {
         // This SHORT-CIRCUITS the other select options
-        return W.getItemList("hsk_vocab_info")
-                            .filter(item => item.getSimpHanzi().includes(CHARACTER_SEARCH));
+        return W.getItemList("hsk_vocab_info").filter(search_hit);
     }
 
 

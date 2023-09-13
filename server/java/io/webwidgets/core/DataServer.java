@@ -75,7 +75,7 @@ public class DataServer
 		String addtag = DataIncludeArg.okay_if_absent + "=true";
 		String augquery = query.trim().isEmpty() ? addtag : query + "&" + addtag;
 		return includeSub(request, augquery);
-	}	
+	}
 		
 	public static String basicIncludeOnly(HttpServletRequest request, String... tables)
 	{		
@@ -86,11 +86,37 @@ public class DataServer
 	
 	private static String includeSub(HttpServletRequest request, String query)
 	{
-		ArgMap argmap = ArgMap.buildFromQueryString(query.startsWith("?") ? query : "?" + query);
+		ArgMap argmap = buildIncludeMap(query);
 		
 		return ServerUtil
 			.build(request, argmap)
-			.include();		
+			.include();
+	}
+
+	static ArgMap buildIncludeMap(String paramstr)
+	{
+		ArgMap mymap = new ArgMap();
+		String[] terms = paramstr.split("&");
+
+		for(String kv : terms)
+		{
+			String[] tokens = kv.split("=");
+
+			Util.massert(tokens.length == 2, 
+				"Attempt to use invalid Key=Value term %s, all DataServer include parameters must follow this convention", kv);
+
+			try {
+				DataIncludeArg diarg = DataIncludeArg.valueOf(tokens[0]);
+				Util.massert(!mymap.containsKey(diarg.toString()), "Duplicate DataServer include argument __%s__", diarg);
+				mymap.setStr(diarg.toString(), tokens[1]);
+
+			} catch (IllegalArgumentException ilex) {
+				Util.massert(false, 
+					"Invalid DataServer include argument %s, options are %s", tokens[0], Util.listify(DataIncludeArg.values()));
+			}
+		}
+
+		return mymap;
 	}
 	
 	

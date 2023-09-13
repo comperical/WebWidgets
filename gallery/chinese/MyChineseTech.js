@@ -85,6 +85,11 @@ function getCharIndexSub(chartable)
 }
 
 
+// Can be useful to remove the diacritics from Pinyin, so they match a basic search
+function removeDiacritics(str) {
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, "");
+}
+
 
 function lookupHanziDataByChar(hanzichar)
 {

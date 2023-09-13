@@ -22,6 +22,7 @@ import	io.webwidgets.core.CoreUtil.*;
 import	io.webwidgets.core.WidgetOrg.*;
 import	io.webwidgets.core.AuthLogic.*;
 import	io.webwidgets.core.MailSystem.*;
+import	io.webwidgets.core.DataServer.*;
 import	io.webwidgets.core.PluginCentral.*;
 import	io.webwidgets.core.BlobDataManager.*;
 
@@ -993,6 +994,59 @@ public class FastTest4Basic
 			Util.pf("Success, loaded plugins successfully, map is %s\n", classmap);
 		}
 		
+	}
+
+	public static class CheckDataIncludeError extends DescRunnable
+	{
+		private int _goodCount = 0;
+		private int _baddCount = 0;
+
+		public String getDesc()
+		{
+			return "Confirm that the DataInclude parser behaves as appropriate, including errors when bad data is passed";
+		}
+
+		public void runOp()
+		{
+			checkResult("tables=my_table", DataIncludeArg.tables);
+			checkResult("widgetname=danstuff&tables=my_table", DataIncludeArg.tables, DataIncludeArg.widgetname);
+			checkResult("no_data=true&widgetname=dantench", DataIncludeArg.widgetname, DataIncludeArg.no_data);
+
+			checkError("table=my_table", "Invalid DataServer include");
+			checkError("no_data", "invalid Key=Value term");
+			checkError("tables=dantech&tables=mytech", "Duplicate DataServer include argument __tables__");
+
+			Util.pf("Success, got %d good and %d bad expected results\n", _goodCount, _baddCount);
+		}
+
+
+		private void checkError(String query, String messagetag)
+		{
+
+			try {
+				ArgMap amap = DataServer.buildIncludeMap(query);
+				Util.massert(false, "Failed to throw exception as expected");
+
+			} catch (Exception ex) {
+				Util.massert(ex.getMessage().contains(messagetag), 
+					"Failed to find tag %s in error %s", messagetag, ex.getMessage());
+			}
+
+			_baddCount++;
+		}
+
+		private void checkResult(String query, DataIncludeArg... expect)
+		{
+			ArgMap amap = DataServer.buildIncludeMap(query);
+			Util.massert(amap.size() == expect.length);
+
+			for(DataIncludeArg darg : expect) {
+				Util.massert(amap.containsKey(darg.toString()), "Missing argument %s", darg);
+			}
+
+			_goodCount++;
+		}
+
 	}
 } 
 
