@@ -351,14 +351,20 @@ function buildChar2VocabMap(vocablist)
 	vocablist.forEach(function(item) {
 
 		const simple = item.getSimpHanzi();
-		for(var i = 0; i < simple.length; i++) {
+        const charset = new Set()
 
-			const hchar = simple[i];
-			if(!(hchar in mymap))
-				{ mymap[hchar] = [];}
+        // Make sure to enter word only once, even if it has multiple instances of character
+		for(var i = 0; i < simple.length; i++) 
+            { charset.add(simple[i]); }
 
-			mymap[hchar].push(item);
-		}
+
+        [... charset].forEach(function(hchar) 
+        {
+            if(!(hchar in mymap))
+                { mymap[hchar] = [];}
+
+            mymap[hchar].push(item);
+        });
 	});
 
 	return mymap;
