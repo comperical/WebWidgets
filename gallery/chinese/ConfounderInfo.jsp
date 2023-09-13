@@ -2,7 +2,8 @@
 
 <html>
 <head>
-<title>Confounders!!</title>
+<title>&#128260; &#23383;</title>
+
 
 <%= DataServer.include(request, "tables=confounder,hanzi_data,palace_item") %>
 
