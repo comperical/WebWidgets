@@ -96,7 +96,10 @@ public class DataServer
 	static ArgMap buildIncludeMap(String paramstr)
 	{
 		ArgMap mymap = new ArgMap();
-		String[] terms = paramstr.split("&");
+		if(paramstr.trim().isEmpty())
+			{ return mymap; }
+
+		String[] terms = paramstr.trim().split("&");
 
 		for(String kv : terms)
 		{

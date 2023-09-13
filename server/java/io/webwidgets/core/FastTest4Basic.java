@@ -1008,6 +1008,8 @@ public class FastTest4Basic
 
 		public void runOp()
 		{
+			checkResult("");
+
 			checkResult("tables=my_table", DataIncludeArg.tables);
 			checkResult("widgetname=danstuff&tables=my_table", DataIncludeArg.tables, DataIncludeArg.widgetname);
 			checkResult("no_data=true&widgetname=dantench", DataIncludeArg.widgetname, DataIncludeArg.no_data);
