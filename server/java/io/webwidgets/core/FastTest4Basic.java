@@ -67,7 +67,7 @@ public class FastTest4Basic
 		
 		public void runOp()
 		{
-			Set<WidgetUser> adminheather = Util.setify(WidgetUser.getDburfootUser(), WidgetUser.valueOf("bettworld"), WidgetUser.valueOf("heather"));
+			Set<WidgetUser> adminheather = Util.setify(WidgetUser.getDburfootUser(), WidgetUser.valueOf("heather"));
 			
 			for(WidgetUser wuser : WidgetUser.values())
 			{
