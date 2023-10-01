@@ -689,7 +689,7 @@ public class CoreCommand
 		
 		private int lookupUserId(WidgetUser wuser)
 		{
-			WidgetItem master = new WidgetItem(WidgetUser.getDburfootUser(), "master");			
+			WidgetItem master = CoreUtil.getMasterWidget();		
 			QueryCollector qcol = QueryCollector.buildAndRun(
 				Util.sprintf("SELECT id FROM user_main WHERE username = '%s'", wuser), master);
 			int userid = qcol.getSingleArgMap().getSingleInt();			
