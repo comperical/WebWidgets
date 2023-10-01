@@ -344,6 +344,7 @@ function findExample(hanzichar)
 	return foundex;
 }
 
+
 function buildChar2VocabMap(vocablist)
 {
 	const mymap = {};

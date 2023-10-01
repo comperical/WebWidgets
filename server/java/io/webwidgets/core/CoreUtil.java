@@ -126,7 +126,7 @@ public class CoreUtil
 
 	public static WidgetItem getMasterWidget()
 	{
-		return new WidgetItem(WidgetUser.getDburfootUser(), MASTER_WIDGET_NAME);
+		return new WidgetItem(WidgetUser.getSharedUser(), MASTER_WIDGET_NAME);
 	}
 
 	// This is the same algorithm that the JS code uses
