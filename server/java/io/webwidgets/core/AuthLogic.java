@@ -329,12 +329,9 @@ public class AuthLogic
 				if(dbItem.theOwner == accessor)
 					{ return Optional.of(PermLevel.admin); }
 
+				// Admins can do anything
 				if(accessor.isAdmin()) 
-				{
-					// Other admins get special perms for all widgets other than my personal ones
-					if(accessor == WidgetUser.getDburfootUser() || dbItem.theOwner != WidgetUser.getDburfootUser())
-						{ return Optional.of(PermLevel.admin); }
-				}
+					{ return Optional.of(PermLevel.admin); }
 
 				Optional<PermLevel> core = Optional.ofNullable(_coreMap.get(accessor));
 				if(core.isPresent())

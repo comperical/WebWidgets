@@ -28,6 +28,11 @@ import	io.webwidgets.core.BlobDataManager.*;
 
 public class FastTest4Basic
 {
+	
+	private static WidgetUser getTestDburfootUser()
+	{
+		return WidgetUser.lookup("dburfoot");	
+	}
 
 	public static class CheckUserHardReference extends DescRunnable
 	{
@@ -67,7 +72,7 @@ public class FastTest4Basic
 		
 		public void runOp()
 		{
-			Set<WidgetUser> adminheather = Util.setify(WidgetUser.getDburfootUser(), WidgetUser.valueOf("heather"));
+			Set<WidgetUser> adminheather = Util.setify(getTestDburfootUser(), WidgetUser.valueOf("heather"));
 			
 			for(WidgetUser wuser : WidgetUser.values())
 			{
@@ -91,7 +96,7 @@ public class FastTest4Basic
 			{
 				String page = getDburfootPage();
 				boolean allow = AuthChecker.build().widgetFromUrl(page).directSetAccessor(wuser).allowRead();
-				boolean expect = wuser == WidgetUser.getDburfootUser();
+				boolean expect = wuser == getTestDburfootUser();
 				Util.massert(allow == expect,
 					"Got allow=%s but expected %s for wuser=%s", allow, expect, wuser);
 			}			
@@ -300,82 +305,6 @@ public class FastTest4Basic
 			Util.pferr("Failed to find AuthInclude in JSP file %s\n", thefile);
 		}
 	}	
-	
-	public static class DbInfoTest extends DescRunnable
-	{
-		public String getDesc()
-		{
-			return "Ensures for DBurfoot databases only that \n" + 
-				"There is no overlap in table names between Widgets";
-		}
-		
-		
-		public void runOp()
-		{
-			boolean modokay = _argMap.getBit("modokay", false);
-			Map<String, List<String>> datamap = Util.treemap();
-			
-			for(WidgetItem witem : WidgetUser.getDburfootUser().getUserWidgetList())
-			{
-				Set<String> tableset = witem.getDbTableNameSet();	
-				// Util.pf("Found tableset %s :: %s\n", witem.theName, tableset);
-				
-				for(String tbl : tableset)
-				{
-					datamap.putIfAbsent(tbl, Util.vector());
-					datamap.get(tbl).add(witem.theName);
-				}
-			}
-			
-			int errcount = 0;
-			LinkedList<String> lifemove = Util.linkedlist();			
-			for(String tbl : datamap.keySet())
-			{
-				List<String> wlist = datamap.get(tbl);
-				
-				if(wlist.size() != 1)
-				{
-					Util.pf("Found multiple widgets with table names %s :: %s\n", tbl, wlist);
-					
-					if(wlist.contains("life"))
-						{ lifemove.add(tbl); }
-					
-					errcount++;
-				}
-			}
-			
-			if(errcount == 0)
-			{
-				Util.pf("No misconf'ed tables found, quitting\n");
-				return;
-				
-			}
-			
-			if(lifemove.isEmpty())
-				{ return; }
-
-			Util.massert(modokay || lifemove.size() == 0,
-				"Have move proposals, rerun with modokay=true to fix");
-
-
-			
-			Util.pf("Found %d move proposals\n", lifemove.size());
-			String moveme = lifemove.poll();
-			
-			String update = Util.sprintf("ALTER TABLE %s RENAME TO __%s", moveme, moveme);
-			
-			Util.pf("Propose to run this command in LIFE db:\n");
-			Util.pf("\t%s\n", update);
-			
-			if(Util.checkOkay("Okay to move?"))
-			{
-				WidgetItem lifewidget = new WidgetItem(WidgetUser.getDburfootUser(), "life");	
-				CoreDb.execSqlUpdate(update, lifewidget);
-				Util.pf("Obsoleted table %s, rerun to continue with next table\n", moveme);	
-			}
-			
-		}
-	}
 	
 	public static class CheckUserDirExist extends DescRunnable
 	{
@@ -712,7 +641,7 @@ public class FastTest4Basic
 		{
 
 			{
-				WidgetItem dbbase = WidgetUser.getDburfootUser().baseWidget();
+				WidgetItem dbbase = getTestDburfootUser().baseWidget();
 				for(String baseurl : getDbBaseList()) 
 				{
 					WidgetItem probe = WebUtil.getWidgetFromUrl(baseurl);
@@ -862,7 +791,7 @@ public class FastTest4Basic
 
 	public static class GoogleSyncTest extends CoreCommand.GoogleSyncAdmin
 	{
-		WidgetItem DB_CHORE_WIDGET = new WidgetItem(WidgetUser.getDburfootUser(), "chores");
+		WidgetItem DB_CHORE_WIDGET = new WidgetItem(getTestDburfootUser(), "chores");
 
 		public String getDesc()
 		{
@@ -895,14 +824,14 @@ public class FastTest4Basic
 		{
 			{
 				BiFunction<ValidatedEmail, WidgetUser, String> myfunc = MailSystem.getEmailComposeLink();
-				String result = myfunc.apply(ValidatedEmail.from("daniel.burfoot@gmail.com"), WidgetUser.getDburfootUser());
+				String result = myfunc.apply(ValidatedEmail.from("daniel.burfoot@gmail.com"), getTestDburfootUser());
 				Util.pf("Result is %s\n", result);
 			}
 
 
 			{
 				BiFunction<ValidatedEmail, WidgetUser, Boolean> myfunc = MailSystem.getEmailControlSend();
-				boolean result = myfunc.apply(ValidatedEmail.from("daniel.burfoot@gmail.com"), WidgetUser.getDburfootUser());
+				boolean result = myfunc.apply(ValidatedEmail.from("daniel.burfoot@gmail.com"), getTestDburfootUser());
 				Util.pf("Result is %s\n", result);
 			}
 		}

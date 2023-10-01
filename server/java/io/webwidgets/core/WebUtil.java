@@ -298,8 +298,11 @@ public class WebUtil
 		String timestamp = ExactMoment.build().asLongBasicTs(TimeZoneEnum.PST);
 
 		try {
-
-			WidgetItem syslog = new WidgetItem(WidgetUser.getDburfootUser(), "syslog");
+			// This is an optional configuration. If the DB is not present, just skip this log
+			WidgetItem syslog = new WidgetItem(WidgetUser.getSharedUser(), "syslog");
+			if(!syslog.getLocalDbFile().exists())
+				{ return; }
+			
 			int randid = (new Random()).nextInt();
 
 			CoreDb.upsertFromRecMap(syslog, "page_load", 1, CoreDb.getRecMap(

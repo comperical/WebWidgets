@@ -514,9 +514,9 @@ public class ActionJackson extends HttpServlet
 		@Override
 		protected boolean prependAuthTag()
 		{
-			if(_myItem.theOwner != WidgetUser.getDburfootUser())
+			if(!_myItem.theOwner.isAdmin())
 				{ return true; }
-			
+		
 			return !getSpecialRemapDir().containsKey(_myItem.theName);
 		}
 		

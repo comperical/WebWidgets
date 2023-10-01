@@ -185,11 +185,6 @@ public class WidgetOrg
 			return CoreDb.getLiteViewNameSet(this);
 		}
 		
-		public static WidgetItem fromOldSetup(String name)
-		{
-			return new WidgetItem(WidgetUser.getDburfootUser(), name);	
-		}
-		
 		public String toString()
 		{
 			return Util.sprintf("%s::%s", theOwner.toString(), theName);
