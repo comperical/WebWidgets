@@ -342,32 +342,7 @@ public class CoreCommand
 
 		}
 	}
-	
-	public static class CreateSingleWidgetCode extends ArgMapRunnable 
-	{
-		public void runOp()
-		{
-			WidgetUser wuser = WidgetUser.getDburfootUser();
-			Util.massert(wuser.haveLocalDb(),
-				"We do not have any local DBs for WidgetUser %s, you must create some before using this tool", wuser);
-			
-			// Create autogen dir, this will also create the widgetserve directory
-			boolean didcreate = wuser.maybeCreateAutogenJsDir();
-			if(didcreate)
-			{
-				Util.pf("Created AutoGen JS dir %s\n", wuser.getAutoGenJsDir());	
-			}
-			
-			List<WidgetItem> itemlist = wuser.getUserWidgetList();
-			for(WidgetItem witem : itemlist)
-			{
-				Util.pf("Attempting to create code for %s\n", witem);
-				List<String> loglist = ActionJackson.createCode4Widget(witem);				
-				for(String log : loglist)
-					{ Util.pf("%s", log); }
-			}			
-		}
-	}	
+
 	
 	public static class CreateBlankWidget extends ArgMapRunnable
 	{
@@ -487,169 +462,6 @@ public class CoreCommand
 		}
 	}
 	
-	public static class CopyAdminWidgetStruct extends ArgMapRunnable
-	{
-		public void runOp() throws IOException
-		{
-			WidgetUser wuser = WidgetUser.valueOf(_argMap.getStr("username"));
-			Util.massert(wuser.haveLocalDb(),
-				"We do not have any local DBs for WidgetUser %s, you must create some before using this tool", wuser);
-			
-			String widgetname = _argMap.getStr("widgetname");
-			
-			WidgetItem srcdb = new WidgetItem(WidgetUser.getDburfootUser(), widgetname);
-			WidgetItem dstdb = new WidgetItem(wuser, widgetname);
-			
-			Util.massert(srcdb.getLocalDbFile().exists(),
-				"Could not find admin widget DB file %s", srcdb.getLocalDbFile());
-			
-			Util.massert(!dstdb.getLocalDbFile().exists(),
-				"Destination DB %s already exists, please delete manually first",
-				dstdb.getLocalDbPath());
-			
-			{
-				java.nio.file.Files.copy(
-					srcdb.getLocalDbFile().toPath(), 
-					dstdb.getLocalDbFile().toPath(),
-					java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-				
-				Util.pf("Copied src/dst files: \n\t%s\n\t%s\n",
-					srcdb.getLocalDbPath(), dstdb.getLocalDbPath());
-			}
-			
-			// Make sure dstdb!!!
-			removeTableData(dstdb);
-		}
-		
-		private static void removeTableData(WidgetItem db) 
-		{
-			// Extra paranoia
-			Util.massert(db.theOwner != WidgetUser.getDburfootUser());
-			Set<String> tableset = CoreDb.getLiteTableNameSet(db);
-			
-			for(String tbl : tableset)
-			{
-				String trunc = Util.sprintf("DELETE FROM " + tbl);
-				int delrow = CoreDb.execSqlUpdate(trunc, db);
-				Util.pf("Cleaned %d records from table %s of %s\n",
-					delrow, tbl, db.getLocalDbPath());
-			}
-		}
-	}
-	
-	public static class SymLinkWidgetTemplate extends ArgMapRunnable
-	{
-		public void runOp()
-		{
-			WidgetUser wuser = WidgetUser.valueOf(_argMap.getStr("username"));
-			String widgetname = _argMap.getStr("widgetname");
-			
-			WidgetItem template = new WidgetItem(WidgetUser.getDburfootUser(), widgetname);
-			WidgetItem copyitem = new WidgetItem(wuser, widgetname);
-			
-			File basedir = template.getWidgetBaseDir();
-			Util.massert(basedir.exists(),
-				"Base Widget directory %s does not exist", basedir);
-			
-			File copydir = copyitem.getWidgetBaseDir();
-			// Util.massert(!copydir.exists(), "Copy dir already exists, remove if you want to proceed", copydir);
-			// copydir.mkdir();
-			
-			for(File srcfile : basedir.listFiles())
-			{
-				// TODO: this is fucked up, change this to something more standard
-				// Temporary hack while undergoing big organization shift
-				String dstfile = srcfile.toString().replace("lifecode/jsp", "widgetserve/" + wuser.toString());
-				Util.pf("Linking:\n\t%s\n\t%s\n", srcfile, dstfile);
-				
-				String syscall = Util.sprintf("ln -s %s %s", srcfile, dstfile);
-				SyscallWrapper syswrap = SyscallWrapper.build(syscall).execE();
-			}
-			
-			
-		}
-	}	
-	
-	public static class CopyTableStructure extends ArgMapRunnable
-	{
-		// This thing sucks because you need to explicitly list out the table names!!!
-		public void runOp()
-		{
-			String dbname = _argMap.getStr("dbname");
-			String tabname = _argMap.getStr("tabname");
-			
-			WidgetUser wuser = WidgetUser.valueOf(_argMap.getStr("username"));
-			Util.massert(wuser != WidgetUser.getDburfootUser());
-			String wname = _argMap.getStr("widgetname");
-			
-			WidgetItem source = new WidgetItem(WidgetUser.getDburfootUser(), dbname);
-			WidgetItem destin = new WidgetItem(wuser, wname);
-			
-			String create = CoreUtil.getCreateTableSql(source, tabname);
-			Util.pf("CREATE statement is:\n\t%s\n", create);
-			
-			if(Util.checkOkay("Okay to run?"))
-			{
-				CoreDb.execSqlUpdate(create, destin);
-				
-			}
-		}
-	}
-	
-	public static class TransferAdminDb extends ArgMapRunnable
-	{
-		public void runOp()
-		{
-			String srcdb = _argMap.getStr("srcdb");
-			String dstdb = _argMap.getStr("dstdb");
-			String tabname = _argMap.getStr("tabname");
-			
-			WidgetItem source = new WidgetItem(WidgetUser.getDburfootUser(), srcdb);
-			WidgetItem destin = new WidgetItem(WidgetUser.getDburfootUser(), dstdb);
-			
-			String create = CoreUtil.getCreateTableSql(source, tabname);
-			Util.pf("CREATE statement is:\n\t%s\n", create);
-			
-			if(!Util.checkOkay("okay to run?"))
-			{
-				Util.pf("Quitting\n");
-				return;
-			}
-			
-			CoreDb.execSqlUpdate(create, destin);
-			
-			QueryCollector qcol = CoreUtil.fullTableQuery(source, tabname);
-			Util.pf("Loaded %d records for admin table %s\n", qcol.recList().size(), tabname);
-			Util.pf("Copying data to widget DB...\n");
-			
-			for(ArgMap onemap : qcol.recList())
-			{
-				CoreDb.upsertFromRecMap(destin, tabname, 1, convertArg2Link(onemap));
-			}		
-			
-			Util.pf("... done\n");
-		}
-		
-		static LinkedHashMap<String, Object> convertArg2Link(ArgMap argmap)
-		{
-			Util.massert(argmap.containsKey("id"),
-				"ArgMap is missing ID column 'id', keys are %s", argmap.keySet());
-			
-			LinkedHashMap<String, Object> mymap = Util.linkedhashmap();
-			mymap.put("id", argmap.get("id"));
-			
-			for(String k : argmap.keySet())
-			{
-				if(k.equals("id"))
-					{ continue; }
-				
-				mymap.put(k, argmap.get(k));
-			}
-			
-			return mymap;
-		}
-		
-	}
 	
 	public static class ShowHashForStart extends ArgMapRunnable
 	{
@@ -836,23 +648,31 @@ public class CoreCommand
 	}	
 	
 	
-	public static class TestTableLoadTime extends ArgMapRunnable 
+	public static class TestTableServeTime extends DescRunnable 
 	{
+		public String getDesc()
+		{
+			return 
+				"Test how long it takes to load and compose data records\n" + 
+				"This is a kind of performance test; you can use it with a debugger if there is a performance issue\n" + 
+				"For a given widget, the code loads each table and generates the JS data corresponding to the table\n" + 
+				"This is one of the fundamental, and performance-intensive, operations of WWIO";
+		}
+		
 		
 		public void runOp()
 		{
-			Util.pf("Going to load table data!!\n");
-			WidgetItem witem = new WidgetItem(WidgetUser.getDburfootUser(), "chinese");
+			WidgetUser user = WidgetUser.lookup(_argMap.getStr("username"));
+			WidgetItem item = new WidgetItem(user, _argMap.getStr("widgetname"));
+			int numload = _argMap.getInt("numload", 100);			
 			
-			List<String> tables = Util.listify("review_log", "hanzi_data", "palace_item");
-			
-			for(int i : Util.range(1000))
+			for(int i : Util.range(numload))
 			{
 				
 				double alpha = Util.curtime();
-				for(String tbl : tables)
+				for(String tbl : item.getDbTableNameSet())
 				{
-					LiteTableInfo LTI = new LiteTableInfo(witem, tbl);
+					LiteTableInfo LTI = new LiteTableInfo(item, tbl);
 					LTI.runSetupQuery();
 					List<String> reclist = LTI.composeDataRecSpool();
 				}
@@ -885,27 +705,13 @@ public class CoreCommand
 	{
 		public void runOp()
 		{
-			WidgetItem item = new WidgetItem(WidgetUser.getDburfootUser(), "finance");
-
+			WidgetUser user = WidgetUser.lookup(_argMap.getStr("username"));
+			WidgetItem item = new WidgetItem(user, _argMap.getStr("widgetname"));
+			
 			for(String s : WebUtil.getAutoIncludeStatement(item))
 			{
 				Util.pf("Statement is \n\t%s\n", s);	
 			}
-		}
-	}
-	
-	public static class ShowOrderedColumnList extends ArgMapRunnable
-	{
-		
-		public void runOp()
-		{
-			/*
-			WidgetItem widget = new WidgetItem(WidgetUser.getDburfootUser(), "media");
-			String tablename = _argMap.getStr("tablename");
-			List<String> ordercol = CoreUtil.getOrderedColumnList(widget, tablename);
-			Util.pf("Ordered column list is %s\n", ordercol);
-			*/
-			
 		}
 	}
 	
@@ -962,32 +768,6 @@ public class CoreCommand
 		}
 	}
 	
-	public static class TestAmaMail extends ArgMapRunnable
-	{
-		
-		public void runOp() throws Exception
-		{
-			Util.pf("Enter the email content: \t");
-			String emailContent = Util.getUserInput();
-			
-			WidgetMail mail = WidgetMail
-								.build(WidgetUser.getDburfootUser())
-								.setSubject("Hello from WebWidgets!!")
-								.setRecipEmail("daniel.burfoot@gmail.com");
-			
-			mail.setContent(String.format("<html><body>%s</body></html>", emailContent));
-			
-			Map<Integer, WidgetMail> mymap = Util.treemap();
-			mymap.put(444, mail);
-			
-			IMailSender sender = PluginCentral.getMailPlugin();
-
-			sender.sendMailPackage(mymap, mid -> Util.pf("Email %d sent okay\n", mid));
-			
-			Util.pf("mailing was successful!!!\n");
-		}
-	}
-	
 	public static class CreateMailBoxWidget extends ArgMapRunnable
 	{
 		public void runOp()
@@ -1000,52 +780,27 @@ public class CoreCommand
 		
 	}
 	
-	public static class CreateDummyMail extends ArgMapRunnable
-	{
-		
-		//CREATE TABLE outgoing (id int, sent_at_utc varchar(19), send_target_utc varchar(19), recipient varchar(100), subject varchar(100), email_content varchar(1000), is_text smallint, primary key(id))
-		
-		public void runOp()
-		{
-			WidgetUser wuser = WidgetUser.getDburfootUser();
-			WidgetItem mailbox = new WidgetItem(wuser, "mailbox");
-			String sendtarget = ExactMoment.build().asLongBasicTs(TimeZoneEnum.UTC);
-			
-			for(int i : Util.range(2, 10)) 
-			{
-				CoreDb.upsertFromRecMap(mailbox, "outgoing", 1, CoreDb.getRecMap(
-					"id", i,
-					"sent_at_utc", "",
-					"send_target_utc", sendtarget,
-					"recipient", "daniel.burfoot@gmail.com",
-					"subject", "The world is ending!!",
-					"email_content", "You are going to be out of the game soon, fool!!",
-					"is_text", 1
-					));
-			}
-		}
-	}
-	
 	public static class LoadMailReadyMap extends ArgMapRunnable
-	{
-		
-		//CREATE TABLE outgoing (id int, sent_at_utc varchar(19), send_target_utc varchar(19), recipient varchar(100), subject varchar(100), email_content varchar(1000), is_text smallint, primary key(id))
-		
+	{		
 		public void runOp()
 		{
-			WidgetUser wuser = WidgetUser.getDburfootUser();
-			Map<Integer, WidgetMail> readymap = MailSystem.loadReadyMailForUser(wuser);
-			
-			Util.pf("Have readymap %s\n", readymap);
+			WidgetUser user = WidgetUser.valueOf(_argMap.getStr("username"));
+			Map<Integer, WidgetMail> readymap = MailSystem.loadReadyMailForUser(user);
+			Util.pf("Have %d items in mail map\n", readymap.size());
 		}
 	}
 	
-	public static class SendSingleReadyMail extends ArgMapRunnable
+	public static class SendSingleReadyMail extends DescRunnable
 	{
+		public String getDesc()
+		{
+			return "Send a SINGLE ready mail for a given user";	
+		}
+		
 		public void runOp()
 		{
-			WidgetUser wuser = WidgetUser.getDburfootUser();
-			List<String> resultlist = MailSystem.sendSingleReadyMailForUser(wuser);
+			WidgetUser user = WidgetUser.valueOf(_argMap.getStr("username"));			
+			List<String> resultlist = MailSystem.sendSingleReadyMailForUser(user);
 			
 			for(String result : resultlist)
 				{ Util.pf("%s\n", result); }
@@ -1069,6 +824,21 @@ public class CoreCommand
 			Util.pf("Authorization granted, remember to restart Resin\n");
 		}
 	}
+	
+	public static class RevokePermission extends ArgMapRunnable
+	{
+
+		public void runOp()
+		{
+			WidgetUser user = WidgetUser.lookup(_argMap.getStr("username"));
+			WidgetItem item = new WidgetItem(user, _argMap.getStr("widgetname"));
+			PermLevel perm = PermLevel.valueOf(_argMap.getStr("level"));
+			
+			WidgetUser grantee = WidgetUser.lookup(_argMap.getStr("grantee"));
+			AuthLogic.removePermFromGrantee(item, grantee);
+		}
+	}
+	
 	
 	public static class JustLoadPermTable extends ArgMapRunnable 
 	{
@@ -1097,62 +867,6 @@ public class CoreCommand
 			}
 		}
 	}		
-	
-	public static class UpdateSysTestBlob extends ArgMapRunnable
-	{
-		
-		public void runOp()
-		{
-			WidgetItem blob = new WidgetItem(WidgetUser.getDburfootUser(), "systest");
-			
-			CoreDb.upsertFromRecMap(blob, "blob_test", 1, CoreDb.getRecMap(
-				"id", 0,
-				"base64_blob_data", 45,
-				"blob_address", "/dburfoot/systest/blob_test/blob__00001",
-				"blob_file_name", "FunnySentencePlayground2.jpg"
-				));
-		}
-		
-	}
-	
-	public static class TestBlobPullTech extends ArgMapRunnable
-	{
-		
-		public void runOp()
-		{
-			WidgetItem blob = new WidgetItem(WidgetUser.getDburfootUser(), "systest");
-			int recordid = _argMap.getInt("recordid");
-			
-			String query = String.format("SELECT * FROM blob_test WHERE id = %d", recordid);
-			ArgMap onemap = QueryCollector.buildAndRun(query, blob).getSingleArgMap();
-			Util.pf("loaded the arg map \n");
-			// Util.pf("Result is %s\n", onemap);
-			
-			LiteTableInfo LTI = new LiteTableInfo(blob, "blob_test");
-			
-			BlobDataManager.optProcessBlobInput(LTI, Util.cast(onemap));
-			
-			
-			CoreDb.upsertFromRecMap(blob, "blob_test", 1, convertArgMap(onemap));
-			
-		}
-		
-		private static LinkedHashMap<String, Object> convertArgMap(ArgMap record) 
-		{
-			LinkedHashMap<String, Object> idfirst = Util.linkedhashmap();
-			
-			idfirst.put("id", record.getInt("id"));
-			
-			for(String k : record.keySet()) 
-			{
-				if(!k.equals("id"))
-					{ idfirst.put(k, record.get(k)); }
-			}
-			
-			return idfirst;
-		}
-		
-	}
 	
 	public static class EmailCheckAndSend extends DescRunnable implements CrontabRunnable
 	{
@@ -1417,105 +1131,7 @@ public class CoreCommand
 		}
 
 	}
-
-	public static class GeneratePermDataFile extends ArgMapRunnable
-	{
-		public static String PERM_DATA_FILE = "/Users/burfoot/Desktop/PERM_FILE.txt";
-
-		public void runOp()
-		{
-
-			List<String> datafile = generateFullDataRep();
-			FileUtils.getWriterUtil().setFile(PERM_DATA_FILE).writeLineListE(datafile);
-
-			Util.pf("Wrote %d lines to path %s\n", datafile.size(), PERM_DATA_FILE);
-
-		}
-
-		private static List<String> loadDataFile()
-		{
-			return FileUtils.getReaderUtil().setFile(PERM_DATA_FILE).readLineListE();
-		}
-
-		private static List<String> generateFullDataRep()
-		{
-			WidgetItem permdb = new WidgetItem(WidgetUser.getDburfootUser(), "master");
-
-			QueryCollector qcol = CoreUtil.fullTableQuery(permdb, "perm_grant");
-
-			Set<WidgetItem> dbset = Util.map2set(qcol.recList(), 
-				amap -> new WidgetItem(WidgetUser.lookup(amap.getStr("owner")), amap.getStr("widget_name")));
-
-			// Need to order these, they are not ordered by default
-			TreeSet<WidgetUser> orderset = Util.treeset(WidgetUser.values());
-			List<String> datafile = Util.vector();
-			for(WidgetItem dbitem : dbset)
-			{
-				for(WidgetUser grantee : orderset)
-				{
-
-					Optional<PermLevel> optperm = AuthLogic.getPermInfo4Widget(dbitem).getPerm4Accessor(Optional.of(grantee));
-
-					List<String> tokens = Util.listify(
-						dbitem.theOwner.toString(),
-						dbitem.theName,
-						optperm.isPresent() ? optperm.get().toString() : "none",
-						grantee.toString()
-					);
-
-					datafile.add(Util.join(tokens, "\t"));
-				}
-			}
-
-			return datafile;
-		}		
-
-	}
-
-
-	public static class CheckPermDataFile extends ArgMapRunnable
-	{
-
-		public void runOp()
-		{
-
-			List<String> datafile = GeneratePermDataFile.loadDataFile();
-			List<String> current = GeneratePermDataFile.generateFullDataRep();
-
-			Util.massert(datafile.equals(current), "Discrepancy detected!!!");
-			Util.pf("Success, files are identical!!\n");
-		}
-	}
-
-	public static class AddPermToWidget extends ArgMapRunnable
-	{
-
-		public void runOp()
-		{
-			WidgetItem sysitem = new WidgetItem(WidgetUser.getDburfootUser(), "systest");
-
-			WidgetUser grantee = WidgetUser.lookup(_argMap.getStr("grantee"));
-
-			AuthLogic.assignPermToGrantee(sysitem, grantee, PermLevel.read);
-
-		}
-
-	}
-
-	public static class RevokePerm extends ArgMapRunnable
-	{
-
-		public void runOp()
-		{
-			WidgetItem sysitem = new WidgetItem(WidgetUser.getDburfootUser(), "systest");
-
-			WidgetUser grantee = WidgetUser.lookup(_argMap.getStr("grantee"));
-
-			AuthLogic.removePermFromGrantee(sysitem, grantee);
-
-		}
-
-	}
+	
 
 
 	public static class MarkPublicRead extends ArgMapRunnable

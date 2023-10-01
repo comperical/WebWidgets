@@ -351,17 +351,16 @@ public class WidgetUser implements Comparable<WidgetUser>
     public static String SHARED_USER_NAME = "shared";
 
     public static String DBURFOOT_USER_NAME = "dburfoot";
-
-    public static WidgetUser getDburfootUser() 
-    {
-        return valueOf(DBURFOOT_USER_NAME);
-    }
-
+    
     public static WidgetUser getSharedUser()
     {
         return valueOf(SHARED_USER_NAME);
     }    
 
+    public static WidgetUser getDburfootUser() 
+    {
+        return WidgetUser.valueOf(DBURFOOT_USER_NAME);
+    }	    
 
     private static String __DUMMY_HASH = null;
 

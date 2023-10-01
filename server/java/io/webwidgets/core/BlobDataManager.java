@@ -81,7 +81,7 @@ public class BlobDataManager
 		return blobhits > 0;
 	}
 	
-	static void optProcessBlobInput(LiteTableInfo LTI, Map<String,  Object> payload)
+	public static void optProcessBlobInput(LiteTableInfo LTI, Map<String,  Object> payload)
 	{
 		if(!LTI.isBlobStoreTable())
 			{ return; }
