@@ -56,7 +56,8 @@ public class WidgetUser implements Comparable<WidgetUser>
 
     public boolean isAdmin()
     {
-        return Util.setify(DBURFOOT_USER_NAME, "bettworld").contains(_userName);
+        // return Util.setify(DBURFOOT_USER_NAME, "bettworld").contains(_userName);
+        return getUserEntry().getInt("is_admin") == 1;
     }
 
     public String getDbDirPath()

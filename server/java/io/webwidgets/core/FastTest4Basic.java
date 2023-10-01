@@ -1050,5 +1050,18 @@ public class FastTest4Basic
 		}
 
 	}
+
+	public static class CheckAdminUserCount extends ArgMapRunnable
+	{
+		public void runOp()
+		{
+			List<WidgetUser> adminlist = Util.filter2list(WidgetUser.values(), user -> user.isAdmin());
+			Util.massert(adminlist.size() == 1, "No admin users found");
+			Util.pf("success, found %d admin users\n", adminlist.size());
+
+			Set<String> adminset = Util.map2set(adminlist, user -> user.toString());
+			Util.massert(adminset.contains("dburfoot"));
+		}
+	}
 } 
 
