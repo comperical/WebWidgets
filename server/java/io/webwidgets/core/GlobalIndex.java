@@ -82,7 +82,7 @@ public class GlobalIndex
     // But WidgetUser objects are generally only created by the GlobalIndex code
     private static WidgetItem getLoadOnlyMaster()
     { 
-        WidgetUser admin = new WidgetUser(WidgetUser.DBURFOOT_USER_NAME);
+        WidgetUser admin = new WidgetUser(WidgetUser.SHARED_USER_NAME);
         return new WidgetItem(admin, CoreUtil.MASTER_WIDGET_NAME);
     }
 }
