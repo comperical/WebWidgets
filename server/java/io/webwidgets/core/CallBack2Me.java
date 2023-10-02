@@ -98,9 +98,9 @@ public class CallBack2Me extends HttpServlet
 		// TODO: this section implies that every Sync or delete operation requires a full LTI setup,
 		// which potentially involves a significant amount of overhead (?)
 		// Caching would be powerful here, because usage patterns will follow a "session" pattern,
-		// where the user accesses a widget and interacts with it several times before moving on	
+		// where the user accesses a widget and interacts with it several times before moving on
 		LiteTableInfo tableInfo = new LiteTableInfo(innmap);
-		tableInfo.runSetupQuery();		
+		tableInfo.runSetupQuery();
 		
 		Optional<WidgetUser> optuser = AuthLogic.getLoggedInUser(request);
 		if(!optuser.isPresent())
@@ -117,13 +117,13 @@ public class CallBack2Me extends HttpServlet
 		{
 			placeFailCode(outmap, FailureCode.AccessDenied);
 			return;
-		}		
+		}
 		
 		Optional<String> maintmode = WebUtil.maintenanceModeInfo();
 		if(maintmode.isPresent())
 		{
 			placeFailCode(outmap, FailureCode.MaintenanceMode, maintmode.get());
-			return;			
+			return;
 		}
 
 		Optional<String> emailissue = MailSystem.checkForEmailError(tableInfo, innmap);
@@ -138,8 +138,6 @@ public class CallBack2Me extends HttpServlet
 		outmap.put("status_code", "okay");
 		outmap.put("user_message", "ajax sync op successful");
 	}
-	
-	
 
 	private void placeException(ArgMap outmap, Exception ex)
 	{
@@ -152,11 +150,11 @@ public class CallBack2Me extends HttpServlet
 		outmap.put("failure_code", fcode.toString());
 		outmap.put("user_message", ex.getMessage().trim());
 		outmap.put("extra_info", "");
-	}	
+	}
 	
 	private void placeFailCode(ArgMap outmap, FailureCode fcode)
 	{
-		placeFailCode(outmap, fcode, "");	
+		placeFailCode(outmap, fcode, "");
 	}
 		
 	
@@ -167,6 +165,5 @@ public class CallBack2Me extends HttpServlet
 		outmap.put("user_message", fcode.userErrorMessage);
 		outmap.put("extra_info", extrainfo);
 	}
-	
 }
 

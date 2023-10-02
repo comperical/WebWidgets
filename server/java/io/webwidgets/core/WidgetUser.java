@@ -350,6 +350,11 @@ public class WidgetUser implements Comparable<WidgetUser>
 
     public static String SHARED_USER_NAME = "shared";
     
+    static WidgetUser buildBackDoorSharedUser()
+    {
+    	return new WidgetUser(SHARED_USER_NAME);	
+    }
+    
     public static WidgetUser getSharedUser()
     {
         return valueOf(SHARED_USER_NAME);

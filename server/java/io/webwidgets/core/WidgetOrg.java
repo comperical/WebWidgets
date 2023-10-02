@@ -100,10 +100,7 @@ public class WidgetOrg
 		}
 
 		void createEmptyLocalDb()
-		{
-			Util.massert(theOwner.haveLocalDb(),
-				"Found no local DBs for user %s, must be in local mode", theOwner);
-			
+		{			
 			File dbfile = new File(getLocalDbPath());
 			if(dbfile.exists())
 			{

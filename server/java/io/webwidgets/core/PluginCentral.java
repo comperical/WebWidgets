@@ -21,7 +21,7 @@ public class PluginCentral
 		
 		public String getPropName()
 		{
-			return (this.toString() + "_PLUGIN").toUpperCase();	
+			return (this.toString() + "_PLUGIN").toUpperCase();
 		}
 	}
 	

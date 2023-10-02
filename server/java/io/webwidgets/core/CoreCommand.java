@@ -305,6 +305,67 @@ public class CoreCommand
 		
 	}
 	
+	public static class SetupMasterDb extends DescRunnable
+	{
+		public String getDesc()
+		{
+			return 
+				"This command will setup the MASTER DB under the shared user account\n" + 
+				"This DB is used to store user information and other core data\n" + 
+				"This command is used when setting up a new WWIO installation, as one of the first steps";
+		}
+		
+		public void runOp()
+		{
+			WidgetUser shared = WidgetUser.buildBackDoorSharedUser();
+			WidgetItem newmaster = new WidgetItem(shared, CoreUtil.MASTER_WIDGET_NAME);
+						
+			Util.massert(!newmaster.dbFileExists(),
+				"Already have master DB at path %s", newmaster.getLocalDbFile());
+			
+			newmaster.createEmptyLocalDb();
+			Util.pf("Created new master DB at %s\n", newmaster.getLocalDbFile());
+			
+			for(MasterTable mtable : MasterTable.values())
+			{
+				CoreDb.execSqlUpdate(mtable.createSql, newmaster);
+				Util.pf("Created MasterTable %s\n", mtable);	
+			}
+			
+			Util.pf("Created Master DB and initialized tables\n");
+			
+			createSharedUser(newmaster);
+		}
+		
+		private static String getRandomInitialPass()
+		{
+			Random r = new Random();
+			
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append("dummy");
+			
+			for(int i : Util.range(20))
+				{ sb.append(r.nextInt(10)); }
+
+			return sb.toString();
+		}
+		
+		private void createSharedUser(WidgetItem newmast)
+		{
+			String sharedpass = getRandomInitialPass();
+			
+			CoreDb.upsertFromRecMap(newmast, MasterTable.user_main.toString(), 1, CoreDb.getRecMap(
+				"id", 0,
+				"username", WidgetUser.SHARED_USER_NAME,
+				"accesshash", AuthLogic.canonicalHash(sharedpass),
+				"email", ""
+			));
+			
+			Util.pf("Created Shared user with random initial password, use %s to update if desired\n",
+				UpdateUserPassWord.class.getSimpleName());
+		}
+	}
 	
 	public static class CreateCode4User extends ArgMapRunnable 
 	{
@@ -357,14 +418,6 @@ public class CoreCommand
 			
 			WidgetItem witem = wuser.createBlankItem(widgetname);
 			Util.pf("Created blank widget %s\n", witem);
-		}
-	}
-
-	public static class DummyTestRunner extends ArgMapRunnable
-	{
-		public void runOp()
-		{
-			Util.pf("GOing to run some code!!\n");
 		}
 	}
 	
@@ -478,8 +531,14 @@ public class CoreCommand
 		}
 	}
 	
-	public static class UpdateUserPassWord extends ArgMapRunnable
+	public static class UpdateUserPassWord extends DescRunnable
 	{
+		public String getDesc()
+		{
+			return 
+				"Update a user's password from the command line.\n" + 
+				"If the app server is running, it must be restarted to pick up the changes";
+		}
 		
 		public void runOp()
 		{
@@ -515,13 +574,14 @@ public class CoreCommand
 	{
 		public void runOp()
 		{
-			String username = _argMap.getStr("username");
+			String username = _argMap.getStr("username");	
+			boolean isadmin = _argmA
 			dumbCheckUnique(username);
 						
 			QueryCollector qcol = QueryCollector.buildAndRun("SELECT max(id) FROM user_main", CoreUtil.getMasterWidget());
 			int curmaxid = qcol.getSingleArgMap().getSingleInt();
 			
-			CoreDb.upsertFromRecMap(CoreUtil.getMasterWidget(), "user_main", 1, CoreDb.getRecMap(
+			CoreDb.upsertFromRecMap(CoreUtil.getMasterWidget(), MasterTable.user_main.toString(), 1, CoreDb.getRecMap(
 				"id", curmaxid+1,
 				"username", username,
 				"accesshash", WidgetUser.getDummyHash(),
@@ -530,10 +590,8 @@ public class CoreCommand
 
 			// TODO: keeping too many indices around here. Need to get rid of some, simplify this.	
 			// This feels dangerous - I am running this from both the CLI and from the WebApp
-			// 
 			GlobalIndex.clearUserIndexes();
 			createUserDir(username);
-			
 			
 			mypf("Added master record for user %s. This script no longer sets password, use %s to do so", 
 				username, UpdateUserPassWord.class.getSimpleName());
@@ -1174,6 +1232,8 @@ public class CoreCommand
 	}
 
 
+	
+	
 }
 
 

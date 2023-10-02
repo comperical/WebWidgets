@@ -30,6 +30,7 @@ public class CoreUtil
 
 	public static String BASE_WIDGET_NAME = "base";
 
+	// TODO: remove this reference
 	public static String SMS_WIDGET_NAME = "sms_box";
 
 	public static List<String> RESERVED_WIDGET_NAMES = Arrays.asList(
@@ -44,6 +45,7 @@ public class CoreUtil
 		return n == 0 ? curfile : getParentDirLevelN(curfile.getParentFile(), n-1);		
 	}
 
+	// TODO: remove all of this path logic, in favor of WWIO_BASE_CONFIG_DIR
 	public static final String USER_DATA_DIR = "/opt/userdata";
 	public static final String MAIN_LIFECODE_DIR = USER_DATA_DIR + "/lifecode";
 	public static final String RAW_DATA_DIR = "/opt/rawdata";
@@ -94,8 +96,8 @@ public class CoreUtil
 	public static final String WIDGET_REPO_DIR = USER_DATA_DIR + "/external/WebWidgets";
 	public static final String WIDGET_JSLIB_DIR = WIDGET_REPO_DIR + "/jslib";
 
-	public static final File SHARED_CSS_ASSET_DIR = (new WidgetItem(WidgetUser.getSharedUser(), "css")).getWidgetBaseDir();	
-	public static final File SHARED_JSLIB_ASSET_DIR = (new WidgetItem(WidgetUser.getSharedUser(), "jslib")).getWidgetBaseDir();
+	public static final File SHARED_CSS_ASSET_DIR = (new WidgetItem(WidgetUser.buildBackDoorSharedUser(), "css")).getWidgetBaseDir();	
+	public static final File SHARED_JSLIB_ASSET_DIR = (new WidgetItem(WidgetUser.buildBackDoorSharedUser(), "jslib")).getWidgetBaseDir();
 	
 	
 	public static final String WEB_SITE_DIR = MAIN_LIFECODE_DIR + "/website";
@@ -262,7 +264,10 @@ public class CoreUtil
 		return qcol.getSingleArgMap().getSingleStr();
 	}
 	
-
+	
+	
+	
+	
 
 	public static File convert2Excel(WidgetItem witem) 
 	{
@@ -491,5 +496,31 @@ public class CoreUtil
 			throw new RuntimeException("Misconfiguration error when loading admin extension plugin " + ex.getMessage());
 		}
 
+	}
+	
+	public enum MasterTable
+	{
+		user_main(
+			"CREATE TABLE user_main (id int, username varchar(20), accesshash varchar(20), email varchar(100), " + 
+			"gdrive_folder varchar(100) default \"\", is_admin smallint DEFAULT 0, primary key(id), unique(username))"
+		),
+		
+		email_control(
+			"CREATE TABLE email_control (id int, address varchar(100), sender varchar(30), priority int, " + 
+			"status varchar(10), timestamp_utc varchar(10), notes varchar(100), primary key(id))"
+		),
+		
+		perm_grant(
+			"CREATE TABLE perm_grant (id int, owner varchar(100), widget_name varchar(100), " + 
+			"grantee varchar(100), perm_level varchar(10), primary key(id))"
+		);
+		
+		public final String createSql;
+		
+		MasterTable(String c)
+		{
+			createSql = c;
+		}
+		
 	}
 } 

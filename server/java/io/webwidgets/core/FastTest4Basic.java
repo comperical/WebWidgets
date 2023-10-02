@@ -29,9 +29,10 @@ import	io.webwidgets.core.BlobDataManager.*;
 public class FastTest4Basic
 {
 	
+	// For several of the tests in this package, we need a user, currently use my username
 	private static WidgetUser getTestDburfootUser()
 	{
-		return WidgetUser.lookup("dburfoot");	
+		return WidgetUser.lookup("dburfoot");
 	}
 
 	public static class CheckUserHardReference extends DescRunnable
@@ -76,7 +77,7 @@ public class FastTest4Basic
 			
 			for(WidgetUser wuser : WidgetUser.values())
 			{
-				WidgetItem probe = new WidgetItem(WidgetUser.valueOf("heather"), "mood");			
+				WidgetItem probe = new WidgetItem(WidgetUser.valueOf("heather"), "mood");
 				boolean allow = AuthChecker.build().directSetAccessor(wuser).directDbWidget(probe).allowRead();
 				boolean expect = adminheather.contains(wuser);
 				Util.massert(allow == expect,
@@ -99,7 +100,7 @@ public class FastTest4Basic
 				boolean expect = wuser == getTestDburfootUser();
 				Util.massert(allow == expect,
 					"Got allow=%s but expected %s for wuser=%s", allow, expect, wuser);
-			}			
+			}
 		}
 		
 		private String getHeatherPage() 
@@ -109,7 +110,7 @@ public class FastTest4Basic
 		
 		private String getDburfootPage()
 		{
-			return "https://webwidgets.io/u/dburfoot/life/main.jsp";	
+			return "https://webwidgets.io/u/dburfoot/life/main.jsp";
 		}
 	}
 
@@ -991,6 +992,47 @@ public class FastTest4Basic
 			Set<String> adminset = Util.map2set(adminlist, user -> user.toString());
 			Util.massert(adminset.contains("dburfoot"));
 		}
+	}
+	
+	public static class CheckMasterDbSetup extends DescRunnable
+	{
+		public String getDesc()
+		{
+			return 
+				"Checks that the MASTER DB is setup properly\n" + 
+				"The file must exist in the right place, and have SQL statements\n" +
+				"That agree with what is specified in the Java code";
+		}
+		
+		public void runOp()
+		{
+			WidgetUser shared = WidgetUser.buildBackDoorSharedUser();
+			WidgetItem master = new WidgetItem(shared, CoreUtil.MASTER_WIDGET_NAME);
+			
+			{
+				File dbfile = master.getLocalDbFile();
+				Util.massert(dbfile.exists(), "Master DB file expected at %s, does not exist", dbfile);
+			}
+
+			String query = "SELECT * FROM sqlite_master";
+			QueryCollector qcol = QueryCollector.buildAndRun(query, master);
+			Map<String, String> create = Util.map2map(qcol.recList(), amap -> amap.getStr("name"), amap -> amap.getStr("sql"));		
+
+			for(MasterTable mtable : MasterTable.values())
+			{
+				String observed = create.getOrDefault(mtable.toString(), "Not Present");
+				String expected = mtable.createSql;
+				
+				Util.massert(observed.equals(expected),
+					"For table %s, have DB SQL vs expected SQL:\n\t%s\n\t%s", 
+					mtable, observed, expected
+				);
+			}
+			
+			Util.pf("Success, checked %d MasterTable definitions\n", MasterTable.values().length);
+		}
+		
+		
 	}
 } 
 

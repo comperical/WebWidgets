@@ -39,7 +39,7 @@ public class AuthLogic
 		
 		// Modify widget files, change database schema
 		admin;
-	}	
+	}
 	
 	public static Optional<WidgetUser> getLoggedInUser(HttpServletRequest request)
 	{
@@ -57,7 +57,7 @@ public class AuthLogic
 	
 	public static Optional<WidgetUser> getUserNoAuthCheck(HttpServletRequest request)
 	{
-		ArgMap argmap = WebUtil.getCookieArgMap(request);		
+		ArgMap argmap = WebUtil.getCookieArgMap(request);
 		String username = argmap.getStr("username", "");
 		return WidgetUser.softLookup(username);
 	}
@@ -68,14 +68,10 @@ public class AuthLogic
 		Optional<WidgetUser> optuser = WidgetUser.softLookup(username);
 		return optuser.isPresent() && optuser.get().matchPassHash(accesshash);
 	}
-		
-	
-
-
 	
 	public static boolean allowAdminAccess(HttpServletRequest req)
-	{		
-		Optional<WidgetUser> optuser = getLoggedInUser(req);		
+	{
+		Optional<WidgetUser> optuser = getLoggedInUser(req);
 		return optuser.isPresent() && optuser.get().isAdmin();
 	}
 	
@@ -92,8 +88,8 @@ public class AuthLogic
 		// mycookie.setSecure(true);
 		
 		mycookie.setMaxAge((int) (TimeUtil.DAY_MILLI / 10));
-		response.addCookie(mycookie);			
-	}		
+		response.addCookie(mycookie);
+	}
 	
 	public static void setAuthCookie(HttpServletRequest request, HttpServletResponse response, String accesshash)
 	{
@@ -106,13 +102,13 @@ public class AuthLogic
 		
 		// DAY_MILLI is milliseconds; divide by 1000 and mult by 10 days = divide by 100
 		mycookie.setMaxAge((int) (TimeUtil.DAY_MILLI / 100));
-		response.addCookie(mycookie);			
+		response.addCookie(mycookie);
 	}
 	
 	// NB this must match the JavaScript implementation.
 	// This is NEVER used except when setting up new users accounts!!!
 	public static String canonicalHash(String input) 
-	{		
+	{
 		return standardShaHash(WIDGET_PASSWORD_SALT + input);
 	}
 
@@ -168,15 +164,6 @@ public class AuthLogic
 
 			_PERMISSION_MAP.putIfAbsent(dbitem, new PermInfoPack(dbitem));
 			_PERMISSION_MAP.get(dbitem).loadFromRecMap(onemap);
-
-			/*
-			WidgetUser grantee = WidgetUser.valueOf(onemap.get("grantee"));
-			PermLevel perm = PermLevel.valueOf(onemap.get("perm_level"));
-
-
-			Util.setdefault(_PERMISSION_MAP, dbitem, Util.treemap());
-			_PERMISSION_MAP.get(dbitem).put(grantee, perm);
-			*/
 		}
 
 		Util.massert(!_PERMISSION_MAP.isEmpty(), "We need to have at least one perm entry!!");
@@ -189,7 +176,7 @@ public class AuthLogic
 
 		// True:: ensure the record stays in _PERMISSION_MAP
 		tweakPerm(dbitem, dbpack -> dbpack.assignPerm(grantee, perm), true);
-	}	
+	}
 
 	public static synchronized void removePermFromGrantee(WidgetItem dbitem, WidgetUser grantee)
 	{
@@ -202,8 +189,6 @@ public class AuthLogic
 	{
 		tweakPerm(dbitem, dbpack -> dbpack.markPublicRead(read), true);
 	}
-
-
 
 	private static synchronized void tweakPerm(WidgetItem dbitem, Consumer<PermInfoPack> permfunc, boolean ensure)
 	{
@@ -233,9 +218,9 @@ public class AuthLogic
 		}
 
 		public AuthChecker directSetAccessor(WidgetUser accessor)
-		{	
+		{
 			return directSetAccessor(Optional.of(accessor));
-		}		
+		}
 
 		public AuthChecker directSetAccessor(Optional<WidgetUser> optacc)
 		{
@@ -259,7 +244,7 @@ public class AuthLogic
 			Util.massert(_dbItem == null, "Widget has already been set");
 			_dbItem = item;
 			return this;
-		}		
+		}
 
 		public Optional<PermLevel> getPermLevel() 
 		{
@@ -304,8 +289,6 @@ public class AuthLogic
 		{
 			dbItem = item;
 		}
-
-
 
 		public Map<WidgetUser, PermLevel> getCorePermMap()
 		{
@@ -405,6 +388,5 @@ public class AuthLogic
 				));
 			}
 		}
-	}	
-} 
-
+	}
+}

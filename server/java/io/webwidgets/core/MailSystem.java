@@ -58,7 +58,7 @@ public class MailSystem {
         } catch (Exception ex) {
             throw new RuntimeException("Reflection magic failed!!");
         }
-    }    
+    }
 
     public static Optional<String> checkForEmailError(LiteTableInfo tableInfo, ArgMap argmap)
     {
