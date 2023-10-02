@@ -320,6 +320,12 @@ public class CoreCommand
 			WidgetUser shared = WidgetUser.buildBackDoorSharedUser();
 			WidgetItem newmaster = new WidgetItem(shared, CoreUtil.MASTER_WIDGET_NAME);
 						
+			if(!shared.getDbDir().exists())
+			{
+				shared.getDbDir().mkdirs();
+				Util.pf("Created shared user DB directory %s\n", shared.getDbDir());
+			}
+
 			Util.massert(!newmaster.dbFileExists(),
 				"Already have master DB at path %s", newmaster.getLocalDbFile());
 			
