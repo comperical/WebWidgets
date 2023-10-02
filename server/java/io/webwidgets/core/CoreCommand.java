@@ -575,7 +575,6 @@ public class CoreCommand
 		public void runOp()
 		{
 			String username = _argMap.getStr("username");	
-			boolean isadmin = _argmA
 			dumbCheckUnique(username);
 						
 			QueryCollector qcol = QueryCollector.buildAndRun("SELECT max(id) FROM user_main", CoreUtil.getMasterWidget());
