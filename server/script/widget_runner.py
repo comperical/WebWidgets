@@ -20,7 +20,7 @@ def run_class(fullclass, extrainfo):
 
 	classpath = UTIL.get_compile_class_path()
 
-	runcall = f"java -cp {classpath} io.webwidgets.core.LifeCli {transclass} {extrainfo}"
+	runcall = f"java -cp {classpath} io.webwidgets.core.CoreCommand {transclass} {extrainfo}"
 	print(runcall)
 	os.system(runcall)
 
