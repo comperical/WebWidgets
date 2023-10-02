@@ -374,22 +374,22 @@ public class CoreCommand
 			List<WidgetUser> userlist = getWidgetUserList(_argMap);
 
 			for(WidgetUser wuser : userlist)
-			{								
+			{
 				// Create autogen dir, this will also create the widgetserve directory
 				boolean didcreate = wuser.maybeCreateAutogenJsDir();
 				if(didcreate)
 				{
-					Util.pf("Created AutoGen JS dir %s\n", wuser.getAutoGenJsDir());	
+					Util.pf("Created AutoGen JS dir %s\n", wuser.getAutoGenJsDir());
 				}
 				
 				List<WidgetItem> itemlist = wuser.getUserWidgetList();
 				for(WidgetItem witem : itemlist)
 				{
 					Util.pf("Attempting to create code for %s\n", witem);
-					List<String> loglist = ActionJackson.createCode4Widget(witem);				
+					List<String> loglist = ActionJackson.createCode4Widget(witem);
 					for(String log : loglist)
 						{ Util.pf("%s", log); }
-				}			
+				}
 			}
 		}
 
