@@ -222,6 +222,13 @@ function clearSearch()
     redisplay();
 }
 
+function handleNavBar() 
+{
+    const current = "Stuff Manager";
+
+    populateTopNavBar(WO_HEADER_INFO, current);
+}
+
 function updateContainer()
 {
     const containid = parseInt(getDocFormValue("container_sel"));
@@ -248,6 +255,8 @@ function updateContainAndLoc(contid, locid)
 
 function redisplay()
 {
+    handleNavBar();
+
     const pagestr = EDIT_STUDY_ITEM == -1 ? getMainListing() : getEditListing();
 
     populateSpanData({"main_page" : pagestr});
@@ -416,19 +425,6 @@ function getEditListing()
     return pageinfo;
 }
 
-function getLocationId(item)
-{
-    if(item.getLocationId() != -1)
-        { return item.getLocationId(); }
-
-    if(item.getContainerId() != -1)
-    {
-        const cont = W.lookupItem("stuff_item", item.getContainerId());
-        return getLocationId(cont);
-    }
-
-    return -1;
-}
 
 function getSortTuple(item)
 {
@@ -471,8 +467,6 @@ function getMainListing()
     `;
 
     var pageinfo = `
-
-        <h3>Stuff Manager</h3>
 
     `;
 
@@ -643,6 +637,14 @@ function getListingTable(stufflist, depthmap, cnamemap, locnamemap)
 <body onLoad="javascript:redisplay()">
 
 <center>
+
+
+<div class="topnav"></div>
+
+
+<br/>
+<br/>
+
 
 <span id="main_page"></span>
 
