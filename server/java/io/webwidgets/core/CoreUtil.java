@@ -73,6 +73,9 @@ public class CoreUtil
 	// Jclass is the direct peer of the config directory
 	public static final String JCLASS_BASE_DIR = getSubDirectory(WWIO_BASE_CONFIG_DIR, "jclass", 1);
 
+	// Directory for miscellaneous config etc files. Not checked into repo, but used in the application
+	public static final String WWIO_MISC_DATA_DIR = getSubDirectory(WWIO_BASE_CONFIG_DIR, "miscdata", 1);
+
 	// On user creation, the dummy password is set to this
 	// However, the authentication does not work until the password is set to something new
 	public static final String DUMMY_PASSWORD = "DummyPass";
@@ -91,8 +94,6 @@ public class CoreUtil
 	public static final String DB_ARCHIVE_DIR = "/opt/userdata/lifecode/datadir/dbarchive";
 	
 
-	// Directory for miscellaneous config etc files. Not checked into repo, but used in the application
-	public static final String WWIO_MISC_DATA_DIR = getSubDirectory(WWIO_BASE_CONFIG_DIR, "miscdata", 1);
 
 	public static final File SHARED_CSS_ASSET_DIR = (new WidgetItem(WidgetUser.buildBackDoorSharedUser(), "css")).getWidgetBaseDir();
 	public static final File SHARED_JSLIB_ASSET_DIR = (new WidgetItem(WidgetUser.buildBackDoorSharedUser(), "jslib")).getWidgetBaseDir();
@@ -113,8 +114,6 @@ public class CoreUtil
 			throw new RuntimeException(ex);	
 		}
 	}
-
-
 
 	public static synchronized String getWidgetCodeDir()
 	{
@@ -368,7 +367,7 @@ public class CoreUtil
     		"Prefix logic error: attempt to peel prefix %s from original string %s", prefix, original);
     	
     	return original.substring(prefix.length());
-    }	
+    }
 
 
     public static String peelSuffix(String original, String suffix)
@@ -427,7 +426,7 @@ public class CoreUtil
 		
 		byte[] decoded = Base64.getDecoder().decode(base64);
 		return new String(decoded, StandardCharsets.UTF_8);
-	}	
+	}
 
 	public static boolean hasNonBasicAscii(String s)
 	{
@@ -438,8 +437,8 @@ public class CoreUtil
 			if(x >= 128)
 				{ return true; }
 		}
-		return false;	
-	}		
+		return false;
+	}
 
 	public static String capitalizeFirst(String word)
 	{
@@ -448,13 +447,13 @@ public class CoreUtil
 		
 		char c = word.charAt(0);
 		return (""+c).toUpperCase() + word.substring(1);
-	}	
+	}
 	
 	
 	public static interface IAdminExtension
 	{
 		public String getExtendedSideBar(Optional<WidgetUser> user);
-	}	
+	}
 	
 	
 	public static IAdminExtension getAdminExtensionTool()
