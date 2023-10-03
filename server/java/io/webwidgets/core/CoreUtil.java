@@ -80,10 +80,6 @@ public class CoreUtil
 	// TODO: this needs to be fixed to handle the new location of class files in the WWIOCORE layout
 	public static final String JCLASS_BASE_DIR = "/opt/userdata/crm/compiled/jclass";
 
-
-	// TODO: remove all of this path logic, in favor of WWIO_BASE_CONFIG_DIR
-	// public static final String USER_DATA_DIR = "/opt/userdata";
-
 	// On user creation, the dummy password is set to this
 	// However, the authentication does not work until the password is set to something new
 	public static final String DUMMY_PASSWORD = "DummyPass";

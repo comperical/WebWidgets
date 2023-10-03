@@ -33,8 +33,6 @@ def findTargetClass(partial, exact=True):
 			continue
 		
 		yield oneclass
-	
-
 
 def build_directory(shortpack, outputdir=UTIL.get_java_class_dir()):
 
