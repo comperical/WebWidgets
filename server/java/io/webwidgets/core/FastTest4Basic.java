@@ -127,7 +127,7 @@ public class FastTest4Basic
 		public void runOp()
 		{
 
-			Set<String> codeset = getFolderKidSet(new File(CoreUtil.WIDGETS_DIR));
+			Set<String> codeset = getFolderKidSet(new File(CoreUtil.getWidgetCodeDir()));
 			{
 				codeset.remove("admin");
 				codeset.remove("exadmin");
@@ -231,14 +231,14 @@ public class FastTest4Basic
 		
 		public String getDesc()
 		{
-			return "Check that all the JSPs in the directory  " + CoreUtil.WIDGETS_DIR + "\n"  +
+			return "Check that all the JSPs in the directory  " + CoreUtil.getWidgetCodeDir() + "\n"  +
 				"Contain the Auth Include tag " + SEARCH_TAG + "\n" + 
 				"This is the crucial include file to ensure proper authentication checks";
 		}
 		
 		public void runOp()
 		{
-			File startdir = new File(CoreUtil.WIDGETS_DIR);
+			File startdir = new File(CoreUtil.getWidgetCodeDir());
 			
 			recurseCheck(startdir, 0);
 			
@@ -489,7 +489,7 @@ public class FastTest4Basic
 			
 			List<String> allclass = Util.loadClassNameListFromDir(new File(CoreUtil.JCLASS_BASE_DIR));
 
-			List<String> biglist = Util.filter2list(allclass, s -> s.contains(FAST_TEST_MARKER));			
+			List<String> biglist = Util.filter2list(allclass, s -> s.contains(FAST_TEST_MARKER));
 			
 			List<ArgMapRunnable> amrlist = Util.map2list(biglist, s -> {
 				try {
@@ -500,100 +500,9 @@ public class FastTest4Basic
 			
 			return Util.filter2list(amrlist, amr -> amr != null && amr.getClass() != this.getClass());
 		}
-		
-	}
-
-	public static class CredentialFileCheck extends DescRunnable 
-	{
-		public String getDesc()
-		{
-			return "Checks that all of the credential files exist";
-		}
-
-		public void runOp()
-		{
-			checkPath(GoogleSyncUtil.CREDENTIAL_PATH);
-
-			checkPath(CoreUtil.PYTHON_AUTOGEN_DOC);
-		}
-
-		private void checkPath(String path) 
-		{
-			checkFile(new File(path));
-		}
-
-		private void checkFile(File file)
-		{
-			Util.pf("Checking file path %s\n", file);
-
-			Util.massert(file.exists(), "Config file %s does not exist", file.getAbsolutePath());
-		}
 	}
 
 
-	public static class PythonConfigCheck extends DescRunnable 
-	{
-		public static final String PYTHON_SCRIPT_CONFIG_SUCCESS = "PY_SCRIPT_OKAY";
-
-		public String getDesc() 
-		{
-			return 
-				"Calls the Python scripts to make sure they are working properly\n" + 
-				"The scripts must emit a special tag on successful completion\n" + 
-				"The tag is : " + PYTHON_SCRIPT_CONFIG_SUCCESS;
-		}
-
-		public static final List<String> SCRIPT_LIST = Util.listify(
-			// "Lite2Excel"
-			"MarkDownCheck",
-			"GoogleApiCheck",
-			"ClubDataGrabber"
-		);
-
-		public static final Set<String> VIMS_SCRIPT_SET = Util.setify("ClubDataGrabber");
-
-		public static String getFullPyPath(String base) 
-		{
-			String folder = VIMS_SCRIPT_SET.contains(base) ? "vims" : "utility";
-
-			// TODO: this should not be a hardcoded path
-			return String.format("%s/%s/%s.py", CoreUtil.SCRIPT_DIR, folder, base);
-		}
-
-		public void runOp() 
-		{
-			for(String pybase : SCRIPT_LIST)
-			{
-				String pypath = getFullPyPath(pybase);
-
-				Util.massert((new File(pypath)).exists(), "Python script %s does not exist", pypath);
-
-				String pycall = Util.sprintf("python3 %s configcheck=true", pypath);
-
-				SyscallWrapper syswrap = SyscallWrapper.build(pycall).execE();
-
-				if(!syswrap.getErrList().isEmpty())
-				{
-					Util.pferr("** Errors Detected!! : \n");
-					for(String err : syswrap.getErrList()) 
-						{ Util.pferr("\t%s\n", err); }
-				}
-
-
-				for(String out : syswrap.getOutList()) {
-					Util.pf("\t%s\n", out);
-				}
-
-				List<String> hits = Util.filter2list(syswrap.getOutList(), s -> s.contains(PYTHON_SCRIPT_CONFIG_SUCCESS));
-
-				Util.massert(hits.size() >= 1, "Failed to find success confirm tag in output, see above");
-
-				Util.pf("Script %s.py checked successfully\n", pybase);
-			}
-
-			Util.pf("Success, checked %d Python scripts okay\n", SCRIPT_LIST.size());
-		}
-	}
 
 	public static class CheckMailBoxConfig extends DescRunnable
 	{
@@ -1031,8 +940,6 @@ public class FastTest4Basic
 			
 			Util.pf("Success, checked %d MasterTable definitions\n", MasterTable.values().length);
 		}
-		
-		
 	}
 } 
 

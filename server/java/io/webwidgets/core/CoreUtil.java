@@ -39,26 +39,50 @@ public class CoreUtil
 		BASE_WIDGET_NAME
 	);
 
-
 	public static File getParentDirLevelN(File curfile, int n)
 	{
-		return n == 0 ? curfile : getParentDirLevelN(curfile.getParentFile(), n-1);		
+		return n == 0 ? curfile : getParentDirLevelN(curfile.getParentFile(), n-1);
 	}
 
+	private static String getSubDirectory(String basedir, String kidname)
+	{
+		return getSubDirectory(basedir, kidname, 0);
+	}
+
+	// Simple path manipulation, attempting to be friendly to Windows or others with non-standard path separator
+	private static String getSubDirectory(String basedir, String kidname, int removelast)
+	{
+		String charsep = ""+File.separatorChar;
+
+		LinkedList<String> tokens = Util.linkedlistify(basedir.split(charsep));
+
+		if(tokens.peekLast().isEmpty())
+			{ tokens.pollLast(); }
+
+		// Remove last directory, add peer
+		for(int i : Util.range(removelast))
+			{ tokens.pollLast();} 
+
+		tokens.add(kidname);
+		return Util.join(tokens, charsep);
+	}
+
+
+	// The directory for Widgets CODE and DATA/DB
+	// These are PEERS of the main WWIO repo
+	// To get peer of the main repo dir, we walk back 4 paths from the config dir
+	// .../INSTALL_DIR/wwiocore/server/workdir/config => ../INSTALL_DIR
+	public static final String WIDGET_CODE_DIR = getSubDirectory(WWIO_BASE_CONFIG_DIR, "widgetserve", 4);
+	public static final String WIDGET_DB_DIR = getSubDirectory(WWIO_BASE_CONFIG_DIR, "db4widget", 4);
+
+
+	// Jclass is peer of the config directory
+	// TODO: this needs to be fixed to handle the new location of class files in the WWIOCORE layout
+	public static final String JCLASS_BASE_DIR = "/opt/userdata/crm/compiled/jclass";
+
+
 	// TODO: remove all of this path logic, in favor of WWIO_BASE_CONFIG_DIR
-	public static final String USER_DATA_DIR = "/opt/userdata";
-	public static final String MAIN_LIFECODE_DIR = USER_DATA_DIR + "/lifecode";
-	public static final String RAW_DATA_DIR = "/opt/rawdata";
-		
-	// This is the new place for user widgets.
-	// For a given user, it will go in widgets/username
-	// TODO: this is a bad name, should be something like "code dir";
-	public static final String WIDGETS_DIR = USER_DATA_DIR + "/widgetserve";
-	
-	public static final String WIDGET_DB_DIR = USER_DATA_DIR + "/db4widget";
-
-
-	
+	// public static final String USER_DATA_DIR = "/opt/userdata";
 
 	// On user creation, the dummy password is set to this
 	// However, the authentication does not work until the password is set to something new
@@ -69,44 +93,20 @@ public class CoreUtil
 	// Widget admin directory
 	// Special non-widget code, running on server. Not controlled by users.
 	// Served from /admin
-	public static final String WIDGET_ADMIN_DIR = WIDGETS_DIR + "/admin";
+	public static final String WIDGET_ADMIN_DIR = WIDGET_CODE_DIR + "/admin";
 
-	public static final String CONFIG_DIR = MAIN_LIFECODE_DIR + "/configfile";
-	
-	public static final String PERSONAL_RESIN_CONFIG = CONFIG_DIR + "/personal";
-	public static final String WIDGETS_RESIN_CONFIG = CONFIG_DIR + "/widgets";
-	
-	public static final String DATA_DIR_PATH = MAIN_LIFECODE_DIR + "/datadir";
-
-	public static final String WWIO_RAWDATA_BASE_DIR = "/opt/rawdata/wwio";
-	public static final String WWIO_BLOB_BASE_DIR = WWIO_RAWDATA_BASE_DIR + "/blob";
+	// TODO: need to rationalize this. The BlobStorageManager should probably use a workdir directory
+	public static final String WWIO_BLOB_BASE_DIR = "/opt/rawdata/wwio/blob";
 
 		
-	public static final String DB_ARCHIVE_DIR = DATA_DIR_PATH + "/dbarchive";
+	public static final String DB_ARCHIVE_DIR = "/opt/userdata/lifecode/datadir/dbarchive";
 	
-	public static final String SCRIPT_DIR = MAIN_LIFECODE_DIR + "/script";
 
-	// TODO: need a directory that is specific to WWIO miscdata, not just reuse of CRM miscdata
-	public static final String MISC_DATA_DIR = USER_DATA_DIR + "/crm/miscdata";
+	// Directory for miscellaneous config etc files. Not checked into repo, but used in the application
+	public static final String WWIO_MISC_DATA_DIR = getSubDirectory(WWIO_BASE_CONFIG_DIR, "miscdata", 1);
 
-	public static final String JCLASS_BASE_DIR = USER_DATA_DIR + "/crm/compiled/jclass";
-
-	public static final String PYTHON_AUTOGEN_DOC = MISC_DATA_DIR + "/AutoDocResult.html";
-
-	public static final String WIDGET_REPO_DIR = USER_DATA_DIR + "/external/WebWidgets";
-	public static final String WIDGET_JSLIB_DIR = WIDGET_REPO_DIR + "/jslib";
-
-	public static final File SHARED_CSS_ASSET_DIR = (new WidgetItem(WidgetUser.buildBackDoorSharedUser(), "css")).getWidgetBaseDir();	
+	public static final File SHARED_CSS_ASSET_DIR = (new WidgetItem(WidgetUser.buildBackDoorSharedUser(), "css")).getWidgetBaseDir();
 	public static final File SHARED_JSLIB_ASSET_DIR = (new WidgetItem(WidgetUser.buildBackDoorSharedUser(), "jslib")).getWidgetBaseDir();
-	
-	
-	public static final String WEB_SITE_DIR = MAIN_LIFECODE_DIR + "/website";
-	
-	public static final String WWIO_SITE_DIR = MAIN_LIFECODE_DIR + "/wwiosite";
-	
-	public static final String WWIO_SNIPPET_DIR = WWIO_SITE_DIR + "/snippet";
-	
-	public static final String WWIO_PUBDOCS_DIR = WWIO_SITE_DIR + "/docs";
 
 	static final String MASTER_WIDGET_NAME = "master";
 	
@@ -123,8 +123,21 @@ public class CoreUtil
 			_CLASS_INIT = true;
 		} catch (Exception ex )  {
 			throw new RuntimeException(ex);	
-		}		
+		}
 	}
+
+
+
+	public static synchronized String getWidgetCodeDir()
+	{
+		return WIDGET_CODE_DIR;
+	}
+
+	public static synchronized String getWidgetDbDir()
+	{
+		return WIDGET_DB_DIR;
+	}
+
 
 	public static WidgetItem getMasterWidget()
 	{
@@ -297,37 +310,6 @@ public class CoreUtil
 	
 
 	
-
-	
-	public static TreeMap<Pair<Double, String>, List<String>> getSnippetInfoMap(String snipcode)
-	{
-		File snipdir = new File(Util.sprintf("%s/%s", WWIO_SNIPPET_DIR, snipcode));
-		Util.massert(snipdir.exists(), 
-			"Could not find snippet directory for code %s, expected at %s", snipcode, snipdir);
-		
-		TreeMap<Pair<Double, String>, List<String>> result = Util.treemap();
-		
-		for(File snipfile : snipdir.listFiles())
-		{
-			String subcode = snipfile.getName();
-			
-			// Error?
-			if(!subcode.endsWith(".html"))
-				{ continue; }
-			
-			subcode = subcode.substring(0, subcode.length()-".html".length());
-			
-			String[] idname = subcode.split("__");
-			Util.massert(idname.length == 2, "Bad snippet subcode name %s", subcode);
-			Pair<Double, String> sortkey = Pair.build(Double.valueOf(idname[0]), idname[1]);
-
-			List<String> data = FileUtils.getReaderUtil().setFile(snipfile).setTrim(false).readLineListE();
-			result.put(sortkey, data);
-		}
-		
-		return result;
-	}
-
 	public static <T> Set<T> combine2set(Collection<T> acol, Collection<T> bcol) 
 	{
 		return Stream.concat(acol.stream(), bcol.stream()).collect(CollUtil.toSet());

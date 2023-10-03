@@ -24,7 +24,9 @@ public class GoogleSyncUtil
 { 	
 	public static final String GDOC_TSV_TABLE = "gdoc_tsv_upload";
 
-	public static final String GDOC_SCRIPT_DIR = CoreUtil.SCRIPT_DIR + "/gdocs";	
+	// TODO: need to either remove this class from the CORE package, or move these scripts into
+	// the WWIOCORE repo
+	public static final String GDOC_SCRIPT_DIR = "/opt/userdata/lifecode/script/gdocs";
 	
 	public static final String CREDENTIAL_PATH = "/home/ec2-user/.ssh/gcp-api-widget-quickstart.json";
 	

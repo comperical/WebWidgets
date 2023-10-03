@@ -31,7 +31,7 @@ public class WebUtil
 		
 	public static String LOGIN_RELATIVE_URL = "/u/admin/LogIn.jsp";
 	
-	public static File MAINTENANCE_MODE_FILE = new File(CoreUtil.MISC_DATA_DIR + "/MAINTENANCE_MODE_MARKER.txt");	
+	public static File MAINTENANCE_MODE_FILE = new File(CoreUtil.WWIO_MISC_DATA_DIR + "/MAINTENANCE_MODE_MARKER.txt");
 	
 	public static String getUserHomeRelative(WidgetUser wuser)
 	{
@@ -280,7 +280,7 @@ public class WebUtil
 	{
 		Util.massert(relpath.startsWith("/u/shared"), "Expected a relative path to start with /u/shared, got " + relpath);
 
-		String prefix = Util.sprintf("%s/%s", CoreUtil.WIDGETS_DIR, WidgetUser.getSharedUser());
+		String prefix = Util.sprintf("%s/%s", CoreUtil.getWidgetCodeDir(), WidgetUser.getSharedUser());
 
 		File mainfile = new File(relpath.replace("/u/shared", prefix));
 

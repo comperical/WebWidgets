@@ -777,25 +777,7 @@ public class CoreCommand
 			}
 		}
 	}
-	
-	
-	public static class ShowSnippetInfo extends ArgMapRunnable
-	{
-		public void runOp()
-		{
-			TreeMap<Pair<Double, String>, List<String>> info = CoreUtil.getSnippetInfoMap("docs");
-			
-			for(Pair<Double, String> subcode : info.keySet())
-			{
-				Util.pf("Found %d lines of data for subcode %s\n", info.get(subcode).size(), subcode);	
-			}
-			
-		}
-		
-		
-		
-	}
-	
+
 	
 	
 	
@@ -1077,8 +1059,8 @@ public class CoreCommand
 			DayCode daycode = DayCode.lookup(_argMap.getStr("daycode"));
 			int grabCount = 0;
 
-			String archivebase = String.format("%s/%s", CoreUtil.DB_ARCHIVE_DIR, daycode);
-			Util.pf("Going to examine base directory %s\n", archivebase);
+			// String archivebase = String.format("%s/%s", CoreUtil.DB_ARCHIVE_DIR, daycode);
+			// Util.pf("Going to examine base directory %s\n", archivebase);
 
 			//TODO: rebuild this to use single S3 cmd
 			/*
@@ -1208,22 +1190,7 @@ public class CoreCommand
 			boolean isread = _argMap.getBit("read", false);
 
 			AuthLogic.markPublicRead(item, isread);
-
 		}
-
-	}	
-
-	public static class TestIntegerError extends ArgMapRunnable
-	{
-
-		public void runOp()
-		{
-			ArgMap mymap = new ArgMap();
-			mymap.put("danb", "1000000000000000000");
-
-			int result = mymap.getInt("danb");
-		}
-
 	}
 
 
@@ -1232,13 +1199,12 @@ public class CoreCommand
 		public void runOp()
 		{
 			Util.pf("Have config directory %s\n", CoreUtil.WWIO_BASE_CONFIG_DIR);
+			Util.pf("Have DATA/DB directory %s\n", CoreUtil.WIDGET_DB_DIR);
+			Util.pf("Have CODE directory %s\n", CoreUtil.WIDGET_CODE_DIR);
+			Util.pf("Have JCLASS directory %s\n", CoreUtil.JCLASS_BASE_DIR);
+			Util.pf("MISC_DATA_DIR: %s\n", CoreUtil.WWIO_MISC_DATA_DIR);
 		}
-
 	}
-
-
-	
-	
 }
 
 
