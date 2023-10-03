@@ -351,10 +351,10 @@ public class CoreUtil
 		public T getProxy();
 
 		@Override
-		public default int compareTo(ProxyCompare<T> other)
+		public default int compareTo(ProxyCompare<T> that)
 		{
-			T mine = getProxy();
-			T your = other.getProxy();
+			T mine = this.getProxy();
+			T your = that.getProxy();
 
 			return mine.compareTo(your);
 		}
