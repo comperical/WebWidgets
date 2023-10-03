@@ -39,11 +39,6 @@ public class CoreUtil
 		BASE_WIDGET_NAME
 	);
 
-	public static File getParentDirLevelN(File curfile, int n)
-	{
-		return n == 0 ? curfile : getParentDirLevelN(curfile.getParentFile(), n-1);
-	}
-
 	private static String getSubDirectory(String basedir, String kidname)
 	{
 		return getSubDirectory(basedir, kidname, 0);
@@ -75,10 +70,8 @@ public class CoreUtil
 	public static final String WIDGET_CODE_DIR = getSubDirectory(WWIO_BASE_CONFIG_DIR, "widgetserve", 4);
 	public static final String WIDGET_DB_DIR = getSubDirectory(WWIO_BASE_CONFIG_DIR, "db4widget", 4);
 
-
-	// Jclass is peer of the config directory
-	// TODO: this needs to be fixed to handle the new location of class files in the WWIOCORE layout
-	public static final String JCLASS_BASE_DIR = "/opt/userdata/crm/compiled/jclass";
+	// Jclass is the direct peer of the config directory
+	public static final String JCLASS_BASE_DIR = getSubDirectory(WWIO_BASE_CONFIG_DIR, "jclass", 1);
 
 	// On user creation, the dummy password is set to this
 	// However, the authentication does not work until the password is set to something new
@@ -105,7 +98,6 @@ public class CoreUtil
 	public static final File SHARED_JSLIB_ASSET_DIR = (new WidgetItem(WidgetUser.buildBackDoorSharedUser(), "jslib")).getWidgetBaseDir();
 
 	static final String MASTER_WIDGET_NAME = "master";
-	
 	
 	private static boolean _CLASS_INIT = false;
 	
