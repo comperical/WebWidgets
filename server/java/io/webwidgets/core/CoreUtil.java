@@ -30,12 +30,10 @@ public class CoreUtil
 
 	public static String BASE_WIDGET_NAME = "base";
 
-	// TODO: remove this reference
-	public static String SMS_WIDGET_NAME = "sms_box";
 
+	// Probably need a pluging that provides extra reserved names
 	public static List<String> RESERVED_WIDGET_NAMES = Arrays.asList(
 		MailSystem.MAILBOX_WIDGET_NAME,
-		SMS_WIDGET_NAME,
 		BASE_WIDGET_NAME
 	);
 
@@ -80,9 +78,6 @@ public class CoreUtil
 	// However, the authentication does not work until the password is set to something new
 	public static final String DUMMY_PASSWORD = "DummyPass";
 
-	// TODO: need to either remove these paths, move them to extension directory, 
-	// or make them relative to the main install config dir
-	// Widget admin directory
 	// Special non-widget code, running on server. Not controlled by users.
 	// Served from /admin
 	public static final String WIDGET_ADMIN_DIR = WIDGET_CODE_DIR + "/admin";

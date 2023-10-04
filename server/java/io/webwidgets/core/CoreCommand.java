@@ -66,80 +66,7 @@ public class CoreCommand
 		}
 	}	
 
-	public static class DropLiteColumnOp extends ArgMapRunnable
-	{
-		public void runOp()
-		{
-			WidgetUser wuser = WidgetUser.valueOf(_argMap.getStr("username"));
-			String widgetname = _argMap.getStr("widgetname");
-			WidgetItem dbitem = new WidgetItem(wuser, widgetname);
-			Util.massert(dbitem.getLocalDbFile().exists());
-			
-			String tabname = _argMap.getStr("tabname");
-			
-			String newtabgimp = Util.sprintf("%s_gimp", tabname);
-			
-			Set<String> newcolset = getGimpColumnSet(dbitem, newtabgimp);
-			
-			Util.massert(newcolset != null, 
-				"To start process, create an empty table named %s WITHOUT the desired column", newtabgimp);
-			
-			Util.pf("Okay, got NEW column set %s\n", newcolset);
-			
-			// Okay, we want to drop a column in SQLite. This is done by:
-			// Creating new table without column.
-			
-			List<String> commlist = Util.vector();
-			
-			commlist.add(Util.sprintf("INSERT INTO %s (%s) SELECT %s FROM %s",
-				newtabgimp, Util.join(newcolset, ","), Util.join(newcolset, ","), tabname));
-			
-			
-			commlist.add(Util.sprintf("ALTER TABLE %s RENAME TO __%s", tabname, tabname));
-			
-			commlist.add(Util.sprintf("ALTER TABLE %s RENAME TO %s", newtabgimp, tabname));
-			
-			for(String onecomm : commlist)
-			{
-				Util.pf("\t%s\n", onecomm);	
-				
-			}
-			
-			
-			if(!Util.checkOkay("Okay to proceed?"))
-			{ 
-				Util.pf("Aborting\n");
-				return;
-			}
-			
-			for(String onecomm : commlist)
-			{
-				CoreDb.execSqlUpdate(onecomm, dbitem);
-			}			
-			
-			Util.pf("Okay, drop old table __%s when you are confident everything worked\n", tabname);
-		}
-		
-		private Set<String> getGimpColumnSet(WidgetItem dbitem, String tabname)
-		{
-			try {
-				QueryCollector qcol = CoreUtil.fullTableQuery(dbitem, tabname);
-				
-				if(qcol.getNumRec() > 0)
-				{
-					Util.pferr("Gimp table is non-empty, please clean it out first\n");
-					return null;
-				}
-				
-				return Util.treeset(qcol.getColumnList());
-				
-			} catch (Exception sqlex) {
-				
-				Util.pferr("Failed to query table %s, message is %s\n", tabname, sqlex.getMessage());
-				return null;	
-			}
-		}
-	}
+
 
 	
 	
@@ -1205,6 +1132,81 @@ public class CoreCommand
 			Util.pf("MISC_DATA_DIR: %s\n", CoreUtil.WWIO_MISC_DATA_DIR);
 		}
 	}
+
+	public static class DropLiteColumnOp extends ArgMapRunnable
+	{
+		public void runOp()
+		{
+			WidgetUser wuser = WidgetUser.valueOf(_argMap.getStr("username"));
+			String widgetname = _argMap.getStr("widgetname");
+			WidgetItem dbitem = new WidgetItem(wuser, widgetname);
+			Util.massert(dbitem.getLocalDbFile().exists());
+			
+			String tabname = _argMap.getStr("tabname");
+			
+			String newtabgimp = Util.sprintf("%s_gimp", tabname);
+			
+			Set<String> newcolset = getGimpColumnSet(dbitem, newtabgimp);
+			
+			Util.massert(newcolset != null, 
+				"To start process, create an empty table named %s WITHOUT the desired column", newtabgimp);
+			
+			Util.pf("Okay, got NEW column set %s\n", newcolset);
+			
+			// Okay, we want to drop a column in SQLite. This is done by:
+			// Creating new table without column.
+			
+			List<String> commlist = Util.vector();
+			
+			commlist.add(Util.sprintf("INSERT INTO %s (%s) SELECT %s FROM %s",
+				newtabgimp, Util.join(newcolset, ","), Util.join(newcolset, ","), tabname));
+			
+			
+			commlist.add(Util.sprintf("ALTER TABLE %s RENAME TO __%s", tabname, tabname));
+			
+			commlist.add(Util.sprintf("ALTER TABLE %s RENAME TO %s", newtabgimp, tabname));
+			
+			for(String onecomm : commlist)
+			{
+				Util.pf("\t%s\n", onecomm);	
+				
+			}
+			
+			
+			if(!Util.checkOkay("Okay to proceed?"))
+			{ 
+				Util.pf("Aborting\n");
+				return;
+			}
+			
+			for(String onecomm : commlist)
+			{
+				CoreDb.execSqlUpdate(onecomm, dbitem);
+			}
+			
+			Util.pf("Okay, drop old table __%s when you are confident everything worked\n", tabname);
+		}
+		
+		private Set<String> getGimpColumnSet(WidgetItem dbitem, String tabname)
+		{
+			try {
+				QueryCollector qcol = CoreUtil.fullTableQuery(dbitem, tabname);
+				
+				if(qcol.getNumRec() > 0)
+				{
+					Util.pferr("Gimp table is non-empty, please clean it out first\n");
+					return null;
+				}
+				
+				return Util.treeset(qcol.getColumnList());
+				
+			} catch (Exception sqlex) {
+				
+				Util.pferr("Failed to query table %s, message is %s\n", tabname, sqlex.getMessage());
+				return null;	
+			}
+		}
+	}	
 }
 
 
