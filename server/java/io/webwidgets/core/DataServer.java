@@ -327,10 +327,45 @@ public class DataServer
 		private void addAssetInclude(StringBuilder sb)
 		{
 			sb.append("<!-- Widget Core Asset Include -->\n");
+			{
+				// Sort list by file name length for pleasing effect
+				List<File> csslist = Util.listify(CoreUtil.SHARED_CSS_ASSET_DIR.listFiles());
+				CollUtil.sortListByFunction(csslist, cssfile -> cssfile.getName().length());
+				
+				for(File cssfile : csslist)
+				{
+					// Shouldn't really have non-CSS code here, but whatever
+					if(!cssfile.getName().endsWith(".css"))
+						{ continue; }
+					
+					long modtime = cssfile.lastModified();
+					
+					String url = Util.sprintf("<link rel=\"stylesheet\" href=\"/u/shared/css/%s?modtime=%d\" />\n", cssfile.getName(), modtime);
+					
+					sb.append(url);
+				}
+			}
 
-			addIncludeInfo(sb, CoreUtil.SHARED_CSS_ASSET_DIR, ".css", "css");
-			addIncludeInfo(sb, CoreUtil.SHARED_JSLIB_ASSET_DIR, ".js", "jslib");
 
+			{
+				// Sort list by file name length for pleasing effect
+				List<File> jslist = Util.listify(CoreUtil.SHARED_JSLIB_ASSET_DIR.listFiles());
+				CollUtil.sortListByFunction(jslist, jsfile -> jsfile.getName().length());
+				
+				for(File jsfile : jslist)
+				{
+					// SHouldn't really have non-JS code here, but whatever
+					if(!jsfile.getName().endsWith(".js"))
+						{ continue; }
+					
+					long modtime = jsfile.lastModified();
+					
+					String url = Util.sprintf("<script src=\"/u/shared/jslib/%s?modtime=%d\"></script>\n", jsfile.getName(), modtime);
+					
+					sb.append(url);
+				}
+			}
+			
 			sb.append("<!-- End Core Asset Include -->\n\n\n");
 			
 			// Gotcha - need to request JS auto-include from the Widget - owner, not the logged-in user
@@ -348,28 +383,37 @@ public class DataServer
 			sb.append("<!-- End custom JS code for user -->\n\n");
 		}
 
+		/*
 		private static void addIncludeInfo(StringBuilder sb, File assetdir, String extension, String sharedir)
 		{
 
-			// Sort list by file name length for pleasing effect
-			List<File> flist = Util.listify(assetdir.listFiles());
-			CollUtil.sortListByFunction(flist, myfile -> myfile.getName().length());
-
-			for(File myfile : flist)
-			{
-				if(!myfile.getName().endsWith(extension))
-					{ continue; }
-
-				long modtime = myfile.lastModified();
+				// Sort list by file name length for pleasing effect
+				List<File> flist = Util.listify(assetdir.listFiles());
+				CollUtil.sortListByFunction(flist,  -> jsfile.getName().length());
 				
-				String url = Util.sprintf("<script src=\"/u/shared/%s/%s?modtime=%d\"></script>\n", sharedir, myfile.getName(), modtime);
-				
-				sb.append(url);
-			}
+				for(File jsfile : jslist)
+				{
+					// SHouldn't really have non-JS code here, but whatever
+					if(!jsfile.getName().endsWith(".js"))
+						{ continue; }
+					
+					long modtime = jsfile.lastModified();
+					
+					String url = Util.sprintf("<script src=\"/u/shared/jslib/%s?modtime=%d\"></script>\n", jsfile.getName(), modtime);
+					
+					sb.append(url);
+				}
+
+
+
+
 		}
 		
+		*/
+
+		
 		public String include()
-		{
+		{			
 			for(String argkey : _argMap.keySet())
 			{
 				Util.massert(OKAY_ARG_SET.contains(argkey),
