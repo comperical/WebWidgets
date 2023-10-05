@@ -56,26 +56,6 @@ def get_resin_config_xml():
   <resin:import path="${__DIR__}/cluster-default.xml"/>
   
   <!--
-     - health configuration
-    -->
-  <resin:import path="${__DIR__}/health.xml"/>
-
-  
-  <!--
-     - Remote management requires at least one enabled admin user.
-    -->
-  <resin:AdminAuthenticator>
-    <user name="${admin_user}" password="${admin_password}"/>
-    
-    <resin:import path="${__DIR__}/admin-users.xml" optional="true"/>
-  </resin:AdminAuthenticator>
-
-  <!--
-     - For clustered systems, create a password in as cluster_system_key
-    -->
-  <cluster-system-key>${cluster_system_key}</cluster-system-key>
-
-  <!--
      - For production sites, change dependency-check-interval to something
      - like 600s, so it only checks for updates every 10 minutes.
     -->
