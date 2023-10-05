@@ -20,9 +20,6 @@ def get_resin_config_xml():
 
   <!-- property-based Resin configuration -->
   <resin:properties path="${__DIR__}/resin.properties" optional="true"/>
-  <resin:properties path="cloud:/resin.properties"
-                    optional="true" recover="true"/>
-
 
   <resin:if test="${properties_import_url}">
      <resin:properties path="${properties_import_url}"
@@ -71,7 +68,6 @@ def get_resin_config_xml():
     <user name="${admin_user}" password="${admin_password}"/>
     
     <resin:import path="${__DIR__}/admin-users.xml" optional="true"/>
-    <resin:import path="cloud:/admin-users.xml" optional="true" recover="true"/>
   </resin:AdminAuthenticator>
 
   <!--
@@ -92,11 +88,24 @@ def get_resin_config_xml():
   <elastic-dns>${elastic_dns}</elastic-dns>
 
   <!--
+     - JSSE default properties
+    -->
+  <system-property
+    jdk.tls.ephemeralDHKeySize="2048"
+    jdk.tls.rejectClientInitiatedRenegotiation="true"
+    sun.security.ssl.allowUnsafeRenegotiation="false"
+    sun.security.ssl.allowLegacyHelloMessages="false"/>
+     
+
+  <!--
      - Configures the main application cluster.  Load-balancing configurations
      - will also have a web cluster.
     -->
   <cluster id="app">
-    
+    <!-- define the servers in the cluster -->
+    <server-multi id-prefix="app-" address-list="${app_servers}"
+                  port="6800" watchdog-port="${watchdog_port}"/>
+
     <host-default>
       <!-- creates the webapps directory for .war expansion -->
       <web-app-deploy path="webapps"
@@ -114,63 +123,28 @@ def get_resin_config_xml():
 
     <!-- the default host, matching any host name -->
     <host id="" root-directory=".">
-        
-        <web-app id="/" root-directory="/opt/userdata/lifecode/wwiosite">
-          <welcome-file-list>index.jsp</welcome-file-list>
-        </web-app>
+      <!--
+         - webapps can be overridden/extended in the resin.xml
+        -->
+      <web-app id="/" root-directory="webapps/ROOT"/>
 
-        <web-app id="/u" root-directory="/opt/userdata/widgetserve">
-            <!-- this is the main callback servlet. At some point we will probably have to change this path -->
-            <servlet-mapping url-pattern="/callback" servlet-class="io.webwidgets.core.CallBack2Me" />
-            
-            <!-- this is the main entry point to the extension operations. All non-core Widget operations lead from here -->
-            <servlet-mapping url-pattern="/extend" servlet-class="io.webwidgets.extend.ExtensionServe" />
-            
-            <!-- Blob storage servlet, see private doccode about Blob Data -->
-            <servlet-mapping url-pattern="/blobstore" servlet-class="io.webwidgets.core.BlobDataManager$BlobStorageServlet" />
-            <servlet-mapping url-pattern="/push2me" servlet-class="io.webwidgets.core.ActionJackson$Push2Me" />
-            <servlet-mapping url-pattern="/pull2you" servlet-class="io.webwidgets.core.ActionJackson$Pull2You" />   
-            <servlet-mapping url-pattern="/convert2excel" servlet-class="io.webwidgets.core.ActionJackson$ConvertGrabExcel" />  
-        </web-app>
     </host>
+      
+    <resin:if test="${resin_doc}">
+      <host id="${resin_doc_host}" root-directory="${resin_doc_host}">
+        <web-app id="/resin-doc" root-directory="${resin.root}/doc/resin-doc"/>
+      </host>
+    </resin:if>
   </cluster>
 
   <cluster id="web">
     <!-- define the servers in the cluster -->
-    <server-multi id-prefix="web-" address-list="${web_servers}" port="6810"/>
+    <server-multi id-prefix="web-" address-list="${web_servers}"
+                  port="6810" watchdog-port="${watchdog_port}"/>
 
     <host id="" root-directory="web">
       <web-app id="">
         <resin:LoadBalance regexp="" cluster="app"/>
-      </web-app>
-      
-      <web-app id="/async">
-        <resin:LoadBalance regexp="" cluster="app"/>
-      </web-app>
-    </host>
-  </cluster>
-
-  <cluster id="memcached" xmlns:memcache="urn:java:com.caucho.memcached">
-    <!-- define the servers in the cluster -->
-    <server-multi id-prefix="memcached-" address-list="${memcached_servers}" port="6820">
-      <!-- listen for the memcache protocol -->
-      <listen port="${memcached_port?:11211}"
-              keepalive-timeout="600s" socket-timeout="600s">
-        <memcache:MemcachedProtocol/>
-      </listen>
-    </server-multi>
-  </cluster>
-  
-  <cluster id="proxycache">
-    <!-- define the servers in the cluster -->
-    <server-multi id-prefix="proxycache-" address-list="${proxycache_servers}" port="6830"/>
-
-    <host id="" root-directory="proxycache">
-      <web-app id="">
-        <resin:HttpProxy regexp=".*">
-          <!-- backend HTTP servers to proxy to -->
-          <addresses>${backend_servers}</addresses>
-        </resin:HttpProxy>
       </web-app>
     </host>
   </cluster>
