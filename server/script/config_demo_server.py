@@ -21,12 +21,6 @@ def get_resin_config_xml():
   <!-- property-based Resin configuration -->
   <resin:properties path="${__DIR__}/resin.properties" optional="true"/>
 
-  <resin:if test="${properties_import_url}">
-     <resin:properties path="${properties_import_url}"
-                    optional="true" recover="true"/>
-  </resin:if>
-
-
   <!-- Logging configuration for the JDK logging API -->
   <log-handler name="" level="all" path="stdout:"
                timestamp="[%y-%m-%d %H:%M:%S.%s]"
@@ -49,23 +43,12 @@ def get_resin_config_xml():
   <logger name="com.caucho.java" level="config"/>
   <logger name="com.caucho.loader" level="config"/>
 
-  <!--
-     - Default configuration applied to all clusters, including
-     - HTTP, HTTPS, and /resin-admin configuration.
-    -->
-  <resin:import path="${__DIR__}/cluster-default.xml"/>
   
   <!--
      - For production sites, change dependency-check-interval to something
      - like 600s, so it only checks for updates every 10 minutes.
     -->
   <dependency-check-interval>${dependency_check_interval?:'2s'}</dependency-check-interval>
-
-  <!-- For resin.properties dynamic cluster joining -->
-  <home-cluster>${home_cluster}</home-cluster>
-  <home-server>${home_server}</home-server>
-  <elastic-server>${elastic_server}</elastic-server>
-  <elastic-dns>${elastic_dns}</elastic-dns>
 
   <!--
      - JSSE default properties
