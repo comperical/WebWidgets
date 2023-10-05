@@ -179,6 +179,16 @@ def get_resin_config_xml():
     """
 
 
+def write_resin_xml():
+
+    resinpath = UTIL.get_resin_dir()
+    resinxml = os.path.sep.join([resinpath, "conf", "resin.xml"])
+
+    with open(resinxml, 'w') as fh:
+        fh.write(get_resin_config_xml())
+
+    print(f"Wrote Resin XML to path {resinxml}")
+
 def create_main_dir_layout():
 
 
@@ -216,3 +226,8 @@ if __name__ == "__main__":
     create_main_dir_layout()
 
     create_web_inf_link()
+
+    write_resin_xml()
+
+
+
