@@ -21,24 +21,8 @@ def get_resin_config_xml():
   <!-- property-based Resin configuration -->
   <resin:properties path="${__DIR__}/resin.properties" optional="true"/>
 
-  <resin:if test="${properties_import_url}">
-     <resin:properties path="${properties_import_url}"
-                    optional="true" recover="true"/>
-  </resin:if>
-
-
   <!-- Logging configuration for the JDK logging API -->
-  <log-handler name="" level="all" path="stdout:"
-               timestamp="[%y-%m-%d %H:%M:%S.%s]"
-               format=" {${thread}} ${log.message}"/>
-               
-  <!-- 
-     - Alternative pseudo-TTCC log format
-     -
-     - <log-handler name="" level="all" path="stdout:"
-     -           timestamp="%y-%m-%d %H:%M:%S.%s"
-     -           format=" [${thread}] ${log.level} ${log.shortName} - ${log.message}"/>
-    -->
+  <log-handler name="" level="all" path="stdout:" timestamp="[%y-%m-%d %H:%M:%S.%s]" format=" {${thread}} ${log.message}"/>
    
   <!--
      - level='info' for production
