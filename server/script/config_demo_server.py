@@ -11,7 +11,7 @@ import utility as UTIL
 def get_resin_config_xml():
 
 
-    """
+    configxml = """
 <!--
    - Resin 4.0 configuration file.
   -->
@@ -178,6 +178,7 @@ def get_resin_config_xml():
 </resin>
     """
 
+    return configxml
 
 def write_resin_xml():
 
