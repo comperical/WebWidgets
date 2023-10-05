@@ -123,7 +123,6 @@ def get_resin_config_xml():
 
     <!-- the default host, matching any host name -->
     <host id="" root-directory=".">
-        
         <web-app id="/" root-directory="/opt/userdata/lifecode/wwiosite">
           <welcome-file-list>index.jsp</welcome-file-list>
         </web-app>
@@ -143,26 +142,7 @@ def get_resin_config_xml():
             <servlet-mapping url-pattern="/convert2excel" servlet-class="io.webwidgets.core.ActionJackson$ConvertGrabExcel" />  
         </web-app>
     </host>
-      
-    <resin:if test="${resin_doc}">
-      <host id="${resin_doc_host}" root-directory="${resin_doc_host}">
-        <web-app id="/resin-doc" root-directory="${resin.root}/doc/resin-doc"/>
-      </host>
-    </resin:if>
   </cluster>
-
-  <cluster id="web">
-    <!-- define the servers in the cluster -->
-    <server-multi id-prefix="web-" address-list="${web_servers}"
-                  port="6810" watchdog-port="${watchdog_port}"/>
-
-    <host id="" root-directory="web">
-      <web-app id="">
-        <resin:LoadBalance regexp="" cluster="app"/>
-      </web-app>
-    </host>
-  </cluster>
-
 </resin>
     """
 
