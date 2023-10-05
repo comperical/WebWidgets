@@ -41,12 +41,6 @@ def get_resin_config_xml():
     -->
   <dependency-check-interval>${dependency_check_interval?:'2s'}</dependency-check-interval>
 
-  <!-- For resin.properties dynamic cluster joining -->
-  <home-cluster>${home_cluster}</home-cluster>
-  <home-server>${home_server}</home-server>
-  <elastic-server>${elastic_server}</elastic-server>
-  <elastic-dns>${elastic_dns}</elastic-dns>
-
   <!--
      - JSSE default properties
     -->
