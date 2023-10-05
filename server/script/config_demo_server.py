@@ -106,20 +106,6 @@ def get_resin_config_xml():
     <server-multi id-prefix="app-" address-list="${app_servers}"
                   port="6800" watchdog-port="${watchdog_port}"/>
 
-    <host-default>
-      <!-- creates the webapps directory for .war expansion -->
-      <web-app-deploy path="webapps"
-                      expand-preserve-fileset="WEB-INF/work/**"
-                      multiversion-routing="${webapp_multiversion_routing}"
-                      path-suffix="${elastic_webapp?resin.id:''}"/>
-    </host-default>
-
-    <!-- auto virtual host deployment in hosts/foo.example.com/webapps -->
-    <host-deploy path="hosts">
-      <host-default>
-        <resin:import path="host.xml" optional="true"/>
-      </host-default>
-    </host-deploy>
 
     <!-- the default host, matching any host name -->
     <host id="" root-directory=".">
