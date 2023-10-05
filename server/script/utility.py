@@ -15,6 +15,20 @@ def get_install_base_dir():
 	return str(thisdir.parent.parent)
 
 
+# Get directories that are 
+def get_install_peer_dir(peername):
+	repodir = Path(get_install_base_dir()).parent
+	return os.path.sep.join([str(repodir), peername])
+
+def get_widget_code_dir():
+	return get_install_peer_dir("widgetserve")
+
+def get_widget_db_dir():
+	return get_install_peer_dir("db4widget")
+
+def get_web_inf_dir():
+	return os.path.sep.join([get_widget_code_dir(), "WEB-INF"])
+
 # TODO: this should probably go in a client/ subdirectory
 # It is important to know this path to import the ArgMap utility
 def get_client_script_dir():

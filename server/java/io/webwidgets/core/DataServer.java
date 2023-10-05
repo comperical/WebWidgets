@@ -327,6 +327,10 @@ public class DataServer
 		private void addAssetInclude(StringBuilder sb)
 		{
 			sb.append("<!-- Widget Core Asset Include -->\n");
+
+
+			// These two blocks are very similar, but there are a few subtle differences, that make me feel
+			// like it's not worth trying to combine
 			{
 				// Sort list by file name length for pleasing effect
 				List<File> csslist = Util.listify(CoreUtil.SHARED_CSS_ASSET_DIR.listFiles());
@@ -383,35 +387,7 @@ public class DataServer
 			sb.append("<!-- End custom JS code for user -->\n\n");
 		}
 
-		/*
-		private static void addIncludeInfo(StringBuilder sb, File assetdir, String extension, String sharedir)
-		{
 
-				// Sort list by file name length for pleasing effect
-				List<File> flist = Util.listify(assetdir.listFiles());
-				CollUtil.sortListByFunction(flist,  -> jsfile.getName().length());
-				
-				for(File jsfile : jslist)
-				{
-					// SHouldn't really have non-JS code here, but whatever
-					if(!jsfile.getName().endsWith(".js"))
-						{ continue; }
-					
-					long modtime = jsfile.lastModified();
-					
-					String url = Util.sprintf("<script src=\"/u/shared/jslib/%s?modtime=%d\"></script>\n", jsfile.getName(), modtime);
-					
-					sb.append(url);
-				}
-
-
-
-
-		}
-		
-		*/
-
-		
 		public String include()
 		{			
 			for(String argkey : _argMap.keySet())
