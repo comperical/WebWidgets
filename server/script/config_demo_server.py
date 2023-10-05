@@ -71,15 +71,11 @@ def get_resin_config_xml():
         <web-app id="/u" root-directory="/opt/userdata/widgetserve">
             <!-- this is the main callback servlet. At some point we will probably have to change this path -->
             <servlet-mapping url-pattern="/callback" servlet-class="io.webwidgets.core.CallBack2Me" />
-            
-            <!-- this is the main entry point to the extension operations. All non-core Widget operations lead from here -->
-            <servlet-mapping url-pattern="/extend" servlet-class="io.webwidgets.extend.ExtensionServe" />
-            
+                        
             <!-- Blob storage servlet, see private doccode about Blob Data -->
             <servlet-mapping url-pattern="/blobstore" servlet-class="io.webwidgets.core.BlobDataManager$BlobStorageServlet" />
             <servlet-mapping url-pattern="/push2me" servlet-class="io.webwidgets.core.ActionJackson$Push2Me" />
             <servlet-mapping url-pattern="/pull2you" servlet-class="io.webwidgets.core.ActionJackson$Pull2You" />   
-            <servlet-mapping url-pattern="/convert2excel" servlet-class="io.webwidgets.core.ActionJackson$ConvertGrabExcel" />  
         </web-app>
     </host>
   </cluster>
