@@ -28,6 +28,12 @@ def get_resin_config_xml():
 
   <logger name="com.caucho.java" level="config"/>
   <logger name="com.caucho.loader" level="config"/>
+
+  <!--
+     - Default configuration applied to all clusters, including
+     - HTTP, HTTPS, and /resin-admin configuration.
+    -->
+  <resin:import path="${__DIR__}/cluster-default.xml"/>
   
   <!--
      - For clustered systems, create a password in as cluster_system_key
