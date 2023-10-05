@@ -12,11 +12,7 @@ def get_resin_config_xml():
 
 
     configxml = """
-<!--
-   - Resin 4.0 configuration file.
-  -->
-<resin xmlns="http://caucho.com/ns/resin"
-       xmlns:resin="urn:java:com.caucho.resin">
+<resin xmlns="http://caucho.com/ns/resin" xmlns:resin="urn:java:com.caucho.resin">
 
   <!-- property-based Resin configuration -->
   <resin:properties path="${__DIR__}/resin.properties" optional="true"/>
@@ -32,12 +28,6 @@ def get_resin_config_xml():
 
   <logger name="com.caucho.java" level="config"/>
   <logger name="com.caucho.loader" level="config"/>
-
-  <!--
-     - Default configuration applied to all clusters, including
-     - HTTP, HTTPS, and /resin-admin configuration.
-    -->
-  <resin:import path="${__DIR__}/cluster-default.xml"/>
   
   <!--
      - For clustered systems, create a password in as cluster_system_key
