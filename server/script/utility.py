@@ -43,9 +43,12 @@ def get_working_dir():
 def get_base_config_dir():
 	return os.path.sep.join([get_working_dir(), "config"])
 
-def get_resin_dir():
-	return os.path.sep.join([get_working_dir(), "resin"])
+def find_resin_dir():
+    for onefile in os.listdir(get_working_dir()):
+        if onefile.startswith("resin"):
+            return os.path.sep.join([get_working_dir(), onefile])
 
+    return None
 
 def get_jar_file_dir():
 	return os.path.sep.join([get_working_dir(), "jarfiles"])

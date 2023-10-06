@@ -7,6 +7,7 @@ from zipfile import ZipFile
 
 import utility as UTIL
 
+FREE_RESIN_URL = "https://caucho.com/download/resin-4.0.66.zip"
 
 def get_resin_config_xml():
 
@@ -86,7 +87,8 @@ def get_resin_config_xml():
 
 def write_resin_xml():
 
-    resinpath = UTIL.get_resin_dir()
+    resinpath = UTIL.find_resin_dir()
+    assert resinpath is not None, "Failed to find Resin directory, did the grab/expand command work?"
     resinxml = os.path.sep.join([resinpath, "conf", "resin.xml"])
 
     with open(resinxml, 'w') as fh:
@@ -124,6 +126,24 @@ def create_web_inf_link():
     rebuild_symlink("lib", UTIL.get_jar_file_dir())
 
 
+
+def grab_and_expand_resin():
+
+    resinzip = os.path.sep.join([UTIL.get_working_dir(), "resin.zip"])
+    curlcall = f"curl {FREE_RESIN_URL} -o {resinzip}"
+    os.system(curlcall)
+
+    unzipcall = f"unzip {resinzip} -d {UTIL.get_working_dir()}"
+    os.system(unzipcall)
+
+    os.remove(resinzip)
+
+    resindir = UTIL.find_resin_dir()
+    assert resindir is not None, "Failed to find resin directory after grab/expand process!!"
+    print(f"Successfully grabbed and installed resin to {resindir}")
+
+
+
 if __name__ == "__main__":
 
     print("going to config demo server")
@@ -131,6 +151,8 @@ if __name__ == "__main__":
     create_main_dir_layout()
 
     create_web_inf_link()
+
+    grab_and_expand_resin()
 
     write_resin_xml()
 
