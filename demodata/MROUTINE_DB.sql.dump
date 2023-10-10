@@ -1,0 +1,13 @@
+PRAGMA foreign_keys=OFF;
+BEGIN TRANSACTION;
+CREATE TABLE mroutine_log (id int, phase_id int, log_time_pst varchar(19),   primary key(id), foreign key(phase_id) REFERENCES mroutine_phase(id));
+INSERT INTO mroutine_log VALUES(-1879499278,375572654,'2023-10-07 14:13:44');
+INSERT INTO mroutine_log VALUES(-798250322,-1009706011,'2023-10-07 14:13:48');
+INSERT INTO mroutine_log VALUES(-609565085,375572654,'2023-10-10 10:31:37');
+CREATE TABLE mroutine_phase (id int, is_active smallint, short_name varchar(30),  full_desc varchar(400), web_link varchar(100), order_key real, on_day_list varchar(40) default "", primary key(id));
+INSERT INTO mroutine_phase VALUES(375572654,1,'Read The NYTimes','NotYetSet','https://www.nytimes.com/',0.0,'all');
+INSERT INTO mroutine_phase VALUES(-1009706011,1,'Check Twitter','NotYetSet','https://twitter.com/home',1.0,'all');
+INSERT INTO mroutine_phase VALUES(178571562,1,'Feed the Dog','NotYetSet','.',2.0,'all');
+INSERT INTO mroutine_phase VALUES(-1534511096,1,'Take out the Trash','NotYetSet','http://danburfoot.net',3.0,'all');
+CREATE VIEW recent_mroutine_log AS SELECT * FROM mroutine_log WHERE strftime('%s', 'now') - strftime('%s', log_time_pst) < 30 * 24 * 60 * 60;
+COMMIT;

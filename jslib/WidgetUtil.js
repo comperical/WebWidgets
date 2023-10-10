@@ -1,5 +1,7 @@
 
 
+var MY_TIME_ZONE = "AST";
+
 // Delete Item from given table. 
 // Error if the item with the given ID does not exist.
 // Redisplays on success, if you don't want this behavior, do not use this method.
@@ -450,5 +452,47 @@ function spreadConvert(it)
 
     return result;
 }
+
+
+function populateTopNavBar(headerdata, headerselected) {
+
+    const data = composeNavBarCode(headerdata, headerselected);
+
+    const topnavlist = document.getElementsByClassName("topnav");
+
+    massert(topnavlist.length >  0, "Could not find any elements with class name topnav");
+    massert(topnavlist.length == 1, "Found multiple elements with class name topnav");
+
+    topnavlist[0].innerHTML = data;
+
+}
+
+function composeNavBarCode(headerdata, headerselected) {
+
+    var navstr = `<a href="/u/admin/Bounce2Home.jsp">Home</a>`;
+    var foundsel = false;
+
+    headerdata.forEach(function(pr) {
+
+        const display = pr[0];
+        const href = pr[1];
+        var selstr = "";
+
+        if(headerselected == display) {
+
+            foundsel = true;
+            selstr = `class="navbar_active"`;
+        }
+
+        navstr += `<a href="${href}" ${selstr}>${display}</a>`;
+    });
+
+    massert(foundsel || headerselected == null, 
+        `Failed to find header named ${headerselected}, use null if you don't want to select`);
+
+    return navstr;
+
+}
+
 
 

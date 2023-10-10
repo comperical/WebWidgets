@@ -1206,7 +1206,68 @@ public class CoreCommand
 				return null;	
 			}
 		}
-	}	
+	}
+
+	public static class BuildWidgetFromDbDump extends ArgMapRunnable
+	{
+
+		public void runOp()
+		{
+			WidgetUser user = WidgetUser.lookup(_argMap.getStr("username"));
+			String widgetname = _argMap.getStr("widgetname");
+
+			File dumpfile = new File(_argMap.getStr("dumpfile"));
+			Util.massert(dumpfile.exists(), "DB dump file %s not found");
+
+
+			List<String> sql = FileUtils.getReaderUtil().setFile(dumpfile).readLineListE();
+
+			WidgetItem newitem = new WidgetItem(user, widgetname);
+			newitem.createEmptyLocalDb();
+
+			String litecomm = Util.sprintf("sqlite3 %s", newitem.getLocalDbFile().getAbsolutePath());
+			SyscallWrapper builder = SyscallWrapper.build(litecomm).setInputList(sql).execE();
+
+			Util.pf("Success, build the DB\n");
+
+		}
+
+	}
+
+	public static class WidgetDataDump extends ArgMapRunnable
+	{
+
+		public void runOp()
+		{
+			WidgetUser user = WidgetUser.valueOf(_argMap.getStr("username"));
+			WidgetItem item = new WidgetItem(user, _argMap.getStr("widgetname"));
+			Util.massert(item.getLocalDbFile().exists(), "Widget %s not found", item);
+
+			File outputdir = new File(_argMap.getStr("outputdir"));
+			Util.massert(outputdir.exists(), "Output directory %s  does not exist");
+
+			File outputfile = getOutputFile(outputdir, item.theName);
+			Util.massert(!outputfile.exists(), "Output file %s already exists, please delete before continuing");
+
+			String dumpcall = Util.sprintf("sqlite3 %s .dump", item.getLocalDbFile().getAbsolutePath());
+			SyscallWrapper wrapper = SyscallWrapper
+											.build(dumpcall)
+											.execE();
+
+
+			List<String> result = wrapper.getOutList();
+			FileUtils.getWriterUtil().setFile(outputfile).writeLineListE(result);
+			Util.pf("Wrote %d lines to path %s\n", result.size(), outputfile);
+
+		}
+
+		private File getOutputFile(File outputdir, String widgetname)
+		{
+			String filename = Util.sprintf("%s_DB.sql.dump", widgetname.toUpperCase());
+			String newpath =  Util.join(Util.listify(outputdir.getAbsolutePath(), filename), File.separator);
+			return new File(newpath);
+		}
+	}
 }
 
 

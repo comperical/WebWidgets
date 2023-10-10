@@ -39,7 +39,8 @@ function getFinanceHeaderInfo()
         ["Uploader", "DataUploader.jsp"],
         ["Upload Stats", "UploadStats.jsp"],
         ["Tagger", "TagRecords.jsp"],
-        ["Tag Rules", "AutoTagRules.jsp"]
+        ["Tag Rules", "AutoTagRules.jsp"],
+        ["Graph", "SpendGraph.jsp"]
     ];
 }
 

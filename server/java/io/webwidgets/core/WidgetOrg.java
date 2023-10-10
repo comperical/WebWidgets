@@ -39,6 +39,9 @@ public class WidgetOrg
 			theOwner = user;
 			theName = name;
 			isVirtual = isvirt;
+
+			Util.massert(theOwner != null && name != null, 
+				"Attempt to create WidgetItem with null owner (%s) or name (%s)", theOwner, name);
 		}
 				
 		

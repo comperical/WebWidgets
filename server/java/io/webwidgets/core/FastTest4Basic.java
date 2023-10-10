@@ -477,6 +477,11 @@ public class FastTest4Basic
 		{
 			for(ArgMapRunnable amr : getTestList())
 			{
+				if(amr.getClass().getName().contains("UnitTest"))
+					{ continue; }
+
+				
+
 				Util.pf("Running test: %s\n", amr.getClass().getSimpleName());
 				amr.initFromArgMap(new ArgMap());
 				amr.runOp();

@@ -1,0 +1,10 @@
+PRAGMA foreign_keys=OFF;
+BEGIN TRANSACTION;
+CREATE TABLE question_log (id int, created_on varchar(10), has_answer smallint, is_active smallint, question_text varchar(100), web_link varchar(200), full_notes varchar(400), primary key(id));
+INSERT INTO question_log VALUES(1,'2020-08-01',0,1,'What is the meaning of life?','https://www.amazon.com/Ultimate-Hitchhikers-Guide-Galaxy/dp/0345453743/ref=sr_1_1?crid=BSYAXCG83Q8H&dchild=1&keywords=hitchhikers+guide+to+the+galaxy&qid=1606180914&sprefix=hitchhikers+%2Caps%2C372&sr=8-1','42');
+INSERT INTO question_log VALUES(2,'2020-11-23',0,1,'What is the capital of Texas?','','Dallas');
+INSERT INTO question_log VALUES(3,'2020-11-23',1,1,'When was Paris founded?','https://www.introducingparis.com/history','259 BC');
+INSERT INTO question_log VALUES(4,'2020-11-23',0,1,'What does EBITDA stand for?','','earnings before interest, taxes, depreciation, and amortization');
+INSERT INTO question_log VALUES(5,'2020-11-23',1,1,'What documentation do you need to confirm corporate loan document signers?','','Company bylaws');
+INSERT INTO question_log VALUES(6,'2020-11-23',0,1,'How do you create a virtual environment in Python?','https://docs.python.org/3/library/venv.html','c:\>c:\Python35\python -m venv c:\path\to\myenv');
+COMMIT;
