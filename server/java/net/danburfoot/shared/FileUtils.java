@@ -199,6 +199,12 @@ public class FileUtils
 
 	public static void in2out(InputStream in, OutputStream out) throws IOException
 	{
+		in2out(in, out, true);
+	}
+
+
+	public static void in2out(InputStream in, OutputStream out, boolean close) throws IOException
+	{
 		byte[] buffer = new byte[1024];
 
 		int len = in.read(buffer);
@@ -208,9 +214,12 @@ public class FileUtils
 		}
 
 		// Whoa, need to remember this one!!
-		in.close();
-		out.close();
-	}	
+		if(close)
+		{
+			in.close();
+			out.close();
+		}
+	}
 		
 	public static <K,V> SortedMap<K, V> readSimpleDataMap(String thepath, Function<String, K> keyfunc, Function<String, V> valfunc)
 	{

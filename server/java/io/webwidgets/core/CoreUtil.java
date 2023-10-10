@@ -68,11 +68,20 @@ public class CoreUtil
 	public static final String WIDGET_CODE_DIR = getSubDirectory(WWIO_BASE_CONFIG_DIR, "widgetserve", 4);
 	public static final String WIDGET_DB_DIR = getSubDirectory(WWIO_BASE_CONFIG_DIR, "db4widget", 4);
 
+	public static final String GALLERY_CODE_DIR = getSubDirectory(WWIO_BASE_CONFIG_DIR, "gallery", 3);
+
+	public static final String DEMO_DATA_DIR = getSubDirectory(WWIO_BASE_CONFIG_DIR, "demodata", 3);
+
+
 	// Jclass is the direct peer of the config directory
 	public static final String JCLASS_BASE_DIR = getSubDirectory(WWIO_BASE_CONFIG_DIR, "jclass", 1);
 
 	// Directory for miscellaneous config etc files. Not checked into repo, but used in the application
 	public static final String WWIO_MISC_DATA_DIR = getSubDirectory(WWIO_BASE_CONFIG_DIR, "miscdata", 1);
+
+	// Temporary directory for importing code from gallery
+	public static final String IMPORT_TEMP_DIR = getSubDirectory(WWIO_MISC_DATA_DIR, "importtmp");
+
 
 	// On user creation, the dummy password is set to this
 	// However, the authentication does not work until the password is set to something new
@@ -89,11 +98,20 @@ public class CoreUtil
 	public static final String DB_ARCHIVE_DIR = "/opt/userdata/lifecode/datadir/dbarchive";
 	
 
+	public static File MAINTENANCE_MODE_FILE = new File(getSubDirectory(WWIO_MISC_DATA_DIR, "MAINTENANCE_MODE_MARKER.txt"));
+
+	public static File INSECURE_ALLOW_FILE = new File(getSubDirectory(WWIO_MISC_DATA_DIR, "ALLOW_INSECURE.txt"));
+
+
 
 	public static final File SHARED_CSS_ASSET_DIR = (new WidgetItem(WidgetUser.buildBackDoorSharedUser(), "css")).getWidgetBaseDir();
 	public static final File SHARED_JSLIB_ASSET_DIR = (new WidgetItem(WidgetUser.buildBackDoorSharedUser(), "jslib")).getWidgetBaseDir();
 
 	static final String MASTER_WIDGET_NAME = "master";
+
+	private static Boolean _ALLOW_INSECURE_CONNX;
+
+
 	
 	private static boolean _CLASS_INIT = false;
 	
@@ -124,6 +142,13 @@ public class CoreUtil
 	public static WidgetItem getMasterWidget()
 	{
 		return new WidgetItem(WidgetUser.getSharedUser(), MASTER_WIDGET_NAME);
+	}
+
+	public static File getDemoDataDumpFile(String widgetname)
+	{
+		String filename = Util.sprintf("%s_DB.sql.dump", widgetname.toUpperCase());
+		String dumpfile =  Util.join(Util.listify(CoreUtil.DEMO_DATA_DIR, filename), File.separator);
+		return new File(dumpfile);
 	}
 
 	// This is the same algorithm that the JS code uses
@@ -163,6 +188,23 @@ public class CoreUtil
 		return numrec == 1;
 	}
 
+
+	// If true, the server will allow insecure connections
+	// This config is read only once at system startup
+	// The file contents must be the string "true" in order to return true
+	public static boolean allowInsecureConnection()
+	{
+		if(_ALLOW_INSECURE_CONNX == null)
+		{
+			List<String> allow = INSECURE_ALLOW_FILE.exists() 
+						? FileUtils.getReaderUtil().setFile(INSECURE_ALLOW_FILE).readLineListE()
+						: Util.listify();
+
+			_ALLOW_INSECURE_CONNX = Util.join(allow, "\n").trim().equals(""+true);
+		}
+
+		return _ALLOW_INSECURE_CONNX;
+	}
 
 	public static int getNewDbId(ConnectionSource witem, String tabname)
 	{

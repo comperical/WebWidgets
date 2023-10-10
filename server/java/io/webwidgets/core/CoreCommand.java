@@ -169,20 +169,20 @@ public class CoreCommand
 	public static class MarkMaintenanceMode extends ArgMapRunnable implements HasDescription
 	{
 		
-		public String getDesc() 
+		public String getDesc()
 		{
 			return 
 			"Put the server in maintenance mode by creating a file at the appropriate path\n" + 
-			Util.sprintf("The path is %s\n", WebUtil.MAINTENANCE_MODE_FILE);
+			Util.sprintf("The path is %s\n", CoreUtil.MAINTENANCE_MODE_FILE);
 		}
 		
-		public void runOp() 
+		public void runOp()
 		{
 			Optional<String> prevmode = WebUtil.maintenanceModeInfo();
 			if(prevmode.isPresent())
 			{
 				Util.pf("Server is already in maintenance mode: %s\n", prevmode.get());
-				return;				
+				return;
 			}
 			
 			Util.pf("Okay, this will put the server in maintenance mode so no further updates can be processed\n");
@@ -192,10 +192,10 @@ public class CoreCommand
 			String mssgtext = Util.getUserInput();
 			
 			FileUtils.getWriterUtil()
-			.setFile(WebUtil.MAINTENANCE_MODE_FILE)
-			.writeLineListE(Util.listify(mssgtext));
+						.setFile(CoreUtil.MAINTENANCE_MODE_FILE)
+						.writeLineListE(Util.listify(mssgtext));
 			
-			Util.pf("Okay, wrote file to path %s\n", WebUtil.MAINTENANCE_MODE_FILE);
+			Util.pf("Okay, wrote file to path %s\n", CoreUtil.MAINTENANCE_MODE_FILE);
 			
 			Util.pf("Confirm success by running this program again\n");
 		}
@@ -205,7 +205,7 @@ public class CoreCommand
 		
 		public String getDesc() 
 		{
-			return "Clears the maintenance mode flag, puts the server into activity mode";	
+			return "Clears the maintenance mode flag, puts the server into activity mode";
 		}
 		
 		public void runOp() 
@@ -221,7 +221,7 @@ public class CoreCommand
 			
 			if(Util.checkOkay("Okay to proceed? [yes/NO]")) 
 			{
-				WebUtil.MAINTENANCE_MODE_FILE.delete();	
+				CoreUtil.MAINTENANCE_MODE_FILE.delete();
 				Util.pf("Maintenance Mode flag deleted\n");
 			}
 			
@@ -308,13 +308,6 @@ public class CoreCommand
 
 			for(WidgetUser wuser : userlist)
 			{
-				// Create autogen dir, this will also create the widgetserve directory
-				boolean didcreate = wuser.maybeCreateAutogenJsDir();
-				if(didcreate)
-				{
-					Util.pf("Created AutoGen JS dir %s\n", wuser.getAutoGenJsDir());
-				}
-				
 				List<WidgetItem> itemlist = wuser.getUserWidgetList();
 				for(WidgetItem witem : itemlist)
 				{
@@ -1130,6 +1123,7 @@ public class CoreCommand
 			Util.pf("Have CODE directory %s\n", CoreUtil.WIDGET_CODE_DIR);
 			Util.pf("Have JCLASS directory %s\n", CoreUtil.JCLASS_BASE_DIR);
 			Util.pf("MISC_DATA_DIR: %s\n", CoreUtil.WWIO_MISC_DATA_DIR);
+			Util.pf("Allow Insecure: %b\n", CoreUtil.allowInsecureConnection());
 		}
 	}
 
@@ -1234,6 +1228,119 @@ public class CoreCommand
 
 	}
 
+	public static class ImportWidgetFromGallery extends DescRunnable
+	{
+		public String getDesc()
+		{
+			return 
+				"Imports a widget for a given user, from the DB dump and the gallery code\n" + 
+				"Note that not all gallery widgets have DB data\n" + 
+				"This tool is mainly used in setting up the demo server, to confirm that the full system is working\n";
+		}
+
+		public void runOp()
+		{
+			WidgetUser user = WidgetUser.valueOf(_argMap.getStr("username"));
+			WidgetItem item = new WidgetItem(user, _argMap.getStr("widgetname"));
+
+
+			Util.massert(!item.dbFileExists(), "Already have DB file for widget %s", item);
+			loadDbFromDump(item);
+
+			// Create the new JS code for the DB
+			{
+					List<String> loglist = ActionJackson.createCode4Widget(item);
+					for(String log : loglist)
+						{ Util.pf("%s", log); }
+			}
+
+			// Import the code from the Gallery
+			runCodeImport(item);
+		}
+
+		private static void runCodeImport(WidgetItem item)
+		{
+			CodeLocator locator = compileTempZip(item);
+
+			CodeExtractor codex = locator.getExtractor();
+
+			// This stuff is al
+			codex.cleanOldCode();
+			codex.extractCode(locator);
+			codex.optAugmentAuthHeader();
+			
+			for(String log : codex.getLogList())
+				{ Util.pf("%s\n", log); }
+
+			locator.getCodeFile().delete();
+			Util.pf("Cleaned import file %s\n", locator.getCodeFile());
+		}
+
+		private static CodeLocator compileTempZip(WidgetItem item)
+		{
+			File gallerydir = new File(Util.varjoin(File.separator, CoreUtil.GALLERY_CODE_DIR, item.theName));
+			Util.massert(gallerydir.exists() && gallerydir.isDirectory(),
+				"Gallery directory for widget %s does not exist at expected path %s",
+				item.theName, gallerydir
+			);
+
+
+			ImportLocator locator = new ImportLocator(item);
+			zipDirectory(gallerydir, locator.getCodeFile());
+			Util.pf("Generated .zip file at path %s\n", locator.getCodeFile());
+			return locator;
+		}
+
+		// TODO: move this logic somewhere else, probably CoreUtil
+
+	    public static void zipDirectory(File zipsrc, File zipdst) {
+	        try (FileOutputStream fos = new FileOutputStream(zipdst); ZipOutputStream zos = new ZipOutputStream(fos)) {
+	            zipSub(zipsrc, zipsrc, zos);
+	        } catch (IOException ioex) {
+	        	throw new RuntimeException(ioex);
+	        }
+	    }
+
+	    private static void zipSub(File topdir, File onefile, ZipOutputStream zos) throws IOException {
+	        if (onefile.isDirectory()) {
+	            for (File file : onefile.listFiles()) 
+		            { zipSub(topdir, file, zos); }
+		        return;
+		    }
+
+            try (FileInputStream fis = new FileInputStream(onefile)) {
+                String entrypath = getRelativePath(topdir, onefile);
+                ZipEntry zipentry = new ZipEntry(entrypath);
+
+                zos.putNextEntry(zipentry);
+                FileUtils.in2out(fis, zos, false);
+                zos.closeEntry();
+	        }
+	    }
+
+	    private static String getRelativePath(File topdir, File onefile) {
+	        return topdir.toPath().relativize(onefile.toPath()).toString();
+	    }
+
+
+		private static void loadDbFromDump(WidgetItem newitem)
+		{
+			File dumpfile = CoreUtil.getDemoDataDumpFile(newitem.theName);
+			Util.massert(dumpfile.exists(),
+				"Could not find a DB dump file for widget named %d, expected at %s, note: not all Gallery widgets have DB dumps",
+				newitem.theName, dumpfile
+			);
+
+			List<String> sql = FileUtils.getReaderUtil().setFile(dumpfile).readLineListE();
+
+			String litecomm = Util.sprintf("sqlite3 %s", newitem.getLocalDbFile().getAbsolutePath());
+			SyscallWrapper builder = SyscallWrapper.build(litecomm).setInputList(sql).execE();
+
+			Util.pf("Success, built SQLite DB for widget %s from dump file %s\n",
+				newitem.theName, dumpfile);
+		}
+	}
+
 	public static class WidgetDataDump extends ArgMapRunnable
 	{
 
@@ -1266,6 +1373,43 @@ public class CoreCommand
 			String filename = Util.sprintf("%s_DB.sql.dump", widgetname.toUpperCase());
 			String newpath =  Util.join(Util.listify(outputdir.getAbsolutePath(), filename), File.separator);
 			return new File(newpath);
+		}
+	}
+
+	public static class ToggleInsecureAllow extends DescRunnable
+	{
+
+		public String getDesc()
+		{
+			return 
+				"Toggles the config setting that allows insecure connections\n" + 
+				"Server must be restarted after config\n" + 
+				"Do not use in production, just for demo purposes\n";
+		}
+
+		public void runOp()
+		{
+			boolean allowins = CoreUtil.allowInsecureConnection();
+
+			if(allowins)
+			{
+				CoreUtil.INSECURE_ALLOW_FILE.delete();
+				Util.pf("Cleared insecure-allow file, this will reset to no-insecure config\n");
+			} else {
+
+
+				if(Util.checkOkay("This will configure the server to allow insecure connections, okay? "))
+				{
+					FileUtils.getWriterUtil().setFile(CoreUtil.INSECURE_ALLOW_FILE).writeLineListE(Util.listify(""+true));
+					Util.pf("Marked allow insecure\n");
+				} else {
+					Util.pf("Aborting\n");
+					return;
+				}
+			}
+
+			Util.pf("Setting toggled, run %s to confirm setting, you must restart server to pick up the config change\n", 
+						ShowBaseConfigInfo.class.getSimpleName());
 		}
 	}
 }

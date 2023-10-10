@@ -30,9 +30,7 @@ public class WebUtil
 	public static String AWS_HOST = "compute.amazonaws.com";
 		
 	public static String LOGIN_RELATIVE_URL = "/u/admin/LogIn.jsp";
-	
-	public static File MAINTENANCE_MODE_FILE = new File(CoreUtil.WWIO_MISC_DATA_DIR + "/MAINTENANCE_MODE_MARKER.txt");
-	
+		
 	public static String getUserHomeRelative(WidgetUser wuser)
 	{
 		return String.format("/u/%s/", wuser.getUserName());
@@ -84,11 +82,10 @@ public class WebUtil
 	
 	public static Optional<String> maintenanceModeInfo()
 	{
-		if(!MAINTENANCE_MODE_FILE.exists())
+		if(!CoreUtil.MAINTENANCE_MODE_FILE.exists())
 			{ return Optional.empty(); }
 		
-		List<String> info = FileUtils.getReaderUtil()
-						.setFile(MAINTENANCE_MODE_FILE).readLineListE();
+		List<String> info = FileUtils.getReaderUtil().setFile(CoreUtil.MAINTENANCE_MODE_FILE).readLineListE();
 
 		return Optional.of(Util.join(info, "\n"));
 	}

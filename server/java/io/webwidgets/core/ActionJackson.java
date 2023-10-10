@@ -13,6 +13,7 @@ import javax.servlet.annotation.MultipartConfig;
 import net.danburfoot.shared.Util;
 import net.danburfoot.shared.ArgMap;
 import net.danburfoot.shared.FileUtils;
+import net.danburfoot.shared.StringUtil;
 
 import io.webwidgets.core.WidgetOrg.*;
 
@@ -217,7 +218,7 @@ public class ActionJackson extends HttpServlet
 			return Util.sprintf("%s__%s.%s",
 					_theUser.toString(),
 					_widgetName,
-					_ufType.toString());			
+					_ufType.toString());
 		}
 		
 		CodeExtractor getExtractor()
@@ -228,9 +229,31 @@ public class ActionJackson extends HttpServlet
 			
 		}
 	}
+
+	static class ImportLocator extends CodeLocator
+	{
+
+		ImportLocator(WidgetItem newitem)
+		{
+			super(newitem.theOwner, newitem.theName, UploadFileType.widgetzip);
+
+			{
+				File tdir = new File(CoreUtil.IMPORT_TEMP_DIR);
+				if(!tdir.exists())
+					{ tdir.mkdirs(); }
+			}
+		}
+
+		@Override
+		String getCodePath()
+		{
+			return Util.varjoin(File.separator, CoreUtil.IMPORT_TEMP_DIR, getCodeName());
+		}
+
+	}
 		
 	abstract static class CodeExtractor 
-	{		
+	{
 		protected List<String> _logList = Util.vector();
 
 		// Map of path to checksum
@@ -250,7 +273,7 @@ public class ActionJackson extends HttpServlet
 		
 		CodeExtractor()
 		{
-		}		
+		}
 		
 		// Delete previous files in this directory
 		int cleanOldCode()
@@ -313,7 +336,7 @@ public class ActionJackson extends HttpServlet
 		
 		// Scan all the JSP files in the output directory. 
 		// If they do not include the AuthHeader tag, swap it in as the FIRST line of the line.
-		private void optAugmentAuthHeader()
+		void optAugmentAuthHeader()
 		{
 			if(!prependAuthTag())
 				{ return; }
@@ -561,26 +584,24 @@ public class ActionJackson extends HttpServlet
 		}
 		
 		Map<String, Boolean> getCleanDirMap()
-		{	
+		{
 			// TODO: add the standard reserved keyword maps here.
 			Map<String, Boolean> cdmap = Util.treemap();
 			// recursive=false
 			cdmap.put(getBaseDirectory().toString(), false);
 			return cdmap;
 		}
-	}	
+	}
 	
 	
 	public static List<String> createCode4Widget(WidgetItem witem)
 	{
 		List<String> loglist = Util.vector();
 		File autogendir = WebUtil.getAutoGenJsDir(witem);
-		// Util.pf("Auto gen dir is %s\n", autogendir);
 		
 		if(!autogendir.exists())
 		{
-			autogendir.mkdir();
-			// Util.pf("Creating auto gen dir\n", autogendir);
+			autogendir.mkdirs();
 			loglist.add(Util.sprintf("Created directory %s\n", autogendir));
 		}
 		

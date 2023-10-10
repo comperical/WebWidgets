@@ -78,9 +78,6 @@ public class AuthLogic
 	// TODO: this can be more beautiful
 	public static void setUserCookie(HttpServletRequest request, HttpServletResponse response, String username)
 	{
-		Util.massert(request.isSecure(),
-			"Attempt to set AUTH cookie over insecure connection");
-		
 		Cookie mycookie = new Cookie("username", username);
 		mycookie.setPath("/");
 		
@@ -93,12 +90,15 @@ public class AuthLogic
 	
 	public static void setAuthCookie(HttpServletRequest request, HttpServletResponse response, String accesshash)
 	{
-		Util.massert(request.isSecure(),
-			"Attempt to set AUTH cookie over insecure connection");
+		Util.massert(request.isSecure() || CoreUtil.allowInsecureConnection(),
+			"Attempt to set AUTH cookie over insecure connection, insecure connections disallowed");
 		
 		Cookie mycookie = new Cookie(ACCESS_HASH_COOKIE, accesshash);
 		mycookie.setPath("/");
-		mycookie.setSecure(true);
+
+		// This was previously just TRUE, but if the request is not secure due to config, there's no point
+		// in not allowing the cookie to be stored.
+		mycookie.setSecure(request.isSecure());
 		
 		// DAY_MILLI is milliseconds; divide by 1000 and mult by 10 days = divide by 100
 		mycookie.setMaxAge((int) (TimeUtil.DAY_MILLI / 100));
@@ -113,7 +113,7 @@ public class AuthLogic
 	}
 
 	public static String standardShaHash(String saltedInput) 
-	{		
+	{
 		try {
 			byte[] bytesOfMessage = saltedInput.getBytes("UTF-8");
 			java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
