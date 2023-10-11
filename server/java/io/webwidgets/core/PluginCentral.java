@@ -15,6 +15,7 @@ public class PluginCentral
 	
 	public enum PluginType
 	{
+		general,
 		blob_store,
 		mail_sender,
 		admin_extend;
@@ -57,18 +58,42 @@ public class PluginCentral
 		return Util.cast(getPluginSub(PluginType.blob_store));
 	}
 	
+
+	public static GeneralPlugin getGeneralPlugin()
+	{
+		return Util.cast(getPluginSub(PluginType.general, GeneralPlugin.class));
+	}
+
+	/**
+	 * Catchall plugin for all of the odds and ends, small custom features
+	 * that do not fit cleanly into other areas
+	 */
+	public static class GeneralPlugin
+	{
+		// Get a special login page for the requested URL
+		// This is for customized installations which require a different login method
+		public Optional<String> getSpecialLoginUrl(String requesturl)
+		{
+			return Optional.empty();
+		}
+	}
 	
 	private static Object getPluginSub(PluginType ptype)
 	{
+		return getPluginSub(ptype, null);
+	}
+	
+	private static Object getPluginSub(PluginType ptype, Class<?> defclass)
+	{
 		var classmap = getPluginClassMap();
-		Class<?> cls = classmap.get(ptype);
+		Class<?> cls = classmap.getOrDefault(ptype, defclass);
 		Util.massert(cls != null,
-			"No plugin is configured for type %s. You must configure in Plugin.props file");
+			"No plugin is configured for type %s, and no default is available. You must configure in Plugin.props file");
 		
 		try { return cls.getDeclaredConstructor().newInstance(); }
 		catch (Exception ex) { throw new RuntimeException(ex); }
 	}
-	
+
 	
 	public static synchronized Map<PluginType, Class> getPluginClassMap()
 	{
@@ -79,12 +104,8 @@ public class PluginCentral
 			
 			for(PluginType ptype : PluginType.values())
 			{
-				Util.massert(props.containsKey(ptype.getPropName()),
-					"Missing entry for ptype %s, name %s, use empty strings if you don't have a plugin",
-					ptype, ptype.getPropName());
-				
 				String classname = props.getProperty(ptype.getPropName());
-				if(classname.strip().length() == 0)
+				if(classname == null || classname.strip().length() == 0)
 					{ continue; }
 				
 				try {

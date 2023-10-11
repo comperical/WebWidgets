@@ -343,6 +343,8 @@ public class FastTest4Basic
 			IMailSender mailtool = PluginCentral.getMailPlugin();
 			Util.pf("Loaded mail plugin %s\n", mailtool.getClass().getName());
 
+			GeneralPlugin general = PluginCentral.getGeneralPlugin();
+			Util.pf("Loaded general plugin %s\n", general.getClass().getName());
 		}
 	}
 	
