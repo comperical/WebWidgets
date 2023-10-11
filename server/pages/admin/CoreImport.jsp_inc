@@ -2,9 +2,6 @@
 <%
     // Important: this file is the CORE imports
     // it can only have includes from NDS and WWIO core
-
-    // TODO: there is a big issue with the HtmlUtil import below, this was not included
-    // as one of the original ports from NDS
 %>
 
 <%@ page isELIgnored="true" %>
@@ -20,16 +17,8 @@
 <%@ page import="net.danburfoot.shared.TimeUtil.*" %>
 
 
-<%@ page import="net.danburfoot.miscutil.HtmlUtil.*" %>
-
-
 <%@ page import="io.webwidgets.core.*" %>
 <%@ page import="io.webwidgets.core.CoreUtil.*" %>
 <%@ page import="io.webwidgets.core.WidgetOrg.*" %>
 <%@ page import="io.webwidgets.core.AuthLogic.*" %>
 <%@ page import="io.webwidgets.core.MailSystem.*" %>
-
-
-<%@ page import="io.webwidgets.extend.*" %>
-<%@ page import="io.webwidgets.extend.DocSystem.*" %>
-<%@ page import="io.webwidgets.extend.ClassicTech.*" %>

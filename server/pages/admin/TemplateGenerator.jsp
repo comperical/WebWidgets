@@ -28,8 +28,6 @@
 
     WidgetItem selectedItem = new WidgetItem(currentUser.get(), argMap.getStr("widget"));
 
-    OptSelector widgetSelect = OptSelector.build(widgetNameList).sortByValue();
-
     Set<String> dbTableNameSet = selectedItem.getDbTableNameSet();
 
     String userHome = Util.sprintf("/%s/index.jsp", currentUser.get());

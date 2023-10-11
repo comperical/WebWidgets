@@ -1,6 +1,10 @@
 <%@include file="CoreImport.jsp_inc" %>
 
+<%@ page import="io.webwidgets.extend.EmailControl" %>
+
 <%
+    // TODO: refactor to remove dependence on EmailControl above
+
     Optional<WidgetUser> currentUser = AuthLogic.getLoggedInUser(request);
 
 
