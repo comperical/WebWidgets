@@ -28,8 +28,6 @@
 
     WidgetItem selectedItem = new WidgetItem(currentUser.get(), argMap.getStr("widget"));
 
-    OptSelector widgetSelect = OptSelector.build(widgetNameList).sortByValue();
-
     Map<String, String> schemaInfo = CoreUtil.getCreateTableMap(selectedItem);
 %>
 

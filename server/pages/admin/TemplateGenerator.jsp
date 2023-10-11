@@ -68,11 +68,28 @@ function changeWidgetSelect()
   submit2Base(subpack);
 }
 
+function redisplay()
+{
+    const widgetnames = ["<%= Util.join(widgetNameList, "\", \"") %>"];
+
+    const optsel = buildOptSelector()
+                        .setKeyList(widgetnames)
+                        .sortByDisplay()
+                        .setOnChange("javascript:changeWidgetSelect()")
+                        .setElementName("widget_selector")
+                        .setSelectedKey("<%= selectedItem.theName %>")
+                        .getSelectString();
+
+    populateSpanData({"widget_select_span" : optsel});
+}
+
+
+
 </script>
   
   
 </head>
-<body>
+<body onload="javascript:redisplay()">
   <div class="container-scroller">
     <!-- partial:partials/_navbar.html -->
     <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
@@ -113,10 +130,8 @@ function changeWidgetSelect()
                   <form class="forms-sample" align="center">
                     <div class="row">    
                     <div class="form-group">
-                      <label>Widget</label>
-                      <select name="widget_selector" onChange="javascript:changeWidgetSelect()">
-                      <%= widgetSelect.getSelectStr(selectedItem.theName) %>
-                      </select>
+                      <label>Widget:</label>
+                      <span id="widget_select_span"></span>
                     </div>
                     </div>
                   </form> 

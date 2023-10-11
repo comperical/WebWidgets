@@ -77,12 +77,6 @@
       return;
     }
 
-    OptSelector widgetSelect = OptSelector.build(widgetNameList).sortByValue();
-
-
-
-
-
     Map<WidgetUser, PermLevel> permInfoMap = selectedPerm.getCorePermMap();
 
     String userHome = Util.sprintf("/%s/index.jsp", currentUser.get());
@@ -145,6 +139,23 @@ function removePerm(grantee)
   }
 }
 
+function redisplay()
+{
+    const widgetnames = ["<%= Util.join(widgetNameList, "\", \"") %>"];
+
+    const optsel = buildOptSelector()
+                        .setKeyList(widgetnames)
+                        .sortByDisplay()
+                        .setOnChange("javascript:changeWidgetSelect()")
+                        .setElementName("widget_selector")
+                        .setSelectedKey("<%= selectedItem.theName %>")
+                        .getSelectString();
+
+    populateSpanData({"widget_select_span" : optsel});
+}
+
+
+
 function togglePublicRead()
 {
   const pubread = <%= selectedPerm.isPublicRead() %>;
@@ -186,7 +197,7 @@ function promptAddPerm(permlevel)
   
   
 </head>
-<body>
+<body onload="javascript:redisplay()">
   <div class="container-scroller">
     <!-- partial:partials/_navbar.html -->
     <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
@@ -229,10 +240,8 @@ function promptAddPerm(permlevel)
                   <form class="forms-sample" align="center">
                     <div class="row">    
                     <div class="form-group">
-                      <label>Widget</label>
-                      <select name="widget_selector" onChange="javascript:changeWidgetSelect()">
-                      <%= widgetSelect.getSelectStr(selectedItem.theName) %>
-                      </select>
+                      <label>Widget:</label>
+                      <span id="widget_select_span"></span>
                     </div>
                     </div>
                   </form> 
