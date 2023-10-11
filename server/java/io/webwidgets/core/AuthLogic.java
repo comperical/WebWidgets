@@ -128,7 +128,7 @@ public class AuthLogic
 	}
 
 
-	private static final Map<WidgetItem, PermInfoPack> _PERMISSION_MAP = Util.treemap();
+	private static Map<WidgetItem, PermInfoPack> _PERMISSION_MAP = null;
 
 	public static synchronized PermInfoPack getPermInfo4Widget(WidgetItem dbitem)
 	{
@@ -147,13 +147,21 @@ public class AuthLogic
 
 	private static void odLoadPermTable()
 	{
-		if(_PERMISSION_MAP.isEmpty())
-			{ reloadPermTable(); }
+		if(_PERMISSION_MAP == null)
+		{ 
+			_PERMISSION_MAP = Util.treemap();
+			loadPermTable(); 
+		}
 	}
 
 	static synchronized void reloadPermTable()
 	{
-		_PERMISSION_MAP.clear();
+		_PERMISSION_MAP = null;
+		odLoadPermTable();
+	}
+
+	private static synchronized void loadPermTable()
+	{
 		QueryCollector qcol = CoreUtil.fullTableQuery(CoreUtil.getMasterWidget(), PERM_GRANT_TABLE);
 
 		for(ArgMap onemap : qcol.recList())
@@ -165,10 +173,10 @@ public class AuthLogic
 			_PERMISSION_MAP.putIfAbsent(dbitem, new PermInfoPack(dbitem));
 			_PERMISSION_MAP.get(dbitem).loadFromRecMap(onemap);
 		}
-
-		Util.massert(!_PERMISSION_MAP.isEmpty(), "We need to have at least one perm entry!!");
-
 	}
+
+
+
 
 	public static synchronized void assignPermToGrantee(WidgetItem dbitem, WidgetUser grantee, PermLevel perm)
 	{
