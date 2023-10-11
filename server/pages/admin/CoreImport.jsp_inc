@@ -1,4 +1,9 @@
 
+<%
+    // Important: this file is the CORE imports
+    // it can only have includes from NDS and WWIO core
+%>
+
 <%@ page isELIgnored="true" %>
 
 <%@ page import="java.io.*" %>
@@ -10,9 +15,6 @@
 <%@ page import="net.danburfoot.shared.CoreDb.*" %>
 <%@ page import="net.danburfoot.shared.CollUtil.*" %>
 <%@ page import="net.danburfoot.shared.TimeUtil.*" %>
-
-<%@ page import="net.danburfoot.miscutil.*" %>
-<%@ page import="net.danburfoot.miscutil.HtmlUtil.*" %>
 
 <%@ page import="io.webwidgets.core.*" %>
 <%@ page import="io.webwidgets.core.CoreUtil.*" %>

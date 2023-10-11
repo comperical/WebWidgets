@@ -347,7 +347,7 @@ function getEditListing()
 
     } else {
 
-        var noteinfo = item.getNotes().replace(/\n/g, "HTML BREAK");
+        var noteinfo = item.getNotes().replace(/\n/g, "<br/>");
 
 
         pageinfo += `

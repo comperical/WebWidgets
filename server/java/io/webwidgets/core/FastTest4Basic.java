@@ -475,11 +475,18 @@ public class FastTest4Basic
 		
 		public void runOp() throws Exception
 		{
+			Set<String> skipset = lookupSkipSet();
+
 			for(ArgMapRunnable amr : getTestList())
 			{
 				if(amr.getClass().getName().contains("UnitTest"))
 					{ continue; }
 
+				if(skipset.contains(amr.getClass().getSimpleName()))
+				{ 
+					Util.pf("Skipping test %s\n", amr.getClass().getSimpleName()); 
+					continue;
+				}
 				
 
 				Util.pf("Running test: %s\n", amr.getClass().getSimpleName());
@@ -488,6 +495,17 @@ public class FastTest4Basic
 			}
 		}
 		
+		private Set<String> lookupSkipSet()
+		{
+
+			if(!_argMap.containsKey("skipset"))
+				{ return Util.setify(); }
+
+			return Util.setify(_argMap.getStr("skipset").split(","));
+
+		}
+
+
 		@SuppressWarnings( "deprecation" )
 		public List<ArgMapRunnable> getTestList()
 		{

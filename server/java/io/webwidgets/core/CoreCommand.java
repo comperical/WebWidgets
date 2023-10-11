@@ -518,7 +518,7 @@ public class CoreCommand
 			GlobalIndex.clearUserIndexes();
 			createUserDir(username);
 			
-			mypf("Added master record for user %s. This script no longer sets password, use %s to do so", 
+			mypf("Added master record for user %s. This script no longer sets password, use %s to do so\n", 
 				username, UpdateUserPassWord.class.getSimpleName());
 		}
 
