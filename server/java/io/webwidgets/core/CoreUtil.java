@@ -37,13 +37,18 @@ public class CoreUtil
 		BASE_WIDGET_NAME
 	);
 
-	private static String getSubDirectory(String basedir, String kidname)
+	static String getSubDirectory(String basedir, String kidname)
 	{
 		return getSubDirectory(basedir, kidname, 0);
 	}
 
 	// Simple path manipulation, attempting to be friendly to Windows or others with non-standard path separator
-	private static String getSubDirectory(String basedir, String kidname, int removelast)
+	static String getSubDirectory(String basedir, String kidname, int removelast)
+	{
+		return composeSubDirectory(basedir, removelast, kidname);
+	}
+
+	static String composeSubDirectory(String basedir, int removelast, String... extrapath)
 	{
 		String charsep = ""+File.separatorChar;
 
@@ -56,10 +61,14 @@ public class CoreUtil
 		for(int i : Util.range(removelast))
 			{ tokens.pollLast();} 
 
-		tokens.add(kidname);
+		for(String kidname : extrapath)
+			{ tokens.add(kidname); }
+
 		return Util.join(tokens, charsep);
 	}
 
+
+	public static final String REPO_BASE_DIRECTORY = composeSubDirectory(WWIO_BASE_CONFIG_DIR, 3);
 
 	// The directory for Widgets CODE and DATA/DB
 	// These are PEERS of the main WWIO repo
@@ -69,6 +78,7 @@ public class CoreUtil
 	public static final String WIDGET_DB_DIR = getSubDirectory(WWIO_BASE_CONFIG_DIR, "db4widget", 4);
 
 	public static final String GALLERY_CODE_DIR = getSubDirectory(WWIO_BASE_CONFIG_DIR, "gallery", 3);
+	
 
 	public static final String DEMO_DATA_DIR = getSubDirectory(WWIO_BASE_CONFIG_DIR, "demodata", 3);
 

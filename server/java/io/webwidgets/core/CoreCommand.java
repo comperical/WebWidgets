@@ -1412,6 +1412,53 @@ public class CoreCommand
 						ShowBaseConfigInfo.class.getSimpleName());
 		}
 	}
+
+	public static class CopySharedCodeFromRepo extends ArgMapRunnable
+	{
+		public void runOp() throws IOException
+		{
+
+			{
+				File cssrepo = new File(CoreUtil.getSubDirectory(CoreUtil.WWIO_BASE_CONFIG_DIR, "css", 3));
+				shallowDirectoryCopy(cssrepo, CoreUtil.SHARED_CSS_ASSET_DIR);
+			}
+
+			{
+				File repodir = new File(CoreUtil.getSubDirectory(CoreUtil.WWIO_BASE_CONFIG_DIR, "jslib", 3));
+				shallowDirectoryCopy(repodir, CoreUtil.SHARED_JSLIB_ASSET_DIR);
+			}
+
+			{
+				File admindir = new File(CoreUtil.composeSubDirectory(CoreUtil.REPO_BASE_DIRECTORY, 0, "server", "pages", "admin"));
+				shallowDirectoryCopy(admindir, new File(CoreUtil.WIDGET_ADMIN_DIR));
+			}
+		}
+
+		private static void shallowDirectoryCopy(File srcdir, File dstdir) throws IOException
+		{
+			Util.massert(srcdir.exists() && srcdir.isDirectory(), "Problem with source directory %s", srcdir);
+
+			if(!dstdir.exists())
+			{
+				dstdir.mkdirs();
+				Util.pf("Created directory %s\n", dstdir.getAbsolutePath());
+			}
+
+
+			for(File srcfile : srcdir.listFiles())
+			{
+				if(srcfile.isDirectory())
+				{
+					Util.pferr("**Warning**, found subdirectory %s, this operation is just a shallow copy", srcfile);
+					continue;
+				}
+
+				File dstfile = new File(Util.join(Util.listify(dstdir.getAbsolutePath(), srcfile.getName()), File.separator));
+	            Files.copy(srcfile.toPath(), dstfile.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+	            Util.pf("Copied file %s -> %s\n", srcfile.getAbsolutePath(), dstfile.getAbsolutePath());
+			}
+		}
+	}
 }
 
 
