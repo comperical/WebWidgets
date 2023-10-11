@@ -2,8 +2,6 @@
 
 <%@include file="CoreImport.jsp_inc" %>
 
-<%@ page import="io.webwidgets.extend.VimsExtension" %>
-
 <%
 	ArgMap argMap = WebUtil.getArgMap(request);
 
@@ -14,16 +12,13 @@
 	// If the user has logged in another tab, don't require re-login.
 	if(optBounceBack.isPresent())
 	{
-		// If we see a VIMS URL, we bounce to the special purpose VIMS login
-		// In the future, this needs to be a general call to a base-package method
-		// Cannot be using calls to extension code here
+		// Handle special login logic. This forwards to a special URL
+		// For this behavior to be enabled, the special plugin must be configured properly
+		Optional<String> optLogin = PluginCentral.getGeneralPlugin().getSpecialLoginUrl(optBounceBack.get());
+		if(optLogin.isPresent())
 		{
-			Optional<String> optVims = VimsExtension.optGetVimsLogin(optBounceBack.get());
-			if(optVims.isPresent())
-			{
-				response.sendRedirect(optVims.get());
-				return;
-			}
+			response.sendRedirect(optLogin.get());
+			return;
 		}
 
 		// Careful, not all URLs can be mapped to a specific Widget
