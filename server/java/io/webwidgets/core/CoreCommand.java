@@ -1238,10 +1238,16 @@ public class CoreCommand
 				"This tool is mainly used in setting up the demo server, to confirm that the full system is working\n";
 		}
 
-		public void runOp()
+		public void runOp() throws IOException
 		{
 			WidgetUser user = WidgetUser.valueOf(_argMap.getStr("username"));
 			WidgetItem item = new WidgetItem(user, _argMap.getStr("widgetname"));
+
+			if(item.theName.equals("base"))
+			{
+				copyStarterIndex(user);
+				return;
+			}
 
 
 			Util.massert(!item.dbFileExists(), "Already have DB file for widget %s", item);
@@ -1256,6 +1262,19 @@ public class CoreCommand
 
 			// Import the code from the Gallery
 			runCodeImport(item);
+		}
+
+
+		private static void copyStarterIndex(WidgetUser user) throws IOException
+		{
+			File srcpath = new File(CoreUtil.getSubDirectory(CoreUtil.GALLERY_CODE_DIR, "StarterIndex.jsp"));
+			Util.massert(srcpath.exists(), "Starter Index file %s not found in repo gallery, expected at %s", srcpath);
+
+			File dstpath = new File(CoreUtil.getSubDirectory(user.getUserBaseDir().getAbsolutePath(), "index.jsp"));
+			Util.massert(!dstpath.exists(), "Already have index file for user %s", dstpath);
+
+            java.nio.file.Files.copy(srcpath.toPath(), dstpath.toPath());
+            Util.pf("Copied starter index file to %s\n", dstpath);
 		}
 
 		private static void runCodeImport(WidgetItem item)
