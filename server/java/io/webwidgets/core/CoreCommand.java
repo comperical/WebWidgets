@@ -470,23 +470,36 @@ public class CoreCommand
 		{
 			WidgetUser wuser = WidgetUser.valueOf(_argMap.getStr("username"));
 			
-			Console console = System.console();
-			Util.massert(console != null, "Somehow failed to get a console instance");
-			
-			char[] passwordArray = console.readPassword("Enter your secret password: ");
-			String acchash = AuthLogic.canonicalHash(new String(passwordArray)).toLowerCase();
+			String acchash = AuthLogic.canonicalHash(getNewPass()).toLowerCase();
 			
 			wuser.hardPasswordUpdate(acchash);
 
 			Util.pf("Updated password for user %s, now run %s to confirm password\n",
-				wuser, CheckUserPassword.class.getSimpleName());			
+				wuser, CheckUserPassword.class.getSimpleName());
 			
 			Util.pf("Remember to restart web server to pick up new password data\n");
+		}
+
+		// Prompt the user for new password, or take directly from command line argument, in insecure mode
+		private String getNewPass()
+		{
+			if(_argMap.containsKey("directpass"))
+			{
+				Util.massert(CoreUtil.allowInsecureConnection(), "This command line option is only allowed in insecure mode");
+				Util.pf("**Warning**, setting password directly based on command line argument, this may be insecure");
+				return _argMap.getStr("directpass");
+			}
+
+			Console console = System.console();
+			Util.massert(console != null, "Somehow failed to get a console instance");
+			
+			char[] passwordArray = console.readPassword("Enter your secret password: ");
+			return new String(passwordArray);
 		}
 		
 		private int lookupUserId(WidgetUser wuser)
 		{
-			WidgetItem master = CoreUtil.getMasterWidget();		
+			WidgetItem master = CoreUtil.getMasterWidget();
 			QueryCollector qcol = QueryCollector.buildAndRun(
 				Util.sprintf("SELECT id FROM user_main WHERE username = '%s'", wuser), master);
 			int userid = qcol.getSingleArgMap().getSingleInt();			
