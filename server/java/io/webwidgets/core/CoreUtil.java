@@ -113,9 +113,11 @@ public class CoreUtil
 	public static File INSECURE_ALLOW_FILE = new File(getSubDirectory(WWIO_MISC_DATA_DIR, "ALLOW_INSECURE.txt"));
 
 
-
 	public static final File SHARED_CSS_ASSET_DIR = (new WidgetItem(WidgetUser.buildBackDoorSharedUser(), "css")).getWidgetBaseDir();
 	public static final File SHARED_JSLIB_ASSET_DIR = (new WidgetItem(WidgetUser.buildBackDoorSharedUser(), "jslib")).getWidgetBaseDir();
+	public static final File SHARED_IMAGE_ASSET_DIR = (new WidgetItem(WidgetUser.buildBackDoorSharedUser(), "image")).getWidgetBaseDir();
+
+
 
 	static final String MASTER_WIDGET_NAME = "master";
 

@@ -1468,6 +1468,11 @@ public class CoreCommand
 			}
 
 			{
+				File repodir = new File(CoreUtil.getSubDirectory(CoreUtil.WWIO_BASE_CONFIG_DIR, "image", 3));
+				shallowDirectoryCopy(repodir, CoreUtil.SHARED_IMAGE_ASSET_DIR);
+			}
+
+			{
 				File admindir = new File(CoreUtil.composeSubDirectory(CoreUtil.REPO_BASE_DIRECTORY, 0, "server", "pages", "admin"));
 				shallowDirectoryCopy(admindir, new File(CoreUtil.WIDGET_ADMIN_DIR));
 			}
