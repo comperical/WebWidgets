@@ -38,7 +38,7 @@ def get_curl_command(jaritem):
 	destination = get_jar_destination(jaritem)
 
 	curlcall = f"""
-		curl {jarurl} -o {destination}
+		curl {jarurl} -o {destination} --silent
 	"""
 
 	return curlcall

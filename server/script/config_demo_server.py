@@ -132,7 +132,7 @@ def create_web_inf_link():
 def grab_and_expand_resin():
 
     resinzip = os.path.sep.join([UTIL.get_working_dir(), "resin.zip"])
-    curlcall = f"curl {FREE_RESIN_URL} -o {resinzip}"
+    curlcall = f"curl {FREE_RESIN_URL} -o {resinzip} --silent"
     os.system(curlcall)
 
     unzipcall = f"unzip {resinzip} -d {UTIL.get_working_dir()}"
