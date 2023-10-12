@@ -1398,9 +1398,7 @@ public class CoreCommand
 			} else {
 
 				// Use this for skipping the user prompt
-				boolean fastconfirm = _argMap.getBit("fastconfirm", false);
-
-				if(fastconfirm || Util.checkOkay("This will configure the server to allow insecure connections, okay? "))
+				if(confirmAllow())
 				{
 					FileUtils.getWriterUtil().setFile(CoreUtil.INSECURE_ALLOW_FILE).writeLineListE(Util.listify(""+true));
 					Util.pf("Marked allow insecure\n");
@@ -1412,6 +1410,15 @@ public class CoreCommand
 
 			Util.pf("Setting toggled, run %s to confirm setting, you must restart server to pick up the config change\n", 
 						ShowBaseConfigInfo.class.getSimpleName());
+		}
+
+		private boolean confirmAllow()
+		{
+			boolean fastconfirm = _argMap.getBit("fastconfirm", false);
+			if(fastconfirm)
+				{ return true; }
+
+			return Util.checkOkay("This will configure the server to allow insecure connections, okay? ");
 		}
 	}
 
