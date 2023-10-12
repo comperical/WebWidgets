@@ -1397,8 +1397,10 @@ public class CoreCommand
 				Util.pf("Cleared insecure-allow file, this will reset to no-insecure config\n");
 			} else {
 
+				// Use this for skipping the user prompt
+				boolean fastconfirm = _argMap.getBit("fastconfirm", false);
 
-				if(Util.checkOkay("This will configure the server to allow insecure connections, okay? "))
+				if(fastconfirm || Util.checkOkay("This will configure the server to allow insecure connections, okay? "))
 				{
 					FileUtils.getWriterUtil().setFile(CoreUtil.INSECURE_ALLOW_FILE).writeLineListE(Util.listify(""+true));
 					Util.pf("Marked allow insecure\n");

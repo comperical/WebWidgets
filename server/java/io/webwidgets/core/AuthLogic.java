@@ -106,7 +106,6 @@ public class AuthLogic
 	}
 	
 	// NB this must match the JavaScript implementation.
-	// This is NEVER used except when setting up new users accounts!!!
 	public static String canonicalHash(String input) 
 	{
 		return standardShaHash(WIDGET_PASSWORD_SALT + input);
