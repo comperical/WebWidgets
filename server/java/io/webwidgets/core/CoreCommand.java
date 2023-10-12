@@ -486,7 +486,7 @@ public class CoreCommand
 			if(_argMap.containsKey("directpass"))
 			{
 				Util.massert(CoreUtil.allowInsecureConnection(), "This command line option is only allowed in insecure mode");
-				Util.pf("**Warning**, setting password directly based on command line argument, this may be insecure");
+				Util.pf("**Warning**, setting password directly based on command line argument, this may be insecure\n");
 				return _argMap.getStr("directpass");
 			}
 
@@ -1428,16 +1428,8 @@ public class CoreCommand
 				CoreUtil.INSECURE_ALLOW_FILE.delete();
 				Util.pf("Cleared insecure-allow file, this will reset to no-insecure config\n");
 			} else {
-
-				// Use this for skipping the user prompt
-				if(confirmAllow())
-				{
-					FileUtils.getWriterUtil().setFile(CoreUtil.INSECURE_ALLOW_FILE).writeLineListE(Util.listify(""+true));
-					Util.pf("Marked allow insecure\n");
-				} else {
-					Util.pf("Aborting\n");
-					return;
-				}
+				FileUtils.getWriterUtil().setFile(CoreUtil.INSECURE_ALLOW_FILE).writeLineListE(Util.listify(""+true));
+				Util.pf("Marked allow insecure, do not run in prod!\n");
 			}
 
 			Util.pf("Setting toggled, run %s to confirm setting, you must restart server to pick up the config change\n", 
