@@ -1427,8 +1427,15 @@ public class CoreCommand
 				CoreUtil.INSECURE_ALLOW_FILE.delete();
 				Util.pf("Cleared insecure-allow file, this will reset to no-insecure config\n");
 			} else {
-				FileUtils.getWriterUtil().setFile(CoreUtil.INSECURE_ALLOW_FILE).writeLineListE(Util.listify(""+true));
-				Util.pf("Marked allow insecure, do not run in prod!\n");
+
+				if(confirmAllow())
+				{
+					FileUtils.getWriterUtil().setFile(CoreUtil.INSECURE_ALLOW_FILE).writeLineListE(Util.listify(""+true));
+					Util.pf("Marked allow insecure, do not run in prod!\n");
+				} else {
+					Util.pf("Aborting\n");
+					return;
+				}
 			}
 
 			Util.pf("Setting toggled, run %s to confirm setting, you must restart server to pick up the config change\n", 
