@@ -53,6 +53,9 @@ def find_resin_dir():
 def get_jar_file_dir():
 	return os.path.sep.join([get_working_dir(), "jarfiles"])
 
+def get_misc_data_dir():
+	return os.path.sep.join([get_working_dir(), "miscdata"])
+
 def get_java_class_dir():
 	return os.path.sep.join([get_working_dir(), "jclass"])
 

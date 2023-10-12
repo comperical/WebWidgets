@@ -100,9 +100,7 @@ def write_resin_xml():
 
 def create_main_dir_layout():
 
-
-
-    dirlist = [UTIL.get_widget_code_dir(), UTIL.get_web_inf_dir(), UTIL.get_widget_db_dir()]
+    dirlist = [UTIL.get_widget_code_dir(), UTIL.get_web_inf_dir(), UTIL.get_widget_db_dir(), UTIL.get_misc_data_dir()]
     for onedir in dirlist:
         if not os.path.exists(onedir):
             print(f"Creating directory {onedir}")

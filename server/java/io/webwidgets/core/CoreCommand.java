@@ -1422,7 +1422,6 @@ public class CoreCommand
 		public void runOp()
 		{
 			boolean allowins = CoreUtil.allowInsecureConnection();
-
 			if(allowins)
 			{
 				CoreUtil.INSECURE_ALLOW_FILE.delete();
