@@ -9,7 +9,7 @@ import utility as UTIL
 
 # FREE_RESIN_URL = "https://caucho.com/download/resin-4.0.66.zip"
 
-FREE_RESIN_URL = "https://s3.amazonaws.com/AozoraCrm/userdata/crm/p3software/download/resin-4.0.39.zip"
+FREE_RESIN_URL = "https://s3.amazonaws.com/AozoraCrm/userdata/crm/p3software/download/resin-4.0.66.zip"
 
 def get_resin_config_xml():
 
