@@ -34,32 +34,6 @@ public class MailSystem {
         " subject varchar(100), email_content varchar(1000), is_text smallint, primary key(id))";
 
 
-    // Need a lot of hacks here to get around the fact that this class should really be in the extensions package
-    // But the magic is tested by unit tests, don't freak out
-    @SuppressWarnings("deprecation")
-    static BiFunction<ValidatedEmail, WidgetUser, String> getEmailComposeLink()
-    {
-        try {
-            String clazz = "io.webwidgets.extend.EmailControl$ControlLinkWrapper";
-            return Util.cast(Class.forName(clazz).newInstance());
-        } catch (Exception ex) {
-            throw new RuntimeException("Reflection magic failed!!");
-        }
-    }
-
-    // Need a lot of hacks here to get around the fact that this class should really be in the extensions package
-    // But the magic is tested by unit tests, don't freak out
-    @SuppressWarnings("deprecation")
-    static BiFunction<ValidatedEmail, WidgetUser, Boolean> getEmailControlSend()
-    {
-        try {
-            String clazz = "io.webwidgets.extend.EmailControl$ControlSendWrapper";
-            return Util.cast(Class.forName(clazz).newInstance());
-        } catch (Exception ex) {
-            throw new RuntimeException("Reflection magic failed!!");
-        }
-    }
-
     public static Optional<String> checkForEmailError(LiteTableInfo tableInfo, ArgMap argmap)
     {
         // It's not a mail box widget, skip it
@@ -84,7 +58,9 @@ public class MailSystem {
         }
 
         ValidatedEmail valid = ValidatedEmail.from(recipient);
-        boolean sendOkay = getEmailControlSend().apply(valid, tableInfo.dbTabPair._1.theOwner);
+        boolean sendOkay = PluginCentral.getMailPlugin().allowEmailSend(valid, tableInfo.dbTabPair._1.theOwner);
+        // boolean sendOkay = getEmailControlSend().apply(valid, tableInfo.dbTabPair._1.theOwner);
+
         if (!sendOkay) 
         {
             // Skip the check for this user.
@@ -107,8 +83,10 @@ public class MailSystem {
 
     public static String composeUnsubFooter(WidgetUser sender, ValidatedEmail email)
     {
-        String controlpage = getEmailComposeLink().apply(email, sender);
-
+        // Does this need to be the entire footer...?
+        // If someone has setup their own open-core version, 
+        // then they probably don't want it to be listed as from WebWidgets.io
+        String controlpage = PluginCentral.getMailPlugin().getEmailControlUrl(email, sender);
         String s = String.format("<p>This message was sent from WebWidgets.IO on behalf of user %s. ", sender);
         s += String.format("To unsubscribe, click <a href=\"%s\">here</a></p>", controlpage);
         return s;
@@ -193,9 +171,7 @@ public class MailSystem {
 
         public boolean checkSendOkay()
         {
-            boolean okay = getEmailControlSend().apply(recipEmail, theOwner);
-            return okay;
-
+            return PluginCentral.getMailPlugin().allowEmailSend(recipEmail, theOwner);
         }
     }
 

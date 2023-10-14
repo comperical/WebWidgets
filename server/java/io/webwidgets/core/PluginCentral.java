@@ -27,9 +27,23 @@ public class PluginCentral
 	}
 	
 
+	// Get extensions to the Admin sidebar
+	public static interface IAdminExtension
+	{
+		public String getExtendedSideBar(Optional<WidgetUser> user);
+	}
+
     public interface IMailSender
     {
         public <T extends Comparable<T>> void sendMailPackage(Map<T, WidgetMail> mailmap, Consumer<T> onSuccess) throws Exception;
+    
+
+        // Is the given User allowed to send email to the given address?
+        public boolean allowEmailSend(ValidatedEmail email, WidgetUser sender);
+
+        // Return a URL that will be inserted into the footer of the email, to allow
+        // the user to control email settings.
+        public String getEmailControlUrl(ValidatedEmail email, WidgetUser sender);
     }
 
 	public static IMailSender getMailPlugin()
@@ -64,6 +78,11 @@ public class PluginCentral
 		return Util.cast(getPluginSub(PluginType.general, GeneralPlugin.class));
 	}
 
+	public static IAdminExtension getAdminExtensionTool()
+	{
+		return getGeneralPlugin().getAdminExtensionTool();
+	}
+
 	/**
 	 * Catchall plugin for all of the odds and ends, small custom features
 	 * that do not fit cleanly into other areas
@@ -75,6 +94,11 @@ public class PluginCentral
 		public Optional<String> getSpecialLoginUrl(String requesturl)
 		{
 			return Optional.empty();
+		}
+
+		public IAdminExtension getAdminExtensionTool()
+		{
+			return s -> "";
 		}
 	}
 	

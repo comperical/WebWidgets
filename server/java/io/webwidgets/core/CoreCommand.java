@@ -939,7 +939,7 @@ public class CoreCommand
 			
 			Util.pf("Problems detected on operation, see above\n");
 		}
-	}    	
+	}
 
 
 	public static class ArchiveDb2Cloud extends ArgMapRunnable implements HasDescription, CrontabRunnable
@@ -967,6 +967,9 @@ public class CoreCommand
 				{
 					File localdb = dbitem.getLocalDbFile();
 					File archfile = getDbArchiveFile(dbitem, dc);
+
+					// This uploads the local file to a DIFFERENT target path on the blob storage
+					// This is necessary for backup, since we want to keep many days worth of backups
 					PluginCentral.getStorageTool().uploadLocalToTarget(localdb, archfile);
 				}
 			}
@@ -976,7 +979,7 @@ public class CoreCommand
 		// It is just a coordinate that gets passed to the blob storage
 		private static File getDbArchiveFile(WidgetItem dbitem, DayCode dc)
 		{
-			String localpath = Util.sprintf("%s/%s/%s/%s", CoreUtil.DB_ARCHIVE_DIR, 
+			String localpath = Util.sprintf("%s/%s/%s/%s", CoreUtil.DB_ARCHIVE_VDIR, 
 				dc, dbitem.theOwner, dbitem.getLocalDbFile().getName());
 
 			return new File(localpath);

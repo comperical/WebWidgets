@@ -77,6 +77,11 @@ public class CoreUtil
 	public static final String WIDGET_CODE_DIR = getSubDirectory(WWIO_BASE_CONFIG_DIR, "widgetserve", 4);
 	public static final String WIDGET_DB_DIR = getSubDirectory(WWIO_BASE_CONFIG_DIR, "db4widget", 4);
 
+
+	// This is a VIRTUAL path - we do not typically create files in this path.
+	// Instead, paths under this directory are sent to the blob storage tool for archival/backup purposes
+	public static final String DB_ARCHIVE_VDIR = getSubDirectory(WWIO_BASE_CONFIG_DIR, "dbarchive", 3);
+
 	public static final String GALLERY_CODE_DIR = getSubDirectory(WWIO_BASE_CONFIG_DIR, "gallery", 3);
 	
 
@@ -103,10 +108,6 @@ public class CoreUtil
 
 	// TODO: need to rationalize this. The BlobStorageManager should probably use a workdir directory
 	public static final String WWIO_BLOB_BASE_DIR = "/opt/rawdata/wwio/blob";
-
-		
-	public static final String DB_ARCHIVE_DIR = "/opt/userdata/lifecode/datadir/dbarchive";
-	
 
 	public static File MAINTENANCE_MODE_FILE = new File(getSubDirectory(WWIO_MISC_DATA_DIR, "MAINTENANCE_MODE_MARKER.txt"));
 
@@ -496,24 +497,6 @@ public class CoreUtil
 		
 		char c = word.charAt(0);
 		return (""+c).toUpperCase() + word.substring(1);
-	}
-	
-	
-	public static interface IAdminExtension
-	{
-		public String getExtendedSideBar(Optional<WidgetUser> user);
-	}
-	
-	
-	public static IAdminExtension getAdminExtensionTool()
-	{
-		try {
-			Class<?> blobclass = Class.forName("io.webwidgets.extend.AdminExtender");
-			return Util.cast(blobclass.getDeclaredConstructor().newInstance()); 
-		} catch (Exception ex) {
-			throw new RuntimeException("Misconfiguration error when loading admin extension plugin " + ex.getMessage());
-		}
-
 	}
 	
 	public enum MasterTable

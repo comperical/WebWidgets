@@ -747,31 +747,6 @@ public class FastTest4Basic
 			return DB_CHORE_WIDGET;
 		}
 	}
-
-	public static class EmailComposeLinkMagic extends DescRunnable
-	{
-		public String getDesc()
-		{
-			return "Test that the reflection magic works";
-		}
-
-		public void runOp()
-		{
-			{
-				BiFunction<ValidatedEmail, WidgetUser, String> myfunc = MailSystem.getEmailComposeLink();
-				String result = myfunc.apply(ValidatedEmail.from("daniel.burfoot@gmail.com"), getTestDburfootUser());
-				Util.pf("Result is %s\n", result);
-			}
-
-
-			{
-				BiFunction<ValidatedEmail, WidgetUser, Boolean> myfunc = MailSystem.getEmailControlSend();
-				boolean result = myfunc.apply(ValidatedEmail.from("daniel.burfoot@gmail.com"), getTestDburfootUser());
-				Util.pf("Result is %s\n", result);
-			}
-		}
-
-	}
 	
 	public static class Base64EncodeTest extends DescRunnable
 	{
