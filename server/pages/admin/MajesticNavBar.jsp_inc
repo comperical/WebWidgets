@@ -69,7 +69,7 @@
           </li>
 
 
-          <%= CoreUtil.getAdminExtensionTool().getExtendedSideBar(currentUser) %>
+          <%= PluginCentral.getAdminExtensionTool().getExtendedSideBar(currentUser) %>
 
         </ul>
       </nav>

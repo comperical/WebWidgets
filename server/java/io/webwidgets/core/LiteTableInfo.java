@@ -110,15 +110,16 @@ public class LiteTableInfo
 				
 		dbTabPair = Pair.build(new WidgetItem(wowner, wname), table);
 		
-		
+		// TODO: need to document the assumptions made regarding the table names
+		// If we are really requiring all table names to be lowercase, we'd better check that on DB upload
 		Util.massert(table.length() > 0, "Empty table name");
 		Util.massert(table.toLowerCase().equals(table),
 			"Table names should be lower case");
 		
 		// Util.pf("%s\n", dbTabPair);
-		String basic = getBasicName();	
-		_noDataMode = false;	
-	}		
+		String basic = getBasicName();
+		_noDataMode = false;
+	}
 
 	public void runSetupQuery()
 	{

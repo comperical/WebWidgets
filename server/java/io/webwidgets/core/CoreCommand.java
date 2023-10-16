@@ -891,56 +891,6 @@ public class CoreCommand
 		}
 	}
 
-	public static class GoogleSyncAdmin extends DescRunnable
-	{
-
-		protected boolean opSuccess = false;
-
-		public String getDesc()
-		{
-			return 
-				"Run the Google Sync operation from the command line\n" + 
-				"This calls the Python script as a system call\n" + 
-				"Forwards any error information to the console\n";
-		}
-
-		protected WidgetItem getDbItem() 
-		{
-			WidgetUser user = WidgetUser.valueOf(_argMap.getStr("username"));
-			String widgetname = _argMap.getStr("widgetname");
-			return new WidgetItem(user, widgetname);
-		}
-
-		public void runOp()
-		{
-			WidgetItem witem = getDbItem();
-			Util.massert(witem.getLocalDbFile().exists(), "Widget %s does not exist", witem);
-
-			Map<Boolean, List<String>> result = GoogleSyncUtil.googleSyncWrapper(witem);
-			
-			for(boolean isout : result.keySet())
-			{
-				Util.pf("%s::\n", isout ? "OUT" : "ERR");
-				
-				List<String> output = result.get(isout);
-				
-				for(String out : output) 
-					{ Util.pf("\t%s\n", out); }
-				
-				if(isout)
-					{ opSuccess = Util.countPred(output, ln -> ln.contains("SUCCESS")) > 0;} 
-			}
-			
-			if(opSuccess)
-			{
-				Util.pf("Operation apparently worked, see above\n");
-				return;
-			}
-			
-			Util.pf("Problems detected on operation, see above\n");
-		}
-	}
-
 
 	public static class ArchiveDb2Cloud extends ArgMapRunnable implements HasDescription, CrontabRunnable
 	{

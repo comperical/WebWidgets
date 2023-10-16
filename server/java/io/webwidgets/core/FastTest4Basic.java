@@ -724,30 +724,6 @@ public class FastTest4Basic
 		}
 	}
 
-	public static class GoogleSyncTest extends CoreCommand.GoogleSyncAdmin
-	{
-		WidgetItem DB_CHORE_WIDGET = new WidgetItem(getTestDburfootUser(), "chores");
-
-		public String getDesc()
-		{
-			return 
-				"Test version of the GoogleSyncAdmin\n" + 
-				"Uploads the Widget " + DB_CHORE_WIDGET;
-		}
-
-		public void runOp()
-		{
-			super.runOp();
-			Util.massert(opSuccess, "Sync operation failed");
-		}	
-
-		@Override
-		public WidgetItem getDbItem()
-		{
-			return DB_CHORE_WIDGET;
-		}
-	}
-	
 	public static class Base64EncodeTest extends DescRunnable
 	{
 		public String getDesc()
@@ -777,9 +753,8 @@ public class FastTest4Basic
 
 	public static class PingWwioSite extends DescRunnable
 	{
-
 		public String getDesc()
-		{	
+		{
 			return "Just ping the WWIO site, get a simple page";
 		}
 
@@ -817,7 +792,6 @@ public class FastTest4Basic
 				// "/u/admin/GoogleSyncMain.jsp"
 			);
 		}
-
 	}
 	
 	public static class TestLoadPluginInfo extends DescRunnable

@@ -44,14 +44,14 @@ public class CallBack2Me extends HttpServlet
 	}
 	
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
-	{		
+	{
 		doBoth(request, response);
 	}
 	
 	public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
-	{		
+	{
 		doBoth(request, response);
-	}	
+	}
 	
 	private void doBoth(HttpServletRequest request, HttpServletResponse response)
 	throws ServletException, IOException
