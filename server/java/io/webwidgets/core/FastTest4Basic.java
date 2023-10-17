@@ -156,6 +156,33 @@ public class FastTest4Basic
 	}
 
 
+	public static class MailboxConfigurationTest extends DescRunnable
+	{
+
+		public String getDesc()
+		{
+			return "If the installation has any mailbox-enabled users, it must have a valid Mail Sender plugin";
+		}
+
+		public void runOp()
+		{
+			List<WidgetUser> mailuser = Util.filter2list(WidgetUser.values(), wuser -> MailSystem.userHasMailBox(wuser));
+			if(mailuser.isEmpty())
+			{
+				Util.pf("No mailboxes detected, quitting\n");
+				return;
+			}
+
+			Util.massert(PluginCentral.havePlugin(PluginType.mail_sender),
+				"Error: found %d mail-enabled users, but no Mailbox plugin is configured for this installation", mailuser.size());
+
+			IMailSender plugin = PluginCentral.getMailPlugin();
+
+			Util.pf("Success, have %d mailbox users with mail plugin %s\n", mailuser.size(), plugin.getClass().getName());
+		}
+
+	}
+
 	public static class TestWuserDataLoad extends ArgMapRunnable
 	{
 
