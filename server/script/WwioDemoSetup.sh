@@ -1,5 +1,16 @@
 #!/bin/bash
 
+# This script installs and sets up the WWIO demo server
+# It should get the server to the point where it can be used in demo mode
+# The demo server uses the community version of Resin (http://www.caucho.com)
+# But this codebase should work with any JSP/Java-compliant app server, such as Tomcat
+# Important: this script puts the server in non-secure mode to allow testing without configuring SSL
+# Obviously, you should put it into secure mode and turn on SSL for production use
+# The WWIO code is intended to be used with minimal configuration
+# After running this script, you should be able to access http://YOUR_HOST_NAME/u/testuser/index.jsp
+# And be able to view and edit some basic Widgets (chores, links, etc)
+
+
 # Create sub directory /opt/userdata
 sudo mkdir /opt/userdata
 
