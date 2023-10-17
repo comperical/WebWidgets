@@ -510,6 +510,10 @@ public class CoreUtil
 			"CREATE TABLE email_control (id int, address varchar(100), sender varchar(30), priority int, " + 
 			"status varchar(10), timestamp_utc varchar(10), notes varchar(100), primary key(id))"
 		),
+
+		system_setting(
+			"CREATE TABLE system_setting (id int, key_str varchar(100), val_str varchar(100), primary key(id), unique(key_str))"
+		),
 		
 		perm_grant(
 			"CREATE TABLE perm_grant (id int, owner varchar(100), widget_name varchar(100), " + 

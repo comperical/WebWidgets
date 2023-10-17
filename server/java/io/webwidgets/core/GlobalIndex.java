@@ -10,10 +10,11 @@ import java.time.LocalDate;
 
 import net.danburfoot.shared.Util;
 import net.danburfoot.shared.ArgMap;
+
 import net.danburfoot.shared.CoreDb.QueryCollector;
 
 import io.webwidgets.core.WidgetOrg.*;
-
+import io.webwidgets.core.CoreUtil.MasterTable;
 
 public class GlobalIndex
 {
@@ -27,7 +28,9 @@ public class GlobalIndex
     // Other than lookup from this map
     private static Map<String, WidgetUser> _LOOKUP_MAP;
 
-    
+    private static Map<String, String> _SYSTEM_SETTING;
+
+    // TODO: these should be unmodifiable maps, right...?
     static synchronized Map<String, ArgMap> getMasterData()
     {
         onDemandLoadIndexes();
@@ -40,14 +43,20 @@ public class GlobalIndex
         return _LOOKUP_MAP;
     }
     
+    public static Map<String, String> getSystemSetting()
+    {
+        onDemandLoadIndexes();
+        return Collections.unmodifiableMap(_SYSTEM_SETTING);
+    }
+
     public static int getMasterSize()
     {
-        return getMasterData().size();  
+        return getMasterData().size();
     }
     
     public static long getMasterRefreshTime()
     {
-        return _REFRESH_TIMESTAMP;  
+        return _REFRESH_TIMESTAMP;
     }
     
     // Need to open this up so we can reset from the WebApp
@@ -56,6 +65,10 @@ public class GlobalIndex
         _MASTER_DATA = null;
             
         _LOOKUP_MAP = null;
+
+        _SYSTEM_SETTING = null;
+
+        PluginCentral.clearIndex();
     }
 
     private static synchronized void onDemandLoadIndexes()
@@ -65,15 +78,21 @@ public class GlobalIndex
         if(_MASTER_DATA == null)
         {
             WidgetItem loadmaster = getLoadOnlyMaster();
-            QueryCollector qcol = QueryCollector.buildAndRun("SELECT * FROM user_main", loadmaster);
-            _MASTER_DATA = Util.map2map(qcol.recList(), amap -> amap.getStr("username"), amap -> amap);
-            
-            // This is the only place where we call new WidgetUser()!!!!
-            _LOOKUP_MAP = Util.map2map(_MASTER_DATA.keySet(), uname -> uname, uname -> new WidgetUser(uname));
+            {
+                QueryCollector qcol = CoreUtil.fullTableQuery(loadmaster, MasterTable.user_main.toString());
+                _MASTER_DATA = Util.map2map(qcol.recList(), amap -> amap.getStr("username"), amap -> amap);
+                
+                // This is the only place where we call new WidgetUser()!!!!
+                _LOOKUP_MAP = Util.map2map(_MASTER_DATA.keySet(), uname -> uname, uname -> new WidgetUser(uname));
+                Util.massert(!_LOOKUP_MAP.isEmpty(), "There must be at least 1 user to run this code");
+            }
+
+            {
+                QueryCollector qcol = CoreUtil.fullTableQuery(loadmaster, MasterTable.system_setting.toString());
+                _SYSTEM_SETTING = Util.map2map(qcol.recList(), amap -> amap.getStr("key_str"), amap -> amap.getStr("val_str"));
+            }
 
             _REFRESH_TIMESTAMP = System.currentTimeMillis();
-
-            Util.massert(!_LOOKUP_MAP.isEmpty(), "There must be at least 1 user to run this code");
         }
     }
 

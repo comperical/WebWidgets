@@ -337,14 +337,33 @@ public class FastTest4Basic
 
 		public void runOp()
 		{
-			IBlobStorage blobtool = PluginCentral.getStorageTool();
-			Util.pf("Loaded blob storage tool %s\n", blobtool.getClass().getName());
+			if(PluginCentral.havePlugin(PluginType.blob_store))
+			{
+				IBlobStorage blobtool = PluginCentral.getStorageTool();
+				Util.pf("Loaded blob storage tool %s\n", blobtool.getClass().getName());
+			}
 
-			IMailSender mailtool = PluginCentral.getMailPlugin();
-			Util.pf("Loaded mail plugin %s\n", mailtool.getClass().getName());
 
-			GeneralPlugin general = PluginCentral.getGeneralPlugin();
-			Util.pf("Loaded general plugin %s\n", general.getClass().getName());
+			if(PluginCentral.havePlugin(PluginType.mail_sender))
+			{
+				IMailSender mailtool = PluginCentral.getMailPlugin();
+				Util.pf("Loaded mail plugin %s\n", mailtool.getClass().getName());
+			}
+
+			if(PluginCentral.havePlugin(PluginType.general))
+			{
+				GeneralPlugin general = PluginCentral.getGeneralPlugin();
+				Util.pf("Loaded general plugin %s\n", general.getClass().getName());
+			}
+
+			for(PluginType ptype : PluginType.values())
+			{
+				if(!PluginCentral.havePlugin(ptype))
+					{ continue; }
+
+				Object ob = PluginCentral.getPluginSub(ptype);
+				Util.massert(ob != null, "Failed to load plugin for PType %s", ptype);
+			}
 		}
 	}
 	

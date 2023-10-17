@@ -17,8 +17,7 @@ public class PluginCentral
 	{
 		general,
 		blob_store,
-		mail_sender,
-		admin_extend;
+		mail_sender;
 		
 		public String getPropName()
 		{
@@ -46,11 +45,6 @@ public class PluginCentral
         public String getEmailControlUrl(ValidatedEmail email, WidgetUser sender);
     }
 
-	public static IMailSender getMailPlugin()
-	{
-		return Util.cast(getPluginSub(PluginType.mail_sender));
-	}
-	
 	public static interface IBlobStorage
 	{
 		public default void uploadLocalPath(File localpath) throws IOException
@@ -65,22 +59,6 @@ public class PluginCentral
 		public void downloadToLocalPath(File localpath) throws IOException;
 
 		public void deleteFromLocalPath(File localpath) throws IOException;
-	}
-	
-	public static IBlobStorage getStorageTool()
-	{
-		return Util.cast(getPluginSub(PluginType.blob_store));
-	}
-	
-
-	public static GeneralPlugin getGeneralPlugin()
-	{
-		return Util.cast(getPluginSub(PluginType.general, GeneralPlugin.class));
-	}
-
-	public static IAdminExtension getAdminExtensionTool()
-	{
-		return getGeneralPlugin().getAdminExtensionTool();
 	}
 
 	/**
@@ -101,8 +79,33 @@ public class PluginCentral
 			return s -> "";
 		}
 	}
+
+	public static IMailSender getMailPlugin()
+	{
+		return Util.cast(getPluginSub(PluginType.mail_sender));
+	}
 	
-	private static Object getPluginSub(PluginType ptype)
+	public static IBlobStorage getStorageTool()
+	{
+		return Util.cast(getPluginSub(PluginType.blob_store));
+	}
+	
+	public static GeneralPlugin getGeneralPlugin()
+	{
+		return Util.cast(getPluginSub(PluginType.general, GeneralPlugin.class));
+	}
+
+	public static IAdminExtension getAdminExtensionTool()
+	{
+		return getGeneralPlugin().getAdminExtensionTool();
+	}
+
+	public static boolean havePlugin(PluginType ptype)
+	{
+		return getPluginClassMap().containsKey(ptype);
+	}
+	
+	static Object getPluginSub(PluginType ptype)
 	{
 		return getPluginSub(ptype, null);
 	}
@@ -118,18 +121,21 @@ public class PluginCentral
 		catch (Exception ex) { throw new RuntimeException(ex); }
 	}
 
-	
+	static synchronized void clearIndex()
+	{
+		__PLUGIN_CLASS_MAP = null;
+	}
+
 	public static synchronized Map<PluginType, Class> getPluginClassMap()
 	{
 		if(__PLUGIN_CLASS_MAP == null)
 		{
 			__PLUGIN_CLASS_MAP = Util.treemap();
-			var props = loadPluginProps();
 			
 			for(PluginType ptype : PluginType.values())
 			{
-				String classname = props.getProperty(ptype.getPropName());
-				if(classname == null || classname.strip().length() == 0)
+				String classname = GlobalIndex.getSystemSetting().get(ptype.getPropName());
+				if(classname == null)
 					{ continue; }
 				
 				try {
@@ -142,17 +148,6 @@ public class PluginCentral
 			}
 		}
 		
-		return __PLUGIN_CLASS_MAP;
-	}
-    
-	private static Properties loadPluginProps()
-	{
-		String pluginpath = Util.sprintf("%s%sPluginConfig.props", 
-			CoreUtil.WWIO_BASE_CONFIG_DIR, File.separator);
-	
-		Util.massert(new File(pluginpath).exists(), 
-			"Missing Plugin props file, expected at %s", pluginpath);
-		
-		return FileUtils.getReaderUtil().setFile(pluginpath).getPropertiesE();
+		return Collections.unmodifiableMap(__PLUGIN_CLASS_MAP);
 	}
 }

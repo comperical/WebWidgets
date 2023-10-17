@@ -262,7 +262,7 @@ public class CoreCommand
 			for(MasterTable mtable : MasterTable.values())
 			{
 				CoreDb.execSqlUpdate(mtable.createSql, newmaster);
-				Util.pf("Created MasterTable %s\n", mtable);	
+				Util.pf("Created MasterTable %s\n", mtable);
 			}
 			
 			Util.pf("Created Master DB and initialized tables\n");
@@ -299,7 +299,128 @@ public class CoreCommand
 				UpdateUserPassWord.class.getSimpleName());
 		}
 	}
+
+	public static class UpdateSystemSetting extends DescRunnable
+	{
+		public String getDesc()
+		{
+			return 
+				"Update the system setting table\n" +
+				"Simple key= and value= command line arguments\n" + 
+				"Restart the server for these to take effect\n";
+		}
+
+
+		public void runOp()
+		{
+			String keystr = _argMap.getStr("key");
+			Optional<String> optval = getValueTarget();
+
+			Integer recid = getKeyRecordId(keystr);
+			if(recid == null)
+			{
+				Util.pf("New system setting detected\n");
+				if(!optval.isPresent())
+				{ 
+					Util.pf("Delete requested, but key does not exist: nothing to do\n");
+					return;
+				}
+
+				recid = CoreUtil.getNewDbId(CoreUtil.getMasterWidget(), MasterTable.system_setting.toString());
+			}
+
+			if(optval.isPresent())
+			{
+				CoreDb.upsertFromRecMap(CoreUtil.getMasterWidget(), MasterTable.system_setting.toString(), 1, CoreDb.getRecMap(
+					"id", recid,
+					"key_str", keystr,
+					"val_str", optval.get()
+				));
+
+				Util.pf("Updated system setting for ID=%d, Key=%s, Val=%s\n", recid, keystr, optval.get());
+
+			} else {
+				CoreDb.deleteFromColMap(CoreUtil.getMasterWidget(), MasterTable.system_setting.toString(), CoreDb.getRecMap("id", recid));
+				Util.pf("Deleted system setting ID=%d, key=%s\n", recid, keystr);
+			}
+
+			Util.pf("System setting table updated, you must restart the server to pick up the change\n");
+		}
+
+		private Optional<String> getValueTarget()
+		{
+			Optional<String> valopt = _argMap.optGetStr("value");
+			boolean delete = _argMap.getBit("delete", false);
+			Util.massert(!valopt.isPresent() == delete,
+				"You cannot supply both delete=true and a value= argument");
+
+			return valopt;
+		}
+
+		private static Integer getKeyRecordId(String keystr)
+		{
+			String query = Util.sprintf("SELECT id FROM system_setting WHERE key_str = '%s'", keystr);
+			QueryCollector qcol = QueryCollector.buildAndRun(query, CoreUtil.getMasterWidget());
+			if(qcol.getNumRec() == 0)
+				{ return null; }
+
+			return qcol.getSingleArgMap().getSingleInt();
+		}
+	}
+
+	public static class UpdatePluginClass extends DescRunnable
+	{
+		public String getDesc()
+		{
+			return 
+				"This is a special version of the update system setting for use with Plugin classes\n" + 
+				"This class converts the plugin type to the property code, and checks that the class name is valid\n";
+		}
+
+
+		public void runOp()
+		{
+			PluginType ptype = PluginType.valueOf(_argMap.getStr("plugintype"));
+			String classname = _argMap.getStr("classname");
+
+			try {
+				Class<?> cls = Class.forName(classname);
+				Object ob = cls.getDeclaredConstructor().newInstance(); 
+				Util.pf("Successfully built plugin object of class %s\n", classname);
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				Util.pf("Failed to instantiate plugin class, did you spell it right, does it have 0-arg constructor?\n");
+				return;
+			}
+
+			{
+				ArgMap submap = new ArgMap();
+				submap.put("key", ptype.getPropName());
+				submap.put("value", classname);
+				UpdateSystemSetting updater = new UpdateSystemSetting();
+				updater.initFromArgMap(submap);
+				updater.runOp();
+			}
+
+			Util.pf("Updated Plugin class. Run %s to test plugin loading, the reload server\n", 
+				FastTest4Basic.PluginLoadCheck.class.getSimpleName());
+		}
+
+	}
 	
+	public static class ShowSystemSetting extends ArgMapRunnable
+	{
+
+		public void runOp()
+		{
+			Map<String, String> setting = GlobalIndex.getSystemSetting();
+			Util.pf("Have %d system settings\n", setting.size());
+			for(String k : setting.keySet())
+				{ Util.pf("\t%s=%s\n", k, setting.get(k)); }
+		}
+
+	}
+
 	public static class CreateCode4User extends ArgMapRunnable 
 	{
 		public void runOp()
@@ -933,6 +1054,26 @@ public class CoreCommand
 				dc, dbitem.theOwner, dbitem.getLocalDbFile().getName());
 
 			return new File(localpath);
+		}
+	}
+
+
+	public static class ShowPluginInfo extends ArgMapRunnable
+	{
+
+		public void runOp()
+		{
+			for(PluginType ptype : PluginType.values())
+			{
+				if(!PluginCentral.havePlugin(ptype))
+				{
+					Util.pf("No plugin configured for ptype=%s\n", ptype);
+					continue;
+				}
+
+				Object plugin = PluginCentral.getPluginSub(ptype);
+				Util.pf("For plugintype=%s, found object %s\n", ptype, plugin.getClass().getName());
+			}
 		}
 	}
 
