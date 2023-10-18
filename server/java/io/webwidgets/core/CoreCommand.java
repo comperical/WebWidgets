@@ -634,7 +634,7 @@ public class CoreCommand
 	{
 		public void runOp()
 		{
-			String username = _argMap.getStr("username");	
+			String username = _argMap.getStr("username");
 			dumbCheckUnique(username);
 						
 			QueryCollector qcol = QueryCollector.buildAndRun("SELECT max(id) FROM user_main", CoreUtil.getMasterWidget());
@@ -647,8 +647,7 @@ public class CoreCommand
 				"email", ""
 			));
 
-			// TODO: keeping too many indices around here. Need to get rid of some, simplify this.	
-			// This feels dangerous - I am running this from both the CLI and from the WebApp
+			// This ensures that the new user record is loaded, now that it has been inserted into the table
 			GlobalIndex.clearUserIndexes();
 			createUserDir(username);
 			
@@ -673,10 +672,10 @@ public class CoreCommand
 			{
 				Util.massert(!ndir.exists(), "This directory already exists!! Config error!!");
 				ndir.mkdir();
-				mypf("Created directory %s\n", ndir);		
+				mypf("Created directory %s\n", ndir);
 			}
 		}
-	}	
+	}
 
 	public static class MasterDeleteUser extends LogSwapRunnable
 	{
@@ -705,7 +704,7 @@ public class CoreCommand
 		}
 
 		private static void deleteMasterRecord(String username)
-		{	
+		{
 			int numdel = CoreDb.deleteFromColMap(CoreUtil.getMasterWidget(), "user_main", CoreDb.getRecMap(
 				"username", username
 			));
@@ -713,7 +712,7 @@ public class CoreCommand
 			Util.massert(numdel == 1, "Somehow failed to delete the right number of records, expected 1, got %d", numdel);
 			Util.pf("Deleted master record from DB\n");
 		}
-	}	
+	}
 
 
 
@@ -781,7 +780,7 @@ public class CoreCommand
 		{
 			WidgetUser user = WidgetUser.lookup(_argMap.getStr("username"));
 			WidgetItem item = new WidgetItem(user, _argMap.getStr("widgetname"));
-			int numload = _argMap.getInt("numload", 100);			
+			int numload = _argMap.getInt("numload", 100);
 			
 			for(int i : Util.range(numload))
 			{
@@ -800,24 +799,6 @@ public class CoreCommand
 	}
 	
 	
-	public static class TestScriptSolution extends ArgMapRunnable
-	{
-		public void runOp() throws Exception
-		{
-			
-			ScriptEngineManager factory = new ScriptEngineManager();
-			ScriptEngine engine = factory.getEngineByName("JavaScript");
-			
-			
-			try {
-				engine.eval("print(encodeURIComponent('\"A\" B ± \"'))");
-			} catch (ScriptException screx) {
-				throw screx;	
-			}
-		}
-	}
-	
-	
 	public static class ShowAutoInclude extends ArgMapRunnable
 	{
 		public void runOp()
@@ -827,43 +808,8 @@ public class CoreCommand
 			
 			for(String s : WebUtil.getAutoIncludeStatement(item))
 			{
-				Util.pf("Statement is \n\t%s\n", s);	
+				Util.pf("Statement is \n\t%s\n", s);
 			}
-		}
-	}
-
-	
-	
-	
-	public static class CheckRunTimeTest extends ArgMapRunnable 
-	{
-		public void runOp()
-		{
-			Util.pf("hello, time!!\n");
-			
-			long probemilli = 1650000000000L;
-			
-			ExactMoment ex_a = ExactMoment.build(probemilli);
-			String astr = ex_a.asLongBasicTs(TimeZoneEnum.PST);
-			
-			ExactMoment ex_b = ExactMoment.fromLongBasicE(astr, TimeZoneEnum.PST);
-			String bstr = ex_b.asLongBasicTs(TimeZoneEnum.PST);
-			
-			Util.pf("M1:\t%d\n", probemilli);
-			Util.pf("M2:\t%d\n", ex_b.getEpochTimeMilli());
-			
-			Util.pf("A/B:\n\t%s\n\t%s\n", astr, bstr);
-			
-			/*
-			const nowex = new ExactMoment(probemilli);
-			
-			const isostr = nowex.asIsoLongBasic(timezone);
-			
-			const backex = exactMomentFromIsoBasic(isostr, timezone);
-			
-			const backstr = backex.asIsoLongBasic(timezone);
-			*/
-			
 		}
 	}
 	
@@ -880,7 +826,7 @@ public class CoreCommand
 	}
 	
 	public static class LoadMailReadyMap extends ArgMapRunnable
-	{		
+	{
 		public void runOp()
 		{
 			WidgetUser user = WidgetUser.valueOf(_argMap.getStr("username"));
@@ -898,7 +844,7 @@ public class CoreCommand
 		
 		public void runOp()
 		{
-			WidgetUser user = WidgetUser.valueOf(_argMap.getStr("username"));			
+			WidgetUser user = WidgetUser.valueOf(_argMap.getStr("username"));
 			List<String> resultlist = MailSystem.sendSingleReadyMailForUser(user);
 			
 			for(String result : resultlist)
@@ -931,8 +877,6 @@ public class CoreCommand
 		{
 			WidgetUser user = WidgetUser.lookup(_argMap.getStr("username"));
 			WidgetItem item = new WidgetItem(user, _argMap.getStr("widgetname"));
-			PermLevel perm = PermLevel.valueOf(_argMap.getStr("level"));
-			
 			WidgetUser grantee = WidgetUser.lookup(_argMap.getStr("grantee"));
 			AuthLogic.removePermFromGrantee(item, grantee);
 		}
@@ -941,14 +885,12 @@ public class CoreCommand
 	
 	public static class JustLoadPermTable extends ArgMapRunnable 
 	{
-		
 		public void runOp() 
 		{
 			AuthLogic.reloadPermTable();
-			
 		}
-	}	
-	
+	}
+
 	public static class CheckPermForWidget extends ArgMapRunnable 
 	{
 		

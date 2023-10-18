@@ -184,6 +184,11 @@ public class WidgetUser implements Comparable<WidgetUser>
         return getUserEntry() != null;
     }
 
+    public Map<String, String> getUserEntryMap()
+    {
+        return Collections.unmodifiableMap(getUserEntry());
+    }
+
     // Must be public to be accessed from JSP
     public void updateAccessHash(Pair<String, String> oldnew)
     {
