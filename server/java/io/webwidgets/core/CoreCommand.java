@@ -813,7 +813,6 @@ public class CoreCommand
 
 	public static class CheckPermForWidget extends ArgMapRunnable 
 	{
-		
 		public void runOp() 
 		{
 			WidgetUser owner = WidgetUser.valueOf(_argMap.getStr("username"));
@@ -879,7 +878,15 @@ public class CoreCommand
 	{
 		public String getDesc()
 		{
-			return "Archives the Life DATA SQLite files to S3";
+			return 
+				"Archives the Widget DB files to the Blob Storage system for all users\n" + 
+				"The backup/archive option is generally intended to run daily\n" + 
+				"If you are more paranoid, you can run it more often; but if you run it multiple times in the same day\n" + 
+				"Each call will just overwrite the previous backup for the day\n" + 
+				"This command uses a 'virtual' path for the DB file that does not actually exist locally and contains the date\n" + 
+				"The Blob Storage should perform the local/remote mapping on the virtual path and save the file to the resulting location" + 
+				"As of October 2023, the core package does not contain the option to restore from backup\n" + 
+				"We expect&hope that smart sysadmins will be able to do this in rare cases when it is required";
 		}
 		
 		public void runOp() throws Exception
@@ -939,87 +946,6 @@ public class CoreCommand
 		}
 	}
 
-
-	public static class GrabRecentDbArchive extends ArgMapRunnable
-	{
-
-		public void runOp() throws IOException 
-		{
-			DayCode daycode = DayCode.lookup(_argMap.getStr("daycode"));
-			int grabCount = 0;
-
-			// String archivebase = String.format("%s/%s", CoreUtil.DB_ARCHIVE_DIR, daycode);
-			// Util.pf("Going to examine base directory %s\n", archivebase);
-
-			//TODO: rebuild this to use single S3 cmd
-			/*
-			for(WidgetUser theUser : WidgetUser.values())
-			{
-				File dbdir = new File(theUser.getDbDirPath());
-				if (!dbdir.exists())
-				{
-					dbdir.mkdir();
-					Util.pf("Created DB directory %s for user\n", dbdir);
-				}
-			}
-
-			for(WidgetUser theUser : WidgetUser.values())
-			{
-
-				CleverPath archdir = ArchiveDb2Cloud.getUserArchiveDir(theUser, daycode);
-
-				List<CleverPath> kidlist = archdir.getS3KidList();
-
-				for(CleverPath kid : kidlist)
-				{
-
-					File localfile = kid.getLocalFile();
-
-					String filename = localfile.getName();
-
-					// Util.pf("Kid path is %s, local file is %s\n", kid, filename);
-
-					Util.massert(filename.endsWith("_DB.sqlite"), "Expected _DB.sqlite suffix, found %s", filename);
-
-					String widgetname = CoreUtil.peelSuffix(filename, "_DB.sqlite").toLowerCase();
-
-					// Util.pf("Found wiget name %s\n", widgetname);
-
-					WidgetItem dbItem = new WidgetItem(theUser, widgetname);
-
-
-					// Util.pf("Local DB file is %s\n", dbItem.getLocalDbFile());
-
-					if(dbItem.getLocalDbFile().exists())
-					{
-						Util.pf("Widget file already exists, skipping : %s\n", dbItem.getLocalDbPath());
-						continue;
-					} else {
-
-						Util.pf("Local DB file does NOT exist %s\n", dbItem.getLocalDbFile());
-					}
-
-					kid.downloadFromS3();
-
-					kid.getLocalFile().renameTo(dbItem.getLocalDbFile());
-
-					Util.massert(dbItem.getLocalDbFile().exists());
-
-					grabCount++;
-
-					Util.pf("Grabbed widget %s: \n\t%s\n\t%s\n", dbItem, kid.getFullS3Key(), dbItem.getLocalDbFile());
-
-				}
-			}
-
-			Util.pf("Grabbed %d db files from S3 archive\n", grabCount);
-
-			*/
-
-		}
-
-	}
-
 	public static class BlobCacheCleaner extends DescRunnable implements CrontabRunnable
 	{
 		public String getDesc()
@@ -1063,9 +989,7 @@ public class CoreCommand
 
 			Util.pf("Removed %d total files, reclaimed %d bytes of disk space\n", totalremove, removesize);
 		}
-
 	}
-	
 
 
 	public static class MarkPublicRead extends ArgMapRunnable
@@ -1096,83 +1020,17 @@ public class CoreCommand
 		}
 	}
 
-	public static class DropLiteColumnOp extends ArgMapRunnable
-	{
-		public void runOp()
-		{
-			WidgetUser wuser = WidgetUser.valueOf(_argMap.getStr("username"));
-			String widgetname = _argMap.getStr("widgetname");
-			WidgetItem dbitem = new WidgetItem(wuser, widgetname);
-			Util.massert(dbitem.getLocalDbFile().exists());
-			
-			String tabname = _argMap.getStr("tabname");
-			
-			String newtabgimp = Util.sprintf("%s_gimp", tabname);
-			
-			Set<String> newcolset = getGimpColumnSet(dbitem, newtabgimp);
-			
-			Util.massert(newcolset != null, 
-				"To start process, create an empty table named %s WITHOUT the desired column", newtabgimp);
-			
-			Util.pf("Okay, got NEW column set %s\n", newcolset);
-			
-			// Okay, we want to drop a column in SQLite. This is done by:
-			// Creating new table without column.
-			
-			List<String> commlist = Util.vector();
-			
-			commlist.add(Util.sprintf("INSERT INTO %s (%s) SELECT %s FROM %s",
-				newtabgimp, Util.join(newcolset, ","), Util.join(newcolset, ","), tabname));
-			
-			
-			commlist.add(Util.sprintf("ALTER TABLE %s RENAME TO __%s", tabname, tabname));
-			
-			commlist.add(Util.sprintf("ALTER TABLE %s RENAME TO %s", newtabgimp, tabname));
-			
-			for(String onecomm : commlist)
-			{
-				Util.pf("\t%s\n", onecomm);	
-				
-			}
-			
-			
-			if(!Util.checkOkay("Okay to proceed?"))
-			{ 
-				Util.pf("Aborting\n");
-				return;
-			}
-			
-			for(String onecomm : commlist)
-			{
-				CoreDb.execSqlUpdate(onecomm, dbitem);
-			}
-			
-			Util.pf("Okay, drop old table __%s when you are confident everything worked\n", tabname);
-		}
-		
-		private Set<String> getGimpColumnSet(WidgetItem dbitem, String tabname)
-		{
-			try {
-				QueryCollector qcol = CoreUtil.fullTableQuery(dbitem, tabname);
-				
-				if(qcol.getNumRec() > 0)
-				{
-					Util.pferr("Gimp table is non-empty, please clean it out first\n");
-					return null;
-				}
-				
-				return Util.treeset(qcol.getColumnList());
-				
-			} catch (Exception sqlex) {
-				
-				Util.pferr("Failed to query table %s, message is %s\n", tabname, sqlex.getMessage());
-				return null;	
-			}
-		}
-	}
 
-	public static class BuildWidgetFromDbDump extends ArgMapRunnable
+
+	public static class BuildWidgetFromDbDump extends DescRunnable
 	{
+		public String getDesc()
+		{
+			return 
+				"Builds a widget from a SQLite dump file\n" + 
+				"Supply username=, widgetname=, dumpfile= arguments on the command line\n" + 
+				"TODO: this script should be able to infer the widget from the dumpfile name, if it follows a naming convention";
+		}
 
 		public void runOp()
 		{
@@ -1408,8 +1266,17 @@ public class CoreCommand
 		}
 	}
 
-	public static class CopySharedCodeFromRepo extends ArgMapRunnable
+	public static class CopySharedCodeFromRepo extends DescRunnable
 	{
+		public String getDesc()
+		{
+
+			return 
+				"Pull the shared code from the repo Gallery section into the widgetserve section of the WWIO installation\n" + 
+				"This is generally done when the WWIO server is initially installed\n" +
+				"The shared code is then served from the /u/shared/... path of the server\n";
+		}
+
 		public void runOp() throws IOException
 		{
 
