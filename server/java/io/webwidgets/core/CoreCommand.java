@@ -64,107 +64,8 @@ public class CoreCommand
 			Util.pferr("Failed to instantiate class %s with newInstance call do to protection violation\n", fullclass);	
 			throw new RuntimeException(illex);
 		}
-	}	
-
-
-
-	
-	
-	public static class ConvertWidget2Excel extends ArgMapRunnable implements HasDescription 
-	{
-		
-		public String getDesc()
-		{
-			return "Convert a Widget DB to Excel\n" + 
-			"This tool is a wrapper for a Python script\n" + 
-			"The output XL file is stored in a standard tmp path\n";
-		}
-		
-		public void runOp()
-		{
-			double alphatime = Util.curtime();
-			
-			WidgetUser username = WidgetUser.valueOf(_argMap.getStr("username"));
-			String widgetname = _argMap.getStr("widgetname");
-			
-			WidgetItem witem = new WidgetItem(username, widgetname);
-			CoreUtil.convert2Excel(witem);
-			
-			Util.pf("Conversion took %.03f seconds\n", (Util.curtime()-alphatime)/1000);
-		}
-		
 	}
-	
-	public static class CleanDbArchive extends ArgMapRunnable implements HasDescription
-	{
-		public String getDesc()
-		{
-			return "Cleans out old DB archive directories";
-		}
-		
-		
-		public void runOp() throws Exception
-		{
-			Util.massert(false, "TODO: must reimplement");
-			
-			/*
-			int maxkill = _argMap.getInt("maxkill", 5);
-			CleverPath archdir = getArchiveDir();
-			DayCode cutoff = DayCode.getToday().nDaysBefore(90);
-			List<CleverPath> rmlist = Util.vector();
-			
-			for(CleverPath oneday : archdir.getS3KidList())
-			{
-			String[] tokens = oneday.getFullS3Key().split("/");
-			
-			// Util.pf("%s\n", Util.listify(tokens));
-			
-			DayCode dc = DayCode.lookup(tokens[tokens.length-1]);
-			
-			if(dc.compareTo(cutoff) < 0)
-			{
-			rmlist.add(oneday);	
-			Util.pf("Path %s --- %s is before cutoff %s\n",
-			oneday.getFullS3Key(), dc, cutoff);
-			}
-			
-			if(rmlist.size() >= maxkill)
-			{
-			Util.pf("Have more than %d to remove, run again after this or run with maxkill= argument\n", maxkill);
-			break;	
-			}
-			// Util.pf("Got day %s for dir %s\n", dc,
-			}
-			*/
-			
-			/*
-			if(rmlist.isEmpty())
-			{
-			Util.pf("No directories older than 90 days\n");
-			return;
-			}
-			
-			Util.pf("Going to delete archive dirs as shown\n");
-			
-			if(!Util.checkOkay("Okay to proceed?"))
-			{ return; }
-			
-			for(CleverPath old : rmlist)
-			{
-			// This prints debug info
-			old.deleteFromS3();				
-			}
-			*/
-		}
-		
-		private Object getArchiveDir()
-		{
-			// String archpath = Util.sprintf("%s/archive/", CoreUtil.SQLITE_DIR);
-			// return CleverPath.buildFromPath(archpath);	
-			return null;
-		}
 
-	}
 	
 	public static class MarkMaintenanceMode extends ArgMapRunnable implements HasDescription
 	{
@@ -214,7 +115,7 @@ public class CoreCommand
 			if(!prevmode.isPresent())
 			{
 				Util.pf("Server is not in maintenance mode!!\n");
-				return;				
+				return;
 			}
 			
 			Util.pf("This command will clear the maintenance mode flag, so users will be able to update their widgets again\n");
@@ -421,8 +322,17 @@ public class CoreCommand
 
 	}
 
-	public static class CreateCode4User extends ArgMapRunnable 
+	public static class CreateCode4User extends DescRunnable 
 	{
+
+		public String getDesc()
+		{
+			return 
+				"Re-creates the autogen JS code for a user's widgets from the SQLite DBs\n" + 
+				"Normally the system performs this action whenever necessary\n" + 
+				"But in some cases it might be necessary to re-create\n";
+		}
+
 		public void runOp()
 		{
 			List<WidgetUser> userlist = getWidgetUserList(_argMap);
@@ -501,15 +411,16 @@ public class CoreCommand
 		}
 	}
 	
-	public static class ImportDummyUserBase extends ArgMapRunnable implements HasDescription
+	public static class ImportDummyUserBase extends DescRunnable
 	{
 		public static final WidgetUser DUMMY_USER = WidgetUser.valueOf("rando");
 		
 		public String getDesc()
 		{
 			return 
-			"Imports the base code from the dummy user to a new user's space\n" + 
-			"You must run this AFTER doing folder setup";
+				"Imports the base code from the dummy user to a new user's space\n" + 
+				"You must run this AFTER doing folder setup\n" + 
+				"This creates the DB data from SQLite dump files, and imports the JS/HTML code from the gallery";
 		}
 		
 		public void runOp() throws IOException
@@ -574,7 +485,7 @@ public class CoreCommand
 			char[] passwordArray = console.readPassword("Enter your secret password: ");
 			String acchash = AuthLogic.canonicalHash(new String(passwordArray)).toLowerCase();
 			
-			Util.pf("Access hash is %s\n", acchash);			
+			Util.pf("Access hash is %s\n", acchash);
 		}
 	}
 	
@@ -624,21 +535,30 @@ public class CoreCommand
 			QueryCollector qcol = QueryCollector.buildAndRun(
 				Util.sprintf("SELECT id FROM user_main WHERE username = '%s'", wuser), master);
 			int userid = qcol.getSingleArgMap().getSingleInt();			
-			return userid;			
+			return userid;
 		}
 	}
 	
 	
 	
-	public static class AddUserMasterRecord extends LogSwapRunnable
+	public static class AddUserMasterRecord extends LogSwapRunnable implements HasDescription
 	{
+
+		public String getDesc()
+		{
+			return 
+				"Add a user to the master table. This creates the user record\n" + 
+				"The username= is provided by the command line\n" +
+				"User names must be unique\n" +
+				"User IDs are assigned in linear order\n";
+		}
+
 		public void runOp()
 		{
 			String username = _argMap.getStr("username");
 			dumbCheckUnique(username);
 						
-			QueryCollector qcol = QueryCollector.buildAndRun("SELECT max(id) FROM user_main", CoreUtil.getMasterWidget());
-			int curmaxid = qcol.getSingleArgMap().getSingleInt();
+			int curmaxid = Collections.max(Util.map2list(WidgetUser.values(), user -> user.getMasterId()));
 			
 			CoreDb.upsertFromRecMap(CoreUtil.getMasterWidget(), MasterTable.user_main.toString(), 1, CoreDb.getRecMap(
 				"id", curmaxid+1,
@@ -761,7 +681,7 @@ public class CoreCommand
 				Util.pf("%s", log);	
 			}
 		}
-	}	
+	}
 	
 	
 	public static class TestTableServeTime extends DescRunnable 

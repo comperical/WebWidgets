@@ -118,7 +118,7 @@ public class WidgetUser implements Comparable<WidgetUser>
     public String getEmail()
     {
         ArgMap entry = getUserEntry();
-        return entry == null ? null : entry.getStr("email");    
+        return entry == null ? null : entry.getStr("email");
     }
     
     public String getAccessHash()
@@ -128,7 +128,7 @@ public class WidgetUser implements Comparable<WidgetUser>
         
     }
 
-    private Integer getMasterId()
+    Integer getMasterId()
     {
         ArgMap entry = getUserEntry();
         return entry == null ? null : entry.getInt("id");

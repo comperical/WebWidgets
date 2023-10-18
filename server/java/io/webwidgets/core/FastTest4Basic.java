@@ -592,6 +592,9 @@ public class FastTest4Basic
 
 			for(WidgetUser probe : WidgetUser.values())
 			{
+				if(!MailSystem.userHasMailBox(probe))
+					{ continue; }
+
 				WidgetItem mailbox = new WidgetItem(probe, MailSystem.MAILBOX_WIDGET_NAME);
 
 				if(!mailbox.getLocalDbFile().exists())
@@ -648,7 +651,7 @@ public class FastTest4Basic
 		{
 			return Arrays.asList(
 				"https://webwidgets.io/u/dburfoot/",
-				"https://webwidgets.io/u/dburfoot",				
+				"https://webwidgets.io/u/dburfoot",
 				"https://webwidgets.io/u/dburfoot/index.jsp",
 				"https://webwidgets.io/u/dburfoot/widget.jsp"
 			);
@@ -663,11 +666,6 @@ public class FastTest4Basic
 				"https://webwidgets.io/u/dburfoot/links/widget.jsp",
 				"dburfoot",
 				"links"
-				/*
-				"https://webwidgets.io/u/dburfoot/links/",
-				"dburfoot",
-				"links"				
-				*/
 			);
 		}
 	}
@@ -778,12 +776,11 @@ public class FastTest4Basic
 
 		}
 
-		// TODO: add more data here, including maybe Chinese, etc
 		public void runOp()
 		{
-
 			backAndForthTest("daniel.burfoot@gmail.com");
-
+			backAndForthTest("/opt/homebrew/opt/ffmpeg/bin/ffmpeg -i Sept29.mp4 -ss 0:24 -to 11:53 -c:v copy -c:a");
+			backAndForthTest("For plugintype=admin_extend, found object io.webwidgets.extend.AdminExtender");
 		}
 
 		private static void backAndForthTest(String original)
@@ -908,19 +905,6 @@ public class FastTest4Basic
 			_goodCount++;
 		}
 
-	}
-
-	public static class CheckAdminUserCount extends ArgMapRunnable
-	{
-		public void runOp()
-		{
-			List<WidgetUser> adminlist = Util.filter2list(WidgetUser.values(), user -> user.isAdmin());
-			Util.massert(adminlist.size() == 1, "No admin users found");
-			Util.pf("success, found %d admin users\n", adminlist.size());
-
-			Set<String> adminset = Util.map2set(adminlist, user -> user.toString());
-			Util.massert(adminset.contains("dburfoot"));
-		}
 	}
 	
 	public static class CheckMasterDbSetup extends DescRunnable

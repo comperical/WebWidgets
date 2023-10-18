@@ -19,6 +19,8 @@ public class PluginCentral
 		blob_store,
 		mail_sender;
 		
+		// This is the name of the key_str in the system_setting table
+		// Note there might be other system settings in addition to plugins, in the table
 		public String getPropName()
 		{
 			return (this.toString() + "_PLUGIN").toUpperCase();
@@ -34,9 +36,10 @@ public class PluginCentral
 
     public interface IMailSender
     {
+    	// Send the given package of mail objects, each with a Key T
+    	// Report the T item back to the caller on success
         public <T extends Comparable<T>> void sendMailPackage(Map<T, WidgetMail> mailmap, Consumer<T> onSuccess) throws Exception;
     
-
         // Is the given User allowed to send email to the given address?
         public boolean allowEmailSend(ValidatedEmail email, WidgetUser sender);
 
@@ -45,6 +48,13 @@ public class PluginCentral
         public String getEmailControlUrl(ValidatedEmail email, WidgetUser sender);
     }
 
+    /**
+     * The WWIO system requires the Blob Storage plugins to implement a very simple mapping
+     * from Local filesystem paths to remote Blob storage paths.
+     * This can be achieved by doing a simple string replace from the local path to the blob path
+     * In cases where only one File argument is supplied, the storage plugin should perform the standard
+     * local/remote mapping and then use the result to perform the remote operation
+     */
 	public static interface IBlobStorage
 	{
 		public default void uploadLocalPath(File localpath) throws IOException
@@ -115,7 +125,7 @@ public class PluginCentral
 		var classmap = getPluginClassMap();
 		Class<?> cls = classmap.getOrDefault(ptype, defclass);
 		Util.massert(cls != null,
-			"No plugin is configured for type %s, and no default is available. You must configure in Plugin.props file");
+			"No plugin is configured for type %s, and no default is available. You must configure in the system_settings table");
 		
 		try { return cls.getDeclaredConstructor().newInstance(); }
 		catch (Exception ex) { throw new RuntimeException(ex); }
