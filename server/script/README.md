@@ -17,7 +17,7 @@ The open-core version of WWIO does not include support for email, blob storage, 
 require basically simple integrations, that connect WWIO to your organization's email and blob storage services. Google Sync
 is a bit more complex, we may move this into the core code at some point; please reach out if you are interested. 
 
-The WWIO installation is intended to be as configuration-light as possible. You do not have to deal with any XML, JSON, or other
+The configuration for WWIO is intended to be as light as possible. You do not have to deal with any XML, JSON, or other
 config files. The only info the Java code needs to know is the location of the installation directory where you checked out the 
 repo. This information is inferred by the `compile_core.py` script and spliced into the Java code when it is compiled. All additional config is placed in the `system_setting` table of the main `master` database.
 
@@ -35,3 +35,15 @@ python3 widget_runner.py ImportWidgetFromGallery username=testuser widgetname=mr
 ```
 
 This invokes the `ImportWidgetFromGallery` commmand with the given `username` and `widgetname` arguments.
+
+
+When the demo server starts up, you should be able to browse to the following URL:
+```
+http://YOUR_HOST_NAME/u/testuser/index.jsp
+```
+
+You will see a bare-bones splash page that links to a few simple widgets. Clicking those links will take you to the appropriate widget. You can perform a few operations : create, edit, and delete information. When you make a change, try refreshing the page,
+to confirm that the change has persisted. You can also examine the results of the changes by looking at the contents of the 
+underlying SQLite files.
+
+
