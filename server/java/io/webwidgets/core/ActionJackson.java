@@ -77,7 +77,6 @@ public class ActionJackson extends HttpServlet
 		
 	}
 	
-	// TODO: what do all these numbers mean? 
 	@MultipartConfig(
 		fileSizeThreshold=10_000_000,
 		location=SERVLET_PART_SAVE_DIR,

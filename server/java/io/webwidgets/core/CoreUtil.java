@@ -2,7 +2,8 @@ package io.webwidgets.core;
 
 import java.io.*; 
 import java.util.*; 
-import java.sql.*; 
+import java.sql.*;
+import java.util.zip.*;
 import java.time.LocalDate;
 import java.util.stream.Stream;
 import java.nio.charset.StandardCharsets;
@@ -528,4 +529,34 @@ public class CoreUtil
 		}
 		
 	}
+
+
+    public static void zipDirectory(File zipsrc, File zipdst) {
+        try (FileOutputStream fos = new FileOutputStream(zipdst); ZipOutputStream zos = new ZipOutputStream(fos)) {
+            zipSub(zipsrc, zipsrc, zos);
+        } catch (IOException ioex) {
+        	throw new RuntimeException(ioex);
+        }
+    }
+
+    private static void zipSub(File topdir, File onefile, ZipOutputStream zos) throws IOException {
+        if (onefile.isDirectory()) {
+            for (File file : onefile.listFiles()) 
+				{ zipSub(topdir, file, zos); }
+	        return;
+	    }
+
+        try (FileInputStream fis = new FileInputStream(onefile)) {
+            String entrypath = getRelativePath(topdir, onefile);
+            ZipEntry zipentry = new ZipEntry(entrypath);
+
+            zos.putNextEntry(zipentry);
+            FileUtils.in2out(fis, zos, false);
+            zos.closeEntry();
+        }
+    }
+
+    private static String getRelativePath(File topdir, File onefile) {
+        return topdir.toPath().relativize(onefile.toPath()).toString();
+    }
 } 

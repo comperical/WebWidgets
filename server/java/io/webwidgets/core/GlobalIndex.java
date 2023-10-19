@@ -28,26 +28,26 @@ public class GlobalIndex
     // Other than lookup from this map
     private static Map<String, WidgetUser> _LOOKUP_MAP;
 
+    // System settings
     private static Map<String, String> _SYSTEM_SETTING;
 
-    // TODO: these should be unmodifiable maps, right...?
     static synchronized Map<String, ArgMap> getMasterData()
     {
         onDemandLoadIndexes();
-        return _MASTER_DATA;
+        return Collections.unmodifiableMap(_MASTER_DATA);
     }
 
     static synchronized Map<String, WidgetUser> getUserLookup()
     {
         onDemandLoadIndexes();
-        return _LOOKUP_MAP;
+        return Collections.unmodifiableMap(_LOOKUP_MAP);
     }
     
-    public static Map<String, String> getSystemSetting()
+    public static synchronized Map<String, String> getSystemSetting()
     {
         onDemandLoadIndexes();
         return Collections.unmodifiableMap(_SYSTEM_SETTING);
-    }
+    } 
 
     public static int getMasterSize()
     {

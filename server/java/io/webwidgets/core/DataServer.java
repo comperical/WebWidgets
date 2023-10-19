@@ -302,7 +302,8 @@ public class DataServer
 												.userFromRequest(_theRequest)
 												.directDbWidget(_theItem);
 
-			// TODO: do we allow this if noDataMode is configured?
+			// In theory, we could allow read here if noDataMode is set. But the only reason to set noDataMode
+			// is so that you can WRITE data to the widget, and you can never read if you can't also write
 			if(!checker.allowRead())
 			{
 				String mssg = Util.sprintf("User %s does not have read permissions for widget %s", getLoggedInUser(), _theItem);

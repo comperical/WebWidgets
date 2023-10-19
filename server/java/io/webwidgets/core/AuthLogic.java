@@ -23,6 +23,8 @@ public class AuthLogic
 {
 	public static final String WIDGET_PASSWORD_SALT = "the pelagic argosy sights land";
 	
+	public static final String USER_NAME_COOKIE = "username";
+
 	public static String ACCESS_HASH_COOKIE = "accesshash";
 
 	public static String PERM_GRANT_TABLE = "perm_grant";
@@ -58,11 +60,12 @@ public class AuthLogic
 	public static Optional<WidgetUser> getUserNoAuthCheck(HttpServletRequest request)
 	{
 		ArgMap argmap = WebUtil.getCookieArgMap(request);
-		String username = argmap.getStr("username", "");
+		String username = argmap.getStr(USER_NAME_COOKIE, "");
 		return WidgetUser.softLookup(username);
 	}
-	
-	// TODO: maybe remove this?
+
+	// This is used in the LogIn page to check that the credential is correct
+	// before setting the cookie
 	public static boolean checkCredential(String username, String accesshash)
 	{
 		Optional<WidgetUser> optuser = WidgetUser.softLookup(username);
@@ -75,15 +78,12 @@ public class AuthLogic
 		return optuser.isPresent() && optuser.get().isAdmin();
 	}
 	
-	// TODO: this can be more beautiful
 	public static void setUserCookie(HttpServletRequest request, HttpServletResponse response, String username)
 	{
-		Cookie mycookie = new Cookie("username", username);
+		Cookie mycookie = new Cookie(USER_NAME_COOKIE, username);
 		mycookie.setPath("/");
 		
-		// User name cookie is NOT secure
-		// mycookie.setSecure(true);
-		
+		// Make these configurable?
 		mycookie.setMaxAge((int) (TimeUtil.DAY_MILLI / 10));
 		response.addCookie(mycookie);
 	}
@@ -127,6 +127,7 @@ public class AuthLogic
 	}
 
 
+	// TODO: this should be put in the GlobalIndex package
 	private static Map<WidgetItem, PermInfoPack> _PERMISSION_MAP = null;
 
 	public static synchronized PermInfoPack getPermInfo4Widget(WidgetItem dbitem)

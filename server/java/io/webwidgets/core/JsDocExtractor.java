@@ -15,6 +15,10 @@ import io.webwidgets.core.WidgetOrg.*;
 import io.webwidgets.core.CoreUtil.*;
 
 
+/**
+ * Auto-extract documentation for JavaScript files
+ * This is useful for many widgets applications
+ */ 
 public class JsDocExtractor
 { 
 	private JsDocExtractor() {}
@@ -63,10 +67,10 @@ public class JsDocExtractor
 				
 				if(wantpriv == ispriv)
 					{ docmap.put(next, peelblock); }
-			}			
+			}
 		}
 		
-		return docmap;		
+		return docmap;
 	}
 	
 	private static boolean isPrivateMarker(String funcline)
@@ -88,6 +92,5 @@ public class JsDocExtractor
 		
 		return result;
 	}
-
 } 
 
