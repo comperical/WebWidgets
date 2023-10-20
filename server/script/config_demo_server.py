@@ -138,7 +138,7 @@ def grab_and_expand_resin():
     curlcall = f"curl {FREE_RESIN_URL} -o {resinzip} --silent"
     os.system(curlcall)
 
-    unzipcall = f"unzip {resinzip} -d {UTIL.get_working_dir()}"
+    unzipcall = f"unzip -q {resinzip} -d {UTIL.get_working_dir()}"
     os.system(unzipcall)
 
     os.remove(resinzip)
