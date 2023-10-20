@@ -161,7 +161,7 @@ def grab_and_expand_majestic():
     # Clean up
     os.remove(majzip)
 
-    majdir = os.path.sep.join([UTIL.get_widget_code_dir(), "majestic"])
+    majdir = os.path.sep.join([UTIL.get_widget_code_dir(), "shared", "majestic"])
     assert os.path.exists(majdir), f"Output director {majdir} does not exist"
     print(f"Successfully downloaded and installed Majestic Web template to  {majdir}")
 
