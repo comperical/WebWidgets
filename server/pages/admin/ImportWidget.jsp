@@ -26,7 +26,7 @@
     {
         Optional<WidgetUser> randoUser = WidgetUser.softLookup("rando");
         if(randoUser.isPresent())
-            { templateList = randoUser.getUserWidgetList(); }
+            { templateList = randoUser.get().getUserWidgetList(); }
     }
 
 
