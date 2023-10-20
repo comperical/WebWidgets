@@ -154,7 +154,8 @@ def grab_and_expand_majestic():
     curlcall = f"curl {MAJESTIC_TEMPLATE_URL} -o {majzip} --silent"
     os.system(curlcall)
 
-    unzipcall = f"unzip -q {majzip} -d {UTIL.get_widget_code_dir()}"
+    sharedir = os.path.sep.join([UTIL.get_widget_code_dir(), "shared"])
+    unzipcall = f"unzip -q {majzip} -d {sharedir}"
     print(unzipcall)
     os.system(unzipcall)
 
