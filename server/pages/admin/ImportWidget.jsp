@@ -20,8 +20,15 @@
     String serverMessage = argMap.getStr("message", "");
 
     List<WidgetItem> currentList = currentUser.get().getUserWidgetList();
-    List<WidgetItem> templateList = WidgetUser.lookup("rando").getUserWidgetList();
     List<String> currentNameList = Util.map2list(currentList, item -> item.theName);
+
+    List<WidgetItem> templateList = Util.listify();
+    {
+        Optional<WidgetUser> randoUser = WidgetUser.softLookup("rando");
+        if(randoUser.isPresent())
+            { templateList = randoUser.getUserWidgetList(); }
+    }
+
 
     Map<String, String> descriptionMap = Util.treemap();
 
