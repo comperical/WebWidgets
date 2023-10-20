@@ -11,6 +11,11 @@ import utility as UTIL
 
 FREE_RESIN_URL = "https://s3.amazonaws.com/AozoraCrm/userdata/crm/p3software/download/resin-4.0.66.zip"
 
+# I use this for some basic styling of the web admin console, see
+# https://www.bootstrapdash.com/product/majestic
+MAJESTIC_TEMPLATE_URL = "https://s3.amazonaws.com/AozoraCrm/userdata/crm/p3software/download/MajesticWeb.zip"
+
+
 def get_resin_config_xml():
 
 
@@ -143,6 +148,24 @@ def grab_and_expand_resin():
     print(f"Successfully grabbed and installed resin to {resindir}")
 
 
+def grab_and_expand_majestic():
+
+    majzip = os.path.sep.join([UTIL.get_working_dir(), "MajesticWeb.zip"])
+    curlcall = f"curl {MAJESTIC_TEMPLATE_URL} -o {majzip} --silent"
+    os.system(curlcall)
+
+    unzipcall = f"unzip -q {majzip} -d {UTIL.get_widget_code_dir()}"
+    print(unzipcall)
+    os.system(unzipcall)
+
+    # Clean up
+    os.remove(majzip)
+
+    majdir = os.path.sep.join([UTIL.get_widget_code_dir(), "majestic"])
+    assert os.path.exists(majdir), f"Output director {majdir} does not exist"
+    print(f"Successfully downloaded and installed Majestic Web template to  {majdir}")
+
+
 
 if __name__ == "__main__":
 
@@ -155,6 +178,8 @@ if __name__ == "__main__":
     grab_and_expand_resin()
 
     write_resin_xml()
+
+    grab_and_expand_majestic()
 
 
 

@@ -115,7 +115,7 @@
         </div>  
       </div>
       <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
-    </nav>    
+    </nav>
 
     <!-- partial -->    
     <div class="container-fluid page-body-wrapper">
