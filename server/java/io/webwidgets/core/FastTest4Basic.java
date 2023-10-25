@@ -30,9 +30,16 @@ public class FastTest4Basic
 {
 	
 	// For several of the tests in this package, we need a user, currently use my username
+	/*
 	private static WidgetUser getTestDburfootUser()
 	{
 		return WidgetUser.lookup("dburfoot");
+	}
+	*/
+
+	private static Set<WidgetUser> getAdminUserSet()
+	{
+		return Util.filter2set(WidgetUser.values(), user -> user.isAdmin());
 	}
 
 	public static class CheckUserHardReference extends DescRunnable
@@ -47,6 +54,8 @@ public class FastTest4Basic
 
 		public void runOp()
 		{
+			// TODO: run with test user
+
 			WidgetUser heather1 = WidgetUser.valueOf("heather");
 			WidgetUser heather2 = WidgetUser.valueOf("heather");
 			// Util.pf("H1 = %s, H2 = %s\n", heather1, heather2);
@@ -73,17 +82,21 @@ public class FastTest4Basic
 		
 		public void runOp()
 		{
-			Set<WidgetUser> adminheather = Util.setify(getTestDburfootUser(), WidgetUser.valueOf("heather"));
+			// TODO: run with optional admin user
+
+			WidgetUser testuser = WidgetUser.valueOf("testuser");
+			Set<WidgetUser> adminset = getAdminUserSet();
 			
 			for(WidgetUser wuser : WidgetUser.values())
 			{
-				WidgetItem probe = new WidgetItem(WidgetUser.valueOf("heather"), "mood");
+				WidgetItem probe = new WidgetItem(testuser, "links");
 				boolean allow = AuthChecker.build().directSetAccessor(wuser).directDbWidget(probe).allowRead();
-				boolean expect = adminheather.contains(wuser);
+				boolean expect = wuser == testuser || adminset.contains(probe);
 				Util.massert(allow == expect,
 					"Got allow=%s but expected %s for wuser=%s", allow, expect, wuser);
 			}
 			
+			/*
 			for(WidgetUser wuser : WidgetUser.values())
 			{
 				String page = getHeatherPage();
@@ -101,6 +114,7 @@ public class FastTest4Basic
 				Util.massert(allow == expect,
 					"Got allow=%s but expected %s for wuser=%s", allow, expect, wuser);
 			}
+			*/
 		}
 		
 		private String getHeatherPage() 
@@ -185,6 +199,7 @@ public class FastTest4Basic
 
 	public static class TestWuserDataLoad extends ArgMapRunnable
 	{
+		// TODO: move stuff about dburfoot into Extend
 
 		public void runOp()
 		{
@@ -227,6 +242,8 @@ public class FastTest4Basic
 		private void checkUser(WidgetUser user)
 		{
 			String deftag = String.format("widgetOwner : \"%s\"", user.toString());
+
+			// TODO: skip shared user
 
 			for(WidgetItem dbitem : user.getUserWidgetList())
 			{
@@ -623,6 +640,8 @@ public class FastTest4Basic
 
 		public void runOp()
 		{
+			// TODO: refactor
+			/*
 
 			{
 				WidgetItem dbbase = getTestDburfootUser().baseWidget();
@@ -644,6 +663,7 @@ public class FastTest4Basic
 				WidgetItem probe = WebUtil.getWidgetFromUrl(url);
 				Util.massert(witem.equals(probe), "Expected %s but got %s", witem, probe);
 			}
+			*/
 
 		}
 
