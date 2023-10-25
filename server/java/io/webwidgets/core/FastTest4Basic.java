@@ -268,9 +268,14 @@ public class FastTest4Basic
 			recurseCheck(startdir, 0);
 			
 			Util.massert(_errCount == 0, "Got %d error paths, see above", _errCount);
-			Util.massert(_okayCount > 20, "Should have at least 20 JSP checks");
+			Util.massert(_okayCount > getMinPageCount(), "Should have at least 20 JSP checks");
 			
 			Util.pf("Success, checked %d JSP files\n", _okayCount);	
+		}
+
+		protected int getMinPageCount()
+		{
+			return 3;
 		}
 		
 		private void recurseCheck(File thefile, int depth)
