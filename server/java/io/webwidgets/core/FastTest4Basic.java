@@ -96,35 +96,19 @@ public class FastTest4Basic
 					"Got allow=%s but expected %s for wuser=%s", allow, expect, wuser);
 			}
 			
-			/*
 			for(WidgetUser wuser : WidgetUser.values())
 			{
-				String page = getHeatherPage();
+				String page = getTestUserPage();
 				boolean allow = AuthChecker.build().widgetFromUrl(page).directSetAccessor(wuser).allowRead();
-				boolean expect = adminheather.contains(wuser);
+				boolean expect = wuser == testuser || adminset.contains(wuser);
 				Util.massert(allow == expect,
 					"Got allow=%s but expected %s for wuser=%s", allow, expect, wuser);
 			}
-			
-			for(WidgetUser wuser : WidgetUser.values())
-			{
-				String page = getDburfootPage();
-				boolean allow = AuthChecker.build().widgetFromUrl(page).directSetAccessor(wuser).allowRead();
-				boolean expect = wuser == getTestDburfootUser();
-				Util.massert(allow == expect,
-					"Got allow=%s but expected %s for wuser=%s", allow, expect, wuser);
-			}
-			*/
 		}
 		
-		private String getHeatherPage() 
+		private String getTestUserPage() 
 		{
-			return "https://webwidgets.io/u/heather/mood/main.jsp";	
-		}
-		
-		private String getDburfootPage()
-		{
-			return "https://webwidgets.io/u/dburfoot/life/main.jsp";
+			return "https://webwidgets.io/u/testuser/links/widget.jsp";
 		}
 	}
 
