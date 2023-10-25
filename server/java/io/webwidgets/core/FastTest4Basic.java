@@ -82,8 +82,6 @@ public class FastTest4Basic
 		
 		public void runOp()
 		{
-			// TODO: run with optional admin user
-
 			WidgetUser testuser = WidgetUser.valueOf("testuser");
 			Set<WidgetUser> adminset = getAdminUserSet();
 			
@@ -181,23 +179,21 @@ public class FastTest4Basic
 
 	}
 
-	public static class TestWuserDataLoad extends ArgMapRunnable
+	public static class TestUserEntryLookup extends ArgMapRunnable
 	{
-		// TODO: move stuff about dburfoot into Extend
-
 		public void runOp()
 		{
+			int okaycount = 0;
+
 			for(WidgetUser user : WidgetUser.values())
-				{ Util.massert(user.haveUserEntry(), "Did not find USER entry for user %s", user); }
+			{ 
+				Util.massert(user.haveUserEntry(), "Did not find USER entry for user %s", user); 
+				okaycount++;
+			}
 
-			WidgetUser dburfoot = WidgetUser.lookup("dburfoot");
-			Util.massert(dburfoot.isAdmin());
-			Util.massertEqual(dburfoot.getEmail(), "daniel.burfoot@gmail.com",
-				"Dburfoot email is reported as %s but expected %s");
-
-			Util.pf("Success, found user entries for all WidgetUser records\n");
+			Util.pf("Success, found user entries for all %d WidgetUser records\n", okaycount);
 		}
-	}	
+	}
 
 
 	// At some point, had an issue where I copied the AutoGen from one user to another
