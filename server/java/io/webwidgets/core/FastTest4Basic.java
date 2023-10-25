@@ -222,7 +222,7 @@ public class FastTest4Basic
 		private void checkUser(WidgetUser user)
 		{
 			if(user == WidgetUser.getSharedUser())
-				{ continue; }
+				{ return; }
 
 			String deftag = String.format("widgetOwner : \"%s\"", user.toString());
 
