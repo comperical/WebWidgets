@@ -22,6 +22,8 @@
     List<WidgetItem> currentList = currentUser.get().getUserWidgetList();
     List<String> currentNameList = Util.map2list(currentList, item -> item.theName);
 
+    // TODO: have a more principled approach to widget import than copying from rando user
+    // Copy from the gallery, and pull in data using the demo data dump
     List<WidgetItem> templateList = Util.listify();
     {
         Optional<WidgetUser> randoUser = WidgetUser.softLookup("rando");

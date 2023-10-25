@@ -123,7 +123,7 @@ public class AuthLogic
 			
 		} catch (Exception ex) {
 			throw new RuntimeException(ex);	
-		}		
+		}
 	}
 
 
