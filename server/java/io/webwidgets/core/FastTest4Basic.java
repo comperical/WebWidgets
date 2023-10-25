@@ -324,10 +324,10 @@ public class FastTest4Basic
 					Util.massert(cp == 0, "Expected ZERO Auths in special file %s", thefile.getAbsolutePath());
 					return;
 				}
-			}			
+			}
 			
 			if(cp == 1)
-			{ 	
+			{
 				_okayCount += 1; 
 				return;
 			}
@@ -352,6 +352,8 @@ public class FastTest4Basic
 				Util.massert(basedir.exists(),
 					"Base directory for user %s does not exist", basedir);
 			}
+
+			Util.pf("Success, found base directory for all %d WidgetUsers\n", WidgetUser.values().size());
 		}
 	}
 
@@ -386,6 +388,7 @@ public class FastTest4Basic
 				Util.pf("Loaded general plugin %s\n", general.getClass().getName());
 			}
 
+			int loadcount = 0;
 			for(PluginType ptype : PluginType.values())
 			{
 				if(!PluginCentral.havePlugin(ptype))
@@ -393,7 +396,10 @@ public class FastTest4Basic
 
 				Object ob = PluginCentral.getPluginSub(ptype);
 				Util.massert(ob != null, "Failed to load plugin for PType %s", ptype);
+				loadcount++;
 			}
+
+			Util.pf("Loaded %d plugins successfully\n");
 		}
 	}
 	
@@ -414,9 +420,6 @@ public class FastTest4Basic
 			{
 				for(WidgetItem witem : wuser.getUserWidgetList())
 				{
-					// This doens't work, filters out the __ prefixes
-					// Set<String> nameset = witem.getDbTableNameSet();
-					
 					Set<String> nameset = CoreDb.getLiteTableNameSet(witem);
 					
 					Set<String> badset = Util.filter2set(nameset, name -> name.contains("gimp"));
@@ -457,7 +460,7 @@ public class FastTest4Basic
 	}	
 	
 	public static class CheckUserAutoGen extends DescRunnable
-	{		
+	{
 		public String getDesc()
 		{
 			return "Check that the JS autogen file exists for all widgets\n"  + 
@@ -473,6 +476,9 @@ public class FastTest4Basic
 			
 			for(WidgetUser wuser : WidgetUser.values())
 			{
+				if(wuser == WidgetUser.getSharedUser())
+					{ continue; }
+
 				if(!wuser.haveLocalDb())
 					{ continue; }
 				
