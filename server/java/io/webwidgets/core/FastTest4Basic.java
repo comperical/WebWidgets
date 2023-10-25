@@ -45,11 +45,8 @@ public class FastTest4Basic
 
 		public void runOp()
 		{
-			// TODO: run with test user
-
 			WidgetUser testuser1 = WidgetUser.valueOf("testuser");
 			WidgetUser testuser2 = WidgetUser.valueOf("testuser");
-			// Util.pf("H1 = %s, H2 = %s\n", heather1, heather2);
 			Util.massert(testuser1 == testuser2, "WidgetUser objects must be unique, hard equals must work");
 
 			WidgetItem testlinks = new WidgetItem(testuser1, "links");
@@ -400,7 +397,7 @@ public class FastTest4Basic
 				loadcount++;
 			}
 
-			Util.pf("Loaded %d plugins successfully\n");
+			Util.pf("Loaded %d plugins successfully\n", loadcount);
 		}
 	}
 	
