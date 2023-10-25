@@ -221,9 +221,10 @@ public class FastTest4Basic
 
 		private void checkUser(WidgetUser user)
 		{
-			String deftag = String.format("widgetOwner : \"%s\"", user.toString());
+			if(user == WidgetUser.getSharedUser())
+				{ continue; }
 
-			// TODO: skip shared user
+			String deftag = String.format("widgetOwner : \"%s\"", user.toString());
 
 			for(WidgetItem dbitem : user.getUserWidgetList())
 			{
