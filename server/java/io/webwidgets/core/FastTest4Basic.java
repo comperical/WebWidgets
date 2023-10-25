@@ -28,15 +28,6 @@ import	io.webwidgets.core.BlobDataManager.*;
 
 public class FastTest4Basic
 {
-	
-	// For several of the tests in this package, we need a user, currently use my username
-	/*
-	private static WidgetUser getTestDburfootUser()
-	{
-		return WidgetUser.lookup("dburfoot");
-	}
-	*/
-
 	private static Set<WidgetUser> getAdminUserSet()
 	{
 		return Util.filter2set(WidgetUser.values(), user -> user.isAdmin());
@@ -56,16 +47,26 @@ public class FastTest4Basic
 		{
 			// TODO: run with test user
 
-			WidgetUser heather1 = WidgetUser.valueOf("heather");
-			WidgetUser heather2 = WidgetUser.valueOf("heather");
+			WidgetUser testuser1 = WidgetUser.valueOf("testuser");
+			WidgetUser testuser2 = WidgetUser.valueOf("testuser");
 			// Util.pf("H1 = %s, H2 = %s\n", heather1, heather2);
-			Util.massert(heather1 == heather2, "WidgetUser objects must be unique, hard equals must work");
+			Util.massert(testuser1 == testuser2, "WidgetUser objects must be unique, hard equals must work");
 
-			WidgetItem moodlog = new WidgetItem(WidgetUser.valueOf("heather"), "mood");
-			Util.massert(heather1 == moodlog.theOwner);
+			WidgetItem testlinks = new WidgetItem(testuser1, "links");
 
-			boolean allow = AuthChecker.build().directSetAccessor(heather1).directDbWidget(moodlog).allowRead();
-			Util.massert(allow, "Must allow access to owner");
+
+			for(WidgetUser tuser : Util.listify(testuser1, testuser2))
+			{
+				Util.massert(tuser == testlinks.theOwner);
+				boolean allowedit = AuthChecker.build().directSetAccessor(tuser).directDbWidget(testlinks).allowWrite();
+				Util.massert(allowedit, "Must allow access to owner");
+			}
+
+			for(WidgetUser admin : getAdminUserSet())
+			{
+				boolean allowedit = AuthChecker.build().directSetAccessor(admin).directDbWidget(testlinks).allowWrite();
+				Util.massert(allowedit, "Must allow access to ADMIN");
+			}
 		}
 	}
 
@@ -806,48 +807,7 @@ public class FastTest4Basic
 
 	}
 
-	public static class PingWwioSite extends DescRunnable
-	{
-		public String getDesc()
-		{
-			return "Just ping the WWIO site, get a simple page";
-		}
 
-		public void runOp() throws Exception
-		{
-			for(String relpath : getRelativePathList())
-			{
-				String fullurl = String.format("https://%s%s", WebUtil.WWIO_DOMAIN, relpath);
-				URLConnection connection = new URL(fullurl).openConnection();
-				InputStream response = connection.getInputStream();
-
-				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				FileUtils.in2out(response, baos);
-
-				int rsize = baos.size();
-				Util.massert(rsize > 1000, "Got only %d bytes of response data", rsize);
-				Util.pf("Success, pinged page %s and received %d bytes of response\n", fullurl, rsize);
-			}
-		}
-
-		private static List<String> getRelativePathList() 
-		{
-			return Arrays.asList(
-				"",
-				"/u/admin/EmailControl.jsp?sender=dburfoot",
-				"/docs/JsFileDoc.jsp",
-				"/docs/PythonDoc.jsp",
-				"/docs/WidgetSetup.jsp",
-				"/docs/GoogleExport.jsp",
-				"/u/admin/AdminMain.jsp",
-				"/u/admin/ImportWidget.jsp",
-				"/u/admin/ChangePass.jsp",
-				"/u/admin/Bounce2Home.jsp",
-				"/u/admin/MailRunner.jsp"
-				// "/u/admin/GoogleSyncMain.jsp"
-			);
-		}
-	}
 	
 	public static class TestLoadPluginInfo extends DescRunnable
 	{
