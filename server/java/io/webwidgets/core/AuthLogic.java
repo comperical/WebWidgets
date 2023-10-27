@@ -105,6 +105,25 @@ public class AuthLogic
 		response.addCookie(mycookie);
 	}
 	
+	public static void performLogOut(HttpServletRequest request, HttpServletResponse response)
+	{
+		Set<String> clearset = Util.setify(ACCESS_HASH_COOKIE, USER_NAME_COOKIE);
+
+		if(request.getCookies() == null)
+			{ return; }
+
+        for(Cookie cookie : request.getCookies()) 
+        {
+        	if(!clearset.contains(cookie.getName()))
+        		{ continue; }
+
+			cookie.setMaxAge(0);
+			cookie.setPath("/"); 
+			response.addCookie(cookie);
+	    }
+	}
+
+
 	// NB this must match the JavaScript implementation.
 	public static String canonicalHash(String input) 
 	{
