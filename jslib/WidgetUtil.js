@@ -405,8 +405,28 @@ function getWidgetUserName()
 // If the application has set additional cookies, it must implement clearing logic on its own
 function basicWidgetLogout()
 {
-    setCookieNoExpiration("username", "");
-    setCookieNoExpiration("accesshash", "");
+    // setCookieNoExpiration("username", "");
+    // setCookieNoExpiration("accesshash", "");
+    logoutWithBounceBack(null);
+}
+
+// Log out of Widgets and bounce-back to current url
+function logoutAndReturn()
+{
+    logoutWithBounceBack(window.location.href);
+}
+
+function logoutWithBounceBack(bounceback)
+{
+    var lourl = "/u/admin/LogOut.jsp"
+
+    if(bounceback != null)
+    {
+        const encbounce = encodeURIComponent(bounceback);
+        lourl += "?bounceback=" + encbounce;
+    }
+
+    window.location.href = lourl;
 }
 
 

@@ -87,7 +87,7 @@ public class FastTest4Basic
 			{
 				WidgetItem probe = new WidgetItem(testuser, "links");
 				boolean allow = AuthChecker.build().directSetAccessor(wuser).directDbWidget(probe).allowRead();
-				boolean expect = wuser == testuser || adminset.contains(probe);
+				boolean expect = wuser == testuser || adminset.contains(wuser);
 				Util.massert(allow == expect,
 					"Got allow=%s but expected %s for wuser=%s", allow, expect, wuser);
 			}
