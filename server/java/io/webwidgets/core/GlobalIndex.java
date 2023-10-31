@@ -125,7 +125,7 @@ public class GlobalIndex
             return;
         }
 
-        CoreDb.updateFromRecMap(CoreUtil.getMasterWidget(), MasterTable.system_setting.toString(), 1, CoreDb.getRecMap(
+        CoreDb.upsertFromRecMap(CoreUtil.getMasterWidget(), MasterTable.system_setting.toString(), 1, CoreDb.getRecMap(
             "key_str", setting, 
             "val_str", optval.get()
         ));
