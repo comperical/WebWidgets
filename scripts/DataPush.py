@@ -24,7 +24,7 @@ class DataPush(CodePush.AssetUploader):
 		
 	def find_base_dir(self, configmap):
 		self.basedir = configmap["dbdir"]
-		
+
 	def get_payload_path(self):
 		return self.get_db_path()		
 		
@@ -54,6 +54,15 @@ if __name__ == "__main__":
 	uploader.find_base_dir(configmap)
 	uploader.ensure_okay()
 	
+	if uploader.widget == "mailbox":
+		mssg = f"""The mailbox DB can only be downloaded, not uploaded. This is to prevent abuse of the mail system.
+		Please see {CodePush.WWIO_DOCS_URL} for more information
+		""".replace("\t", " ")
+
+
+		print(mssg)
+		quit()
+
 	
 	uploader.do_prep()
 	uploader.do_upload(configmap)

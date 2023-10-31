@@ -12,6 +12,8 @@ CONFIG_MAP_OKAY_KEYS = ["accesshash", "dbdir", "codedir1", "codedir2", "codedir3
 
 SUBFOLDER_NAME = ".ssh"
 
+WWIO_DOCS_URL = "https://webwidgets.io/docs.jsp"
+
 
 def get_domain_prefix(local=False):
 	return  "https://webwidgets.io"

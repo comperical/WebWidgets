@@ -19,7 +19,7 @@ import io.webwidgets.core.WidgetOrg.*;
 
 
 public class ActionJackson extends HttpServlet
-{	
+{
 	public static final String SERVLET_PART_SAVE_DIR = "/opt/rawdata/servlet";
 	
 	public enum UploadFileType 
@@ -45,7 +45,7 @@ public class ActionJackson extends HttpServlet
 		{
 			String username = innmap.getStr("username", "");
 			String acchash = innmap.getStr("accesshash", "");
-			return AuthLogic.checkCredential(username, acchash);			
+			return AuthLogic.checkCredential(username, acchash);
 		}
 	
 		default boolean okaySecure(HttpServletRequest req)
