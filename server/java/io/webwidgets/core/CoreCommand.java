@@ -70,13 +70,12 @@ public class CoreCommand
 		public String getDesc()
 		{
 			return 
-			"Put the server in maintenance mode by creating a file at the appropriate path\n" + 
-			Util.sprintf("The path is %s\n", CoreUtil.MAINTENANCE_MODE_FILE);
+			"Put the server in maintenance mode by updating the system setting " + SystemPropEnum.MAINTENANCE_MODE;
 		}
 		
 		public void runOp()
 		{
-			Optional<String> prevmode = WebUtil.maintenanceModeInfo();
+			Optional<String> prevmode = CoreUtil.maintenanceModeInfo();
 			if(prevmode.isPresent())
 			{
 				Util.pf("Server is already in maintenance mode: %s\n", prevmode.get());
@@ -84,17 +83,11 @@ public class CoreCommand
 			}
 			
 			Util.pf("Okay, this will put the server in maintenance mode so no further updates can be processed\n");
-			
 			Util.pf("Enter your message: ");
 			
 			String mssgtext = Util.getUserInput();
 			
-			FileUtils.getWriterUtil()
-						.setFile(CoreUtil.MAINTENANCE_MODE_FILE)
-						.writeLineListE(Util.listify(mssgtext));
-			
-			Util.pf("Okay, wrote file to path %s\n", CoreUtil.MAINTENANCE_MODE_FILE);
-			
+			GlobalIndex.updateSystemSetting(SystemPropEnum.MAINTENANCE_MODE, Optional.of(mssgtext));
 			Util.pf("Confirm success by running this program again\n");
 		}
 	}
@@ -108,7 +101,7 @@ public class CoreCommand
 		
 		public void runOp() 
 		{
-			Optional<String> prevmode = WebUtil.maintenanceModeInfo();
+			Optional<String> prevmode = CoreUtil.maintenanceModeInfo();
 			if(!prevmode.isPresent())
 			{
 				Util.pf("Server is not in maintenance mode!!\n");
@@ -119,15 +112,10 @@ public class CoreCommand
 			
 			if(Util.checkOkay("Okay to proceed? [yes/NO]")) 
 			{
-				CoreUtil.MAINTENANCE_MODE_FILE.delete();
-				Util.pf("Maintenance Mode flag deleted\n");
+				GlobalIndex.updateSystemSetting(SystemPropEnum.MAINTENANCE_MODE, Optional.empty());
+				Util.pf("Maintenance Mode flag removed, remember to restart\n");
 			}
-			
-			Optional<String> imempty = WebUtil.maintenanceModeInfo();
-			Util.massert(imempty.isEmpty(),
-				"Somehow still have a maintenance mode flag!! : %s", imempty);
 		}
-		
 	}
 	
 	public static class SetupMasterDb extends DescRunnable

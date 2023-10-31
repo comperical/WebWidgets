@@ -79,16 +79,6 @@ public class WebUtil
 		String suburl = remoteurl.substring(lifept);
 		return Util.sprintf("http://localhost:8080%s", suburl);
 	}
-	
-	public static Optional<String> maintenanceModeInfo()
-	{
-		if(!CoreUtil.MAINTENANCE_MODE_FILE.exists())
-			{ return Optional.empty(); }
-		
-		List<String> info = FileUtils.getReaderUtil().setFile(CoreUtil.MAINTENANCE_MODE_FILE).readLineListE();
-
-		return Optional.of(Util.join(info, "\n"));
-	}
 		
 	// For this method, the URL MUST conform to the expected pattern
 	// If you are not sure if it will conform, use getWidgetFromPageUrl

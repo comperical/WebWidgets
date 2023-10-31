@@ -206,6 +206,12 @@ public class CoreUtil
 								.equals(true+"");
 	}
 
+
+	public static Optional<String> maintenanceModeInfo()
+	{
+		return Optional.ofNullable(GlobalIndex.getSystemSetting().get(SystemPropEnum.MAINTENANCE_MODE.toString()));
+	}
+
 	public static int getNewDbId(ConnectionSource witem, String tabname)
 	{
 		return getNewDbId(witem, tabname, "id");
@@ -515,6 +521,9 @@ public class CoreUtil
 		}
 		
 	}
+
+
+
 
 
 	public enum SystemPropEnum
