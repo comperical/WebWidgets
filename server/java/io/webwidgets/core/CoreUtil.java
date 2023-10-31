@@ -92,6 +92,8 @@ public class CoreUtil
 	// Jclass is the direct peer of the config directory
 	public static final String JCLASS_BASE_DIR = getSubDirectory(WWIO_BASE_CONFIG_DIR, "jclass", 1);
 
+	// TODO: this is no longer used except for the IMPORT_TEMP_DIR below it. We could move the import temp
+	// into the base config dir. Do we need random misc data files?
 	// Directory for miscellaneous config etc files. Not checked into repo, but used in the application
 	public static final String WWIO_MISC_DATA_DIR = getSubDirectory(WWIO_BASE_CONFIG_DIR, "miscdata", 1);
 
@@ -109,8 +111,6 @@ public class CoreUtil
 
 	// TODO: need to rationalize this. The BlobStorageManager should probably use a workdir directory
 	public static final String WWIO_BLOB_BASE_DIR = "/opt/rawdata/wwio/blob";
-
-	public static File MAINTENANCE_MODE_FILE = new File(getSubDirectory(WWIO_MISC_DATA_DIR, "MAINTENANCE_MODE_MARKER.txt"));
 
 	public static final File SHARED_CSS_ASSET_DIR = (new WidgetItem(WidgetUser.buildBackDoorSharedUser(), "css")).getWidgetBaseDir();
 	public static final File SHARED_JSLIB_ASSET_DIR = (new WidgetItem(WidgetUser.buildBackDoorSharedUser(), "jslib")).getWidgetBaseDir();
