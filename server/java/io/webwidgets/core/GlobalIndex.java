@@ -9,6 +9,7 @@ import java.nio.file.*;
 import java.time.LocalDate;
 
 import net.danburfoot.shared.Util;
+import net.danburfoot.shared.CoreDb;
 import net.danburfoot.shared.ArgMap;
 
 import net.danburfoot.shared.CoreDb.QueryCollector;
@@ -105,4 +106,32 @@ public class GlobalIndex
         WidgetUser admin = new WidgetUser(WidgetUser.SHARED_USER_NAME);
         return new WidgetItem(admin, CoreUtil.MASTER_WIDGET_NAME);
     }
+
+    public static void updateSystemSetting(Enum setting, Optional<String> optval)
+    {
+        updateSystemSetting(setting.toString(), optval);
+
+    }
+
+    static void updateSystemSetting(String setting, Optional<String> optval)
+    {
+
+        if(!optval.isPresent())
+        {
+            CoreDb.deleteFromColMap(CoreUtil.getMasterWidget(), MasterTable.system_setting.toString(), CoreDb.getRecMap(
+                "key_str", setting
+            ));
+
+            return;
+        }
+
+        CoreDb.updateFromRecMap(CoreUtil.getMasterWidget(), MasterTable.system_setting.toString(), 1, CoreDb.getRecMap(
+            "key_str", setting, 
+            "val_str", optval.get()
+        ));
+
+
+    }
+
+
 }

@@ -1203,13 +1203,13 @@ public class CoreCommand
 			boolean allowins = CoreUtil.allowInsecureConnection();
 			if(allowins)
 			{
-				CoreUtil.INSECURE_ALLOW_FILE.delete();
-				Util.pf("Cleared insecure-allow file, this will reset to no-insecure config\n");
+				GlobalIndex.updateSystemSetting(CoreUtil.SystemPropEnum.INSECURE_ALLOW_MODE, Optional.empty());
+				Util.pf("Cleared insecure-allow setting, this will reset to no-insecure config\n");
 			} else {
 
 				if(confirmAllow())
 				{
-					FileUtils.getWriterUtil().setFile(CoreUtil.INSECURE_ALLOW_FILE).writeLineListE(Util.listify(""+true));
+					GlobalIndex.updateSystemSetting(CoreUtil.SystemPropEnum.INSECURE_ALLOW_MODE, Optional.of(true+""));
 					Util.pf("Marked allow insecure, do not run in prod!\n");
 				} else {
 					Util.pf("Aborting\n");

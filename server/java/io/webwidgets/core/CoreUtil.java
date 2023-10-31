@@ -112,9 +112,6 @@ public class CoreUtil
 
 	public static File MAINTENANCE_MODE_FILE = new File(getSubDirectory(WWIO_MISC_DATA_DIR, "MAINTENANCE_MODE_MARKER.txt"));
 
-	public static File INSECURE_ALLOW_FILE = new File(getSubDirectory(WWIO_MISC_DATA_DIR, "ALLOW_INSECURE.txt"));
-
-
 	public static final File SHARED_CSS_ASSET_DIR = (new WidgetItem(WidgetUser.buildBackDoorSharedUser(), "css")).getWidgetBaseDir();
 	public static final File SHARED_JSLIB_ASSET_DIR = (new WidgetItem(WidgetUser.buildBackDoorSharedUser(), "jslib")).getWidgetBaseDir();
 	public static final File SHARED_IMAGE_ASSET_DIR = (new WidgetItem(WidgetUser.buildBackDoorSharedUser(), "image")).getWidgetBaseDir();
@@ -122,10 +119,6 @@ public class CoreUtil
 
 
 	static final String MASTER_WIDGET_NAME = "master";
-
-	private static Boolean _ALLOW_INSECURE_CONNX;
-
-
 	
 	private static boolean _CLASS_INIT = false;
 	
@@ -208,16 +201,9 @@ public class CoreUtil
 	// The file contents must be the string "true" in order to return true
 	public static boolean allowInsecureConnection()
 	{
-		if(_ALLOW_INSECURE_CONNX == null)
-		{
-			List<String> allow = INSECURE_ALLOW_FILE.exists() 
-						? FileUtils.getReaderUtil().setFile(INSECURE_ALLOW_FILE).readLineListE()
-						: Util.listify();
-
-			_ALLOW_INSECURE_CONNX = Util.join(allow, "\n").trim().equals(""+true);
-		}
-
-		return _ALLOW_INSECURE_CONNX;
+		return GlobalIndex.getSystemSetting()
+								.getOrDefault(SystemPropEnum.INSECURE_ALLOW_MODE.toString(), "...")
+								.equals(true+"");
 	}
 
 	public static int getNewDbId(ConnectionSource witem, String tabname)
@@ -528,6 +514,18 @@ public class CoreUtil
 			createSql = c;
 		}
 		
+	}
+
+
+	public enum SystemPropEnum
+	{
+		// If present, the server is in maintenance mode and updates will be rejected
+		// The value of the setting will be sent to users who try to make updates
+		MAINTENANCE_MODE,
+
+		// If present and equal to "true", the system is in insecure mode
+		INSECURE_ALLOW_MODE;
+
 	}
 
 
