@@ -28,7 +28,7 @@ public class BlobDataManager
 	public static final String GET_BLOB_STORE_METHOD = "getBlobStoreUrl";
 	
 	public enum BlobInfoColumn
-	{	
+	{
 		base64_blob_data,
 		blob_file_name;
 	}

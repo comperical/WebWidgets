@@ -65,7 +65,7 @@ buildItem : function(tabname, record)
     if(!record.hasOwnProperty("id"))
         { record["id"] = W.newBasicId(tabname); }
 
-    return buildfunc(record);   
+    return buildfunc(record);
 },
 
 // Check if the given table has an item with the given ID.
@@ -109,13 +109,27 @@ getWidgetTableList : function()
 
 
 // Creates a new ID for the given table name.
-// This method is no longer recommended, you should let the framework
-// assign a new ID and then call getId() on the resulting object.
+// In general, users should not need to call this method; it is called automatically 
+// when the "id" column is not explicitly supplied in the buildItem(...) data.
+// The ID is allocated by generating a random integer in the the useable range
+// and checking to make sure it is not already in use in the table.
+// The useable range is -2147483648 to 2147483647, with an exception for -1000 to 0
 newBasicId : function(tabname)
 {
     W.checkTableName(tabname);
     const datamap = W.__tableNameIndex.get(tabname)._dataMap;
     return W.createNewIdRandom(datamap);
+},
+
+
+// Creates a new ID for the given table name.
+// The new ID is 1 greater than the previous max ID currently in the table
+// This approach to ID allocation is not recommended because it can cause problems in multi-user settings
+newIncrementalId : function(tabname)
+{
+    W.checkTableName(tabname);
+    const datamap = W.__tableNameIndex.get(tabname)._dataMap;
+    return W.createNewIdIncremental(datamap);
 },
 
 
@@ -131,11 +145,11 @@ serverSideNewDbId : function(tabname, callback)
     const xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         
-        if (this.readyState == 4) {         
+        if (this.readyState == 4) {
             massert(this.status == 200, "Unexpected error code on Ajax operation: " + this.status);
 
             // The actual ID is in the extra_info field
-            const response = JSON.parse(this.responseText);            
+            const response = JSON.parse(this.responseText);
             const newid = parseInt(response["extra_info"]);
             callback(newid);
         }
@@ -248,10 +262,14 @@ genericDeleteUrl : function(tablemaster, item, keylist)
 },
 
 createNewIdBasic : function(datamap)
-{    
+{
     return W.createNewIdRandom(datamap);
 },
 
+
+// Create a new ID by generating a random integer in the the useable range
+// and checking to make sure it is not already in use.
+// The useable range is -2147483648 to 2147483647, with an exception for -1000 to 0
 createNewIdRandom : function(datamap) 
 {
     // Gotcha!! Don't use 'try' as a variable name!!
@@ -278,11 +296,11 @@ createNewIdRandom : function(datamap)
 createNewIdIncremental : function(datamap) 
 {
     if(datamap.size == 0) {
-        return 0;
+        return 1;
     }
 
     const maxid = [... datamap.keys()].reduce(function(a, b) {
-        return Math.max(a, b);      
+        return Math.max(a, b);
     });
     
     return maxid+1;
