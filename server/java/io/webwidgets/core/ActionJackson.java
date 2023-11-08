@@ -20,9 +20,12 @@ import io.webwidgets.core.WidgetOrg.*;
 
 public class ActionJackson extends HttpServlet
 {
+
+	// TODO: need to make this location config-dependent!
 	public static final String SERVLET_PART_SAVE_DIR = "/opt/rawdata/servlet";
 	
 
+	// Nov 2023: these are not yet implemented, but adding them here for documentation
 	public enum LoadApiError
 	{
 
@@ -31,6 +34,7 @@ public class ActionJackson extends HttpServlet
 		MailboxError,
 		BlobStoreError,
 		ReservedNameError,
+		MissingWidgetError,
 		UploadSizeError;
 	}
 
