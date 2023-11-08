@@ -24,6 +24,7 @@ import	io.webwidgets.core.AuthLogic.*;
 import	io.webwidgets.core.MailSystem.*;
 import	io.webwidgets.core.DataServer.*;
 import	io.webwidgets.core.PluginCentral.*;
+import	io.webwidgets.core.ActionJackson.*;
 import	io.webwidgets.core.BlobDataManager.*;
 
 public class FastTest4Basic
@@ -912,6 +913,118 @@ public class FastTest4Basic
 			}
 			
 			Util.pf("Success, checked %d MasterTable definitions\n", MasterTable.values().length);
+		}
+	}
+
+
+	public static class CodeFormatFixtureText extends DescRunnable
+	{
+
+		private Map<String, Integer> _fixOkayMap = Util.treemap();
+
+		public String getDesc()
+		{
+			return "";
+
+		}
+
+
+		public void runOp()
+		{
+
+			checkJspTagTest();
+
+			checkBadDataFormat();
+
+			checkDataServerInclude();
+
+			checkOkayDataServerInclude();
+
+			Util.pf("Success, code-okay map is %s\n", _fixOkayMap);
+		}
+
+		private List<String> loadFixtureData(String codename, int idx)
+		{
+			String inputfile = Util.sprintf("/opt/userdata/wwiocore/server/testdata/%s%d.jsp", codename, idx);
+			if(!(new File(inputfile)).exists())
+				{ return null; }
+
+			Util.pf("Loading file %s\n", inputfile);
+			return FileUtils.getReaderUtil().setFile(inputfile).readLineListE();
+		}
+
+		private void checkJspTagTest()
+		{
+			String codename = "BadJspTag";
+
+			for(int idx : Util.range(20))
+			{
+				List<String> srclist = loadFixtureData(codename, idx);
+				if(srclist == null)
+					{ break; }
+
+				CodeFormatChecker cfchecker = new CodeFormatChecker(srclist, true);
+				Util.massert(cfchecker.codeFormatMessage.get().contains("open or close JSP"),
+					"Expected message about open/close JSP, found %s", cfchecker.codeFormatMessage);
+
+				Util.incHitMap(_fixOkayMap, codename);
+			}
+
+		}
+
+		private void checkDataServerInclude()
+		{
+			String codename = "BadDataServerInclude";
+
+			for(int idx : Util.range(20))
+			{
+				List<String> srclist = loadFixtureData(codename, idx);
+				if(srclist == null)
+					{ break; }
+
+				CodeFormatChecker cfchecker = new CodeFormatChecker(srclist, true);
+				Util.massert(cfchecker.codeFormatMessage.get().contains("badly formatted DataServer.include"),
+					"Expected message badly formatted DataServer.include, found %s", cfchecker.codeFormatMessage);
+
+				Util.incHitMap(_fixOkayMap, codename);
+			}
+		}
+
+		private void checkBadDataFormat()
+		{
+			String codename = "BadDataFormat";
+
+			for(int idx : Util.range(20))
+			{
+				List<String> srclist = loadFixtureData(codename, idx);
+				if(srclist == null)
+					{ break; }
+
+				CodeFormatChecker cfchecker = new CodeFormatChecker(srclist, true);
+				Util.massert(cfchecker.codeFormatMessage.get().contains("DataServer"),
+									"Expected message about DataServer include argument, found %s", cfchecker.codeFormatMessage);
+
+				Util.incHitMap(_fixOkayMap, codename);
+			}
+		}
+
+
+		private void checkOkayDataServerInclude()
+		{
+			String codename = "OkayDataServerInclude";
+
+			for(int idx : Util.range(20))
+			{
+				List<String> srclist = loadFixtureData(codename, idx);
+				if(srclist == null)
+					{ break; }
+
+				CodeFormatChecker cfchecker = new CodeFormatChecker(srclist, true);
+				Util.massert(!cfchecker.codeFormatMessage.isPresent(),
+					"Got message %s, expected to be okay", cfchecker.codeFormatMessage);
+
+				Util.incHitMap(_fixOkayMap, codename);
+			}
 		}
 	}
 } 

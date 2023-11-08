@@ -9,6 +9,9 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.servlet.annotation.MultipartConfig;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 
 import net.danburfoot.shared.Util;
 import net.danburfoot.shared.ArgMap;
@@ -24,6 +27,13 @@ public class ActionJackson extends HttpServlet
 	// TODO: need to make this location config-dependent!
 	public static final String SERVLET_PART_SAVE_DIR = "/opt/rawdata/servlet";
 	
+
+	public static final String DATA_INCLUDE_PLAIN = "DataServer.include(request)";
+
+
+	public static final String DATA_FORMAT_REGEX = "DataServer\\.include\\(request,\\s*\"([A-Za-z0-9_=&]+)\"\\s*\\)";
+
+	private static final Pattern DATA_FORMAT_PATTERN = Pattern.compile(DATA_FORMAT_REGEX);
 
 	// Nov 2023: these are not yet implemented, but adding them here for documentation
 	public enum LoadApiError
@@ -101,10 +111,20 @@ public class ActionJackson extends HttpServlet
 	)
 	public static class Push2Me extends HttpServlet implements WidgetServlet
 	{
-		
-		protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-			ArgMap innmap = WebUtil.getArgMap(request);		
+		protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException 
+		{
+			try 
+				{ doPostSub(request, response); }
+			catch (LoaderException loadex) 
+				{ sendErrorResponse(response, loadex); }
+		}
+
+		
+		protected void doPostSub(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, LoaderException 
+		{
+
+			ArgMap innmap = WebUtil.getArgMap(request);
 			
 			if(!checkSecureRespond(request, response))
 				{ return; }
@@ -115,41 +135,48 @@ public class ActionJackson extends HttpServlet
 			
 			WidgetUser wuser = WidgetUser.valueOf(innmap.getStr("username"));
 			String widgetname = innmap.getStr("widget");
-			// WidgetItem witem = new WidgetItem(wuser, widgetname);
-			
-			int mc = 0;			
+
+			Util.massert(widgetname.strip().toLowerCase().equals(widgetname),
+				"Badly formatted widget name %s, should be no-whitespace, lowercase, uploader script should catch this...!", widgetname);
+
+
+			if(MailSystem.MAILBOX_WIDGET_NAME.equals(widgetname))
+			{
+				String extra = "You cannot upload the Widget mailbox DB, only download it. This is to prevent abuse of email system";
+				throw new LoaderException(LoadApiError.MailboxError, extra);
+			}
+
+			if(!(new WidgetItem(wuser, widgetname)).dbFileExists())
+			{
+				String extra = Util.sprintf("No widget %s found for user %s, you must create in Admin Console first", widgetname, wuser);
+				throw new LoaderException(LoadApiError.MissingWidgetError, extra);
+			}
+
+
+			int mc = 0;
 			String s = "";
 			
-			// Enumeration<String> headers = request.getHeaderNames();
-			// while(headers.hasMoreElements()) {
-				// s += Util.sprintf("%s\n", headers.nextElement());	
-			// }
-						
-			// s += Util.sprintf("Parts are %s\n", request.getParts());
-			
-			// s += Util.sprintf("INNMAP : %s\n", innmap);
-			
-			UploadFileType filetype = UploadFileType.valueOf(innmap.getStr("filetype"));						
-			List<Part> payload = Util.filter2list(request.getParts(), p -> p.getName().equals("payload"));
-			Util.massert(payload.size() == 1, 
-				"Expected exactly 1 payload file, got %d", payload.size());
-
+			UploadFileType filetype = UploadFileType.valueOf(innmap.getStr("filetype"));
 			CodeLocator codeloc = new CodeLocator(wuser, widgetname, filetype);
 			
 			{
+				List<Part> payload = Util.filter2list(request.getParts(), p -> p.getName().equals("payload"));
+				Util.massert(payload.size() == 1, 
+					"Expected exactly 1 payload file, got %d", payload.size());
+
 				File codefile = codeloc.getCodeFile();
 				if(codefile.exists())
 					{ codefile.delete(); }
 				
 				payload.get(0).write(codeloc.getCodeName());
-				// s += Util.sprintf("Wrote upload file to path %s\n", codeloc.getCodePath());
 			}
 			
 			if(filetype.isZip())
 			{
-				// s += "Extracting code for widget " + witem + "\n";
-				
-				CodeExtractor codex = codeloc.getExtractor();	
+				CodeExtractor codex = codeloc.getExtractor();
+				codex.checkCodeFormat(codeloc);
+
+
 				codex.cleanOldCode();
 				codex.extractCode(codeloc);
 				codex.optAugmentAuthHeader();
@@ -160,7 +187,7 @@ public class ActionJackson extends HttpServlet
 				codex.generateDiffLog();
 				
 				for(String log : codex.getLogList())
-					{ s += log; }			
+					{ s += log; }
 			
 			} else if(filetype == UploadFileType.sqlite) {
 				
@@ -193,6 +220,13 @@ public class ActionJackson extends HttpServlet
 			response.getOutputStream().write(s.getBytes());
 			response.getOutputStream().close();
 		}
+	}
+
+	private static void sendErrorResponse(HttpServletResponse response, LoaderException loadex) throws IOException
+	{
+		String topmssg = Util.sprintf("Encountered error %s, additional details are:\n%s", loadex.theError, loadex.extraInfo);
+		response.getOutputStream().write(topmssg.getBytes());
+		response.getOutputStream().close();
 	}
 	
 	static class CodeLocator
@@ -462,6 +496,28 @@ public class ActionJackson extends HttpServlet
 			return _logList;	
 		}
 		
+
+		void checkCodeFormat(CodeLocator codeloc) throws LoaderException, IOException
+		{
+
+			ZipFile myfile = new ZipFile(codeloc.getCodeFile());
+			Enumeration<? extends ZipEntry> zipen = myfile.entries();
+			
+			while(zipen.hasMoreElements()) {
+				ZipEntry zent = zipen.nextElement();
+				String zname = zent.getName();
+
+				if(zname.endsWith(".jsp") || zname.endsWith(".wisp"))
+				{
+
+					List<String> srclist = FileUtils.getReaderUtil()
+													.setStream(myfile.getInputStream(zent))
+													.readLineListE();
+
+				}
+			}
+		}
+
 		// We are relying on the uploader to make sure there aren't 
 		// any weird things in this package.
 		int extractCode(CodeLocator codeloc)
@@ -502,7 +558,7 @@ public class ActionJackson extends HttpServlet
 				
 				return -1;
 			} catch (Exception ex) {
-				throw new RuntimeException(ex);	
+				throw new RuntimeException(ex);
 			}
 		}
 		
@@ -698,6 +754,123 @@ public class ActionJackson extends HttpServlet
 			File result = CoreUtil.convert2Excel(witem);			
 
 			FileUtils.in2out(new FileInputStream(result), response.getOutputStream());
+		}
+	}
+
+
+	public static class LoaderException extends Exception
+	{
+		public final LoadApiError theError;
+		public final String extraInfo;
+
+
+		LoaderException(LoadApiError error, String extra)
+		{
+			theError = error;
+			extraInfo = extra;
+		}
+
+
+	}
+
+	public static class CodeFormatChecker
+	{
+		private final List<String> _srcList;
+
+		Optional<String> codeFormatMessage = Optional.empty();
+
+		private final boolean isJSP;
+
+		CodeFormatChecker(List<String> src, boolean jsp)
+		{
+			_srcList = src;
+			isJSP = jsp;
+
+			check4Issue();
+		}
+
+		private void check4Issue()
+		{
+
+			for(int idx : Util.range(_srcList))
+			{
+				// Stop at the first issue we encounter.
+				if(codeFormatMessage.isPresent())
+					{ break; }
+
+				String line = _srcList.get(idx).strip();
+
+				if(line.startsWith("<%=") && line.contains(DataServer.class.getSimpleName()))
+				{
+					if(!checkDataIncludeLine(line))
+					{
+						String mssg = Util.sprintf("Found badly formatted DataServer.include(...) call on line %d. Please review formatting rules for these statements", idx+1);
+						codeFormatMessage = Optional.of(mssg);
+
+					} else {
+
+						String dataissue = getDataServerIssue(line);
+
+						if(dataissue != null)
+						{
+							String mssg = Util.sprintf("Badly formatted data-include argument on line %d :: %s. Please review rules for formatting data arguments", idx+1, dataissue);
+							codeFormatMessage = Optional.of(mssg);
+						}
+					}
+
+
+					continue;
+				}
+
+				if(line.contains("<%") || line.contains("%>"))
+				{
+					String mssg = Util.sprintf("Found open or close JSP tags in line %d. This tags are allowed only in DataInclude lines", idx+1);
+					codeFormatMessage = Optional.of(mssg);
+				}
+			}
+		}
+
+		private static Optional<String> getDataServerArg(String line)
+		{
+			Util.massert(line.startsWith("<%=") && line.endsWith("%>"), "Expected line with start/end tags <%= ... %>, got %s", line);
+
+			// peel off start/end tags
+			String internal = line.substring(3, line.length()-2).strip();
+
+			// remove white space 
+			internal = internal.replaceAll(" ", "");
+
+			if(internal.equals(DATA_INCLUDE_PLAIN))
+				{ return Optional.of(""); }
+
+	        Matcher matcher = DATA_FORMAT_PATTERN.matcher(internal);
+
+	        if(!matcher.find())
+	        	{ return Optional.empty(); }
+        
+        	return Optional.of(matcher.group(1));
+		}
+
+		private boolean checkDataIncludeLine(String line)
+		{
+			if(!line.endsWith("%>"))
+				{ return false; }
+
+			return getDataServerArg(line).isPresent();
+		}
+
+		private String getDataServerIssue(String line)
+		{
+			Util.massert(line.startsWith("<%=") && line.endsWith("%>"), "The line should be pre-checked as a JSP tag at this point");
+			Optional<String> dataformat = getDataServerArg(line);
+			Util.massert(dataformat.isPresent(), "Expect a line with a dataformat at this point");
+
+			try {
+				ArgMap mymap = DataServer.buildIncludeMap(dataformat.get());
+				return null;
+			} catch (Exception ex) {
+				return ex.getMessage();
+			}
 		}
 	}
 }
