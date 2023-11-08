@@ -22,6 +22,18 @@ public class ActionJackson extends HttpServlet
 {
 	public static final String SERVLET_PART_SAVE_DIR = "/opt/rawdata/servlet";
 	
+
+	public enum LoadApiError
+	{
+
+		CodeFormatError,
+		IncludeArgError,
+		MailboxError,
+		BlobStoreError,
+		ReservedNameError,
+		UploadSizeError;
+	}
+
 	public enum UploadFileType 
 	{
 		basezip,
