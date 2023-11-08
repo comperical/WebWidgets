@@ -29,7 +29,7 @@ public class ActionJackson extends HttpServlet
 
 	public static final String DATA_INCLUDE_PLAIN = "DataServer.include(request)";
 
-	public static final String DATA_FORMAT_REGEX = "DataServer\\.include\\(request,\\s*\"([A-Za-z0-9_=&]+)\"\\s*\\)";
+	public static final String DATA_FORMAT_REGEX = "DataServer\\.include\\(request,\\s*\"([A-Za-z0-9_=&,]+)\"\\s*\\)";
 
 	private static final Pattern DATA_FORMAT_PATTERN = Pattern.compile(DATA_FORMAT_REGEX);
 

@@ -7,7 +7,6 @@
 
 <%= DataServer.include(request, "tables=confounder,hanzi_data,palace_item") %>
 
-
 <script>
 
 EDIT_STUDY_ITEM = -1;
