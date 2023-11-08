@@ -26,10 +26,8 @@ public class ActionJackson extends HttpServlet
 
 	// TODO: need to make this location config-dependent!
 	public static final String SERVLET_PART_SAVE_DIR = "/opt/rawdata/servlet";
-	
 
 	public static final String DATA_INCLUDE_PLAIN = "DataServer.include(request)";
-
 
 	public static final String DATA_FORMAT_REGEX = "DataServer\\.include\\(request,\\s*\"([A-Za-z0-9_=&]+)\"\\s*\\)";
 
@@ -224,7 +222,7 @@ public class ActionJackson extends HttpServlet
 
 	private static void sendErrorResponse(HttpServletResponse response, LoaderException loadex) throws IOException
 	{
-		String topmssg = Util.sprintf("Encountered error %s, additional details are:\n%s", loadex.theError, loadex.extraInfo);
+		String topmssg = Util.sprintf("Encountered error %s, additional details are:\n%s\n\n", loadex.theError, loadex.extraInfo);
 		response.getOutputStream().write(topmssg.getBytes());
 		response.getOutputStream().close();
 	}
@@ -493,7 +491,7 @@ public class ActionJackson extends HttpServlet
 		
 		List<String> getLogList()
 		{
-			return _logList;	
+			return _logList;
 		}
 		
 
@@ -514,6 +512,12 @@ public class ActionJackson extends HttpServlet
 													.setStream(myfile.getInputStream(zent))
 													.readLineListE();
 
+					CodeFormatChecker cfchecker = new CodeFormatChecker(srclist, true);
+					if(cfchecker.codeFormatMessage.isPresent())
+					{
+						String wrapmssg = Util.sprintf("Found error in file %s :: %s", zname, cfchecker.codeFormatMessage.get());
+						throw new LoaderException(LoadApiError.CodeFormatError, wrapmssg);
+					}
 				}
 			}
 		}
