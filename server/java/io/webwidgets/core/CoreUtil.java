@@ -38,6 +38,10 @@ public class CoreUtil
 		BASE_WIDGET_NAME
 	);
 
+	// TODO: probably want to expand this to include other things like "include"
+	public static final Set<String> AUX_CODE_OKAY = Collections.unmodifiableSet(
+		Util.setify(BASE_WIDGET_NAME)
+	);
 
 
 	static String getSubDirectory(String basedir, String kidname)

@@ -133,6 +133,7 @@ public class ActionJackson extends HttpServlet
 			
 			WidgetUser wuser = WidgetUser.valueOf(innmap.getStr("username"));
 			String widgetname = innmap.getStr("widget");
+			UploadFileType filetype = UploadFileType.valueOf(innmap.getStr("filetype"));
 
 			Util.massert(widgetname.strip().toLowerCase().equals(widgetname),
 				"Badly formatted widget name %s, should be no-whitespace, lowercase, uploader script should catch this...!", widgetname);
@@ -146,15 +147,18 @@ public class ActionJackson extends HttpServlet
 
 			if(!(new WidgetItem(wuser, widgetname)).dbFileExists())
 			{
-				String extra = Util.sprintf("No widget %s found for user %s, you must create in Admin Console first", widgetname, wuser);
-				throw new LoaderException(LoadApiError.MissingWidgetError, extra);
+				// Some code-only Widget directories can be uploaded without creating the widget, notably "base"
+				boolean auxokay = filetype.isZip() && CoreUtil.AUX_CODE_OKAY.contains(widgetname);
+				if(!auxokay)
+				{
+					String extra = Util.sprintf("No widget %s found for user %s, you must create in Admin Console first", widgetname, wuser);
+					throw new LoaderException(LoadApiError.MissingWidgetError, extra);
+				}
 			}
 
 
 			int mc = 0;
 			String s = "";
-			
-			UploadFileType filetype = UploadFileType.valueOf(innmap.getStr("filetype"));
 			CodeLocator codeloc = new CodeLocator(wuser, widgetname, filetype);
 			
 			{
