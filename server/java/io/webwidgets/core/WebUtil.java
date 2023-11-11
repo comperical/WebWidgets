@@ -60,7 +60,7 @@ public class WebUtil
 	// Bounce the HTTP request to the corresponding local URL.
 	// TODO: remove this, it should be no longer used
 	public static boolean shouldBounce2Local(HttpServletRequest request)
-	{		
+	{
 		// If the user is not logged in at this point, there should be an 
 		// error message that gets presented. But it's not responsibility of 
 		// this method.
@@ -220,6 +220,7 @@ public class WebUtil
 			{
 				// <link rel="icon" type="image/x-icon" href="/u/d57tm/vimsicon.png">
 				String state = Util.sprintf("<link rel=\"icon\" type=\"image/x-icon\" href=\"%s?modtime=%d\"></link>", relpath, modtime);
+				statelist.add(state);
 				continue;
 			}
 
