@@ -469,14 +469,14 @@ public class ActionJackson extends HttpServlet
 				if(kid.getAbsolutePath().indexOf("WEB-INF") > -1)
 				{
 					logpf("Skipping WEB-INF dir %s\n", kid);
-					continue;					
+					continue;
 				}
 				
 				if(java.nio.file.Files.isSymbolicLink(kid.toPath()))
 				{
 					logpf("Skipping symbolic link file %s\n", kid);
 					continue;
-				}				
+				}
 				
 				
 				if(!kid.isDirectory())
