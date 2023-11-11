@@ -20,6 +20,8 @@ import io.webwidgets.core.WidgetOrg.*;
 public class WebUtil
 { 
 	public static String AUTO_INCLUDE_PREFIX = "My";
+
+	public static String FAVICON_FILE_NAME = "MyFavIcon";
 	
 	public static List<String> AUTO_INCLUDE_SUFFIX = Util.listify(".js", ".css");
 	
@@ -149,11 +151,20 @@ public class WebUtil
 		List<File> inclist = Util.listify();
 		
 		for(File f : basedir.listFiles())
-		{	
+		{
 			String name = f.getName();
 			
 			if(f.isDirectory())
 				{ continue; }
+
+
+			// Special handling for fav-icons
+			if(f.getName().startsWith(FAVICON_FILE_NAME))
+			{
+				inclist.add(f);
+				continue;
+			}
+
 			
 			if(!name.startsWith(AUTO_INCLUDE_PREFIX))
 				{ continue; }
@@ -168,19 +179,19 @@ public class WebUtil
 				{ inclist.add(f); }
 		}
 		
-		return inclist;		
+		return inclist;
 	}
 
 	// We need this for base-level includes
 	// TODO: this stuff really isn't clear yet
 	public static List<String> getAutoIncludeStatement(WidgetUser owner)
-	{		
+	{
 		List<File> srclist = getAutoIncludeList(owner, Optional.empty());
 		return includeTargetFileList(srclist, owner, Optional.empty());
-	}	
+	}
 	
 	public static List<String> getAutoIncludeStatement(WidgetItem item)
-	{		
+	{
 		List<String> result = Util.arraylist();
 
 		for(boolean isbase : Util.listify(true, false))
@@ -201,12 +212,20 @@ public class WebUtil
 
 		for(File f : filelist)
 		{
+			long modtime = f.lastModified();
 			String relpath = Util.sprintf("/u/%s%s/%s", 
 				owner, optname.isPresent() ? "/" + optname.get() : "", f.getName());
-			
+
+			if(f.getName().startsWith(FAVICON_FILE_NAME))
+			{
+				// <link rel="icon" type="image/x-icon" href="/u/d57tm/vimsicon.png">
+				String state = Util.sprintf("<link rel=\"icon\" type=\"image/x-icon\" href=\"%s?modtime=%d\"></link>", relpath, modtime);
+				continue;
+			}
+
+
 			if(f.getName().endsWith(".js"))
 			{
-				long modtime = f.lastModified();
 				// <script type="text/javascript" src="SecretShared.js"></script>
 				String state = Util.sprintf("<script type=\"text/javascript\" src=\"%s?modtime=%d\"></script>", relpath, modtime);
 				statelist.add(state);
@@ -215,8 +234,6 @@ public class WebUtil
 			
 			if(f.getName().endsWith(".css"))
 			{
-				long modtime = f.lastModified();
-				
 				// <link rel="stylesheet" href="/life/asset/cascade/TableStyle.css"></link>
 				String state = Util.sprintf("<link rel=\"stylesheet\" href=\"%s?modtime=%d\"></link>", relpath, modtime);
 				statelist.add(state);
