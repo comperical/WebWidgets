@@ -1,0 +1,8 @@
+// Tags should be self-closing
+<wisp tables="link_main,link_categ"></wisp>
+// Missing end quote
+<wisp tables="link_main,link_categ/>
+// Missing attribute
+<wisp tables="link_main,link_categ" info=/>
+// Missing equals
+<wisp tables"link_main,link_categ" />

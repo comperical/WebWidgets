@@ -39,7 +39,7 @@ public class DataServer
 		
 		DataIncludeArg(String ds) 
 		{
-			docStr = ds;	
+			docStr = ds;
 		}
 	}
 	

@@ -1,0 +1,4 @@
+// Just test a couple of different format types
+<wisp tables="link_main,link_categ" no_data="true"/>
+<wisp tables="link_main,link_categ" view_prefixes="another"/>
+

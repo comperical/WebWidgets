@@ -1,0 +1,6 @@
+// tablelist is wrong name, that's dcb style, no one else likes it
+<wisp tablelist="link_main,link_categ"/>
+// should be username
+<wisp tables="link_main,link_categ" user="dburfoot"/>
+// should be no_data
+<wisp tables="link_main,link_categ" nodata="true"/>

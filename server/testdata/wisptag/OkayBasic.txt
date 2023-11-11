@@ -1,0 +1,7 @@
+<wisp tables="link_main,link_categ"/>
+// Single quotes okay
+<wisp tables='link_main,link_categ'/>
+<wisp tables="link_main" nodata="true"/>
+<wisp tables="link_main" format="good"/>
+// Lots of white space between tags
+<wisp tables="link_main"                    format="good"               />

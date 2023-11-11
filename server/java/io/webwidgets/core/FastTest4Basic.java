@@ -1027,5 +1027,89 @@ public class FastTest4Basic
 			}
 		}
 	}
+
+
+	public static class WispTagParseTest extends ArgMapRunnable
+	{
+
+		Map<String, Integer> _okayCount = Util.treemap();
+
+		public void runOp()
+		{
+			Util.pf("Going to run wisp tag parse\n");
+
+
+			checkOkayBasic();
+			checkBadBasic();
+			checkBadConvert();
+			checkOkayConvert();
+
+			Util.pf("Checked all the data okay, result is %s\n", _okayCount);
+		}
+
+		private void checkOkayBasic()
+		{
+			String code = "OkayBasic";
+
+			for(String fixt : loadFixtureData(code))
+			{
+				Map<String, String> attmap = WispTagParser.parse2AttributeMap(fixt);
+				Util.massert(attmap != null && attmap.containsKey("tables"));
+				Util.incHitMap(_okayCount, code);
+			}
+		}
+
+
+		private void checkBadBasic()
+		{
+			String code = "BadBasic";
+
+			for(String fixt : loadFixtureData(code))
+			{
+				Map<String, String> attmap = WispTagParser.parse2AttributeMap(fixt);
+				Util.massert(attmap == null);
+				Util.incHitMap(_okayCount, code);
+			}
+		}
+
+
+		private void checkBadConvert()
+		{
+			String code = "BadConvert";
+
+			for(String fixt : loadFixtureData(code))
+			{
+				try {
+					Map<DataIncludeArg, String> incmap = WispTagParser.parse2DataMap(fixt);
+					Util.massert(false, "This should throw an exception");
+
+				} catch (IllegalArgumentException illex) {
+				}
+				Util.incHitMap(_okayCount, code);
+			}
+		}
+
+		private void checkOkayConvert()
+		{
+			String code = "OkayConvert";
+
+			for(String fixt : loadFixtureData(code))
+			{
+				Map<DataIncludeArg, String> incmap = WispTagParser.parse2DataMap(fixt);
+				Util.incHitMap(_okayCount, code);
+			}
+		}
+
+		private static List<String> loadFixtureData(String codename)
+		{
+			String inputfile = Util.sprintf("/opt/userdata/wwiocore/server/testdata/wisptag/%s.txt", codename);
+			Util.massert((new File(inputfile)).exists(), "Could not find test fixture data %s", inputfile);
+
+			// Allow comments
+			List<String> data = FileUtils.getReaderUtil().setFile(inputfile).readLineListE();
+			return Util.filter2list(data, line -> line.trim().length() > 0 && !line.trim().startsWith("//"));
+		}
+
+	}
 } 
 
