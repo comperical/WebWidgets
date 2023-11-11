@@ -98,7 +98,6 @@ public class ActionJackson extends HttpServlet
 			resp.getOutputStream().close();
 			return false;
 		}
-		
 	}
 	
 	@MultipartConfig(
@@ -710,26 +709,37 @@ public class ActionJackson extends HttpServlet
 
 	public static class Pull2You extends HttpServlet implements WidgetServlet {
 		
-		protected void doGet( HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+		protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException 
+		{
+			try
+				{ doGetSub(request, response); }
+			catch (LoaderException loadex)
+				{ sendErrorResponse(response, loadex); }
+		}
+
+		private void doGetSub( HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, LoaderException {
 			
-			ArgMap innmap = WebUtil.getArgMap(request);		
+			ArgMap innmap = WebUtil.getArgMap(request);
 			
 			if(!checkSecureRespond(request, response))
 				{ return; }
 
 			if(!checkAccessRespond(response, innmap))
-				{ return; }	
+				{ return; }
 			
 			WidgetUser wuser = WidgetUser.valueOf(innmap.getStr("username"));
-			String widgetname = innmap.getStr("widget");		
+			String widgetname = innmap.getStr("widget");
 			WidgetItem witem = new WidgetItem(wuser, widgetname);
 			
-			File dbfile = witem.getLocalDbFile();
-			Util.massert(dbfile.exists(),
-				"DB file %s does not exist, are you sure no typo?", dbfile);
+			if(!witem.dbFileExists())
+			{
+				String extra = Util.sprintf("No widget %s found for user %s, you must create in Admin Console first", widgetname, wuser);
+				throw new LoaderException(LoadApiError.MissingWidgetError, extra);
+			}
 			
 			// This should send the file to browser
-			FileUtils.in2out(new FileInputStream(dbfile), response.getOutputStream());
+			FileUtils.in2out(new FileInputStream(witem.getLocalDbFile()), response.getOutputStream());
 			response.getOutputStream().close();
 
 		}
@@ -759,7 +769,7 @@ public class ActionJackson extends HttpServlet
 			String widgetname = innmap.getStr("widgetname");
 
 			WidgetItem witem = new WidgetItem(wuser, widgetname);
-			File result = CoreUtil.convert2Excel(witem);			
+			File result = CoreUtil.convert2Excel(witem);
 
 			FileUtils.in2out(new FileInputStream(result), response.getOutputStream());
 		}
