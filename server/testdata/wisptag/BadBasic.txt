@@ -6,3 +6,7 @@
 <wisp tables="link_main,link_categ" info=/>
 // Missing equals
 <wisp tables"link_main,link_categ" />
+// Actually invalid
+< wisp/>
+// Leave out closing tag
+<wisp>

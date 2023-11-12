@@ -139,14 +139,12 @@ public class DataServer
 		request.setAttribute(ASSET_INCLUDE_COMPLETE, true+"");
 	}
 	
-	static class ServerUtil
-	{
 
-		private final HttpServletRequest _theRequest;
-			
+	public abstract static class ServerUtilCore
+	{
 		private final ArgMap _argMap;
 		
-		private WidgetItem _theItem;
+		protected WidgetItem _theItem;
 		
 		// Base table name -> query target
 		// query target is either just the base, or an overlay view
@@ -155,51 +153,37 @@ public class DataServer
 		private boolean _noDataMode = false;
 
 		private Optional<String> _fullViewName = Optional.empty();
-		
-		private ServerUtil(HttpServletRequest req, ArgMap amap)
+
+		protected ServerUtilCore(ArgMap amap)
 		{
-			_theRequest = req;
-			
 			_argMap = amap;
 		}
-		
-		public static ServerUtil build(HttpServletRequest req)
-		{
-			return build(req, new ArgMap());	
-		}
-		
-		public static ServerUtil build(HttpServletRequest req, ArgMap amap)
-		{
-			return new ServerUtil(req, amap);
-		}
-		
-		private Optional<WidgetUser> getLoggedInUser()
-		{
-			// July 2023: no longer require a logged-in user
-			return AuthLogic.getLoggedInUser(_theRequest);
-		}
-		
+
+		protected abstract Optional<WidgetItem> lookupPageWidget();
+
+		protected abstract Optional<WidgetUser> getPageAccessor();
+
+		protected abstract void markIncludeComplete();
+
+		protected abstract boolean isIncludeComplete();
+
 		private void onDemandSetup() throws WidgetRequestException
 		{
 			if(_base2Target != null)
 				{ return; }
-			
 
 			// First, find the page from the request URL. This serves as default
 			// Rule: must have a valid Widget page to request Widget data
-			Optional<WidgetItem> pageWidget = WebUtil.lookupWidgetFromPageUrl(_theRequest);
+			Optional<WidgetItem> pageWidget = lookupPageWidget();
 			if(!pageWidget.isPresent())
 			{
 				throw new WidgetRequestException("All Widget data requests must come from some widget");
 			}
 					
 			
-			// Okay, there is a lot of weird stuff going on here!!!
-			// In theory you can request data from another user's widget. 
+			// The owner of the widget that we are requesting.
+			// This is NOT necessarily the user who is logged-in
 			WidgetUser wdgOwner;
-
-			// Option to request data from another user's widget
-			// As of June 2022, this option is very experimental
 			{
 				Optional<String> optuser = _argMap.optGetStr(DataIncludeArg.username.toString());
 				
@@ -218,7 +202,7 @@ public class DataServer
 
 			// Option to request data from Widget A in Widget B
 			{
-				Optional<String> wdgname = _argMap.optGetStr(DataIncludeArg.widgetname.toString());			
+				Optional<String> wdgname = _argMap.optGetStr(DataIncludeArg.widgetname.toString());
 				if(wdgname.isPresent())
 				{
 					Set<String> okset = Util.map2set(wdgOwner.getUserWidgetList(), wdg -> wdg.theName);
@@ -234,6 +218,9 @@ public class DataServer
 					_theItem = pageWidget.get();
 				}
 			}
+
+			// TODO: need to put something like this in here
+			// Util.massert(_theItem.dbFileExists());
 
 			// By default, you are going to get all the tables  in a widget
 			Set<String> tableset = _theItem.getDbTableNameSet();
@@ -298,29 +285,24 @@ public class DataServer
 				}
 			}
 
-			AuthChecker checker = AuthChecker.build()
-												.userFromRequest(_theRequest)
-												.directDbWidget(_theItem);
+			AuthChecker checker = AuthChecker.build().directSetAccessor(getPageAccessor()).directDbWidget(_theItem);
 
 			// In theory, we could allow read here if noDataMode is set. But the only reason to set noDataMode
 			// is so that you can WRITE data to the widget, and you can never read if you can't also write
 			if(!checker.allowRead())
 			{
-				String mssg = Util.sprintf("User %s does not have read permissions for widget %s", getLoggedInUser(), _theItem);
+				String mssg = Util.sprintf("User %s does not have read permissions for widget %s", getPageAccessor(), _theItem);
 				throw new WidgetRequestException(mssg);
 			}
 		}
 
-		private StringBuilder maybeGetAssetInclude()
+		private void maybeGetAssetInclude(StringBuilder sb)
 		{
-			StringBuilder sb = new StringBuilder();
-			String already = (String) _theRequest.getAttribute(ASSET_INCLUDE_COMPLETE);
-			if ((true+"").equals(already))
-				{ return sb; }
+			if(isIncludeComplete())
+				{ return; }
 
 			addAssetInclude(sb);
-			markAssetIncludeComplete(_theRequest);
-			return sb;
+			markIncludeComplete();
 		}
 
 		// This is a replacement for the old AssetInclude.jsp_inc file.
@@ -390,7 +372,7 @@ public class DataServer
 
 
 		public String include()
-		{			
+		{
 			for(String argkey : _argMap.keySet())
 			{
 				Util.massert(OKAY_ARG_SET.contains(argkey),
@@ -413,9 +395,11 @@ public class DataServer
 				throw wrex;
 			}
 
-			StringBuilder sb = maybeGetAssetInclude();
-			return sb.append(getScriptInfo(getLoggedInUser(), _theItem, _base2Target, _noDataMode)).toString();
+			StringBuilder sb = new StringBuilder();
+			maybeGetAssetInclude(sb);
+			return sb.append(getScriptInfo(getPageAccessor(), _theItem, _base2Target, _noDataMode)).toString();
 		}
+
 
 		private static String getScriptInfo(Optional<WidgetUser> accessor, WidgetItem dbitem, Map<String, String> base2view, boolean nodata)
 		{
@@ -442,7 +426,7 @@ public class DataServer
 				
 				reclist.add(Util.sprintf("<script src=\"%s\"></script>", LTI.getWebAutoGenJsPath()));
 				
-				reclist.add("<script>");			
+				reclist.add("<script>");
 				reclist.addAll(LTI.composeDataRecSpool(base2view.get(onetab)));
 				
 				// If the user has read-only access to the table, record that info
@@ -474,8 +458,59 @@ public class DataServer
 			*/
 			
 			return Util.join(reclist, "\n");
-		}		
+		}
 	}
+
+
+	static class ServerUtil extends ServerUtilCore
+	{
+
+		private final HttpServletRequest _theRequest;
+		
+		private ServerUtil(HttpServletRequest req, ArgMap amap)
+		{
+			super(amap);
+
+			_theRequest = req;
+		}
+		
+		public static ServerUtil build(HttpServletRequest req)
+		{
+			return build(req, new ArgMap());
+		}
+		
+		public static ServerUtil build(HttpServletRequest req, ArgMap amap)
+		{
+			return new ServerUtil(req, amap);
+		}
+		
+		@Override
+		protected Optional<WidgetUser> getPageAccessor()
+		{
+			// July 2023: no longer require a logged-in user
+			return AuthLogic.getLoggedInUser(_theRequest);
+		}
+
+		@Override
+		protected boolean isIncludeComplete()
+		{
+			String already = (String) _theRequest.getAttribute(ASSET_INCLUDE_COMPLETE);
+			return (true+"").equals(already);
+		}
+
+		@Override
+		protected void markIncludeComplete()
+		{
+			markAssetIncludeComplete(_theRequest);
+		}
+
+		@Override
+		protected Optional<WidgetItem> lookupPageWidget()
+		{
+			return WebUtil.lookupWidgetFromPageUrl(_theRequest);
+		}
+	}
+
 
 	private static Set<String> lookupBaseViewSwap(Map<String, String> base2view, Set<String> viewset, String prefix)
 	{

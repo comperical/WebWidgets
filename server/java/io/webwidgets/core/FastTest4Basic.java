@@ -1041,11 +1041,26 @@ public class FastTest4Basic
 
 			checkOkayBasic();
 			checkBadBasic();
+			checkOkayEmpty();
 			checkBadConvert();
 			checkOkayConvert();
 
 			Util.pf("Checked all the data okay, result is %s\n", _okayCount);
 		}
+
+		private void checkOkayEmpty()
+		{
+			String code = "OkayEmpty";
+
+			for(String fixt : loadFixtureData(code))
+			{
+				Map<String, String> attmap = WispTagParser.parse2AttributeMap(fixt);
+				Util.massert(attmap != null && attmap.isEmpty());
+				Util.incHitMap(_okayCount, code);
+			}
+		}
+
+
 
 		private void checkOkayBasic()
 		{
@@ -1054,7 +1069,8 @@ public class FastTest4Basic
 			for(String fixt : loadFixtureData(code))
 			{
 				Map<String, String> attmap = WispTagParser.parse2AttributeMap(fixt);
-				Util.massert(attmap != null && attmap.containsKey("tables"));
+				Util.massert(attmap != null && attmap.containsKey("tables"),
+					"Failed to parse okay fixture %s, attmap is %s", fixt, attmap);
 				Util.incHitMap(_okayCount, code);
 			}
 		}
