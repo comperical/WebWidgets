@@ -176,8 +176,8 @@ public class ActionJackson extends HttpServlet
 			if(filetype.isZip())
 			{
 				CodeExtractor codex = codeloc.getExtractor();
-				codex.checkCodeFormat(codeloc);
-
+				if(!isCodeFormatExempt(wuser))
+					{ codex.checkCodeFormat(codeloc); }
 
 				codex.cleanOldCode();
 				codex.extractCode(codeloc);
@@ -221,6 +221,15 @@ public class ActionJackson extends HttpServlet
 						
 			response.getOutputStream().write(s.getBytes());
 			response.getOutputStream().close();
+		}
+
+
+		private boolean isCodeFormatExempt(WidgetUser user)
+		{
+			// TODO: this is a special carveout that is necesary as of Nov 2023.
+			// In future, possibly have a CODE_FORMAT_EXEMPT system parameter
+			return user.isAdmin() || user.toString().equals("d57tm");
+
 		}
 	}
 
