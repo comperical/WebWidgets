@@ -149,7 +149,11 @@ public class ActionJackson extends HttpServlet
 			{
 				// Some code-only Widget directories can be uploaded without creating the widget, notably "base"
 				boolean auxokay = filetype.isZip() && CoreUtil.AUX_CODE_OKAY.contains(widgetname);
-				if(!auxokay)
+
+				// Special directories that are loading as-if they are admin widgets
+				boolean special = wuser.isAdmin() && getSpecialRemapDir().containsKey(widgetname);
+
+				if(!(auxokay || special))
 				{
 					String extra = Util.sprintf("No widget %s found for user %s, you must create in Admin Console first", widgetname, wuser);
 					throw new LoaderException(LoadApiError.MissingWidgetError, extra);

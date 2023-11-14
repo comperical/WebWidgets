@@ -20,11 +20,7 @@
 
         if(!loadChecker.allowRead())
         {
-            String bounce2url = request.getRequestURL().toString();
-            String redirect = String.format("%s?bounceback=%s", 
-                            WebUtil.LOGIN_RELATIVE_URL, request.getRequestURL().toString());
-            
-            response.sendRedirect(redirect);
+            WebUtil.bounce2LogInPage(request, response);
             return;
         }
     }
