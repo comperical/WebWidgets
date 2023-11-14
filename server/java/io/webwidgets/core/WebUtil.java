@@ -73,6 +73,16 @@ public class WebUtil
 		return wuser.isAdmin() && !wuser.haveLocalDb();
 	}
 	
+
+	public static void bounce2LogInPage(HttpServletRequest request, HttpServletResponse response) throws IOException
+	{
+		String bounce2url = request.getRequestURL().toString();
+		String redirect = String.format("%s?bounceback=%s",
+							WebUtil.LOGIN_RELATIVE_URL, request.getRequestURL().toString());
+
+		response.sendRedirect(redirect);
+	}
+
 	public static String rewriteAsLocal(String remoteurl) 
 	{
 		int lifept = remoteurl.indexOf("/life");
