@@ -1040,7 +1040,7 @@ public class CoreCommand
 
 	}
 
-	public static class ImportWidgetFromGallery extends DescRunnable
+	public static class ImportWidgetFromGallery extends LogSwapRunnable implements HasDescription
 	{
 		public String getDesc()
 		{
@@ -1053,7 +1053,13 @@ public class CoreCommand
 		public void runOp() throws IOException
 		{
 			WidgetUser user = WidgetUser.valueOf(_argMap.getStr("username"));
-			WidgetItem item = new WidgetItem(user, _argMap.getStr("widgetname"));
+			String wname = _argMap.getStr("widgetname");
+			runWithArgs(user, wname);
+		}
+
+		public void runWithArgs(WidgetUser user, String widgetname) throws IOException 
+		{
+			WidgetItem item = new WidgetItem(user, widgetname);
 
 			if(item.theName.equals("base"))
 			{
