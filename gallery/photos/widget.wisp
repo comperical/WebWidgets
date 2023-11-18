@@ -4,7 +4,7 @@
 <head>
 <title>Photo Manager</title>
 
-<%= DataServer.include(request) %>
+<wisp/>
 
 <script>
 

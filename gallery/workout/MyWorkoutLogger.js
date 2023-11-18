@@ -1,10 +1,10 @@
 
 const WO_HEADER_INFO = [
-    ["W/O Log", "widget.jsp"],
-    ["W/O Planner", "ExercisePlanner.jsp"],
-    ["W/O Layout", "PlanLayout.jsp"],
-    ["W/O Template", "ExerciseTemplate.jsp"],
-    ["W/O Stats", "WorkoutStats.jsp"],
+    ["W/O Log", "widget.wisp"],
+    ["W/O Planner", "ExercisePlanner.wisp"],
+    ["W/O Layout", "PlanLayout.wisp"],
+    ["W/O Template", "ExerciseTemplate.wisp"],
+    ["W/O Stats", "WorkoutStats.wisp"],
 
 ];
 

@@ -3,7 +3,7 @@
 <head>
 <title>Workout Stats</title>
 
-<%= DataServer.include(request) %>
+<wisp/>
 
 <script src="WorkoutLogger.js"></script>
 

@@ -3,8 +3,7 @@
 <head>
 <title>Stuff Manager</title>
 
-<%= DataServer.include(request) %>
-
+<wisp/>
 
 <style>
 /* 

@@ -1,34 +1,9 @@
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <html>
 <head>
-<%= DataServer.include(request) %>
+
+<wisp/>
 
 <script>
 

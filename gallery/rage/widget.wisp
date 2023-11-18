@@ -3,7 +3,7 @@
 <head>
 <title>&#x1F621 &#x1F624</title>
 
-<%= DataServer.include(request) %>
+<wisp/>
 
 <script>
 
@@ -46,8 +46,8 @@ function deleteItem(killid, shortname)
 function handleNavBar() 
 {
 	const headerinfo = [
-        ["Rage Log", "widget.jsp"],
-        ["Rage Stats", "RageStats.jsp"]
+        ["Rage Log", "widget.wisp"],
+        ["Rage Stats", "RageStats.wisp"]
     ];
 
     populateTopNavBar(headerinfo, "Rage Log");

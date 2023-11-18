@@ -3,7 +3,7 @@
 <head>
 <title>Recipes</title>
 
-<%= DataServer.include(request) %>
+<wisp/>
 
 <script>
 

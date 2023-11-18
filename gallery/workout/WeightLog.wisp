@@ -2,9 +2,7 @@
 <head>
 <title>&#x1F4AA   &#x1F9B5</title>
 
-<%= DataServer.include(request) %>
-
-<script src="WorkoutLogger.js"></script>
+<wisp/>
 
 <script>
 

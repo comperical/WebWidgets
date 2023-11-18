@@ -2,7 +2,7 @@
 <head>
 <title>Rage Log</title>
 
-<%= DataServer.include(request) %>
+<wisp/>
 
 <script>
 
@@ -18,8 +18,8 @@ function redisplay()
 function handleNavBar() 
 {
     const headerinfo = [
-        ["Rage Log", "widget.jsp"],
-        ["Rage Stats", "RageStats.jsp"]
+        ["Rage Log", "widget.wisp"],
+        ["Rage Stats", "RageStats.wisp"]
     ];
 
     populateTopNavBar(headerinfo, "Rage Stats");

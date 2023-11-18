@@ -3,10 +3,7 @@
 <head>
 <title>Exercise Planner</title>
 
-<%= DataServer.include(request) %>
-
-<script src="WorkoutLogger.js"></script>
-
+<wisp/>
 
 <script>
 

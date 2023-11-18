@@ -1,6 +1,6 @@
 const WO_HEADER_INFO = [
-    ["Stuff Manager", "widget.jsp"],
-    ["Locations", "Locations.jsp"]
+    ["Stuff Manager", "widget.wisp"],
+    ["Locations", "Locations.wisp"]
 ];
 
 
