@@ -33,14 +33,14 @@ function getExpenseCategoryList()
 function getFinanceHeaderInfo()
 {
     return [
-        ["Finance Log", "FinanceLog.jsp"],  
-        ["Finance Agg", "FinanceAgg.jsp"],
-        ["Finance Plan", "FinancePlanner.jsp"],
-        ["Uploader", "DataUploader.jsp"],
-        ["Upload Stats", "UploadStats.jsp"],
-        ["Tagger", "TagRecords.jsp"],
-        ["Tag Rules", "AutoTagRules.jsp"],
-        ["Graph", "SpendGraph.jsp"]
+        ["Finance Log", "FinanceLog.wisp"],  
+        ["Finance Agg", "FinanceAgg.wisp"],
+        ["Finance Plan", "FinancePlanner.wisp"],
+        ["Uploader", "DataUploader.wisp"],
+        ["Upload Stats", "UploadStats.wisp"],
+        ["Tagger", "TagRecords.wisp"],
+        ["Tag Rules", "AutoTagRules.wisp"],
+        ["Graph", "SpendGraph.wisp"]
     ];
 }
 

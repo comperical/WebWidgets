@@ -37,6 +37,17 @@
     descriptionMap.put("links",
         "Link Manager - keep track of web links, categorize them, etc.");
 
+    descriptionMap.put("mroutine",
+        "Create a checklist of activities to do in the morning (email, calendar, make bed, etc)");
+
+    descriptionMap.put("questions",
+        "Your own mini version of Stack Overflow. Create questions, answer them, search for previous answers");
+
+    descriptionMap.put("chores",
+        "Define chores and set frequency. Get reminded when it's time to do the chore again");
+
+
+    /*
     descriptionMap.put("dayplan",
         "Organize your day! Plan activities to maximize efficiency. Create templates for routine days.");
 
@@ -49,22 +60,20 @@
     descriptionMap.put("workout",
         "Dan's patented workout log system. Set weekly goals and make sure to meet them, or go into debt and make it up next week");
 
-    descriptionMap.put("mroutine",
-        "Create a checklist of activities to do in the morning (email, calendar, make bed, etc)");
 
-    descriptionMap.put("chores",
-        "Define chores and set frequency. Get reminded when it's time to do the chore again");
 
     descriptionMap.put("junkfood",
         "Track your junk food consumption, look at running averages, make sure it doesn't go too high!");
 
-    descriptionMap.put("questions",
-        "Your own mini version of Stack Overflow. Create questions, answer them, search for previous answers");
 
     descriptionMap.put("rage",
         "Remember the things that piss you off...! So you can avoid them in the future");
 
     descriptionMap.put("minitask", "Simple TODO list, with a couple of categories");
+
+            */
+
+
 
     String opcode = argMap.getStr("opcode", "");
 
@@ -79,7 +88,8 @@
             String widgetname = argMap.getStr("widgetname");
             Util.massert(templateset.contains(widgetname), "Unknown widget %s", widgetname);
 
-            currentUser.get().importFromTemplate(widgetname);
+            ImportWidgetFromGallery importer = new ImportWidgetFromGallery();
+            importer.runWithArgs(currentUser.get(), widgetname);
             message = Util.sprintf("Successfully imported widget %s", widgetname);
         }
 
@@ -98,23 +108,50 @@
 <html lang="en">
 
 <head>
-  <!-- Required meta tags -->
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>WebWidgets Admin</title>
-  <!-- plugins:css -->
-  <link rel="stylesheet" href="/u/shared/majestic/vendors/mdi/css/materialdesignicons.min.css">
-  <link rel="stylesheet" href="/u/shared/majestic/vendors/base/vendor.bundle.base.css">
-  <!-- endinject -->
-  <!-- plugin css for this page -->
-  <link rel="stylesheet" href="/u/shared/majestic/vendors/datatables.net-bs4/dataTables.bootstrap4.css">
-  <!-- End plugin css for this page -->
-  <!-- inject:css -->
-  <link rel="stylesheet" href="/u/shared/majestic/css/style.css">
-  <!-- endinject -->
-  <link rel="shortcut icon" href="/u/shared/majestic/images/favicon.png" />
+<!-- Required meta tags -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>WebWidgets Admin</title>
+<!-- plugins:css -->
+<link rel="stylesheet" href="/u/shared/majestic/vendors/mdi/css/materialdesignicons.min.css">
+<link rel="stylesheet" href="/u/shared/majestic/vendors/base/vendor.bundle.base.css">
+<!-- endinject -->
+<!-- plugin css for this page -->
+<link rel="stylesheet" href="/u/shared/majestic/vendors/datatables.net-bs4/dataTables.bootstrap4.css">
+<!-- End plugin css for this page -->
+<!-- inject:css -->
+<link rel="stylesheet" href="/u/shared/majestic/css/style.css">
+<!-- endinject -->
+<link rel="shortcut icon" href="/u/shared/majestic/images/favicon.png" />
+
+<%@include file="AssetInclude.jsp_inc" %>
+
+<script>
+  
+function importWidget(widgetname)
+{
+    const subpack = { "opcode" : "do_import", "widgetname" : widgetname };
+    submit2Base(subpack);
+}
+
+function maybeAlertMessage()
+{
+    <% 
+
+        if(serverMessage.length() > 0)
+        {
+    %>
+
+    alert("<%= serverMessage %>");
+
+    <% } %>
+}
+
+</script>
+
+
 </head>
-<body>
+<body onLoad="javascript:maybeAlertMessage()">
   <div class="container-scroller">
 
     <!-- partial:partials/_navbar.html -->
@@ -158,18 +195,18 @@
                       <tbody>
 <% 
 
-    for(WidgetItem witem : templateList)
+    for(String importname : descriptionMap.keySet())
     {
-        String thedesc = descriptionMap.getOrDefault(witem.theName, "---");
+        String thedesc = descriptionMap.get(importname);
 
 
 %>
 <tr>
-<td><b><%= witem.theName %></b></td>
+<td><b><%= importname %></b></td>
 <td><%= thedesc %></td>
 <td>
 
-<a href="javascript:importWidget('<%= witem.theName %>')">
+<a href="javascript:importWidget('<%= importname %>')">
 <img src="/u/shared/image/leftarrow.png" style="height: 18px; width: 18px" /></a>
 
 

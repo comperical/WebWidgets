@@ -22,3 +22,5 @@
 <%@ page import="io.webwidgets.core.WidgetOrg.*" %>
 <%@ page import="io.webwidgets.core.AuthLogic.*" %>
 <%@ page import="io.webwidgets.core.MailSystem.*" %>
+<%@ page import="io.webwidgets.core.CoreCommand.*" %>
+
