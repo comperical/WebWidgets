@@ -3,9 +3,9 @@
 <head>
 <title>Junk Food Log</title>
 
-<%= DataServer.include(request) %>
+<wisp/>
 
-<%= DataServer.include(request, "widgetname=other&tables=alc_log") %>
+<wisp widgetname="other" tables="alc_log"/>
 
 
 <script>

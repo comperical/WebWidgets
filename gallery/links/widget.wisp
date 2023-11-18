@@ -3,12 +3,11 @@
 <head>
 <title>&#x1F517</title>
 
-<%= DataServer.include(request) %>
+<wisp/>
 
 <script src="LinkDisplay.js"></script>
 
 <script>
-
 
 
 var EDIT_STUDY_ITEM = -1;
@@ -18,14 +17,12 @@ var STUDY_CATEGORY = false;
 var SEARCH_TERM = "";
 
 
-
 massert(W.getItemList("link_categ").length > 0,
 	"You must add some link categories by hand first!!");
 
 // Very crude method of picking a default category.
 // On a workday, select LNKD (work)
 // On weekend, select YogaVideo
-// Test eidt
 function getDefaultCategory()
 {
 	/*
@@ -298,7 +295,6 @@ function redisplayCategoryTable()
 	var s = `
 		<table  class="basic-table" width="40%">
 		<tr>
-		<th>ID</th>
 		<th>Category</th>
 		<th>NumLinks</th>
 		<th>Active?</th>
@@ -338,7 +334,6 @@ function redisplayCategoryTable()
 		
 		const rowstr = `
 			<tr>
-			<td>${categ.getId()}</td>
 			<td>${categ.getShortCode()}</td>
 			<td width="10%">${numhit}</td>
 			<td width="10%">${active}</td>

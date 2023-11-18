@@ -3,8 +3,7 @@
 <head>
 <title>&#x1F321 &#x1F922</title>
 
-
-<%= DataServer.include(request) %>
+<wisp/>
 
 <script>
 
