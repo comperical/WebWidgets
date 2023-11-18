@@ -1,9 +1,9 @@
 
 <html>
 <head>
-<title>Mini Task List</title>
+<title>Simple Item Entry</title>
 
-<%= DataServer.include(request) %>
+<wisp no_data="true"/>
 
 <script>
 

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TODO List</title>
 
-<%= DataServer.include(request, "widgetname=minitask") %>
+<wisp widgetname="minitask"/>
 
 <script>
 

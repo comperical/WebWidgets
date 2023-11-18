@@ -4,7 +4,7 @@
 <head>
 <title>Media</title>
 
-<%= DataServer.include(request) %>
+<wisp/>
 
 <script>
 

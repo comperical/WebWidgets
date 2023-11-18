@@ -3,7 +3,7 @@
 <head>
 <title>Mini Task List</title>
 
-<%= DataServer.include(request) %>
+<wisp/>
 
 <style>
 

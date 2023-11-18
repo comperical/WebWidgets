@@ -3,10 +3,9 @@
 <head>
 <title>Mini Task List</title>
 
-<%= DataServer.include(request) %>
+<wisp/>
 
-<%= DataServer.include(request, "widgetname=mailbox") %>
-
+<wisp widgetname="mailbox"/>
 
 <script>
 

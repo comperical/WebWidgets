@@ -7,8 +7,8 @@ const MASTER_TYPE_LIST = ["chinese", "crm", "life", "work"];
 function getHeaderInfo()
 {
     return [
-        ["Mini Task List", "widget.jsp"],
-        ["Mini Task Search", "MiniTaskSearch.jsp"]
+        ["Mini Task List", "widget.wisp"],
+        ["Mini Task Search", "MiniTaskSearch.wisp"]
     ];
 }
 

@@ -3,7 +3,7 @@
 <head>
 <title>Mini Task Search</title>
 
-<%= DataServer.include(request) %>
+<wisp/>
 
 <script>
 

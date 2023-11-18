@@ -3,7 +3,7 @@
 <head>
 <title>&#x1F305 &#x2600</title>
 
-<%= DataServer.include(request, "view_prefixes=recent") %>
+<wisp view_prefixes="recent"/>
 
 <script>
 
@@ -96,8 +96,8 @@ function getDayList4Item(phaseitem)
 function handleNavBar() {
 
 	const headerinfo = [
-        ["Morning Routine", "widget.jsp"],
-        ["Phases", "MroutineList.jsp"]
+        ["Morning Routine", "widget.wisp"],
+        ["Phases", "MroutineList.wisp"]
     ];
 
     populateTopNavBar(headerinfo, "Morning Routine");

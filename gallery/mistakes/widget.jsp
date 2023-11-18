@@ -3,9 +3,7 @@
 <head>
 <title>Mistakes</title>
 
-<%= DataServer.include(request) %>
-
-<script src="MistakeLib.js"></script>
+<wisp/>
 
 <script>
 
