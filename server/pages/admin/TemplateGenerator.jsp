@@ -155,7 +155,7 @@ function redisplay()
 <td><b><%= table %></b></td>
 <td>
 
-<a href="GetTemplateCode.jsp?widgetname=<%= selectedItem.theName %>&tablename=<%= table %>" download="widget.jsp">
+<a href="GetTemplateCode.jsp?widgetname=<%= selectedItem.theName %>&tablename=<%= table %>" download="widget.wisp">
 <img src="/u/shared/image/downicon.png" style="height: 18px; width: 18px" /></a>
 
 
