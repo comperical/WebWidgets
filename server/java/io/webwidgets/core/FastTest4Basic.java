@@ -964,7 +964,7 @@ public class FastTest4Basic
 				if(srclist == null)
 					{ break; }
 
-				CodeFormatChecker cfchecker = new CodeFormatChecker(srclist, true);
+				CodeFormatChecker cfchecker = new CodeFormatChecker(srclist);
 				Util.massert(cfchecker.codeFormatMessage.get().contains("open or close JSP"),
 					"Expected message about open/close JSP, found %s", cfchecker.codeFormatMessage);
 
@@ -983,7 +983,7 @@ public class FastTest4Basic
 				if(srclist == null)
 					{ break; }
 
-				CodeFormatChecker cfchecker = new CodeFormatChecker(srclist, true);
+				CodeFormatChecker cfchecker = new CodeFormatChecker(srclist);
 				Util.massert(cfchecker.codeFormatMessage.get().contains("badly formatted DataServer.include"),
 					"Expected message badly formatted DataServer.include, found %s", cfchecker.codeFormatMessage);
 
@@ -1001,7 +1001,7 @@ public class FastTest4Basic
 				if(srclist == null)
 					{ break; }
 
-				CodeFormatChecker cfchecker = new CodeFormatChecker(srclist, true);
+				CodeFormatChecker cfchecker = new CodeFormatChecker(srclist);
 				Util.massert(cfchecker.codeFormatMessage.get().contains("DataServer"),
 									"Expected message about DataServer include argument, found %s", cfchecker.codeFormatMessage);
 
@@ -1020,7 +1020,7 @@ public class FastTest4Basic
 				if(srclist == null)
 					{ break; }
 
-				CodeFormatChecker cfchecker = new CodeFormatChecker(srclist, true);
+				CodeFormatChecker cfchecker = new CodeFormatChecker(srclist);
 				Util.massert(!cfchecker.codeFormatMessage.isPresent(),
 					"Got message %s, expected to be okay", cfchecker.codeFormatMessage);
 

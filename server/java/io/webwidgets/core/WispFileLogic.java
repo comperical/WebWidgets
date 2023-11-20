@@ -55,8 +55,8 @@ public class WispFileLogic
             }
 
 
-            WispFileFormat wff = new WispFileFormat(wispfile, accessor, pageitem.get());
-            wff.sendResultToStream(response.getOutputStream());
+            WispFileFormat wff = new WispFileFormat(wispfile, pageitem.get());
+            wff.sendResultToStream(response.getOutputStream(), accessor);
             response.getOutputStream().close();
         }
     }
@@ -117,24 +117,20 @@ public class WispFileLogic
 
         private final WidgetItem pageItem;
 
-        private final Optional<WidgetUser> optAccessor;
-
-        WispFileFormat(List<String> srclist, Optional<WidgetUser> acc, WidgetItem item)
+        WispFileFormat(List<String> srclist, WidgetItem item)
         {
             _srcList = srclist;
-
-            optAccessor = acc; 
 
             pageItem = item;
         }
 
-        WispFileFormat(File src, Optional<WidgetUser> acc, WidgetItem item)
+        WispFileFormat(File src, WidgetItem item)
         {
-            this(FileUtils.getReaderUtil().setFile(src).readLineListE(), acc, item);
+            this(FileUtils.getReaderUtil().setFile(src).readLineListE(), item);
         }
 
 
-        public void sendResultToStream(OutputStream out) throws IOException
+        public void sendResultToStream(OutputStream out, Optional<WidgetUser> optacc) throws IOException
         {
             boolean includedone = false;
 
@@ -161,7 +157,7 @@ public class WispFileLogic
                     for(DataIncludeArg arg : include.keySet())
                         { convert.put(arg.toString(), include.get(arg)); }
 
-                    WispServerUtil dstest = new WispServerUtil(optAccessor, pageItem, convert, includedone);
+                    WispServerUtil dstest = new WispServerUtil(optacc, pageItem, convert, includedone);
                     out.write(dstest.include().getBytes());
                     out.write("\n".getBytes());
                     includedone = true;

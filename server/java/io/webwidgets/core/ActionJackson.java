@@ -20,6 +20,7 @@ import net.danburfoot.shared.StringUtil;
 
 import io.webwidgets.core.WidgetOrg.*;
 import io.webwidgets.core.DataServer.*;
+import io.webwidgets.core.WispFileLogic.*;
 
 
 public class ActionJackson extends HttpServlet
@@ -267,6 +268,13 @@ public class ActionJackson extends HttpServlet
 			}
 		} 
 		
+		Optional<WidgetItem> getCodeTarget()
+		{
+			return _ufType == UploadFileType.basezip 
+									? Optional.empty() 
+									: Optional.of(new WidgetItem(_theUser, _widgetName));
+		}
+
 		File getCodeFile()
 		{
 			return new File(getCodePath());	
@@ -518,6 +526,7 @@ public class ActionJackson extends HttpServlet
 			ZipFile myfile = new ZipFile(codeloc.getCodeFile());
 			Enumeration<? extends ZipEntry> zipen = myfile.entries();
 			
+
 			while(zipen.hasMoreElements()) {
 				ZipEntry zent = zipen.nextElement();
 				String zname = zent.getName();
@@ -531,11 +540,32 @@ public class ActionJackson extends HttpServlet
 													.setStream(myfile.getInputStream(zent))
 													.readLineListE();
 
-					CodeFormatChecker cfchecker = new CodeFormatChecker(srclist, true);
-					if(cfchecker.codeFormatMessage.isPresent())
+
+					if(zname.endsWith(".wisp"))
 					{
-						String wrapmssg = Util.sprintf("Found error in file %s :: %s", zname, cfchecker.codeFormatMessage.get());
-						throw new LoaderException(LoadApiError.CodeFormatError, wrapmssg);
+						Optional<WidgetItem> optitem = codeloc.getCodeTarget();
+						if(!optitem.isPresent())
+						{
+							String wrapmssg = ".wisp files cannot be included in base directories, use .html instead";
+							throw new LoaderException(LoadApiError.CodeFormatError, wrapmssg);
+						}
+
+						WispFileFormat wff = new WispFileFormat(srclist, optitem.get());
+						try {
+							wff.checkCodeFormat();
+						} catch (Exception ex) {
+							String wrapmssg = Util.sprintf("Found error in WISP file format: %s", ex.getMessage());
+							throw new LoaderException(LoadApiError.CodeFormatError, wrapmssg);
+						}
+
+
+					} else {
+						CodeFormatChecker cfchecker = new CodeFormatChecker(srclist);
+						if(cfchecker.codeFormatMessage.isPresent())
+						{
+							String wrapmssg = Util.sprintf("Found error in file %s :: %s", zname, cfchecker.codeFormatMessage.get());
+							throw new LoaderException(LoadApiError.CodeFormatError, wrapmssg);
+						}
 					}
 				}
 			}
@@ -608,7 +638,7 @@ public class ActionJackson extends HttpServlet
 
 		WidgetExtractor(WidgetItem witem)
 		{
-			_myItem = witem;			
+			_myItem = witem;
 					
 			if(!getBaseDirectory().exists())
 			{
@@ -618,7 +648,7 @@ public class ActionJackson extends HttpServlet
 
 			Util.massert(getBaseDirectory().exists(), "Widget does not exist %s", witem);
 		}
-		
+
 		File getBaseDirectory()
 		{
 			String specdir = getSpecialDir();
@@ -651,18 +681,18 @@ public class ActionJackson extends HttpServlet
 
 		
 		Map<String, Boolean> getCleanDirMap()
-		{	
+		{
 			Map<String, Boolean> cdmap = Util.treemap();
 			// recursive=true
-			cdmap.put(getBaseDirectory().toString(), true);			
+			cdmap.put(getBaseDirectory().toString(), true);
 			return cdmap;
 		}
-	}	
+	}
 	
 	
 	// Extract code that is NOT attached to a widget
 	static class BaseExtractor extends CodeExtractor
-	{		
+	{
 		final WidgetUser _theUser;
 		
 		BaseExtractor(WidgetUser user)
@@ -674,7 +704,7 @@ public class ActionJackson extends HttpServlet
 		@Override
 		File getBaseDirectory()
 		{
-			return _theUser.getUserBaseDir();	
+			return _theUser.getUserBaseDir();
 		}
 		
 		Map<String, Boolean> getCleanDirMap()
@@ -813,19 +843,14 @@ public class ActionJackson extends HttpServlet
 
 		Optional<String> codeFormatMessage = Optional.empty();
 
-		private final boolean isJSP;
-
-		CodeFormatChecker(List<String> src, boolean jsp)
+		CodeFormatChecker(List<String> src)
 		{
 			_srcList = src;
-			isJSP = jsp;
-
 			check4Issue();
 		}
 
 		private void check4Issue()
 		{
-
 			for(int idx : Util.range(_srcList))
 			{
 				// Stop at the first issue we encounter.
