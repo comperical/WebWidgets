@@ -219,10 +219,14 @@ public class WispFileLogic
             {
                 String widgetstr = dimap.get(DataIncludeArg.widgetname);
                 if(widgetstr != null)
-                {
-                    dbitem = new WidgetItem(owner, widgetstr);
-                    Util.massert(dbitem.dbFileExists(), "Widget DB not found: %s", dbitem);
-                }
+                    { dbitem = new WidgetItem(owner, widgetstr);  }
+
+                // This is probably redundant if the widget name was not overriden, but check again anyway
+                Util.massert(dbitem.dbFileExists(), "Widget DB not found: %s", dbitem);
+
+                // For cross-loading, the owner of the uploaded page must have read perms for other widget
+                boolean canread = AuthChecker.build().directSetAccessor(owner).directDbWidget(dbitem).allowRead();
+                Util.massert(canread, "User %s does not have read permission for %s", owner, dbitem);
             }
 
             // Check table names
