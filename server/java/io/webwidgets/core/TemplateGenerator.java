@@ -51,7 +51,9 @@ public class TemplateGenerator
 
             "<html>",
             "<head>",
-            "<%= DataServer.include(request) %>",
+            "",
+            "<!-- standard wisp include tag -->",
+            "<wisp/>",
             "",
             "<script>",
             "",
