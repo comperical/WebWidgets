@@ -25,6 +25,7 @@ import	io.webwidgets.core.MailSystem.*;
 import	io.webwidgets.core.DataServer.*;
 import	io.webwidgets.core.PluginCentral.*;
 import	io.webwidgets.core.ActionJackson.*;
+import	io.webwidgets.core.WispFileLogic.*;
 import	io.webwidgets.core.BlobDataManager.*;
 
 public class FastTest4Basic

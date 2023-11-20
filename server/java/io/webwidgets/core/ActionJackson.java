@@ -522,6 +522,8 @@ public class ActionJackson extends HttpServlet
 				ZipEntry zent = zipen.nextElement();
 				String zname = zent.getName();
 
+				// TODO: as of late 2023, only dburfoot/admin should be uploading .jsp files
+
 				if(zname.endsWith(".jsp") || zname.endsWith(".wisp"))
 				{
 
@@ -906,52 +908,6 @@ public class ActionJackson extends HttpServlet
 		}
 	}
 
-	public static class WispTagParser
-	{
-		public static String WISP_TAG_RESTR = "<wisp(?:\\s+\\w+=(\"[^\"]*\"|'[^']*'))*\\s*/>";
 
-		static Pattern WISP_TAG_PATTERN = Pattern.compile(WISP_TAG_RESTR);
-
-		static Pattern ATTR_PATTERN = Pattern.compile("(\\w+)=(\"[^\"]*\"|'[^']*')");
-
-		public static Map<String, String> parse2AttributeMap(String tagline)
-		{
-			Matcher m = WISP_TAG_PATTERN.matcher(tagline.trim());
-
-			if(!m.find())
-				{ return null; }
-
-            Matcher attmatch = ATTR_PATTERN.matcher(m.group());
-            Map<String, String> atts = Util.treemap();
-
-            while (attmatch.find()) {
-                String k = attmatch.group(1);
-                String v = attmatch.group(2);
-
-                // Removing the surrounding quotes
-                v = v.substring(1, v.length() - 1);
-                atts.put(k, v);
-            }
-
-            return atts;
-		}
-
-		public static Map<DataIncludeArg, String> parse2DataMap(String tagline)
-		{
-			Map<String, String> attmap = parse2AttributeMap(tagline);
-			if(attmap == null)
-				{ return null; }
-
-
-			Map<DataIncludeArg, String> incmap = Util.treemap();
-			for(String k : attmap.keySet())
-			{
-				String v = attmap.get(k);
-				incmap.put(DataIncludeArg.valueOf(k), v);
-			}
-
-			return incmap;
-		}
-	}
 }
 
