@@ -249,14 +249,10 @@ public class WispFileLogic
             for(DataIncludeArg bitflag : Util.listify(DataIncludeArg.okay_if_absent, DataIncludeArg.no_data))
             {
                 String bitstr = dimap.get(bitflag);
-                if(bitstr != null)
-                {
-                    try { boolean bitresult = Boolean.valueOf(bitstr); }
-                    catch (IllegalArgumentException illex) 
-                    {
-                        Util.massert(false, "Specified a non-boolean argument %s for field %s that expects booleans", bitstr, bitflag);
-                    }
-                }
+                Set<String> okayset = Util.setify(true+"", false+"");
+                Util.massert(okayset.contains(bitstr), 
+                    "Invalid value for binary argument %s :: %s, options are %s", bitflag, bitstr, okayset);
+
             }
 
             // TODO: check the view prefixes
