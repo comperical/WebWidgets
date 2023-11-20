@@ -242,7 +242,7 @@ public class TemplateGenerator
             if(!col.equals("id"))
             {
                 tdcell = String.format(
-                    "\t<td><a href=\"javascript:%s('%s', '%s', EDIT_STUDY_ITEM)\"><img src=\"/u/shared/image/edit.png\" height=\"18\"></a></td></tr>", 
+                    "\t<td><a href=\"javascript:%s('%s', '%s', EDIT_STUDY_ITEM)\"><img src=\"/u/shared/image/edit.png\" height=\"18\"></a></td>", 
                     genericfunc, _liteTable.getSimpleTableName(), col
                 );
             }
