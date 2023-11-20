@@ -678,7 +678,6 @@ public class ActionJackson extends HttpServlet
 			return getSpecialRemapDir().get(_myItem.theName);
 		}
 		
-
 		
 		Map<String, Boolean> getCleanDirMap()
 		{
