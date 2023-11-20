@@ -111,7 +111,7 @@ function redisplay()
                   <p class="card-title">Template Generator</p>
 
                   <p class="mb-md-0">
-                  This template generator builds a simple widget.jsp page that has basic view and edit capability.
+                  This template generator builds a simple WISP page that has basic view and edit capability.
                   This is a useful starting point for further development.</p>
 
                   <br/>
@@ -155,7 +155,7 @@ function redisplay()
 <td><b><%= table %></b></td>
 <td>
 
-<a href="GetTemplateCode.jsp?widgetname=<%= selectedItem.theName %>&tablename=<%= table %>" download="widget.wisp">
+<a href="GetTemplateCode.jsp?widgetname=<%= selectedItem.theName %>&tablename=<%= table %>" download="<%= table %>.wisp">
 <img src="/u/shared/image/downicon.png" style="height: 18px; width: 18px" /></a>
 
 
