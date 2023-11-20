@@ -6,7 +6,7 @@
 
 <script src="../chinese/ChineseTech.js"></script>
 
-<%= DataServer.include(request) %>
+<wisp/>
 
 <script>
 

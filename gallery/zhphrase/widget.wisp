@@ -4,7 +4,7 @@
 <head>
 <title>Zh-Phrase Data Entry</title>
 
-<%= DataServer.include(request) %>
+<wisp/>
 
 <script>
 
