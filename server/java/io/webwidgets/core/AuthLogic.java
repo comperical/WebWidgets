@@ -49,8 +49,8 @@ public class AuthLogic
 		if(!noauth.isPresent())
 			{ return Optional.empty(); }
 				
-		ArgMap argmap = WebUtil.getCookieArgMap(request);		
-		String accesshash = argmap.getStr(ACCESS_HASH_COOKIE, "");		
+		ArgMap argmap = WebUtil.getCookieArgMap(request);
+		String accesshash = argmap.getStr(ACCESS_HASH_COOKIE, "");
 		
 		boolean authokay = noauth.get().matchPassHash(accesshash);
 
@@ -146,82 +146,40 @@ public class AuthLogic
 	}
 
 
-	// TODO: this should be put in the GlobalIndex package
-	private static Map<WidgetItem, PermInfoPack> _PERMISSION_MAP = null;
-
-	public static synchronized PermInfoPack getPermInfo4Widget(WidgetItem dbitem)
-	{
-		return getPermInfoSub(dbitem, false);
-	}
-
-	private static synchronized PermInfoPack getPermInfoSub(WidgetItem dbitem, boolean ensure)
-	{
-		odLoadPermTable();
-
-		if(ensure && !_PERMISSION_MAP.containsKey(dbitem))
-			{ _PERMISSION_MAP.put(dbitem, new PermInfoPack(dbitem)); }
-
-		return _PERMISSION_MAP.getOrDefault(dbitem, new PermInfoPack(dbitem));
-	}
-
-	private static void odLoadPermTable()
-	{
-		if(_PERMISSION_MAP == null)
-		{ 
-			_PERMISSION_MAP = Util.treemap();
-			loadPermTable(); 
-		}
-	}
-
-	static synchronized void reloadPermTable()
-	{
-		_PERMISSION_MAP = null;
-		odLoadPermTable();
-	}
-
-	private static synchronized void loadPermTable()
-	{
-		QueryCollector qcol = CoreUtil.fullTableQuery(CoreUtil.getMasterWidget(), PERM_GRANT_TABLE);
-
-		for(ArgMap onemap : qcol.recList())
-		{
-			WidgetUser owner = WidgetUser.valueOf(onemap.getStr("owner"));
-			String widgetname = onemap.getStr("widget_name");
-			WidgetItem dbitem = new WidgetItem(owner, widgetname);
-
-			_PERMISSION_MAP.putIfAbsent(dbitem, new PermInfoPack(dbitem));
-			_PERMISSION_MAP.get(dbitem).loadFromRecMap(onemap);
-		}
-	}
-
-
-
-
-	public static synchronized void assignPermToGrantee(WidgetItem dbitem, WidgetUser grantee, PermLevel perm)
+	// These methods were all previously synchronized, but I don't think there are going to be
+	// simultaneous edits to the permissions, and the GlobalIndex is sync'ed
+	public static void assignPermToGrantee(WidgetItem dbitem, WidgetUser grantee, PermLevel perm)
 	{
 		Util.massert(grantee != dbitem.theOwner, "You can't add permissions to owner, owner already has admin by default");
 
 		// True:: ensure the record stays in _PERMISSION_MAP
-		tweakPerm(dbitem, dbpack -> dbpack.assignPerm(grantee, perm), true);
+		tweakPerm(dbitem, dbpack -> dbpack.assignPerm(grantee, perm));
 	}
 
-	public static synchronized void removePermFromGrantee(WidgetItem dbitem, WidgetUser grantee)
+	public static void removePermFromGrantee(WidgetItem dbitem, WidgetUser grantee)
 	{
 		Util.massert(grantee != dbitem.theOwner, "You can't remove admin permissions from owner");
 
-		tweakPerm(dbitem, dbpack -> dbpack.revokePerm(grantee), false);
+		tweakPerm(dbitem, dbpack -> dbpack.revokePerm(grantee));
 	}
 
-	public static synchronized void markPublicRead(WidgetItem dbitem, boolean read)
+	public static void markPublicRead(WidgetItem dbitem, boolean read)
 	{
-		tweakPerm(dbitem, dbpack -> dbpack.markPublicRead(read), true);
+		tweakPerm(dbitem, dbpack -> dbpack.markPublicRead(read));
 	}
 
-	private static synchronized void tweakPerm(WidgetItem dbitem, Consumer<PermInfoPack> permfunc, boolean ensure)
+	private static void tweakPerm(WidgetItem dbitem, Consumer<PermInfoPack> permfunc)
 	{
-		PermInfoPack dbpack = getPermInfoSub(dbitem, ensure);
+		PermInfoPack dbpack = GlobalIndex.getPermInfo4Widget(dbitem);
 		permfunc.accept(dbpack);
-		dbpack.save2Db();
+		dbpack.save2Db(dbitem);
+
+		// Need to reload indexes to pick up changes
+		// Like the changes to user password, this is a bit hacky, but will be okay until we have so many users
+		// that permission changes are happening often
+		// Previously, was trying to be smart and use an update-and-save technique, but there was a lot of confusion
+		// about ensuring that the index always had an entry
+		GlobalIndex.clearUserIndexes();
 	}
 
 	public static class AuthChecker
@@ -278,7 +236,7 @@ public class AuthLogic
 			Util.massert(_optAccessor != null, "You must set the accessor");
 			Util.massert(_dbItem != null, "You must set the Widget DB Item");
 
-			return getPermInfo4Widget(_dbItem).getPerm4Accessor(_optAccessor);
+			return GlobalIndex.getPermInfo4Widget(_dbItem).getPerm4Accessor(_dbItem, _optAccessor);
 		}
 
 		public boolean allowRead()
@@ -308,13 +266,10 @@ public class AuthLogic
 	{
 		private final Map<WidgetUser, PermLevel> _coreMap = Util.treemap();
 
-		public final WidgetItem dbItem;
-
 		private boolean _publicRead = false;
 
-		PermInfoPack(WidgetItem item) 
+		PermInfoPack() 
 		{
-			dbItem = item;
 		}
 
 		public Map<WidgetUser, PermLevel> getCorePermMap()
@@ -328,15 +283,14 @@ public class AuthLogic
 			return _publicRead;
 		}
 
-		public synchronized Optional<PermLevel> getPerm4Accessor(Optional<WidgetUser> optaccess)
+		public synchronized Optional<PermLevel> getPerm4Accessor(WidgetItem dbitem, Optional<WidgetUser> optaccess)
 		{
 			if(optaccess.isPresent())
 			{
-
 				WidgetUser accessor = optaccess.get();
 
 				// You are admin for your own widgets
-				if(dbItem.theOwner == accessor)
+				if(dbitem.theOwner == accessor)
 					{ return Optional.of(PermLevel.admin); }
 
 				// Admins can do anything
@@ -347,7 +301,6 @@ public class AuthLogic
 				if(core.isPresent())
 					{ return core; }
 			}
-
 
 			return _publicRead ? Optional.of(PermLevel.read) : Optional.empty();
 		}
@@ -367,7 +320,7 @@ public class AuthLogic
 			_coreMap.remove(grantee);
 		}
 
-		private synchronized void loadFromRecMap(ArgMap amap)
+		synchronized void loadFromRecMap(ArgMap amap)
 		{
 			PermLevel level = amap.getEnum("perm_level", PermLevel.values());
 			String grantee = amap.getStr("grantee");
@@ -382,7 +335,7 @@ public class AuthLogic
 			_coreMap.put(WidgetUser.lookup(grantee), level);
 		}
 
-		private synchronized void save2Db()
+		private synchronized void save2Db(WidgetItem dbItem)
 		{
 
 			CoreDb.deleteFromColMap(CoreUtil.getMasterWidget(), AuthLogic.PERM_GRANT_TABLE, CoreDb.getRecMap(

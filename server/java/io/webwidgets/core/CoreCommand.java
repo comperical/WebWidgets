@@ -787,14 +787,6 @@ public class CoreCommand
 		}
 	}
 	
-	
-	public static class JustLoadPermTable extends ArgMapRunnable 
-	{
-		public void runOp() 
-		{
-			AuthLogic.reloadPermTable();
-		}
-	}
 
 	public static class CheckPermForWidget extends ArgMapRunnable 
 	{
@@ -806,12 +798,12 @@ public class CoreCommand
 			
 			for(WidgetUser accessor : WidgetUser.values())
 			{
-				Optional<PermLevel> perm = AuthLogic.getPermInfo4Widget(dbitem).getPerm4Accessor(Optional.of(accessor));
+				Optional<PermLevel> perm = GlobalIndex.getPermInfo4Widget(dbitem).getPerm4Accessor(dbitem, Optional.of(accessor));
 				if(!perm.isEmpty())
 					{ Util.pf("For widget %s --> grantee %s, have perm=%s\n", dbitem, accessor, perm.get()); }
 			}
 		}
-	}		
+	}
 	
 	public static class EmailCheckAndSend extends DescRunnable implements CrontabRunnable
 	{

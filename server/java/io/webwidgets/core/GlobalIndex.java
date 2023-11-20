@@ -16,6 +16,7 @@ import net.danburfoot.shared.CoreDb.QueryCollector;
 
 import io.webwidgets.core.WidgetOrg.*;
 import io.webwidgets.core.CoreUtil.MasterTable;
+import io.webwidgets.core.AuthLogic.PermInfoPack;
 
 public class GlobalIndex
 {
@@ -31,6 +32,9 @@ public class GlobalIndex
 
     // System settings
     private static Map<String, String> _SYSTEM_SETTING;
+
+    private static Map<WidgetItem, PermInfoPack> _PERMISSION_MAP;
+
 
     static synchronized Map<String, ArgMap> getMasterData()
     {
@@ -69,6 +73,8 @@ public class GlobalIndex
 
         _SYSTEM_SETTING = null;
 
+        _PERMISSION_MAP = null;
+
         PluginCentral.clearIndex();
     }
 
@@ -93,6 +99,29 @@ public class GlobalIndex
                 _SYSTEM_SETTING = Util.map2map(qcol.recList(), amap -> amap.getStr("key_str"), amap -> amap.getStr("val_str"));
             }
 
+
+            // Be careful, this has to be loaded AFTER the user info
+            {
+                _PERMISSION_MAP = Util.treemap();
+
+                QueryCollector qcol = CoreUtil.fullTableQuery(CoreUtil.getMasterWidget(), AuthLogic.PERM_GRANT_TABLE);
+
+                for(ArgMap onemap : qcol.recList())
+                {
+                    // This should be prevented by a config test or a FKEY constraint
+                    // But if it happens here, don't blow up the whole loading process
+                    Optional<WidgetUser> optown = WidgetUser.softLookup(onemap.getStr("owner"));
+                    if(!optown.isPresent())
+                        { continue; }
+
+                    String widgetname = onemap.getStr("widget_name");
+                    WidgetItem dbitem = new WidgetItem(optown.get(), widgetname);
+
+                    _PERMISSION_MAP.putIfAbsent(dbitem, new PermInfoPack());
+                    _PERMISSION_MAP.get(dbitem).loadFromRecMap(onemap);
+                }
+            }
+
             _REFRESH_TIMESTAMP = System.currentTimeMillis();
         }
     }
@@ -110,12 +139,10 @@ public class GlobalIndex
     public static void updateSystemSetting(Enum setting, Optional<String> optval)
     {
         updateSystemSetting(setting.toString(), optval);
-
     }
 
     static void updateSystemSetting(String setting, Optional<String> optval)
     {
-
         if(!optval.isPresent())
         {
             CoreDb.deleteFromColMap(CoreUtil.getMasterWidget(), MasterTable.system_setting.toString(), CoreDb.getRecMap(
@@ -129,9 +156,17 @@ public class GlobalIndex
             "key_str", setting, 
             "val_str", optval.get()
         ));
-
-
     }
 
 
+    // After some back-and-forth, I opted for a very simple lookup here:
+    // simple get with an empty value if the key is not present
+    // There is a lot of potential for confusion if you get an empty record, then udpate it, but the
+    // but the changes are saved in the DB, not the actual entry
+    public static synchronized PermInfoPack getPermInfo4Widget(WidgetItem dbitem)
+    {
+        onDemandLoadIndexes();
+
+        return _PERMISSION_MAP.getOrDefault(dbitem, new PermInfoPack());
+    }
 }

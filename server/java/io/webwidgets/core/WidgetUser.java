@@ -215,8 +215,9 @@ public class WidgetUser implements Comparable<WidgetUser>
             AuthLogic.ACCESS_HASH_COOKIE, newhash
         ));
         
-        // TODO: Okay, this is a real hack, you need to reload entire user index
-        // after updating a single user...???
+        // Note: this is a bit hacky; reloading the entire user index just because one user changed password
+        // However, reloading the indexes is relatively fast. 
+        // This should be fine until we get to a user count where people are changing passwords every minute or so
         GlobalIndex.clearUserIndexes();
     }
 
