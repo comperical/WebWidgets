@@ -249,6 +249,9 @@ public class WispFileLogic
             for(DataIncludeArg bitflag : Util.listify(DataIncludeArg.okay_if_absent, DataIncludeArg.no_data))
             {
                 String bitstr = dimap.get(bitflag);
+                if(bitstr == null)
+                    { continue; } 
+
                 Set<String> okayset = Util.setify(true+"", false+"");
                 Util.massert(okayset.contains(bitstr), 
                     "Invalid value for binary argument %s :: %s, options are %s", bitflag, bitstr, okayset);
