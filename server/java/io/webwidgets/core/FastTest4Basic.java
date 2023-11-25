@@ -7,6 +7,8 @@ import java.sql.*;
 import java.net.*; 
 import java.util.function.BiFunction;
 
+import org.json.simple.*;
+import org.json.simple.parser.*;
 
 import net.danburfoot.shared.Util;
 import net.danburfoot.shared.CoreDb;
@@ -1127,6 +1129,86 @@ public class FastTest4Basic
 			return Util.filter2list(data, line -> line.trim().length() > 0 && !line.trim().startsWith("//"));
 		}
 
+	}
+
+	public static class TestJsonTypeConvert extends ArgMapRunnable
+	{
+
+		public void runOp() throws Exception
+		{
+			for(boolean isgood : Util.listify(true, false))
+			{
+				List<String> intlist = isgood ? getOkayIntList() : getBadIntList();
+				for(String s : intlist)
+				{
+					boolean okay = true;
+					try {
+						JSONObject jsonob = Util.cast((new JSONParser()).parse(s));
+						Integer info = Util.cast(LiteTableInfo.getJsonPayLoad("info", "INT", jsonob));
+						Util.pf("Got int %s\n", info);
+					} catch (Exception ex) {
+						okay = false;
+					}
+
+					Util.massert(okay == isgood, "Got okay=%b but expected %b for %s", okay, isgood, s);
+
+				}
+
+				List<String> dbllist = isgood ? getOkayDblList() : getBadDblList();
+				for(String s : dbllist)
+				{
+					boolean okay = true;
+					try {
+						JSONObject jsonob = Util.cast((new JSONParser()).parse(s));
+						Double info = Util.cast(LiteTableInfo.getJsonPayLoad("info", "REAL", jsonob));
+						Util.pf("Got double %s\n", info);
+					} catch (Exception ex) {
+						okay = false;
+					}
+
+					Util.massert(okay == isgood, "Got okay=%b but expected %b for %s", okay, isgood, s);
+				}
+			}
+		}
+
+
+		private static List<String> getBadIntList()
+		{
+			return Util.listify(
+				"{ \"info\" : 454.2343 } ",
+				"{ \"info\" : \"x1\" } "
+			);
+
+		}
+
+		private static List<String> getOkayIntList()
+		{
+			return Util.listify(
+				"{ \"info\" : null } ",
+				"{ \"info\" : 5 } "
+			);
+
+
+		}
+
+		private static List<String> getOkayDblList()
+		{
+			return Util.listify(
+				// "{ \"info\" : null } ",
+				"{ \"info\" : 5.4234 } ",
+				"{ \"info\" : 0 } ",
+				"{ \"info\" : 45 } "
+			);
+		}
+
+		private static List<String> getBadDblList()
+		{
+			return Util.listify(
+				"{ \"info\" : \"another\" } ",
+				"{ \"info\" : \"x1\" } "
+
+			);
+		}
 	}
 } 
 

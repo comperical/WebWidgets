@@ -5,6 +5,8 @@ import java.util.*;
 import java.sql.*; 
 
 import javax.servlet.http.HttpServletRequest;
+import org.json.simple.JSONObject;
+
 
 import net.danburfoot.shared.Util;
 import net.danburfoot.shared.CoreDb;
@@ -497,6 +499,22 @@ public class LiteTableInfo
 		
 		return paymap;
 	}
+
+	LinkedHashMap<String, Object> getPayLoadMap(JSONObject jsonob)
+	{
+		// Blah my map2map collection operation doesn't work here because it uses TreeMap
+		// and doesn't let me control the backing map type
+
+
+		LinkedHashMap<String, Object> paymap = Util.linkedhashmap();
+		for(var coltype : _colTypeMap.entrySet())
+		{
+			Object payload = getJsonPayLoad(coltype.getKey(), coltype.getValue(), jsonob);
+			paymap.put(coltype.getKey(), payload);
+		}
+		return paymap;
+	}
+
 	
 	static Object getPayLoad(String onecol, String onetype, ArgMap recmap)
 	{
@@ -519,6 +537,32 @@ public class LiteTableInfo
 
 			String input = recmap.get(onecol);
 			throw new ArgMapNumberException(onecol, onetype, input);
+		}
+	}
+
+
+	static Object getJsonPayLoad(String onecol, String onetype, JSONObject jsonob)
+	{
+		java.util.function.Function<Object, Integer> convertlong = ob -> (ob == null ? null : ((Long) ob).intValue());
+		java.util.function.Function<Object, Double> convertreal = ob -> (ob == null ? null : ((Number) ob).doubleValue());
+
+
+		switch(onetype)
+		{
+			case "INT":
+			case "TINYINT":
+			case "SMALLINT":
+			case "INTEGER" : return convertlong.apply(jsonob.get(onecol));
+
+
+			case "REAL":
+			case "DOUBLE": return convertreal.apply(jsonob.get(onecol));
+
+
+			case "TEXT": 
+			case "STRING": return (String) jsonob.get(onecol);
+
+			default: throw new RuntimeException("Unknown Type: " + onetype);
 		}
 	}
 
