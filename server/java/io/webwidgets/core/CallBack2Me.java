@@ -84,7 +84,7 @@ public class CallBack2Me extends HttpServlet
 	}
 	
 	@SuppressWarnings("unchecked")
-	private static JSONObject buildJsonResponse(ArgMap outmap) 
+	static JSONObject buildJsonResponse(ArgMap outmap) 
 	{
 		JSONObject jsonout = new JSONObject();
 		jsonout.putAll(outmap);

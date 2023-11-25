@@ -25,19 +25,9 @@ public class BulkOperation
 
     // Bulk Update of widget data
     // Same basic arguments as other endpoints, but here the 
-    @WebServlet(urlPatterns = "*bulkupdate*") 
+    // @WebServlet(urlPatterns = "*bulkupdate*") 
+    // Somehow I was not able to get the urlPatterns trick to work here
     public static class BulkUpdate extends HttpServlet {
-
-
-        public BulkUpdate() {
-            super();
-        }
-
-        protected void doGet(HttpServletRequest request, HttpServletResponse response)  throws ServletException, IOException {
-
-            doPost(request, response);
-        } 
-
 
         protected void doPost(HttpServletRequest request, HttpServletResponse response)  throws ServletException, IOException 
         {
@@ -81,11 +71,23 @@ public class BulkOperation
             }
             
 
-            processBulkUpdate(tableInfo, innmap);
+            int upcount = processBulkUpdate(tableInfo, innmap);
 
+
+            outmap.put("status_code", "okay");
+            outmap.put("user_message", Util.sprintf("Bulk update of %d records successful", upcount));
+
+        
+            {
+                JSONObject jsonout = CallBack2Me.buildJsonResponse(outmap);
+                PrintWriter out = response.getWriter();
+                out.print(jsonout.toString());
+                out.print("\n");
+                out.close();
+            }
         }
 
-        private static void processBulkUpdate(LiteTableInfo table, ArgMap innmap) throws IOException
+        private static int processBulkUpdate(LiteTableInfo table, ArgMap innmap) throws IOException
         {
             try {
                 List<LinkedHashMap<String, Object>> updatelist = loadPayloadList(table, innmap);
@@ -93,12 +95,11 @@ public class BulkOperation
                     { CoreDb.upsertFromRecMap(table.dbTabPair._1, table.dbTabPair._2, 1, item); }
 
 
-            } catch (ParseException pex) {
+                return updatelist.size();
 
+            } catch (ParseException pex) {
                 throw new IOException(pex);
             }
-
-
         }
 
         private static List<LinkedHashMap<String, Object>> loadPayloadList(LiteTableInfo table, ArgMap innmap) throws ParseException
