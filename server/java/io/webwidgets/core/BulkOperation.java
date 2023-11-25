@@ -29,6 +29,10 @@ public class BulkOperation
     public static class BulkUpdate extends HttpServlet {
 
 
+        public BulkUpdate() {
+            super();
+        }
+
         protected void doPost(HttpServletRequest request, HttpServletResponse response)  throws ServletException, IOException 
         {
             ArgMap innmap = WebUtil.getArgMap(request);

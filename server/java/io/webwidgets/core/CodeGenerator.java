@@ -185,8 +185,11 @@ public class CodeGenerator
 		add("\tsyncSingleItem(this);");
 		add("}");
 		add("");
-		add("");    
+		add("");
 		
+
+
+
 		
 		add("// Sync Item to Lite DB");
 		add("%s.prototype.syncItem = function()", _liteTable.getRecordName());
@@ -194,7 +197,7 @@ public class CodeGenerator
 		add("\tW.__submitNewRequest(this.getUpsertUrl(), \"sync\", this.getId());");
 		add("}");
 		add("");
-		add("");		
+		add("");
 		
 		add("// Remove from DataMap and from SQLite.");
 		add("%s.prototype.deleteItem = function()", _liteTable.getRecordName());
@@ -217,6 +220,7 @@ public class CodeGenerator
 		add("");
 		add("");
 		
+
 		String delsign = Util.join(_liteTable.getPkeyList(), "', '");
 		add("%s.prototype.getDeleteUrl = function()", _liteTable.getRecordName());
 		add("{");
