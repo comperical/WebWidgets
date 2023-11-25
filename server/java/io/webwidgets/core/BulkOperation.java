@@ -25,7 +25,7 @@ public class BulkOperation
 
     // Bulk Update of widget data
     // Same basic arguments as other endpoints, but here the 
-    @WebServlet(urlPatterns = "/u/bulkupdate") 
+    @WebServlet(urlPatterns = "*bulkupdate*") 
     public static class BulkUpdate extends HttpServlet {
 
 
