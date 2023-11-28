@@ -228,6 +228,14 @@ public class CodeGenerator
 		add("}");		
 		
 		
+		add("");
+		add("// Get reference to the Table object, which holds metadata; normal WWIO dev should not require this");
+		add("%s.prototype.__getTableObject = function()", _liteTable.getRecordName());
+		add("{");
+		add("\treturn %s;", _liteTable.getCollectName());
+		add("}");
+
+
 		
 	}
 	
@@ -235,8 +243,6 @@ public class CodeGenerator
 	{
 		add("");
 		add("// Get/Set Methods");
-		add("");
-		
 		for(String onecol : _liteTable.getColTypeMap().keySet())
 		{
 			if(onecol.startsWith("_"))

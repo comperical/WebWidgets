@@ -19,6 +19,8 @@ __tableNameIndex : new Map(),
 
 CALLBACK_URL : "/u/callback",
 
+BULK_UPDATE_URL : "/u/bulkupdate",
+
 __REQUEST_QUEUE : [],
 
 __REQUEST_IN_FLIGHT : false,
@@ -58,7 +60,7 @@ getItemList : function(tabname)
 buildItem : function(tabname, record)
 {
     W.checkTableName(tabname);
-    const buildfunc = W.__buildItemFuncMap[tabname];    
+    const buildfunc = W.__buildItemFuncMap[tabname];
 
     // Jan 2021: you no longer need to call newBasicId(...) yourself and put it in the record
     // This method will do it for you.
@@ -90,6 +92,9 @@ getTableOwner : function(tabname)
     W.checkTableName(tabname);
     return W.__tableNameIndex.get(tabname).widgetOwner;
 },
+
+
+
 
 // True if the current user has write access to the given table
 // Widgets that serve multiple users, some of whom have write access and some of whom do not,
@@ -183,6 +188,67 @@ checkTableName : function(tabname)
 
     const tlist = [... W.__tableNameIndex.keys()];
     massert(false, "Could not find table name " + tabname + ", options are " + tlist);
+},
+
+// Bulk update of records to the given table.
+// You must supply the list of IDs that are to be updated; all such IDs much correspond to real records
+// To use this, first perform the desired updates on the given records
+// Instead of calling syncItem on each record, call this function with the target IDs
+// This method refreshes the page after the update is complete, to ensure the changes have been picked up
+// Third argument is a hash that is reserved for allowing modifications to the behavior of this function
+bulkUpdate : function(tablename, idlist, options)
+{
+
+    if(W.__REQUEST_IN_FLIGHT || W.__REQUEST_QUEUE.length > 0)
+    {
+        const mssg = `
+            There are currently other sync updates being processed.
+            Please wait a while for these to be completed and try again.
+            (Developers should try to avoid situations where users see this message)
+        `;
+
+        alert(mssg);
+        return;
+    }
+
+    if(idlist.length == 0)
+    {
+        alert("No records specified in bulk update, returning");
+        return;
+    }
+
+    const itemlist = [];
+    idlist.forEach(function(myid) {
+
+        massert(W.haveItem(tablename, myid),
+            `No record found for ${tablename}::${myid}, please check this condition before calling, quitting`);
+
+        itemlist.push(W.lookupItem(tablename, myid));
+    });
+
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', W.BULK_UPDATE_URL, true);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) { // Request is done
+            if (xhr.status === 200) {
+                const result = JSON.parse(xhr.responseText);
+                const message = result['user_message'];
+                alert(`Server message: \n${message}\nWill now reload page`);
+                window.location.reload();
+
+            } else {
+                alert(`Bulk update failed with ${xhr.statusText}, please report this message to developer/admin`);
+            }
+        }
+    };
+
+    // These table coords are setup in the proper way for the update
+    const fullpackage = W.__getTableCoords(itemlist[0].__getTableObject());
+    fullpackage["bulkpayload"] = JSON.stringify(itemlist);
+    xhr.send(encodeHash2QString(fullpackage));
 },
 
 // Look up the widget owner and name from the url

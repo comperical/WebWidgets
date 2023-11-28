@@ -5,8 +5,6 @@
 
 <wisp/>
 
-<script src="LinkDisplay.js"></script>
-
 <script>
 
 
@@ -55,12 +53,12 @@ function createNew()
 	const categid = getMainCategory();
 		
 	const newrec = {
-		"link_url" : "http://danburfoot.net",
-		"short_desc" : "NotYetSet",
+		"link_url" : "",
+		"short_desc" : "",
 		"cat_id" : categid
 	};
 	
-	const newlinkitem = W.buildItem("link_main", newrec);	
+	const newlinkitem = W.buildItem("link_main", newrec);
 	newlinkitem.syncItem();
 	
 	editStudyItem(newlinkitem.getId());
@@ -369,7 +367,7 @@ function getLinkTableStr(linkmainlist)
 		<table  class="basic-table" width="70%">
 		<tr>
 		<th>Category</th>
-		<th>ShortDesc</th>
+		<th>Description</th>
 		<th width="30%">Link</th>
 		<th width="10%">---</th>
 		</tr>

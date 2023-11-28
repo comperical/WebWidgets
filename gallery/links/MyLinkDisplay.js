@@ -4,6 +4,15 @@ function getLinkDisplay(link) {
         return "YouTube";
     }
 
+    if(link.indexOf("viki.com/tv") > -1) {
+        return "Viki TV";
+    }
+
+    if(link.indexOf("chat.openai") > -1) {
+        return "GPT Chat";
+    }
+
+
 
     if(link.indexOf("docs.google.com") > -1) {
 
