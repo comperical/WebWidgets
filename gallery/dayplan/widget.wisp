@@ -36,7 +36,9 @@ function doTemplateImport()
 	const temp_id = getDocFormValue("temp_id");
 
 	// Look these up before creating the new ones, then delete them after.
-	const deletes = getPlanDayItemList();	
+	const deletes = getPlanDayItemList();
+
+	const newids = [];
 	
 	// remember: create new first to assign IDs, then delete old.
 	W.getItemList("template_sub").forEach(function(tmpitem) {
@@ -54,10 +56,16 @@ function doTemplateImport()
 		};
 		
 		const newitem = W.buildItem("day_plan_main", record);
-		newitem.syncItem();		
+		// newitem.syncItem();
+		newids.push(newitem.getId());
 	});
 	
-	deletes.forEach(function(olditem) { olditem.deleteItem(); });
+	console.log(newids);
+	// W.bulkUpdate("day_plan_main", newids);
+
+	// W.bulkDelete("day_plan_main", deletes.map(item => item.getId()));
+
+	// deletes.forEach(function(olditem) { olditem.deleteItem(); });
 	
 	redisplay();
 }

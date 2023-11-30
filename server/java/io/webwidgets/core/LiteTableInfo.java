@@ -558,7 +558,7 @@ public class LiteTableInfo
 			case "REAL":
 			case "DOUBLE": return convertreal.apply(jsonob.get(onecol));
 
-
+			case "VARCHAR":
 			case "TEXT": 
 			case "STRING": return (String) jsonob.get(onecol);
 

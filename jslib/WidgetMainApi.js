@@ -240,6 +240,7 @@ __bulkOpSub : function(tablename, idlist, isdelete, options)
         itemlist.push(W.lookupItem(tablename, myid));
     });
 
+    const tablemaster = itemlist[0].__getTableObject();
 
     var xhr = new XMLHttpRequest();
     xhr.open('POST', W.BULK_UPDATE_URL, true);
@@ -250,23 +251,30 @@ __bulkOpSub : function(tablename, idlist, isdelete, options)
             if (xhr.status === 200) {
                 const result = JSON.parse(xhr.responseText);
                 const message = result['user_message'];
-                alert(`Server message: \n${message}\nWill now reload page`);
-                window.location.reload();
+                console.log(message);
 
             } else {
-                alert(`Bulk update failed with ${xhr.statusText}, please report this message to developer/admin`);
+                alert(`Bulk update failed with ${xhr.statusText}, please report this message to developer/admin and refresh page`);
             }
         }
     };
 
     // These table coords are setup in the proper way for the update
-    const fullpackage = W.__getTableCoords(itemlist[0].__getTableObject());
+    const fullpackage = W.__getTableCoords(tablemaster);
     if(isdelete)
         { fullpackage["delete_id_list"] = idlist.join(","); }
     else
         { fullpackage["bulkpayload"] = JSON.stringify(itemlist); }
 
     xhr.send(encodeHash2QString(fullpackage));
+
+    // Need to perform all appropriate updates to the local copy of the data
+    itemlist.forEach(function(item) {
+        if(isdelete)
+            { tablemaster._dataMap.delete(item.getId());} 
+        else
+            { tablemaster.register(item); }
+    });
 },
 
 
