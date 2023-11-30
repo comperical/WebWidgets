@@ -60,10 +60,9 @@ function doTemplateImport()
 		newids.push(newitem.getId());
 	});
 	
-	console.log(newids);
-	// W.bulkUpdate("day_plan_main", newids);
+	W.bulkUpdate("day_plan_main", newids);
 
-	// W.bulkDelete("day_plan_main", deletes.map(item => item.getId()));
+	W.bulkDelete("day_plan_main", deletes.map(item => item.getId()));
 
 	// deletes.forEach(function(olditem) { olditem.deleteItem(); });
 	

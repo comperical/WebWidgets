@@ -227,7 +227,7 @@ __bulkOpSub : function(tablename, idlist, isdelete, options)
 
     if(idlist.length == 0)
     {
-        alert("No records specified in bulk update, returning");
+        // alert("No records specified in bulk update, returning");
         return;
     }
 

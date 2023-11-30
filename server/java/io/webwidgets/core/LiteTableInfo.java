@@ -675,7 +675,7 @@ public class LiteTableInfo
 
 	private static Map<String, SyncController> __SYNC_MAP = Util.treemap();
 	
-	private static synchronized SyncController getEditController(WidgetItem witem) 
+	static synchronized SyncController getEditController(WidgetItem witem) 
 	{
 		String pathkey = witem.getLocalDbPath();
 		
@@ -684,7 +684,7 @@ public class LiteTableInfo
 		return __SYNC_MAP.get(pathkey);
 	}
 	
-	private static class SyncController {}
+	static class SyncController {}
 	
 	
 	// http://stackoverflow.com/questions/607176/java-equivalent-to-javascripts-encodeuricomponent-that-produces-identical-outpu		

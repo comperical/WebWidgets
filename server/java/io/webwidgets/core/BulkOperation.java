@@ -18,7 +18,7 @@ import net.danburfoot.shared.CoreDb;
 import io.webwidgets.core.AuthLogic.*;
 import io.webwidgets.core.WidgetOrg.*;
 import io.webwidgets.core.CallBack2Me.*;
-
+import io.webwidgets.core.LiteTableInfo.*;
 
 public class BulkOperation
 {
@@ -57,13 +57,17 @@ public class BulkOperation
                 Util.massert(Util.setify(delidstr != null, bulkupstr != null).size() == 2,
                     "Have DELETE code %s, and UPDATE code %s, one or other must be null", delidstr, bulkupstr);
 
-                if(delidstr != null)
+                SyncController editcontrol = LiteTableInfo.getEditController(tableInfo.dbTabPair._1);
+                synchronized(editcontrol)
                 {
-                    int delcount = processDelete(tableInfo, delidstr);
-                    outmap.put("user_message", Util.sprintf("Bulk delete of %d records successful", delcount));
-                } else {
-                    int upcount = processBulkUpdate(tableInfo, bulkupstr);
-                    outmap.put("user_message", Util.sprintf("Bulk update of %d records successful", upcount));
+                    if(delidstr != null)
+                    {
+                        int delcount = processDelete(tableInfo, delidstr);
+                        outmap.put("user_message", Util.sprintf("Bulk delete of %d records successful", delcount));
+                    } else {
+                        int upcount = processBulkUpdate(tableInfo, bulkupstr);
+                        outmap.put("user_message", Util.sprintf("Bulk update of %d records successful", upcount));
+                    }
                 }
 
                 outmap.put("status_code", "okay");
