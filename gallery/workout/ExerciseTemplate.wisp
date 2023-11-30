@@ -7,14 +7,14 @@
 
 <script>
 
-var EDIT_STUDY_ITEM = 1;
+var EDIT_STUDY_ITEM = -1;
 
 function createNew()
 {	
 	const shortcode = prompt("ShortCode for item: ");
 	
 	if(shortcode)
-	{					
+	{
 		// created_on, active_on, completed_on, dead_line
 		const comrecord = {
 			"ex_type" : "body",

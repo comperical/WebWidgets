@@ -198,6 +198,20 @@ checkTableName : function(tabname)
 // Third argument is a hash that is reserved for allowing modifications to the behavior of this function
 bulkUpdate : function(tablename, idlist, options)
 {
+    W.__bulkOpSub(tablename, idlist, false, options);
+},
+
+// Bulk delete of records to the given table.
+// You must supply the list of IDs that are to be deleted; all such IDs much correspond to real records
+// This method refreshes the page after the update is complete, to ensure the changes have been picked up
+// Third argument is a hash that is reserved for allowing modifications to the behavior of this function
+bulkDelete : function(tablename, idlist, options)
+{
+    W.__bulkOpSub(tablename, idlist, true, options);
+},
+
+__bulkOpSub : function(tablename, idlist, isdelete, options)
+{
 
     if(W.__REQUEST_IN_FLIGHT || W.__REQUEST_QUEUE.length > 0)
     {
@@ -247,9 +261,15 @@ bulkUpdate : function(tablename, idlist, options)
 
     // These table coords are setup in the proper way for the update
     const fullpackage = W.__getTableCoords(itemlist[0].__getTableObject());
-    fullpackage["bulkpayload"] = JSON.stringify(itemlist);
+    if(isdelete)
+        { fullpackage["delete_id_list"] = idlist.join(","); }
+    else
+        { fullpackage["bulkpayload"] = JSON.stringify(itemlist); }
+
     xhr.send(encodeHash2QString(fullpackage));
 },
+
+
 
 // Look up the widget owner and name from the url
 // Use that info to find the current checksum value
