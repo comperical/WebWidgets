@@ -84,7 +84,8 @@ public class LiteTableInfo
 	
 	public final Pair<WidgetItem, String> dbTabPair;
 
-	private Map<String, String> _colTypeMap = Util.linkedhashmap();
+	// Note: the order of these keys are very important
+	private LinkedHashMap<String, String> _colTypeMap = Util.linkedhashmap();
 	
 	private List<String> _pkeyList = Util.vector();
 
@@ -502,6 +503,7 @@ public class LiteTableInfo
 
 	LinkedHashMap<String, Object> getPayLoadMap(JSONObject jsonob)
 	{
+
 		// Blah my map2map collection operation doesn't work here because it uses TreeMap
 		// and doesn't let me control the backing map type
 

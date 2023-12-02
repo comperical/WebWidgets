@@ -22,7 +22,7 @@ public class CoreDb
 	public static interface ConnectionSource
 	{
 		public abstract Connection createConnection() throws SQLException;
-	}	
+	}
 
 	public static class QueryCollector
 	{
@@ -429,12 +429,12 @@ public class CoreDb
 	public static int execSqlUpdate(String sql, ConnectionSource csource)
 	{
 		try { 
-			Connection conn = csource.createConnection();	
+			Connection conn = csource.createConnection();
 			int numhit = execSqlUpdate(sql, conn);
 			conn.close();
 			return numhit;
 		} catch (SQLException sqlex) {
-			throw new RuntimeException(sqlex);	
+			throw new RuntimeException(sqlex);
 		}
 	}
 

@@ -3,6 +3,8 @@ package io.webwidgets.core;
 import java.io.*; 
 import java.util.*; 
 
+import java.sql.*;
+
 import javax.servlet.http.*;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -57,17 +59,13 @@ public class BulkOperation
                 Util.massert(Util.setify(delidstr != null, bulkupstr != null).size() == 2,
                     "Have DELETE code %s, and UPDATE code %s, one or other must be null", delidstr, bulkupstr);
 
-                SyncController editcontrol = LiteTableInfo.getEditController(tableInfo.dbTabPair._1);
-                synchronized(editcontrol)
+                if(delidstr != null)
                 {
-                    if(delidstr != null)
-                    {
-                        int delcount = processDelete(tableInfo, delidstr);
-                        outmap.put("user_message", Util.sprintf("Bulk delete of %d records successful", delcount));
-                    } else {
-                        int upcount = processBulkUpdate(tableInfo, bulkupstr);
-                        outmap.put("user_message", Util.sprintf("Bulk update of %d records successful", upcount));
-                    }
+                    int delcount = processDelete(tableInfo, delidstr);
+                    outmap.put("user_message", Util.sprintf("Bulk delete of %d records successful", delcount));
+                } else {
+                    int upcount = processBulkUpdate(tableInfo, bulkupstr);
+                    outmap.put("user_message", Util.sprintf("Bulk update of %d records successful", upcount));
                 }
 
                 outmap.put("status_code", "okay");
@@ -76,22 +74,79 @@ public class BulkOperation
             writeJsonResponse(response, outmap);
         }
 
-        private static int processBulkUpdate(LiteTableInfo table, String bulkupstr) throws IOException
+        public static int processBulkUpdate(LiteTableInfo table, String bulkupstr) throws IOException
         {
-            try {
-                List<LinkedHashMap<String, Object>> updatelist = loadPayloadList(table, bulkupstr);
-                for(var item : updatelist)
-                    { CoreDb.upsertFromRecMap(table.dbTabPair._1, table.dbTabPair._2, 1, item); }
 
-                return updatelist.size();
+            List<LinkedHashMap<String, Object>> payloadList;
 
-            } catch (ParseException pex) {
-                throw new IOException(pex);
+            try { payloadList = loadPayloadList(table, bulkupstr); }
+            catch (ParseException pex) { throw new IOException(pex); }
+
+            // Need to clear out old IDs first, because we are using INSERT below
+            // Alternatively, we could find the IDs that are missing, and create skeleton records for those,
+            // then do an UPDATE instead of an insert
+            {
+                List<Integer> delid = Util.map2list(payloadList, payload -> (Integer) payload.get("id"));
+                processDelete(table, Util.join(delid, ","));
+            }
+
+
+            SyncController editcontrol = LiteTableInfo.getEditController(table.dbTabPair._1);
+            synchronized(editcontrol)
+            {
+
+                List<String> clist = new ArrayList<>(table.getColTypeMap().keySet());
+                Util.massert(clist.get(0).equals("id"), "Expect the first column of all tables to be 'id', got '%s'", clist.get(0));
+
+                String prepstr = String.format(
+                    "INSERT INTO %s (%s) VALUES (%s)",
+                    table.dbTabPair._2,
+                    Util.join(clist, ","),
+                    CoreDb.nQuestionMarkStr(clist.size())
+                );
+
+
+                try (
+                    Connection conn = table.dbTabPair._1.createConnection(); 
+                    PreparedStatement pstmt = conn.prepareStatement(prepstr);
+                ) {
+
+                    conn.setAutoCommit(false);
+
+                    for(var payload : payloadList)
+                    {
+                        int position = 1;
+                        for(String cname : clist)
+                        {
+                            // This is a bit of superstition
+                            // I think between Java setObject(...) being smart and SQLite type affinity,
+                            // this should work okay
+                            if(position == 1)
+                                { pstmt.setInt(1, Util.cast(payload.get(cname))); }
+                            else
+                                { pstmt.setObject(position, payload.get(cname)); }
+
+                            position++;
+                        }
+
+                        pstmt.addBatch();
+                    }
+
+                    pstmt.executeBatch();
+                    conn.commit();
+
+                } catch (Exception ex) {
+                    // Don't really have anything smart to do here other than throw exception
+                    throw new IOException(ex);
+                }
+
+                return payloadList.size();
             }
         }
 
         private static List<LinkedHashMap<String, Object>> loadPayloadList(LiteTableInfo table, String bulkupstr) throws ParseException
         {
+            Util.massert(!table.getColTypeMap().isEmpty(), "You must setup the LiteTable before calling!!");
             JSONArray array = Util.cast(new JSONParser().parse(bulkupstr));
             List<?> array2 = Util.cast(array);
 
@@ -104,16 +159,21 @@ public class BulkOperation
             return Util.map2list(tokens, tkn -> Integer.valueOf(tkn));
         }
 
-        private static int processDelete(LiteTableInfo table, String delidstr) throws IOException
+        public static int processDelete(LiteTableInfo table, String delidstr) throws IOException
         {
-            var deletelist = loadDeleteIdList(delidstr);
-            for(int delid : deletelist)
-            { 
-                var colmap = CoreDb.getRecMap("id", delid);
-                CoreDb.deleteFromColMap(table.dbTabPair._1, table.dbTabPair._2, colmap); 
-            }
+            SyncController editcontrol = LiteTableInfo.getEditController(table.dbTabPair._1);
+            synchronized(editcontrol)
+            {
+                // We don't actually need to transform back to List<Integer> here! 
+                // This is a protection against SQL injection : if this conversion works, 
+                // we know the string is just a list of integers
+                var deletelist = loadDeleteIdList(delidstr);
+                String delcomm = String.format("DELETE FROM %s WHERE id IN (%s)", table.dbTabPair._2, delidstr);
+                Util.massert(delcomm.length() < 1_000_000, 
+                    "Attempt to bulk-delete too many records %d, this is a limitation of current implementation", deletelist.size());
 
-            return deletelist.size();
+                return CoreDb.execSqlUpdate(delcomm, table.dbTabPair._1);
+            }
         }
     }
 

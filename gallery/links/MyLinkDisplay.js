@@ -1,6 +1,6 @@
 function getLinkDisplay(link) {
 
-    if(link.indexOf("youtube") > -1 && link.indexOf("watch") > -1) {
+    if(link.includes("youtube.com")) {
         return "YouTube";
     }
 

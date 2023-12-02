@@ -5,7 +5,10 @@
 
 <script src="../hanyu/pin_yin_converter.js"></script>
 
-<%= DataServer.include(request, "tables=palace_item,review_log,hanzi_data,confounder,word_memory,phonetic_link") %>
+
+<%= DataServer.include(request, "tables=palace_item,hanzi_data,confounder,word_memory,phonetic_link") %>
+
+<%= DataServer.include(request, "tables=review_log&view_prefixes=two_year") %>
 
 <%= DataServer.include(request, "widgetname=minitask&tables=mini_task_list&okay_if_absent=true") %>
 
@@ -16,7 +19,7 @@
 TARGET_REVIEWS_PER_DAY = 30;
 
 // Do the full build only once, then do quick updates from data that comes in later.
-BAYESIAN_STAT_MAP = fullBuildBayesStatMap("palace_item", "review_log");		
+BAYESIAN_STAT_MAP = fullBuildBayesStatMap("palace_item", "review_log");
 
 CURRENT_PROMPT_ITEM = computePromptItem();
 
@@ -25,7 +28,7 @@ CHARACTER_VOCAB_MAP = buildChar2VocabMap(W.getItemList("word_memory"));
 RECENT_REP_COUNT = getPalaceProgress("review_log")[0];
 
 function markResult(resultcode)
-{	
+{
 
 
 

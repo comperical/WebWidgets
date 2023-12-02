@@ -445,6 +445,20 @@ function redisplayMainTable()
 }
 
 
+function isSearchHit(linkitem)
+{
+
+	if(linkitem.getShortDesc().toLowerCase().includes(SEARCH_TERM))
+		{ return true; }
+
+
+	if(getLinkDisplay(linkitem.getLinkUrl()).toLowerCase().includes(SEARCH_TERM))
+		{ return true; }
+
+	return false;
+
+}
+
 
 function redisplaySearchTable() {
 
@@ -453,8 +467,7 @@ function redisplaySearchTable() {
 	}
 
 
-
-	const searchlist = W.getItemList("link_main").filter(lmi => lmi.getShortDesc().toLowerCase().indexOf(SEARCH_TERM) > -1);
+	const searchlist = W.getItemList("link_main").filter(isSearchHit);
 
 	const tablestr = getLinkTableStr(searchlist);
 
