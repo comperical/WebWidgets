@@ -3,6 +3,20 @@
 <head>
 <title>&#x1FA92 &#x1FAA3</title>
 
+<style>
+
+/* 
+on a wide screen, use 80% of width, but on narrow screen use at least 800 pixel 
+Goal here is to work with laptop and tablet, but not phone
+*/
+.smarttable {
+
+	min-width: 800px;
+	width: 80%;
+}
+
+</style>
+
 <wisp/>
 
 <wisp widgetname="minitask" tables="mini_task_list" okay_if_absent="true"/>
@@ -173,12 +187,12 @@ function redisplayChoreList()
 	itemlist.sort(proxySort(a => [a.getShortName()]));
 	
 	var tablestr = `
-		<table  class="basic-table" width="60%">
+		<table  class="basic-table smarttable">
 		<tr>
 		<th>Name</th>
 		<th>Frequency</th>
 		<th>Active?</th>
-		<th>Op</th>		
+		<th>Op</th>
 		</tr>
 	`;
 				
@@ -319,7 +333,7 @@ function getChoreLogTable(itemlist, lastcompmap, showall, ispromo)
 		<h3>${header}</h3>
 
 
-		<table class="basic-table"  width="70%">
+		<table class="basic-table smarttable">
 		<tr>
 		<th width="25%">Chore Name</th>
 		<th>Last Completed</th>

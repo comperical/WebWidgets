@@ -285,6 +285,7 @@ public class CoreUtil
 	}	
 
 	// This is going to fail if the connection is not actually a Sqlite connector
+	// TODO: this is in CoreDb
 	public static Set<String> getLiteTableNameSet(ConnectionSource litedb)
 	{
 		String sql = "SELECT name FROM sqlite_master WHERE type='table'";
@@ -293,6 +294,7 @@ public class CoreUtil
 
 	}
 
+	// TODO: this is redundant with getCreateTableSql below
 	public static Map<String, String> getCreateTableMap(ConnectionSource litedb)
 	{
 		String sql = "SELECT name, sql FROM sqlite_master WHERE type='table'";
@@ -300,10 +302,11 @@ public class CoreUtil
 		return Util.map2map(QueryCollector.buildAndRun(sql, litedb).recList(), amap -> amap.getStr("name"), amap -> amap.getStr("sql"));
 	}
 	
+	// TODO: this should no longer be necessary/used
 	public static DayCode getTodayTzAware() 
 	{
-		String tsaware = ExactMoment.build().asBasicTs(TimeZoneEnum.PST);	
-		return DayCode.lookup(tsaware);		
+		String tsaware = ExactMoment.build().asBasicTs(TimeZoneEnum.PST);
+		return DayCode.lookup(tsaware);
 	}
 	
 	public static String getCreateTableSql(ConnectionSource witem, String tablename)
@@ -312,9 +315,6 @@ public class CoreUtil
 		QueryCollector qcol = QueryCollector.buildAndRun(query, witem);
 		return qcol.getSingleArgMap().getSingleStr();
 	}
-	
-	
-	
 	
 	
 
