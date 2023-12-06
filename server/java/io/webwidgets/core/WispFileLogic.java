@@ -58,6 +58,8 @@ public class WispFileLogic
             WispFileFormat wff = new WispFileFormat(wispfile, pageitem.get());
             wff.sendResultToStream(response.getOutputStream(), accessor);
             response.getOutputStream().close();
+
+            WebUtil.logPageLoad(request);
         }
     }
 

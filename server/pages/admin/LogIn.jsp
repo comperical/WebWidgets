@@ -1,13 +1,23 @@
 
-
 <%@include file="CoreImport.jsp_inc" %>
+
 
 <%
     ArgMap argMap = WebUtil.getArgMap(request);
 
-    Optional<String> optBounceBack = argMap.optGetStr("bounceback");
-    if(optBounceBack.equals(Optional.of("")))
-        { optBounceBack = Optional.empty(); }
+
+
+    Optional<WidgetUser> currentUser = AuthLogic.getLoggedInUser(request);
+    Optional<WidgetUser> noAuthUser = AuthLogic.getUserNoAuthCheck(request);
+
+    String bounceBackRaw = argMap.getStr("bounceback", "");
+    Optional<String> optBounceBack = bounceBackRaw.isEmpty() ? Optional.empty() : Optional.of(bounceBackRaw);
+    Optional<WidgetItem> bounceItem = optBounceBack.isPresent() 
+                                        ? WebUtil.lookupWidgetFromPageUrl(optBounceBack.get())
+                                        : Optional.empty();
+
+
+    boolean anyPassWordInfo = WebUtil.getCookieArgMap(request).containsKey(AuthLogic.ACCESS_HASH_COOKIE);
 
     // If the user has logged in another tab, don't require re-login.
     if(optBounceBack.isPresent())
@@ -22,7 +32,6 @@
         }
 
         // Careful, not all URLs can be mapped to a specific Widget
-        Optional<WidgetItem> bounceItem = WebUtil.lookupWidgetFromPageUrl(optBounceBack.get());
         if(bounceItem.isPresent())
         {
             AuthChecker bouncecheck = AuthChecker.build().userFromRequest(request).directDbWidget(bounceItem.get());
@@ -33,187 +42,310 @@
             }
         }
     }
-    
-    // Okay, we sent the password to the server, 
-    // we'll compute the hash server-side and then just put it in the argmap to use downstream processing
+
+
+    String passwordFailCode = null;
+
     if(argMap.getBit("serverhash", false))
     {
-        Util.massert(!argMap.containsKey("accesshash"), "Should NOT set the access hash here!!");
-        Util.massert(CoreUtil.allowInsecureConnection(), 
-            "The server-side hash login option can only be used when allow insecure is enabled");
+      // Dec 2023 note: previous versions of login performed the password hash client-side,
+      // so that the hashed data was never sent to the server. I think that is just paranoia,
+      // makes me depend on weird JS crypto client libs
+      String username = argMap.getStr("username");
+      String accessHash = AuthLogic.canonicalHash(argMap.getStr("password"));
+      boolean checkLogIn = AuthLogic.checkCredential(username, accessHash);
+  
+      if(!checkLogIn)
+      {
+          passwordFailCode = "Password for that user does not match";
+      
+      } else {
 
-        argMap.put("accesshash", AuthLogic.canonicalHash(argMap.getStr("password")));
-    }
-    
-    
-    String passwordFailCode = "";
-    String accessHash = argMap.getStr("accesshash", "");
-
-    if(!accessHash.isEmpty())
-    {
-        String username = argMap.getStr("username");
-        boolean checkLogIn = AuthLogic.checkCredential(username, accessHash);
-    
-        if(!checkLogIn)
-        {
-            passwordFailCode = "Password for that user does not match";
-        
-        } else {
-
-            AuthLogic.setUserCookie(request, response, username);
-            AuthLogic.setAuthCookie(request, response, accessHash);
-            
-            WidgetUser wuser = WidgetUser.valueOf(username);
-            String bouncedef = WebUtil.getUserHomeRelative(wuser);
-
-            response.sendRedirect(optBounceBack.isPresent() ? optBounceBack.get() : bouncedef);
-            return;
-        }
+          AuthLogic.setUserCookie(request, response, username);
+          AuthLogic.setAuthCookie(request, response, accessHash);
+          
+          String bounce2 = optBounceBack.orElse("/u/admin/LogIn.jsp");
+          response.sendRedirect(bounce2);
+          return;
+      }
     }
 
-    // 
-    Optional<WidgetUser> noAuthUser = AuthLogic.getUserNoAuthCheck(request);
-    String defaultUserName = noAuthUser.isPresent() ? noAuthUser.get().toString() : "";
+    String userHome = "#";
+    if(noAuthUser.isPresent())
+      { userHome = Util.sprintf("/%s/index.jsp", noAuthUser.get()); }
 
 %>
 
 
-<html>
+<!DOCTYPE html>
+<html lang="en">
 
-<link rel="shortcut icon" href="/crm/images/favicon.png" type="image/png">
-
-<head><title>Log In</title>
-
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>WebWidgets Admin</title>
+  <!-- plugins:css -->
+  <link rel="stylesheet" href="/u/shared/majestic/vendors/mdi/css/materialdesignicons.min.css">
+  <link rel="stylesheet" href="/u/shared/majestic/vendors/base/vendor.bundle.base.css">
+  <!-- endinject -->
+  <!-- plugin css for this page -->
+  <link rel="stylesheet" href="/u/shared/majestic/vendors/datatables.net-bs4/dataTables.bootstrap4.css">
+  <!-- End plugin css for this page -->
+  <!-- inject:css -->
+  <link rel="stylesheet" href="/u/shared/majestic/css/style.css">
+  <!-- endinject -->
+  <link rel="shortcut icon" href="/u/shared/majestic/images/favicon.png" />
+  
 <%@include file="AssetInclude.jsp_inc" %>
+
+<style>
+code 
+{
+  background-color: lightgrey;
+  color: black;
+  border: 1px solid;
+  border-color: black;
+}
+
+</style>
 
 <script>
 
 function serverSideHashLogin()
 {
-    const subpack = { 
-        "serverhash" : ""+true,
-        "username" : getDocFormValue("input_username"),
-        "password" : getDocFormValue("password")
-    };
-
-    if("bounceback" in getUrlParamHash())
-        { subpack["bounceback"] = getUrlParamHash()["bounceback"]; }
-
-
-    submit2Base(subpack);
+    const subform = document.forms._sub_form;
+    subform.username.value = getDocFormValue("input_username");
+    subform.password.value = getDocFormValue("input_password");
+    subform.bounceback.value = "<%= optBounceBack.isPresent() ? optBounceBack.get() : "" %>";
+    subform.submit();
 }
 
-
-function doLogIn()
-{
-    const connsecure = <%= request.isSecure() %>;
-
-    if(!connsecure)
-    {
-        // If we allow insecure connections, then do a login where the hash is done server side.
-        // Big gotcha : if the connection is not secure, the browser doesn't supply the crypto library (??!?!??)
-        if(<%= CoreUtil.allowInsecureConnection() %>)
-            { serverSideHashLogin(); }
-        else 
-            { alert("This can only be entered on a secure connection, please change the URL"); }
-
-        return;
-    }
-
-    const password = getDocFormValue("password");
-    digestMessage(password).then(hpass => sendLoginInfo(hpass));
-}
-
-function sendLoginInfo(hashpass) 
-{
-    const username = getDocFormValue("input_username");
-
-    document.forms.login_submit.username.value = username;
-    document.forms.login_submit.accesshash.value = hashpass;
-
-    <%
-        if(argMap.containsKey("bounceback"))
-        {
-    %>
-    document.forms.login_submit.bounceback.value = "<%= argMap.getStr("bounceback") %>";
-    <% } %> 
-
-    document.forms.login_submit.submit();
-}
-
-// TODO: this function should be shared between this page and change password
-async function digestMessage(message) {
-    const msgUint8 = new TextEncoder().encode("<%= AuthLogic.WIDGET_PASSWORD_SALT %>" + message); 
-    const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);           // hash the message
-    const hashArray = Array.from(new Uint8Array(hashBuffer));                     // convert buffer to byte array
-    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join(''); // convert bytes to hex string
-    return hashHex;
-}
-
-
-function doFocus()
-{
-    // Focus on either the username, or the password fields
-    <%
-        String focusField = noAuthUser.isPresent() ? "password" : "username";
-    %>
-
-    const formel = getUniqElementByName("<%= focusField %>");
-    formel.focus();
-}
 
 </script>
-
-
-
+  
+  
 </head>
+<body>
+  <div class="container-scroller">
+    <!-- partial:partials/_navbar.html -->
+    <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
+      <div class="navbar-brand-wrapper d-flex justify-content-center">
+        <div class="navbar-brand-inner-wrapper d-flex justify-content-between align-items-center w-100">  
+        </div>  
+      </div>
+      <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
+    </nav>
+    <!-- partial -->
+    <div class="container-fluid page-body-wrapper">
+      <!-- partial:partials/_sidebar.html -->
+      <%@include file="MajesticNavBar.jsp_inc" %>
+      <!-- partial -->
+      <div class="main-panel">
+        <div class="content-wrapper">
+        
 
-<body onLoad="javascript:doFocus()">
+          <% 
+            // This means there's NOTHING in the login cookies, probably user cleared cookies
+            if(!noAuthUser.isPresent()) { 
+          %>
+          <div class="row">
+            <div class="col-md-12 stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <p class="card-title">Log In</p>
+                  <p class="mb-4">
+                  Please log-in with username and password
+                  </p>
 
-<center>
+                  <%
+                    if(passwordFailCode != null)
+                    {
+                  %>
+                  <p style="color: red;">Incorrect password, please try again</p>
+                  <% } %>
 
-LOG IN
+
+                  <form class="forms-sample">
+                  <label style="font-size: 0.875rem;">Username:</label>
+                  <input type="text" name="input_username" cols="40" autofocus />
+                  <br/>
+                  <label style="font-size: 0.875rem;">Password:</label>
+                  <input type="password" name="input_password" cols="40" />
+                  </form>
+
+                  <br/>
+
+                  <button class="btn btn-primary mr-2" onclick="javascript:serverSideHashLogin()">Submit</button>
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <% 
+
+          // Okay, have a username, but the password is not valid
+          // Show a re-login screen
+          } else if (!currentUser.isPresent()) { 
+
+            String messageHeader = "Session Expired";
+            String messageBody = "Your session has expired. Please re-enter your password to continue";
+
+            if(anyPassWordInfo)
+            {
+              messageHeader = "Invalid Password";
+              messageBody = "The password you entered is no longer valid. Please re-enter your password:";
+            }
 
 
-<table class="basic-table" width="50%" align="center">
-<%
-    if(passwordFailCode.length() > 0)
-    {
+          %>
 
-%>
-<tr>
-<td colspan="2">
-<%= passwordFailCode %>
-</td>
-</tr>
-<% } %>
+          <div class="row">
+            <div class="col-md-12 stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <p class="card-title"><%= messageHeader %></p>
+                  <p class="mb-4">
+                  <%= messageBody %>
+                  </p>
 
-<tr>
-<td>UserName</td>
-<td>
-<input type="text" name="input_username" value="<%= defaultUserName %>"/></input>
-</td>            
-</tr>
-<tr>
-<td>PassWord</td>
-<td>
-<input type="password" name="password"/></input>
-</td>
-</tr>
-</table>
+                  <%
+                    if(passwordFailCode != null)
+                    {
+                  %>
+                  <p style="color: red;">Incorrect password, please try again</p>
+                  <% } %>
 
-<br/>
 
-<a class="css3button" onClick="javascript:doLogIn()">LogIn</a>
+                  <p>Username: <code><%= noAuthUser.get() %></code></p>
+                  <form class="forms-sample">
+                  <label style="font-size: 0.875rem;">Password:</label>
+                  <input type="hidden" name="input_username" value="<%= noAuthUser.get() %>" />
+                  <input type="password" name="input_password" cols="40" autofocus />
+                  </form>
 
-<br/><br/>
+                  <br/>
+                  <br/>
 
-<form name="login_submit" action="/u/admin/LogIn.jsp" method="post">
-<input name="username" type="hidden"/>
-<input name="accesshash" type="hidden"/>
-<input name="bounceback" type="hidden"/>
-</form>
+                  <button class="btn btn-primary mr-2" onclick="javascript:serverSideHashLogin()">Submit</button>
 
-</center>
+                  <br/>
+                  <br/>
+
+                  <button class="btn btn-primary mr-2" onclick="javascript:logoutAndReturn()">Log-Out</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <% 
+
+            // In this situation, user is logged-in properly, but does not have access to the given widget
+            } else if(optBounceBack.isPresent())  {
+
+                String noAccessPage = String.format("<br/><br/>%s<br/>", optBounceBack.get());
+                String pageOwner = " the owner of the page";
+
+                if(bounceItem.isPresent())
+                {
+                  noAccessPage = String.format(" widget <code>%s</code>", bounceItem.get());
+                  pageOwner = String.format(" owner of account <code>%s</code>", bounceItem.get().theOwner);
+                }
+          %>
+
+
+          <div class="row">
+            <div class="col-md-12 stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <p class="card-title">Permission Denied</p>
+                  <p class="mb-4">
+                  Your account <code><%= noAuthUser.get() %></code> 
+                  does not have permission to access <%= noAccessPage %>
+                  </p>
+
+                  <p class="mb-4">
+                  If you think you should have access to this page, please ask for access from the <%= pageOwner %>
+                  </p>
+
+                  <p>
+                  You can also log-out and log-in under a different account.
+                  </p>
+                  <br/>
+                  <br/>
+
+                  <button class="btn btn-primary mr-2" onclick="javascript:logoutAndReturn()">Log-Out</button>
+
+                </div>
+              </div>
+            </div>
+          </div>
+          <% 
+
+          // This is the final condition, user is logged-in and there's no bounceback, 
+          // So just show a sucess message
+          } else  { 
+
+          %>
+
+      
+          <div class="row">
+            <div class="col-md-12 stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <p class="card-title">Logged In</p>
+                  <p class="mb-4">
+                  You are logged in as <code><%= currentUser.get() %></code>
+                  </p>
+
+                  <p>You can access your home page from the User Home link on the side bar, or log-out and log-in as another user.</p>
+
+                  <br/>
+
+                  <button class="btn btn-primary mr-2" onclick="javascript:logoutAndReturn()">Log-Out</button>
+
+                </div>
+              </div>
+            </div>
+          </div>
+          <% } %>
+
+          <form name="_sub_form" method="POST">
+          <input type="hidden" name="serverhash" value="true" />
+          <input type="hidden" name="username" value="" />
+          <input type="hidden" name="password" value="" />
+          <input type="hidden" name="bounceback" value="" />
+          </form>
+
+        <!-- content-wrapper ends -->
+      </div>
+      <!-- main-panel ends -->
+    </div>
+    <!-- page-body-wrapper ends -->
+  </div>
+  <!-- container-scroller -->
+
+  <!-- plugins:js -->
+  <script src="/u/shared/majestic/vendors/base/vendor.bundle.base.js"></script>
+  <!-- endinject -->
+  <!-- Plugin js for this page-->
+  <script src="/u/shared/majestic/vendors/chart.js/Chart.min.js"></script>
+  <script src="/u/shared/majestic/vendors/datatables.net/jquery.dataTables.js"></script>
+  <script src="/u/shared/majestic/vendors/datatables.net-bs4/dataTables.bootstrap4.js"></script>
+  <!-- End plugin js for this page-->
+  <!-- inject:js -->
+  <script src="/u/shared/majestic/js/off-canvas.js"></script>
+  <script src="/u/shared/majestic/js/hoverable-collapse.js"></script>
+  <script src="/u/shared/majestic/js/template.js"></script>
+  <!-- endinject -->
+  <!-- Custom js for this page-->
+  <script src="/u/shared/majestic/js/dashboard.js"></script>
+  <script src="/u/shared/majestic/js/data-table.js"></script>
+  <script src="/u/shared/majestic/js/jquery.dataTables.js"></script>
+  <script src="/u/shared/majestic/js/dataTables.bootstrap4.js"></script>
+  <!-- End custom js for this page-->
+  <script src="/u/shared/majestic/js/jquery.cookie.js" type="text/javascript"></script>
 </body>
+
 </html>
+

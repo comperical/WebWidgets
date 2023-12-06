@@ -253,6 +253,14 @@ __bulkOpSub : function(tablename, idlist, isdelete, options)
                 const message = result['user_message'];
                 console.log(message);
 
+                // Notify user code when the update is complete
+                // This is actually quite important, because the bulk updates can take longer standard widget sync/delete ops
+                if(options != null && "callback" in options)
+                {
+                    const callback = options["callback"];
+                    callback(tablename, idlist, isdelete);
+                }
+
             } else {
                 alert(`Bulk update failed with ${xhr.statusText}, please report this message to developer/admin and refresh page`);
             }

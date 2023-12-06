@@ -24,7 +24,13 @@
               <i class="mdi mdi-file-document menu-icon"></i>
               <span class="menu-title">Tech Docs</span>
             </a>
-          </li>          
+          </li>    
+          <li class="nav-item">
+            <a class="nav-link" href="/u/admin/LogIn.jsp">
+              <i class="mdi mdi-shield-key menu-icon"></i>
+              <span class="menu-title">Log-In/Out</span>
+            </a>
+          </li>
           <li class="nav-item">
             <a class="nav-link" href="/u/admin/ChangePass.jsp">
               <i class="mdi mdi-key-change menu-icon"></i>
