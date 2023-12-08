@@ -336,6 +336,7 @@ function submit2Base(submitpack)
 }
 
 
+// TODO: this should be fixed, submitpack must overwrite the previously selected params
 function submit2Current(submitpack)
 {
     var qlist = new Array();
