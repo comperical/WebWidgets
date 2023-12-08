@@ -800,9 +800,22 @@ public class Util
 		}
 		
 		return Pair.build(curitm, curmin);
-	}	
+	}
 	
 	
+	public static <A> void foreach(A[] mycol, Consumer<A> func)
+	{
+		foreach(Util.listify(mycol), func);
+	}
+
+	public static <A> void foreach(Collection<A> mycol, Consumer<A> func)
+	{
+		for(A item : mycol)
+		{
+			func.accept(item);
+		}
+	}
+
 	public static <A, B> List<B>  map2list(A[] mycol, Function<A, B> func)
 	{
 		return map2list(listify(mycol), func);

@@ -71,7 +71,16 @@ public class CodeGenerator
 		add("\twidgetName : \"" + _liteTable.getWidgetName() + "\",");
 		add("\ttableName : \"" + _liteTable.getSimpleTableName() + "\",");
 		
-		
+		{
+			String fnamestr = Util.join(_liteTable.getColTypeMap().keySet(), "', '");
+			add("");
+			add("\t// List of object field/column names");
+			add("\tfieldList : ['%s'],", fnamestr);
+			add("");
+		}
+
+
+
 		add("\t_dataMap : new Map(),");
 		add("");
 		add("");
