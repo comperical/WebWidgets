@@ -106,6 +106,17 @@ haveWriteAccess : function(tabname)
 },
 
 
+// Return the list of fields/columns in the given Table
+// These correspond exactly to the columns in the underlying SQLite table
+// This is basically equivalent to calling Object.keys(..) on one of the items,
+// but this works even if you don't have an instance of the item
+getFieldList : function(tabname)
+{
+    W.checkTableName(tabname);
+    return W.__tableNameIndex.get(tabname).fieldList;
+},
+
+
 // Get all the tables that have been registered on this page.
 getWidgetTableList : function()
 {
