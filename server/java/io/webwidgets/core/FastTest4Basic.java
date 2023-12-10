@@ -948,6 +948,7 @@ public class FastTest4Basic
 
 		private List<String> loadFixtureData(String codename, int idx)
 		{
+			// TODO: fix this path
 			String inputfile = Util.sprintf("/opt/userdata/wwiocore/server/testdata/%s%d.jsp", codename, idx);
 			if(!(new File(inputfile)).exists())
 				{ return null; }

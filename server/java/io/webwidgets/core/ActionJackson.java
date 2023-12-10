@@ -233,7 +233,7 @@ public class ActionJackson extends HttpServlet
 		{
 			// TODO: this is a special carveout that is necesary as of Nov 2023.
 			// In future, possibly have a CODE_FORMAT_EXEMPT system parameter
-			return user.isAdmin() || user.toString().equals("d57tm");
+			return user.isAdmin() || user.toString().equals("d57tm") || user.toString().equals("bettworld");
 
 		}
 	}

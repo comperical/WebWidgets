@@ -27,7 +27,7 @@
     }
 
     WidgetItem selectedItem = new WidgetItem(currentUser.get(), argMap.getStr("widget"));
-    PermInfoPack selectedPerm = AuthLogic.getPermInfo4Widget(selectedItem);
+    PermInfoPack selectedPerm = GlobalIndex.getPermInfo4Widget(selectedItem);
 
     String serverMessage = argMap.getStr("message", "");
 
