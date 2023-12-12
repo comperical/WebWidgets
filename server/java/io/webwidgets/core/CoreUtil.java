@@ -164,6 +164,22 @@ public class CoreUtil
 		return new File(dumpfile);
 	}
 
+	public static Set<String> getDemoDataReadySet()
+	{
+		File[] dumplist = (new File(CoreUtil.DEMO_DATA_DIR)).listFiles();
+		Set<String> ready = Util.treeset();
+
+		for(File onefile : dumplist)
+		{
+			String[] tokens = onefile.getName().toLowerCase().split("_");
+			Util.massert(tokens.length == 2 && tokens[1].equals("db.sql.dump"));
+			ready.add(tokens[0]);
+		}
+
+		return ready;
+
+	}
+
 	// This is the same algorithm that the JS code uses
 	// Not 100% required for it to be the same, but it gratifies my feeling of seiketsukan
 	public static int createNewIdRandom(WidgetItem witem, String tabname)

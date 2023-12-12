@@ -383,19 +383,6 @@ public class CoreCommand
 		}
 	}
 	
-	
-	public static class ImportWidget extends ArgMapRunnable
-	{
-		
-		public void runOp()
-		{
-			WidgetUser wuser = WidgetUser.valueOf(_argMap.getStr("username"));
-			
-			String widgetname = _argMap.getStr("widgetname");
-			wuser.importFromTemplate(widgetname);
-		}
-	}
-	
 	public static class ImportDummyUserBase extends DescRunnable
 	{
 		public static final WidgetUser DUMMY_USER = WidgetUser.valueOf("rando");
@@ -1037,8 +1024,8 @@ public class CoreCommand
 		public String getDesc()
 		{
 			return 
-				"Imports a widget for a given user, from the DB dump and the gallery code\n" + 
-				"Note that not all gallery widgets have DB data\n" + 
+				"Imports a widget for a given user, from the DB dump and the gallery code\n" +
+				"Note that not all gallery widgets have DB data\n" +
 				"This tool is mainly used in setting up the demo server, to confirm that the full system is working\n";
 		}
 

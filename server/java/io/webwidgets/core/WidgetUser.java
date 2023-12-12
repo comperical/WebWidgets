@@ -225,7 +225,7 @@ public class WidgetUser implements Comparable<WidgetUser>
     {
         WidgetItem witem = new WidgetItem(this, newname);
         witem.createEmptyLocalDb();
-        witem.createLocalDataFile();            
+        witem.createLocalDataFile();
         return witem;
     }
     
@@ -241,7 +241,7 @@ public class WidgetUser implements Comparable<WidgetUser>
         Util.massert(curset.contains(widget),
             "Unknown widget %s, options are %s", widget, curset);
         
-        WidgetItem victim = new WidgetItem(this, widget);           
+        WidgetItem victim = new WidgetItem(this, widget);
         File dbfile = victim.getLocalDbFile();
         if(dbfile.exists())
         { 
@@ -256,61 +256,6 @@ public class WidgetUser implements Comparable<WidgetUser>
             { throw new RuntimeException(ioex); }
             
         Util.pf("Deleted local dir %s\n", localdir);
-    }
-    
-    public WidgetItem importFromTemplate(String widgetname) 
-    {
-        WidgetItem dstitem = new WidgetItem(this, widgetname);          
-        WidgetItem srcitem = new WidgetItem(WidgetUser.lookup("rando"), widgetname);
-        
-        Util.massert(srcitem.getLocalDbFile().exists(),
-            "Could not find the template DB for widget name %s", widgetname);
-        
-        Util.massert(!dstitem.getLocalDbFile().exists(),
-            "Already have a Database for widget %s", dstitem);
-        
-        // Okay, create a List of files from the template widget.
-        
-        List<File> srclist = Util.vector();
-        add2FileList(srclist, srcitem.getWidgetBaseDir());
-        CollUtil.sortListByFunction(srclist, f -> f.getAbsolutePath().length());
-        
-        for(File srcfile : srclist)
-        {
-            File dstfile = new File(srcfile.getAbsolutePath().replaceAll(
-                            srcitem.getWidgetBaseDir().getAbsolutePath(),
-                            dstitem.getWidgetBaseDir().getAbsolutePath()));
-            
-            if(srcfile.isDirectory())
-            {
-                dstfile.mkdir();    
-                continue;
-            }
-            
-            try { 
-                Files.copy(srcfile.toPath(), dstfile.toPath(), StandardCopyOption.REPLACE_EXISTING); 
-                Util.pf("Copied to/from: \n\t%s\n\t%s\n", srcfile, dstfile);
-            } catch (IOException ioex) {
-                throw new RuntimeException(ioex); 
-            }
-        }
-        
-        try { 
-            File srcfile = srcitem.getLocalDbFile();
-            File dstfile = dstitem.getLocalDbFile();
-            
-            Files.copy(srcfile.toPath(), dstfile.toPath(), StandardCopyOption.REPLACE_EXISTING); 
-            Util.pf("Copied to/from: \n\t%s\n\t%s\n", srcfile, dstfile);
-        } catch (IOException ioex) {
-            throw new RuntimeException(ioex); 
-        }           
-        
-        // Create the JS code
-        List<String> loglist = ActionJackson.createCode4Widget(dstitem);                
-        for(String log : loglist)
-            { Util.pf("%s", log); }         
-        
-        return dstitem;
     }
 
     public Map<String, Long> getFileNameCheckMap()
