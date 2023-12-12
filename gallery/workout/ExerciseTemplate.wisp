@@ -52,7 +52,7 @@ function toggleItemActive(itemid)
 
 function handleNavBar() 
 {
-    const current = "W/O Template";
+    const current = "W/O Definition";
 
     populateTopNavBar(WO_HEADER_INFO, current);
 }
@@ -87,7 +87,7 @@ function getEditPageInfo()
 		</tr>
 
 		<tr>
-		<td>Short Code</td>
+		<td>Name</td>
 		<td>${studyitem.getShortCode()}</td>
 		<td></td>
 		</tr>
@@ -108,17 +108,17 @@ function getEditPageInfo()
 }
 
 function getMainPageInfo()
-{	
+{
 
 	
 	var tablestr = `
 		<table class="basic-table" width="60%">
 		<tr>
 		<th>Category</th>
-		<th>ShortName</th>
+		<th>Name</th>
 		<th>Unit</th>
 		<th>---</th>
-		</tr>		
+		</tr>
 	`
 
 	
@@ -128,7 +128,6 @@ function getMainPageInfo()
 
 	activelist.forEach(function(activitem) {
 
-		const studylink = "StudyExerciseItem.jsp?item_id=" + activitem.getId();
 		const rowstr = `
 			<tr>
 			<td>${activitem.getExType()}</td>
@@ -147,6 +146,15 @@ function getMainPageInfo()
 		tablestr += rowstr;
 
 	});
+
+	tablestr += `
+		</table>
+
+		<br/>
+		<br/>
+
+		<a href="javascript:createNew()"><button>+new</button></a>
+	`;
 
 	return tablestr;
 }

@@ -3,10 +3,40 @@ const WO_HEADER_INFO = [
     ["W/O Log", "widget.wisp"],
     ["W/O Planner", "ExercisePlanner.wisp"],
     ["W/O Layout", "PlanLayout.wisp"],
-    ["W/O Template", "ExerciseTemplate.wisp"],
+    ["W/O Definition", "ExerciseTemplate.wisp"],
     ["W/O Stats", "WorkoutStats.wisp"],
 
 ];
+
+
+// TODO: this function exists in a lot of different places, need to consolidate
+function buildGenericDict(items, keyfunc, valfunc)
+{
+    const mydict = {};
+
+    items.forEach(function(itm){
+        const k = keyfunc(itm);
+        const v = valfunc(itm);
+        mydict[k] = v;
+    });
+
+    return mydict;
+}
+
+// Nice display map for the the last N days
+// Keys are normal ISO dates, values are nice displays like "Fri, 10/30"
+function getNiceDateDisplayMap(daysago)
+{
+    const daylist = [... Array(daysago).keys()].map(n => getNDaysAgo(n));
+
+    const displaymap = {};
+
+    daylist.forEach(function(dc) {
+        displaymap[dc.getDateString()] = dc.getNiceDisplay();
+    });
+
+    return displaymap;
+}
 
 
 function getActiveLayoutName()
@@ -15,6 +45,11 @@ function getActiveLayoutName()
 								.filter(item => item.getIsActive() == 1)
 								.map(item => item.getLayoutName()));
 
+
+	if(names.size == 0)
+		{ return null; }
+
+	// massert(names.size > 0, "No recent layouts found");
 	massert(names.size == 1, `Have too many recent layout names ${[... names]}`);
 	return [... names][0];
 }

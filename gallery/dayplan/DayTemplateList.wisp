@@ -31,7 +31,7 @@ function createNewTemplate()
 
 function deleteTemplateItem(killid)
 {
-	const kidlist = getItemList("template_sub").filter(sub => sub.getTempId() == killid);
+	const kidlist = W.getItemList("template_sub").filter(sub => sub.getTempId() == killid);
 
 	if(kidlist.length > 0)
 	{
@@ -164,9 +164,9 @@ function addTime2Item(itemid)
 		planitem.setEndHour(planitem.getEndHour()+1);
 		planitem.setHalfHour(0);
 	}
-	
-	syncSingleItem(planitem);			
-	redisplay();	
+
+	planitem.syncItem();
+	redisplay();
 }
 
 function removeTimeFromItem(itemid)
@@ -181,8 +181,8 @@ function removeTimeFromItem(itemid)
 		planitem.setHalfHour(1);
 	}
 	
-	syncSingleItem(planitem);			
-	redisplay();	
+	planitem.syncItem();
+	redisplay();
 }
 
 function deleteItem(killid)
@@ -203,14 +203,14 @@ function editTemplateName(editid)
 
 function editItemName(editid)
 {
-	const theitem = lookupItem("template_sub", editid);
+	const theitem = W.lookupItem("template_sub", editid);
 	const newname = prompt("New info for item: ", theitem.getShortDesc());
 
 	if(newname)
 	{
 		theitem.setShortDesc(newname);
-		syncSingleItem(theitem);			
-		redisplay();		
+		theitem.syncItem();
+		redisplay();
 	}
 }
 
@@ -230,7 +230,7 @@ function redisplay()
 function redisplayMainList()
 {
 	
-	var templatelist =  getItemList("day_template");
+	var templatelist =  W.getItemList("day_template");
 
 	var mainstr = `
 		<table class="basic-table"  width="50%">

@@ -8,7 +8,7 @@
 <script>
 
 // TODO: get recent
-var SELECTED_LAYOUT = "WeightsAndYoga"; 
+var SELECTED_LAYOUT = getActiveLayoutName();
 
 function handleNavBar() 
 {
@@ -62,9 +62,16 @@ function activateSelectedLayout()
 
 function add2Layout()
 {
+    if(SELECTED_LAYOUT == null)
+    {
+        alert("Please create a new layout first");
+        return;
+    }
+
+
     const woselected = getDocFormValue("workout_sel");
 
-    const isactive = getActiveLayoutName() == SELECTED_LAYOUT ? 1 : 0;
+    const isactive = (SELECTED_LAYOUT == null || getActiveLayoutName() == SELECTED_LAYOUT) ? 1 : 0;
 
     const record = {
         "layout_name" : SELECTED_LAYOUT,
@@ -96,6 +103,7 @@ function newLayout()
 
         const item = W.buildItem("plan_layout", record);
         item.syncItem();
+        SELECTED_LAYOUT = layname;
         redisplay();
     }
 

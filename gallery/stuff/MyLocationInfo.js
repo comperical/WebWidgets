@@ -19,6 +19,20 @@ function getLocationId(item)
 }
 
 
+function buildGenericMap(items, keyfunc, valfunc)
+{
+    const mymap = new Map();
+
+    items.forEach(function(itm){
+        const k = keyfunc(itm);
+        const v = valfunc(itm);
+        mymap.set(k, v);
+    });
+
+    return mymap;
+}
+
+
 function getLocationCountInfo()
 {
     const cmap = buildGenericMap(W.getItemList("stuff_loc"), item => item.getId(), item => 0);

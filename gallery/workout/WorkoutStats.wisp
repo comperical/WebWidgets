@@ -5,8 +5,6 @@
 
 <wisp/>
 
-<script src="WorkoutLogger.js"></script>
-
 <script>
 
 DATE_SEL_CODE = "last_270";
@@ -79,7 +77,7 @@ function getStatInfo(itemlist)
 function getFilteredItemList()
 {
 
-    const itemlist = getItemList("workout_log");
+    const itemlist = W.getItemList("workout_log");
 
     if(DATE_SEL_CODE == "all") {
         return itemlist;
@@ -108,7 +106,7 @@ function getWoTypeMap()
 {
     const wtypemap = {};
 
-    getItemList("exercise_plan").forEach(function(epitem) {
+    W.getItemList("exercise_plan").forEach(function(epitem) {
         wtypemap[epitem.getShortCode()] = epitem.getUnitCode();
     });
 
