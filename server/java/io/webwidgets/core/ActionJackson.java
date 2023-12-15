@@ -231,10 +231,7 @@ public class ActionJackson extends HttpServlet
 
 		private boolean isCodeFormatExempt(WidgetUser user)
 		{
-			// TODO: this is a special carveout that is necesary as of Nov 2023.
-			// In future, possibly have a CODE_FORMAT_EXEMPT system parameter
-			return user.isAdmin() || user.toString().equals("d57tm") || user.toString().equals("bettworld");
-
+			return user.isAdmin() || CoreUtil.getCodeFormatExemptSet().contains(user);
 		}
 	}
 

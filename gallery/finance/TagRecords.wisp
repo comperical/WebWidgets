@@ -86,16 +86,15 @@ function findNoCatList()
 }
 
 
+function confirmUpdate(tablename, idlist, __)
+{
+    alert(`Bulk update of ${idlist.length} records complete`);
+    redisplay();
+}
+
 function createTagRecordInfo()
 {
-    alert(`
-        This will tag the main records with the auto-inferred expense category.
-        This may take a minute or two. Please open the javascript console
-        and observe the records being created
-    `);
-
-    var tagged = 0;
-
+    const modlist = [];
     const orphanlist = findNoCatList();
 
     orphanlist.forEach(function(mainitem) {
@@ -107,14 +106,11 @@ function createTagRecordInfo()
 
         const category = taghits[0].getCategory();
         mainitem.setExpenseCat(category);
-        mainitem.syncItem();
-
-        tagged++;
+        modlist.push(mainitem.getId());
     });
 
+    W.bulkUpdate("finance_main", modlist, {"callback" : confirmUpdate });
 
-    alert(`Tagged ${tagged} records`);
-    redisplay();
 }
 
 function getMainPageInfo()

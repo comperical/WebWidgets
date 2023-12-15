@@ -22,17 +22,19 @@
     List<WidgetItem> currentList = currentUser.get().getUserWidgetList();
     List<String> currentNameList = Util.map2list(currentList, item -> item.theName);
 
-    // TODO: have a more principled approach to widget import than copying from rando user
-    // Copy from the gallery, and pull in data using the demo data dump
-    List<WidgetItem> templateList = Util.listify();
-    {
-        Optional<WidgetUser> randoUser = WidgetUser.softLookup("rando");
-        if(randoUser.isPresent())
-            { templateList = randoUser.get().getUserWidgetList(); }
-    }
 
+    Set<String> demoReadySet = CoreUtil.getDemoDataReadySet();
 
     Map<String, String> descriptionMap = Util.treemap();
+
+    descriptionMap.put("chores",
+        "Define chores and set frequency. Get reminded when it's time to do the chore again");
+
+    descriptionMap.put("dayplan",
+        "Organize your day! Plan activities to maximize efficiency. Create templates for routine days.");
+
+    descriptionMap.put("health",
+        "A very simple health-logging tool. Keep track of when you're not feeling well.");
 
     descriptionMap.put("links",
         "Link Manager - keep track of web links, categorize them, etc.");
@@ -43,14 +45,12 @@
     descriptionMap.put("questions",
         "Your own mini version of Stack Overflow. Create questions, answer them, search for previous answers");
 
-    descriptionMap.put("chores",
-        "Define chores and set frequency. Get reminded when it's time to do the chore again");
+    descriptionMap.put("stuff",
+        "Keep track of your stuff. Create Locations, and Containers, to hold objects. Search for an object name/description to find out where it is");
+
 
 
     /*
-    descriptionMap.put("dayplan",
-        "Organize your day! Plan activities to maximize efficiency. Create templates for routine days.");
-
     descriptionMap.put("media",
         "Keep track of what books/TV/podcasts/movies you want to consume. Assign priorities and rank them.");
 
@@ -70,23 +70,24 @@
         "Remember the things that piss you off...! So you can avoid them in the future");
 
     descriptionMap.put("minitask", "Simple TODO list, with a couple of categories");
+    */
 
-            */
-
-
+    {
+        var badlist = Util.filter2list(descriptionMap.keySet(), w -> !demoReadySet.contains(w));
+        Util.foreach(badlist, w -> descriptionMap.remove(w));
+    }
 
     String opcode = argMap.getStr("opcode", "");
 
     if(opcode.length() > 0)
     {
 
-        String message = null;        
+        String message = null;
 
         if(opcode.equals("do_import"))
         {
-            Set<String> templateset = Util.map2set(templateList, item -> item.theName);
             String widgetname = argMap.getStr("widgetname");
-            Util.massert(templateset.contains(widgetname), "Unknown widget %s", widgetname);
+            Util.massert(demoReadySet.contains(widgetname), "Unknown widget %s", widgetname);
 
             ImportWidgetFromGallery importer = new ImportWidgetFromGallery();
             importer.runWithArgs(currentUser.get(), widgetname);

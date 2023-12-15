@@ -554,11 +554,45 @@ public class CoreUtil
 		// The value of the setting will be sent to users who try to make updates
 		MAINTENANCE_MODE,
 
+		// comma-separated list of user names who are exempt from code format checker
+		// basically, these are accounts who are managed/developed by the admins of the service,
+		// not individuals/etc
+		CODE_FORMAT_EXEMPT_LIST, 
+
 		// If present and equal to "true", the system is in insecure mode
 		INSECURE_ALLOW_MODE;
 
 	}
 
+
+	public static Set<WidgetUser> getCodeFormatExemptSet(boolean strict)
+	{
+		String exemptlist = GlobalIndex.getSystemSetting(SystemPropEnum.CODE_FORMAT_EXEMPT_LIST).orElse("").trim();
+		if(exemptlist.isEmpty())
+			{ return Collections.emptySet(); }
+
+
+		Set<WidgetUser> result = Util.treeset();
+		for(String token : exemptlist.split(","))
+		{
+			Optional<WidgetUser> optuser = WidgetUser.softLookup(token);
+			if(optuser.isPresent())
+			{
+				result.add(optuser.get());
+				continue;
+			}
+
+			Util.massert(!strict, "Failed to find user in strict mode for token %s", token);
+		}
+
+		return result;
+	}
+
+
+	public static Set<WidgetUser> getCodeFormatExemptSet()
+	{
+		return getCodeFormatExemptSet(false);
+	}
 
     public static void zipDirectory(File zipsrc, File zipdst) {
         try (FileOutputStream fos = new FileOutputStream(zipdst); ZipOutputStream zos = new ZipOutputStream(fos)) {

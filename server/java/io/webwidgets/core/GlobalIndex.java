@@ -16,6 +16,7 @@ import net.danburfoot.shared.CoreDb.QueryCollector;
 
 import io.webwidgets.core.WidgetOrg.*;
 import io.webwidgets.core.CoreUtil.MasterTable;
+import io.webwidgets.core.CoreUtil.SystemPropEnum;
 import io.webwidgets.core.AuthLogic.PermInfoPack;
 
 public class GlobalIndex
@@ -48,6 +49,11 @@ public class GlobalIndex
         return Collections.unmodifiableMap(_LOOKUP_MAP);
     }
     
+    public static Optional<String> getSystemSetting(SystemPropEnum spenum)
+    {
+        return Optional.ofNullable(getSystemSetting().get(spenum.toString()));
+    }
+
     public static synchronized Map<String, String> getSystemSetting()
     {
         onDemandLoadIndexes();

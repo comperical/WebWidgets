@@ -115,9 +115,21 @@ function getMissingInfo()
 
 }
 
+function confirmUpdate(tablename, idlist, __)
+{
+    alert(`Bulk update of ${idlist.length} records complete`);
+    redisplay();
+}
+
 function ingestFilteredRecords()
 {
-    var numcreated = 0;
+
+    alert(`
+        This will bulk-create ${FILTERED_RECORDS.length} records. 
+        Please do not close window until confirmation is complete
+    `);
+
+    const modlist = []
 
     while(FILTERED_RECORDS.length > 0)
     {
@@ -133,12 +145,10 @@ function ingestFilteredRecords()
         }
 
         const fmitem = W.buildItem("finance_main", item);
-        fmitem.syncItem();
-        numcreated++;
+        modlist.push(fmitem.getId());
     }
 
-    alert("Created " + numcreated + " new finance records");
-    redisplay();
+    W.bulkUpdate("finance_main", modlist, {"callback" : confirmUpdate });
 
 }
 

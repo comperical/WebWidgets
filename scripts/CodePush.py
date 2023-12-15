@@ -8,7 +8,8 @@ import ArgMap
 
 from zipfile import ZipFile
 
-CONFIG_MAP_OKAY_KEYS = ["accesshash", "dbdir", "codedir1", "codedir2", "codedir3"]
+# Note - this must agree with code below
+CONFIG_MAP_OKAY_KEYS = ["accesshash", "dbdir", "codedir1", "codedir2", "codedir3", "codedir4", "codedir5"]
 
 SUBFOLDER_NAME = ".ssh"
 
