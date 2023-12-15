@@ -43,16 +43,6 @@ function deleteItem(killid, shortname)
 	}
 }
 
-function handleNavBar() 
-{
-	const headerinfo = [
-        ["Rage Log", "widget.wisp"],
-        ["Rage Stats", "RageStats.wisp"]
-    ];
-
-    populateTopNavBar(headerinfo, "Rage Log");
-}
-
 
 function editStudyItem(itemid) 
 {
@@ -81,7 +71,7 @@ function getBasicDesc(rageitem)
 
 function redisplay()
 {
-	handleNavBar();
+	handleNavBar("Rage Log");
 
 	redisplayMainTable();
 

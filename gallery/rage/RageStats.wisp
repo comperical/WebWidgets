@@ -10,19 +10,9 @@ DATE_SEL_CODE = "all";
 
 function redisplay()
 {
-    handleNavBar();
+    handleNavBar("Rage Stats");
 
     redisplayMainTable();
-}
-
-function handleNavBar() 
-{
-    const headerinfo = [
-        ["Rage Log", "widget.wisp"],
-        ["Rage Stats", "RageStats.wisp"]
-    ];
-
-    populateTopNavBar(headerinfo, "Rage Stats");
 }
 
 
