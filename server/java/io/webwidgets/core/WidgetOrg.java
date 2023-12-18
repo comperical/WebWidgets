@@ -130,23 +130,6 @@ public class WidgetOrg
 				Util.pf("Creating directory: %s\n", wdir);
 				wdir.mkdir();
 			}
-			
-			File srcpath = new File(Util.sprintf("%s/widget.jsp", wdir));
-			
-			if(srcpath.exists())
-			{
-				Util.pf("Blank widget file %s already exists\n", srcpath);
-				return;
-			}
-	
-			
-			List<String> srclist = getDefaultWidgetSrc();
-			FileUtils
-				.getWriterUtil()
-				.setFile(srcpath)
-				.writeLineListE(srclist);
-				
-			Util.pf("Wrote %d lines to widget path %s\n", srclist.size(), srcpath);
 		}
 		
 		public File getWidgetBaseDir()

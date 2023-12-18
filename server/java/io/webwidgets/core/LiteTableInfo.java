@@ -4,6 +4,9 @@ import java.io.*;
 import java.util.*; 
 import java.sql.*; 
 
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+
 import javax.servlet.http.HttpServletRequest;
 import org.json.simple.JSONObject;
 
@@ -30,6 +33,14 @@ import io.webwidgets.core.WidgetOrg.*;
  */
 public class LiteTableInfo
 {
+
+    public static final Pattern BASIC_TABLE_MATCH = Pattern.compile("CREATE TABLE \"?(\\w+)\"?\\s*\\((.*?)\\)$");
+
+    public static final Pattern DEFAULT_PATTERN = Pattern.compile("DEFAULT\\s+(?:(?:'([^']*)')|(\\d+(?:\\.\\d+)?)(?=\\s|,|$)|(\\w+))", Pattern.CASE_INSENSITIVE);
+
+
+    public static final Pattern SIMPLE_STRING_OKAY = Pattern.compile("^[A-Za-z0-9]+$");
+
 	public static final String LOAD_SUCCESS_TAG = LiteTableInfo.class.getSimpleName() + "__LOAD_SUCCESS";
 	
 	public static final String DECODE_URI_SHORTHAND = "__duric";
@@ -368,8 +379,14 @@ public class LiteTableInfo
 		reclist.add("// " + LOAD_SUCCESS_TAG);
 		
 		return reclist;			
-	}	
+	}
 	
+	public Map<String, Object> getDefaultInfo()
+	{
+		var coldef = loadColumnDefinition(dbTabPair._1, dbTabPair._2);
+		return getDefaultReadout(coldef);
+	}
+
 	private String getArrayRep(ArgMap onemap, String onecol)
 	{
 		String s = onemap.getStr(onecol);
@@ -385,7 +402,7 @@ public class LiteTableInfo
 		sb.append(myEncodeURIComponent(s));
 		sb.append("\"");		
 		return sb.toString();
-	}	
+	}
 	
 	private String getJsonRep(ArgMap onemap, String onecol)
 	{
@@ -568,6 +585,139 @@ public class LiteTableInfo
 		}
 	}
 
+	// Load the SQLite create table statement, parse in the column name :: definition pairs
+	// This code is replicated in DataDesigner in extension package
+	// Eventually need a complete class that represents everything about a SQLite table definition
+	// TODO: this code will break if the user uploads a table with an INDEX or UNIQUE definition in it
+    public static LinkedHashMap<String, String> loadColumnDefinition(WidgetItem item, String table)
+    {
+        String tablesql = CoreUtil.getCreateTableSql(item, table).strip().replaceAll("\n", " ");
+
+        Matcher basicmatch = BASIC_TABLE_MATCH.matcher(tablesql);
+        if(!basicmatch.find())
+        {
+            throw new RuntimeException("Bad table definition : " + tablesql);
+        }
+
+        {
+            String sanity = basicmatch.group(1);
+
+            if(!sanity.toLowerCase().equals(table.toLowerCase()))
+            {
+                String errmssg = String.format("Requested table name %s, but CREATE TABLE returned %s!!!", table, sanity);
+                throw new RuntimeException(errmssg);
+            }
+        }
+
+        var result = new LinkedHashMap<String, String>();
+
+        String columnDef = basicmatch.group(2);
+
+        var colDefList = Util.linkedlistify(columnDef.split(","));
+
+        checkPollPrimaryKey(colDefList);
+
+        for(String colpair : colDefList)
+		{
+			String trimmed = colpair.trim();
+	        int spaceidx = trimmed.indexOf(" ");
+	        String colname = trimmed.substring(0, spaceidx);
+	        String coldef = trimmed.substring(spaceidx+1);
+	        result.put(colname, coldef);
+		}
+
+        String firstcol = result.keySet().iterator().next().toLowerCase();
+        Util.massert(firstcol.equals("id"), "Expected 'id' as first column, but found %s", firstcol);
+
+        return result;
+    }
+
+    private static String basicStringReduce(String mystr)
+    {
+        return mystr.toLowerCase().replaceAll(" ", "");
+    }
+
+    private static void checkPollPrimaryKey(LinkedList<String> colinfo)
+    {
+    	boolean foundprim = false;
+
+    	while(!colinfo.isEmpty())
+    	{
+    		String reduced = basicStringReduce(colinfo.peekLast());
+
+			String fkred = basicStringReduce("foreign key");
+			if(reduced.contains(fkred))
+			{
+				colinfo.pollLast();
+				continue;
+			}
+
+			String primkey = basicStringReduce("primary key(id)");
+			if(reduced.equals(primkey))
+			{
+				colinfo.pollLast();
+				foundprim = true;
+				continue;
+			}
+
+			break;
+    	}
+
+    	Util.massert(foundprim, "Failed to find primary key, columns are %s", colinfo);
+    }
+
+    public static Map<String, Object> getDefaultReadout(LinkedHashMap<String, String> coldef)
+    {
+    	var hitkeys = Util.filter2list(coldef.keySet(), k -> extractDefaultInfo(coldef.get(k)).isPresent());
+
+    	return Util.map2map(hitkeys, k -> k, k -> extractDefaultInfo(coldef.get(k)).get());
+    }
+
+    public static Optional<Object> extractDefaultInfo(String defstart)
+    {
+    	String definition = defstart.replaceAll("\"", "'");
+
+        Matcher matcher = DEFAULT_PATTERN.matcher(definition);
+
+        if (matcher.find()) {
+
+        	if(matcher.group(1) != null)
+	        	{ return Optional.of(matcher.group(1)); }
+
+	        if(matcher.group(2) != null)
+	        { 
+	        	String dstr = matcher.group(2);
+
+	        	// Lots of PAIN here, trying to get it to return the right Integer/Double as appropriate
+	        	// int dotidx = dstr.indexOf(".");
+
+	        	// This is very very weird, but this statement doesn't work the way I want,
+	        	// somehow the compiler decides to return Double in both cases. 
+	        	// But spelling it out DOES work
+	        	// Object o = (dotidx == -1 ? Integer.valueOf(dstr) : Double.valueOf(dstr));
+	        	Object o;
+
+	        	if(dstr.indexOf(".") == -1)
+		        	{ o = Integer.valueOf(dstr); }
+		        else
+			        { o = Double.valueOf(dstr); }
+
+	        	return Optional.of(o);
+	        }
+
+	        if(matcher.group(3) != null)
+		    {
+		    	String boolstr = matcher.group(3).toLowerCase();
+		    	if(Util.setify(true+"", false+"").contains(boolstr))
+		    		{ return Optional.of(Boolean.valueOf(boolstr)); }
+		    }
+        }
+
+        return Optional.empty();
+
+    }
+
+
 	static Class getJavaTypeFromLite(String litetype)
 	{
         ArgMap mymap = new ArgMap();
@@ -623,6 +773,7 @@ public class LiteTableInfo
 		
 		return loglist;		
 	}
+
 	
 	// TODO: this does not go here
 	static boolean oldVersionOkay(Optional<File> prevfile, List<String> newsrc)

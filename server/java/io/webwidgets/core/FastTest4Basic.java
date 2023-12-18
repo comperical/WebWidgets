@@ -1211,5 +1211,60 @@ public class FastTest4Basic
 			);
 		}
 	}
+
+
+	public static class TestDefaultExtractor extends ArgMapRunnable
+	{
+
+		public void runOp()
+		{
+
+			for(var pr : getGoodExpected().entrySet())
+			{
+
+				var result = LiteTableInfo.extractDefaultInfo(pr.getKey());
+
+				Util.massertEqual(result.get(), pr.getValue(),
+					"Observed %s but expected %s for input %s", pr.getKey());
+			}
+
+			for(var bad : getDistractorList())
+			{
+				var result = LiteTableInfo.extractDefaultInfo(bad);
+
+				Util.massert(!result.isPresent(), "Got result %s when expecting no result for input %s", result, bad);
+			}
+
+		}
+
+		private List<String> getDistractorList() 
+		{
+
+			return Util.listify(
+				"VARCHAR(100) DEFAULT 'Unknown",
+				"real DEFAULT 4...5",
+				"boolean DEFAULT tru",
+				"boolean DEFAULT falsey",
+				// TODO: eventually, we should deal with default null
+				"boolean DEFAULT null"
+			);
+		}
+
+		private LinkedHashMap<String, Object> getGoodExpected() 
+		{
+
+			return CoreDb.getRecMap(
+				"VARCHAR(100) DEFAULT 'Unknown'", "Unknown",
+				"VARCHAR(10) defAuLT 'xyz'", "xyz",
+				"real defAuLT \"xyz\"", "xyz",
+				"boolean DEFAULT FALSE NOT NULL", false,
+				"real DEFAULT 4.5", 4.5,
+				"integer DEFAULT 878", 878,
+				"integer DEFAULT 878 NULL", 878,
+				"boolean DEFAULT true", true,
+				"boolean DEFAULT FALSE", false
+			);
+		}
+	}
 } 
 

@@ -5,6 +5,8 @@ import java.io.*;
 import java.util.*; 
 import java.sql.*; 
 
+import org.json.simple.JSONObject;
+
 import net.danburfoot.shared.Util;
 import net.danburfoot.shared.CollUtil.*;
 
@@ -84,7 +86,10 @@ public class CodeGenerator
 		add("\t_dataMap : new Map(),");
 		add("");
 		add("");
-		
+
+
+		addDefaultInfo();
+
 		add("\tregister : function(tableitem)");
 		add("\t{");
 		
@@ -103,9 +108,31 @@ public class CodeGenerator
 		
 	}
 	
+	// Note, there are a lot of Map<String, Object> type things floating around.
+	// Be careful about which one you are using
+	// All this SQLite-table access should eventually go into a separate place
+	@SuppressWarnings("unchecked")
+	private void addDefaultInfo()
+	{
+		JSONObject ob = new JSONObject();
+
+		try {
+			ob.putAll(_liteTable.getDefaultInfo());
+		} catch (Exception ex) {
+			// Gotcha: error message could extend to multiple lines
+			add("\t// Failed to load defaults with error %s", ex.getMessage().replaceAll("\n", " "));
+		}
+
+		add("");
+		add("\t// Default values");
+		add("\t_defaultInfo : %s,", ob.toString());
+		add("");
+	}
+
+
 	private void genConstructor()
 	{
-		_srcList.add("// Standard constructor");	
+		_srcList.add("// Standard constructor");
 		
 		String signature = Util.join(_liteTable.getColTypeMap().keySet(), ", ");
 		add(String.format("function %s(%s)", _liteTable.getRecordName(), signature));
@@ -155,6 +182,13 @@ public class CodeGenerator
 		add("\t{");
 		add("\t\tvar fname = fieldlist[fi];");
 		add("");
+
+		add("\t// Fold in default value if it is available");
+		add("\t\tif(!(fname in record) && (fname in %s._defaultInfo))", _liteTable.getCollectName());
+		add("\t\t\t{ record[fname] = %s._defaultInfo[fname]; }", _liteTable.getCollectName());
+		add("");
+
+
 		
 		add("\t\tif(fname == \"id\" && !(fname in record))");
 		add("\t\t\t{ record[\"id\"] = W.newBasicId('%s'); }", _liteTable.getSimpleTableName());	
