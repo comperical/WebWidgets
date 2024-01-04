@@ -45,6 +45,7 @@ public class ActionJackson extends HttpServlet
 		BlobStoreError,
 		ReservedNameError,
 		MissingWidgetError,
+		NoSharedUserDataError,
 		UploadSizeError;
 	}
 
@@ -139,6 +140,12 @@ public class ActionJackson extends HttpServlet
 			Util.massert(widgetname.strip().toLowerCase().equals(widgetname),
 				"Badly formatted widget name %s, should be no-whitespace, lowercase, uploader script should catch this...!", widgetname);
 
+
+			if(wuser == WidgetUser.getSharedUser() && filetype == UploadFileType.sqlite)
+			{
+				String extra = "We do not allow upload of SHARED user data, for safety reasons, please run scripts to update data on server";
+				throw new LoaderException(LoadApiError.MissingWidgetError, extra);
+			}
 
 			if(MailSystem.MAILBOX_WIDGET_NAME.equals(widgetname))
 			{
