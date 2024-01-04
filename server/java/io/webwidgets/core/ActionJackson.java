@@ -144,7 +144,7 @@ public class ActionJackson extends HttpServlet
 			if(wuser == WidgetUser.getSharedUser() && filetype == UploadFileType.sqlite)
 			{
 				String extra = "We do not allow upload of SHARED user data, for safety reasons, please run scripts to update data on server";
-				throw new LoaderException(LoadApiError.MissingWidgetError, extra);
+				throw new LoaderException(LoadApiError.NoSharedUserDataError, extra);
 			}
 
 			if(MailSystem.MAILBOX_WIDGET_NAME.equals(widgetname))

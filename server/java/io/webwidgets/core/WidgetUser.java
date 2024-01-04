@@ -72,7 +72,7 @@ public class WidgetUser implements Comparable<WidgetUser>
     public List<WidgetItem> getUserWidgetList()
     {
         File dbdir = new File(getDbDirPath());
-        List<File> flist = Util.listify(dbdir.listFiles());
+        List<File> flist = dbdir.listFiles() == null ? Collections.emptyList() : Util.listify(dbdir.listFiles());
 
         List<WidgetItem> result = Util.vector();
         for(File f : flist)
