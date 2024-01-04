@@ -714,6 +714,7 @@ public class ActionJackson extends HttpServlet
 	}
 	
 	
+	// TODO: this doesn't really belong here, does it...?
 	public static List<String> createCode4Widget(WidgetItem witem)
 	{
 		List<String> loglist = Util.vector();
@@ -732,7 +733,7 @@ public class ActionJackson extends HttpServlet
 			
 			// dogenerate = true
 			loglist.addAll(tinfo.maybeUpdateJsCode(true));
-		}		
+		}
 		
 		return loglist;
 	}

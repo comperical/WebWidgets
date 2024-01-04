@@ -51,6 +51,25 @@ function createNewSub(payer) {
 }
 
 
+function createNewFlexCar()
+{
+	if(confirm("Craete a new FlexCar record?"))
+	{
+		const newrec = {
+			'dollar_amount' : 558,
+			'payer' : 'D',
+			'day_code' : getTodayCode().getDateString(),
+			'web_link' : '',
+			'notes' : 'flexcar'
+		};
+		const newitem = W.buildItem('shared_expense', newrec);
+		newitem.syncItem();
+		EDIT_STUDY_ITEM = newitem.getId();
+		redisplay();
+	}
+}
+
+
 function isPayerDan(payer)
 {
 	massert(["D", "H"].indexOf(payer) > -1, "Invalid payer name " + payer);
@@ -135,6 +154,15 @@ function back2Main() {
 	redisplay();
 }
 
+function updateItemDate()
+{
+	const newdate = getDocFormValue("day_code_selector");
+	const item = W.lookupItem("shared_expense", EDIT_STUDY_ITEM);
+	item.setDayCode(newdate);
+	item.syncItem();
+	redisplay();
+}
+
 function shorten4Display(ob) {
 	const s = '' + ob;
 	if(s.length < 40) { return s; }
@@ -143,6 +171,9 @@ function shorten4Display(ob) {
 
 // Auto-generated redisplay function
 function redisplay() {
+
+	handleSharedNavBar("Shared Expense");
+
 	const pageinfo = EDIT_STUDY_ITEM == -1 ? getMainPageInfo() : getEditPageInfo();
 	populateSpanData({"page_info" : pageinfo });
 }
@@ -173,7 +204,7 @@ function getEditPageInfo() {
 
 	<tr><td>DayCode</td>
 	<td>${item.getDayCode()}</td>
-	<td><a href="javascript:genericEditTextField('shared_expense', 'day_code', EDIT_STUDY_ITEM)"><img src="/u/shared/image/edit.png" height="18"></a></td></tr>
+	<td><input name="day_code_selector" type="date" value="${item.getDayCode()}" onChange="javascript:updateItemDate()"></td>
 	</tr>
 	<tr><td>WebLink</td>
 	<td>${item.getWebLink()}</td>
@@ -194,7 +225,10 @@ function getEditPageInfo() {
 function getMainPageInfo() {
 
 
-	var pageinfo = `<h3>Shared Expenses</h3>
+	var pageinfo = `
+
+		<br/>
+		<br/>
 
 
 		${getSummaryTable()}
@@ -210,6 +244,14 @@ function getMainPageInfo() {
 
 		<a href="javascript:createNewHeather()"><button>+Heather</button></a>
 
+
+		&nbsp;
+		&nbsp;
+		&nbsp;
+		&nbsp;
+
+		<a href="javascript:createNewFlexCar()"><button>+FlexCar</button></a>
+
 		<br/>
 		<br/>
 	`;
@@ -224,7 +266,7 @@ function getMainPageInfo() {
 		<th>..</th></tr>
 	`
 
-	const itemlist = W.getItemList('shared_expense');
+	const itemlist = W.getItemList('shared_expense').sort(proxySort(item => [item.getDayCode()])).reverse();
 
 	itemlist.forEach(function(item) {
 		const rowstr = `
@@ -250,6 +292,10 @@ function getMainPageInfo() {
 </script>
 <body onLoad="javascript:redisplay()">
 <center>
+<div class="topnav"></div>
+
+
+
 <div id="page_info"></div>
 
 </center>

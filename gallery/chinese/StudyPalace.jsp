@@ -272,12 +272,16 @@ function redisplay()
 			const conflist = confidx[CURRENT_PROMPT_ITEM.getHanziChar()];
 			conflist.forEach(function(confitem) {
 
+				var dispinfo = `${confitem.getLeftChar()} / ${confitem.getRghtChar()}`;
+
+				if(confitem.getExtraInfo().trim().length > 0)
+					{ dispinfo = `${dispinfo} : ${confitem.getExtraInfo()}` }
+
 				infotable += `
 					<tr>
 					<td width="20%"><b>Phonetic</b></td>
 					<td>
-					${confitem.getLeftChar()} / ${confitem.getRghtChar()}  :
-					${confitem.getExtraInfo()}
+					${dispinfo}
 					</td>
 					</tr>
 				`;

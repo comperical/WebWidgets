@@ -39,6 +39,8 @@
 
             WidgetItem witem = currentUser.get().createBlankItem(newname);
             message = Util.sprintf("New widget created with name %s", newname);
+
+            ActionJackson.createCode4Widget(witem);
         }
 
         if(opcode.equals("delete_old"))

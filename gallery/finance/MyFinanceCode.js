@@ -44,6 +44,23 @@ function getFinanceHeaderInfo()
     ];
 }
 
+function getSharedExpenseHeader()
+{
+    return [
+        ["Shared Expense", "SharedExpense.wisp"],
+        ["Search Shared", "SearchShared.wisp"]
+    ];
+
+
+}
+
+
+function handleSharedNavBar(current)
+{
+    populateTopNavBar(getSharedExpenseHeader(), current);
+}
+
+
 function findTagHitList(fmainitem)
 {
     return W.getItemList("tag_rule").filter(item => tagRuleApplies(item, fmainitem));
