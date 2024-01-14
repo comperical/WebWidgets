@@ -157,8 +157,6 @@ public class WispFileLogic
                     continue;
                 }
 
-                // TODO: protect against scenarios where the line starts with <wisp but is not well-formatted
-
                 try {
                     // TODO: this needs to be integrated with the CodeFormatChecker,
                     // this should never happen here
@@ -167,7 +165,13 @@ public class WispFileLogic
                     // This means the Wisp tag parsing failed
                     // Usually, but not always, this should be detected by the uploader
                     if(include == null)
-                        { continue; }
+                    { 
+                        String mssg =
+                            "Your wisp file has a badly formatted wisp tag. Any line starting with &lt;wisp must include a wisp tag " + 
+                            " that is properly formatted and nothing else: \n" + s;
+
+                        throw new RuntimeException(mssg);
+                    }
 
                     // THis conversion is dumb, the other code is just going to convert it back again
                     ArgMap convert = new ArgMap();
