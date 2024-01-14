@@ -146,8 +146,10 @@ public class WispFileLogic
         {
             boolean includedone = false;
 
-            for(String s : _srcList)
+            for(int idx : Util.range(_srcList))
             {
+                String s = _srcList.get(idx);
+
                 // Warning if the <wisp tag is not in the right place, ie within the <head> section?
                 if(!s.trim().startsWith("<wisp"))
                 {
@@ -167,8 +169,9 @@ public class WispFileLogic
                     if(include == null)
                     { 
                         String mssg =
-                            "Your wisp file has a badly formatted wisp tag. Any line starting with &lt;wisp must include a wisp tag " + 
-                            " that is properly formatted and nothing else: \n" + s;
+                            "Your wisp file has a badly formatted wisp tag on line " + (idx+1) + 
+                            "Any line starting with &lt;wisp must include a wisp tag " + 
+                            " that is properly formatted and nothing else";
 
                         throw new RuntimeException(mssg);
                     }
