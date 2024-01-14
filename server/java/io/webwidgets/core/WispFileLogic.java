@@ -164,6 +164,11 @@ public class WispFileLogic
                     // this should never happen here
                     Map<DataIncludeArg, String> include = WispTagParser.parse2DataMap(s);
 
+                    // This means the Wisp tag parsing failed
+                    // Usually, but not always, this should be detected by the uploader
+                    if(include == null)
+                        { continue; }
+
                     // THis conversion is dumb, the other code is just going to convert it back again
                     ArgMap convert = new ArgMap();
                     for(DataIncludeArg arg : include.keySet())
