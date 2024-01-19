@@ -9,6 +9,8 @@
 
 PLAN_DAY_CODE = getTodayCode();
 
+W.createIndexForTable("day_plan_main", ["day_code"]);
+
 function getHourTimeMap()
 {
 	const hourmap = {
@@ -186,7 +188,7 @@ function updatePlanDay()
 
 function getPlanDayItemList()
 {
-	const itemlist = W.getItemList("day_plan_main").filter(dp => dp.getDayCode() == PLAN_DAY_CODE.getDateString());
+	const itemlist = W.lookupFromIndex("day_plan_main", { "day_code" : PLAN_DAY_CODE.getDateString() });
 	itemlist.sort(proxySort(dp => [dp.getEndHour()]));
 	return itemlist;
 }

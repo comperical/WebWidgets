@@ -170,7 +170,7 @@ public class WispFileLogic
                     { 
                         String mssg =
                             "Your wisp file has a badly formatted wisp tag on line " + (idx+1) + 
-                            "Any line starting with &lt;wisp must include a wisp tag " + 
+                            " Any line starting with &lt;wisp must include a wisp tag " + 
                             " that is properly formatted and nothing else";
 
                         throw new RuntimeException(mssg);

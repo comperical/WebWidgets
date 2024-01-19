@@ -31,6 +31,10 @@ __RAW_DEP_WARNING_COUNT : 0,
 // Could actually be much smaller than this
 MAX_GET_PARAM_VALUE : 2000,
 
+__GLOBAL_INDEX_MAP : new Map(),
+
+__DUMB_INDEX_DELIM : "/x/",
+
 // Find the item with the given ID for the given table and return it.
 // Error if the item does not exist, if you are uncertain whether the ID exists or not,
 // call haveItem(tabname, itemid)
@@ -334,6 +338,8 @@ __augmentWithCheckSum : function(opurl)
 
 },
 
+
+
 __getTableCoords : function(tablemaster)
 {
     return {
@@ -342,6 +348,176 @@ __getTableCoords : function(tablemaster)
         "tablename" : tablemaster.tableName
     };
 },
+
+
+// Create an index on the given table
+// fnamelist is a list of field names in the table that you want to index
+createIndexForTable : function(tablename, fnamelist)
+{
+    const indexname = W.__composeInternalIndexName(fnamelist);
+    W.__GLOBAL_INDEX_MAP.get(tablename).set(indexname, new Map());
+
+    W.getItemList(tablename).forEach(function(item) {
+
+        // Null argument here requests system to add item to ALL indexes
+        W.__placeItemInIndexes(item, null);
+    });
+},
+
+// This is the main exposed API call
+// The tablename is a normal Widget tablename
+// Lookup is a JS has with K/V pairs corresponding to the query
+// Eg to lookup everyone who lives in California, use { state : "CA" } as lookup
+// You will get an error if the lookup specifies keys that do not match an index
+// (But they do not need to match the WHOLE prefix)
+lookupFromIndex : function(tablename, lookup)
+{
+    const relidx = W.__findRelevantIndex(tablename, lookup);
+
+    massert(relidx != null, `No index found for table ${tablename} and lookup keys ${Object.keys(lookup)}`);
+
+    const mapresult = W.__followIndexFarAsPossible(tablename, relidx, lookup);
+
+    const hits = [];
+
+    W.__recursiveMapLookup(mapresult, hits);
+
+    return hits;
+},
+
+__composeInternalIndexName : function(fnamelist)
+{
+    return fnamelist.join(W.__DUMB_INDEX_DELIM);
+},
+
+__findRelevantIndex : function(tablename, lookup)
+{
+    // Okay, there is no notion of order for a set of lookup keys
+    // If you don't write them in the right order, it's not a big deal
+    const kcols = [... Object.keys(lookup)].sort();
+
+    const haveallprefs = function(idxname)
+    {
+        const fnlist = idxname.split(W.__DUMB_INDEX_DELIM).slice(0, kcols.length).sort();
+
+        return fnlist.toString() == kcols.toString();
+    }
+
+    // First need to find an index that will be relevant
+    const relidxes = [... W.__GLOBAL_INDEX_MAP.get(tablename).keys()].filter(idxname => haveallprefs(idxname));
+
+    return relidxes.length > 0 ? relidxes[0] : null;
+},
+
+
+__recursiveMapLookup : function(themap, resultholder)
+{
+    if(themap == null)
+        { return; }
+
+    [... themap.values()].forEach(function(hit) {
+
+        if(hit instanceof Map)
+        {
+            W.__recursiveMapLookup(hit, resultholder);
+            return;
+        }
+
+        resultholder.push(hit);
+    });
+},
+
+
+__indexUpdateProcess : function(item, fieldname, ispre)
+{
+    const hits_index = function(indexname)
+    {
+        const indexcol = indexname.split(W.__DUMB_INDEX_DELIM);
+        return indexcol.includes(fieldname);
+    }
+
+    const tablename = item.__getTableObject().tableName;
+
+    // List of indexes that are impacted
+    const impacted = [... W.__GLOBAL_INDEX_MAP.get(tablename).keys()].filter(hits_index);
+
+    // Either remove the item (pre) or place the item (post)
+    const action = ispre ? W.__removeItemFromIndexes : W.__placeItemInIndexes;
+
+    action(item, impacted);
+},
+
+
+// Note: for these three functions, indexes = null => all indexes for the table
+__finalIndexUpdateSub : function(item, updatefunc, indexes)
+{
+    const tablename = item.__getTableObject().tableName;
+
+    const relidxes = indexes == null ? [... W.__GLOBAL_INDEX_MAP.get(tablename).keys()] : indexes;
+
+    relidxes.forEach(function(idxname) {
+        const finalmap = W.__getCreateFinalIndexMap(tablename, idxname, item);
+        // Okay, final level is just an ID -> item map
+        updatefunc(finalmap);
+    });
+},
+
+
+__placeItemInIndexes : function(item, indexes)
+{
+    const updater = function(fmap) { fmap.set(item.getId(), item); }
+
+    W.__finalIndexUpdateSub(item, updater, indexes);
+},
+
+__removeItemFromIndexes : function(item, indexes)
+{
+    const updater = function(fmap) { fmap.delete(item.getId()); }
+
+    W.__finalIndexUpdateSub(item, updater, indexes);
+},
+
+
+__getCreateFinalIndexMap : function(tablename, indexname, item)
+{
+    const fnamelist = indexname.split(W.__DUMB_INDEX_DELIM);
+    var ptrmap = W.__GLOBAL_INDEX_MAP.get(tablename).get(indexname);
+
+    // follows ptrs down the list of FNames
+    fnamelist.forEach(function(fname) {
+        const v = item.getField(fname);
+
+        // Set default
+        if(!ptrmap.has(v))
+            { ptrmap.set(v, new Map()); }
+
+        ptrmap = ptrmap.get(v);
+    });
+
+    return ptrmap;
+},
+
+__followIndexFarAsPossible : function(tablename, indexname, lookup)
+{
+    const fnamelist = indexname.split(W.__DUMB_INDEX_DELIM);
+    var ptrmap = W.__GLOBAL_INDEX_MAP.get(tablename).get(indexname);
+
+    // follows ptrs down the list of FNames
+    fnamelist.forEach(function(fname) {
+
+        if(!lookup.hasOwnProperty(fname) || ptrmap == null)
+            { return; }
+
+        const v = lookup[fname];
+
+        ptrmap = ptrmap.get(v);
+
+    });
+
+    // This may be null, a shallow map, or a wide map, caller must understand how to deal with each one
+    return ptrmap;
+},
+
 
 
 genericUpsertUrl : function(tablemaster, item, keylist)

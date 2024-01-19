@@ -96,12 +96,18 @@ public class CodeGenerator
 		add("\t\t// Assign the K/Value pair.");
 		add("\t\tthis._dataMap.set(tableitem.getId(), tableitem);");
 
+
 		add("\t}");
 		add("};");
 		
 		add("");
 		add("// Register the Widget Table with the table index");
 		add("W.__tableNameIndex.set('%s', %s);", _liteTable.getSimpleTableName(), _liteTable.getCollectName());
+
+
+		add("");
+		add("// Create entry for table indexes");
+		add("W.__GLOBAL_INDEX_MAP.set('%s', new Map());", _liteTable.getSimpleTableName());
 		
 		
 		add("");
@@ -207,6 +213,11 @@ public class CodeGenerator
 		add("\t// Update, Jan 2022 - buildItem now registers new object");
 		add("\t%s.register(item);", _liteTable.getCollectName());
 
+
+		add("");
+		add("\t// Update, Jan 2024 - place item in indexes");
+		add("\tW.__placeItemInIndexes(item, null);");
+
 		add("\treturn item;");
 		add("}");
 		add("");
@@ -248,6 +259,9 @@ public class CodeGenerator
 		add("\tconst myid = this.getId();");
 		add("");
 		add("\t%s._dataMap.delete(myid);", _liteTable.getCollectName());
+		add("");
+		add("\t// Remove the item from the indexes");
+		add("\tW.__removeItemFromIndexes(this, null);");
 		add("");
 		add("\t// This is a call to global AJAX JS");
 		add("\tW.__submitNewRequest(this.getDeleteUrl(), \"delete\", this.getId());");
@@ -303,7 +317,11 @@ public class CodeGenerator
 			{
 				add("%s.prototype.set%s = function(x)", _liteTable.getRecordName(), colname);
 				add("{");
-				add("\tthis.%s = x;", onecol);
+
+				// Update Jan 2024: the setXXX just forwards to setField('xxx'), this is important
+				// for calling the add/remove methods on the indexes
+				// add("\tthis.%s = x;", onecol);
+				add("\tthis.setField('%s', x);", onecol);
 				add("}");
 				add("");
 				add("");
@@ -320,10 +338,13 @@ public class CodeGenerator
 		
 		add("");
 		add("// Generic setField");
+		add("// Remove the item from indexes and then re-add");
 		add("%s.prototype.setField = function(fieldname, x)", _liteTable.getRecordName());
 		add("{");
+		add("\tW.__indexUpdateProcess(this, fieldname, true);"); 
 		add("\tthis[fieldname] = x;");
-		add("}");		
+		add("\tW.__indexUpdateProcess(this, fieldname, false);"); 
+		add("}");
 		
 		
 		// Hmmm: should I add a dummy implementation that throws an error, if you attempt to call
