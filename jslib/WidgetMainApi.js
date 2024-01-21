@@ -367,6 +367,7 @@ __getTableCoords : function(tablemaster)
 createIndexForTable : function(tablename, fnamelist)
 {
 
+    
     W.__registerTableIndexEntry(tablename);
 
     const indexname = W.__composeInternalIndexName(fnamelist);

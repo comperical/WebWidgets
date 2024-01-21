@@ -382,11 +382,6 @@ public class LiteTableInfo
 		reclist.add(Util.sprintf("].forEach(function(myrec) { \n\t%sTable.register(W.buildItem(\"%s\", %s(myrec)));\n});", 
 			getBasicName(), dbTabPair._2, converter));
 
-
-		reclist.add("");
-		reclist.add("// Check for bad index creation");
-		reclist.add("W.__badIndexCreationCheck();");
-
 		
 		reclist.add("");
 		reclist.add("// " + LOAD_SUCCESS_TAG);
