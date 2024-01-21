@@ -27,6 +27,7 @@ __REQUEST_IN_FLIGHT : false,
 
 __RAW_DEP_WARNING_COUNT : 0,
 
+
 // https://stackoverflow.com/questions/417142/what-is-the-maximum-length-of-a-url-in-different-browsers
 // Could actually be much smaller than this
 MAX_GET_PARAM_VALUE : 2000,
@@ -34,6 +35,8 @@ MAX_GET_PARAM_VALUE : 2000,
 __GLOBAL_INDEX_MAP : new Map(),
 
 __DUMB_INDEX_DELIM : "/x/",
+
+__DATA_LOAD_COMPLETE : false,
 
 // Find the item with the given ID for the given table and return it.
 // Error if the item does not exist, if you are uncertain whether the ID exists or not,
@@ -544,8 +547,14 @@ __followIndexFarAsPossible : function(tablename, indexname, lookup)
 
 __badIndexCreationCheck: function()
 {
+    const okaylist = W.getWidgetTableList();
+    const okaystr = okaylist.join(", ");
 
+    [... W.__GLOBAL_INDEX_MAP.keys()].forEach(function(tablename) {
 
+        // massert(okaylist.includes(tablename),
+        //    `Index created for table name ${tablename}, but it has not been loaded, tables are ${okaystr}`);
+    });
 
 },
 
