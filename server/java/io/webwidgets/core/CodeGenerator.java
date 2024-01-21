@@ -107,7 +107,7 @@ public class CodeGenerator
 
 		add("");
 		add("// Create entry for table indexes");
-		add("W.__GLOBAL_INDEX_MAP.set('%s', new Map());", _liteTable.getSimpleTableName());
+		add("W.__registerTableIndexEntry('%s');", _liteTable.getSimpleTableName());
 		
 		
 		add("");

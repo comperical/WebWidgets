@@ -222,6 +222,15 @@ bulkUpdate : function(tablename, idlist, options)
 // Third argument is a hash that is reserved for allowing modifications to the behavior of this function
 bulkDelete : function(tablename, idlist, options)
 {
+
+    // Important difference with bulkUpdate: you need to remove from indexes here
+    // in bulkUpdate, the indexes are already updated from the setField(..) calls
+    idlist.forEach(function(myid) {
+        const myitem = W.lookupItem(tablename, myid);
+        W.__removeItemFromIndexes(myitem, null);
+    });
+
+
     W.__bulkOpSub(tablename, idlist, true, options);
 },
 
@@ -354,13 +363,23 @@ __getTableCoords : function(tablemaster)
 // fnamelist is a list of field names in the table that you want to index
 createIndexForTable : function(tablename, fnamelist)
 {
+
+    W.__registerTableIndexEntry(tablename);
+
     const indexname = W.__composeInternalIndexName(fnamelist);
+    massert(!W.__GLOBAL_INDEX_MAP.get(tablename).has(indexname),
+        `You have already defined an index ${fnamelist.join("--")} on table ${tablename}, do not redefine`);
+
     W.__GLOBAL_INDEX_MAP.get(tablename).set(indexname, new Map());
 
-    W.getItemList(tablename).forEach(function(item) {
+    // If the table has not yet been registered yet, we're done:
+    // The items will be placed in the index when they are registered
+    if(!W.getWidgetTableList().includes(tablename))
+        { return; }
 
-        // Null argument here requests system to add item to ALL indexes
-        W.__placeItemInIndexes(item, null);
+    // If the table HAS been registered, we need to add the records to the new index
+    W.getItemList(tablename).forEach(function(item) {
+        W.__placeItemInIndexes(item, [indexname]);
     });
 },
 
@@ -462,6 +481,11 @@ __finalIndexUpdateSub : function(item, updatefunc, indexes)
     });
 },
 
+__registerTableIndexEntry : function(tablename)
+{
+    if(!W.__GLOBAL_INDEX_MAP.has(tablename))
+        { W.__GLOBAL_INDEX_MAP.set(tablename, new Map()); }
+},
 
 __placeItemInIndexes : function(item, indexes)
 {
@@ -518,7 +542,12 @@ __followIndexFarAsPossible : function(tablename, indexname, lookup)
     return ptrmap;
 },
 
+__badIndexCreationCheck: function()
+{
 
+
+
+},
 
 genericUpsertUrl : function(tablemaster, item, keylist)
 {

@@ -23,6 +23,8 @@ Goal here is to work with laptop and tablet, but not phone
 
 <script>
 
+W.createIndexForTable("chore_comp", ["chore_id"]);
+
 // If true, show study/edit page
 var EDIT_STUDY_ITEM = -1;
 
@@ -92,19 +94,6 @@ function getLastCompletedMap()
 	return compmap;
 }
 
-function getChoreAge(choreitem, chorecompmap)
-{
-	// It's never been completed
-	if(!chorecompmap.hasOwnProperty(choreitem.getId()))
-		{ return 100000000; }
-	
-	var todaydc = getTodayCode();
-	
-	// Last date on which it was completed
-	var lastcompdc = lookupDayCode(chorecompmap[choreitem.getId()]);
-	
-	return lastcompdc.daysUntil(todaydc);
-}
 
 
 
@@ -298,7 +287,6 @@ function promoteItem(choreid)
 
 function redisplayChoreLog()
 {
-	const lastcompmap = getLastCompletedMap();
 	const showall = getUniqElementByName("show_all").checked;
 
 	
@@ -306,8 +294,8 @@ function redisplayChoreLog()
 	itemlist.sort(proxySort(a => [a.getShortName()]));
 	
 	// var lastlogmap = getLastLogMap();
-	const maintable = getChoreLogTable(itemlist, lastcompmap, showall, false);	
-	const promotable = getChoreLogTable(itemlist, lastcompmap, showall, true);	
+	const maintable = getChoreLogTable(itemlist, showall, false);	
+	const promotable = getChoreLogTable(itemlist, showall, true);	
 	
 	populateSpanData({
 		'chore_log_table' : maintable,
@@ -315,15 +303,8 @@ function redisplayChoreLog()
 	});
 }
 
-function isPromoValid(chore, lastupdate)
-{
-	if(chore.getPromotedOn() == "")
-		{ return false; }
 
-	return lastupdate == "never" ? true : chore.getPromotedOn() > lastupdate;
-}
-
-function getChoreLogTable(itemlist, lastcompmap, showall, ispromo)
+function getChoreLogTable(itemlist, showall, ispromo)
 {
 
 	const header = ispromo ? "Promoted" : "Main";
@@ -347,8 +328,8 @@ function getChoreLogTable(itemlist, lastcompmap, showall, ispromo)
 	itemlist.forEach(function(chore) {
 			
 		
-		const choreage = getChoreAge(chore, lastcompmap);
-		const lastupdate = lastcompmap.hasOwnProperty(chore.getId()) ? lastcompmap[chore.getId()] : "never";
+		const choreage = getChoreAge(chore);
+		const lastupdate = getLastChoreCompletion(chore.getId());
 
 		const okaypromo = isPromoValid(chore, lastupdate);
 		const overdue = choreage - chore.getDayFreq();
@@ -369,11 +350,13 @@ function getChoreLogTable(itemlist, lastcompmap, showall, ispromo)
 			weblinkstr = weblinkstr.replace("purewhite", "chainlink").replace("#", chore.getWebLink());
 		}
 		
+
+		const lastdisplay = lastupdate == null ? "never" : lastupdate.substring(5);
 					
 		const rowstr = `
 			<tr>
 			<td>${chore.getShortName()}</td>
-			<td>${lastupdate.substring(5)}</td>
+			<td>${lastdisplay}</td>
 			<td>${choreage}</td>
 			<td>${overdue}</td>
 			<td>

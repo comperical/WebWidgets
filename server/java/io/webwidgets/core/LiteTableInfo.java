@@ -374,6 +374,12 @@ public class LiteTableInfo
 		}
 		reclist.add(Util.sprintf("].forEach(function(myrec) { \n\t%sTable.register(W.buildItem(\"%s\", %s(myrec)));\n});", 
 			getBasicName(), dbTabPair._2, converter));
+
+
+		reclist.add("");
+		reclist.add("// Check for bad index creation");
+		reclist.add("W.__badIndexCreationCheck();");
+
 		
 		reclist.add("");
 		reclist.add("// " + LOAD_SUCCESS_TAG);
@@ -381,6 +387,26 @@ public class LiteTableInfo
 		return reclist;			
 	}
 	
+
+	// Return list of list of column names
+	// Each index is a list of columns
+	// Order matters!!
+	public List<List<String>> getIndexInfo()
+	{
+		// This is all the indexes for the whole DB
+		Map<String, String> indexmap = CoreDb.getLiteIndexMap(dbTabPair._1);
+
+		// Filter down to the ones for this table
+		return indexmap.entrySet()
+						.stream()
+						.filter(pr -> !pr.getKey().contains("sqlite_autoindex"))
+						.filter(pr -> pr.getValue().equals(dbTabPair._2))
+						.map(pr -> CoreDb.getIndexColumnList(dbTabPair._1, pr.getKey()))
+						.collect(CollUtil.toList());
+	}
+
+
+
 	public Map<String, Object> getDefaultInfo()
 	{
 		var coldef = loadColumnDefinition(dbTabPair._1, dbTabPair._2);
