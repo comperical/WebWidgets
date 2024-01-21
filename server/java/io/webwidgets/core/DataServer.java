@@ -441,14 +441,13 @@ public class DataServer
 				reclist.add("</script>");
 			}
 
-
-			reclist.add("");
+			reclist.add("<script>");
 			reclist.add("// Data Loading is now complete ");
 			reclist.add("W.__DATA_LOAD_COMPLETE = true;");
 
 			reclist.add("// Check for bad index creation in user code");
 			reclist.add("W.__badIndexCreationCheck();");
-			reclist.add("");
+			reclist.add("</script>");
 			
 			return Util.join(reclist, "\n");
 		}
