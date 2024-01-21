@@ -440,22 +440,15 @@ public class DataServer
 				
 				reclist.add("</script>");
 			}
-			
-			// This is the old, naive checksum-based data protection code
-			/*
-			{	
-				String cksumkey = dbitem.getCheckSumKey();
-				long cksum = dbitem.getDbCheckSum();
-				
-				reclist.add("<script>");			
-				reclist.add("// Widget DB checksum. This can be set multiple times without breaking anything");
-				
-				// Warning: This variable has to match LiteJsHelper
-				reclist.add(Util.sprintf("W.__databaseCheckSum[\"%s\"] = 0;", cksumkey, cksum));
-			
-				reclist.add("</script>");	
-			}
-			*/
+
+
+			reclist.add("");
+			reclist.add("// Data Loading is now complete ");
+			reclist.add("W.__DATA_LOAD_COMPLETE = true;");
+
+			reclist.add("// Check for bad index creation in user code");
+			reclist.add("W.__badIndexCreationCheck();");
+			reclist.add("");
 			
 			return Util.join(reclist, "\n");
 		}

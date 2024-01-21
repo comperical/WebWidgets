@@ -301,13 +301,6 @@ public class LiteTableInfo
 		
 		reclist.addAll(composeJsonRepList(querytarget));
 
-		reclist.add("");
-		reclist.add("// Data Loading is now complete ");
-		reclist.add("W.__DATA_LOAD_COMPLETE = true;");
-
-		reclist.add("// Check for bad index creation in user code");
-		reclist.add("W.__badIndexCreationCheck();");
-
 		return reclist;
 	}
 	
