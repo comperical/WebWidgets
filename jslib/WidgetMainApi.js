@@ -367,8 +367,13 @@ __getTableCoords : function(tablemaster)
 createIndexForTable : function(tablename, fnamelist)
 {
 
-    
-    W.__registerTableIndexEntry(tablename);
+    // Okay there's a carve-out here, in case the data loads have not yet finished
+    // If you create a bad index name in the user-include code, you will get an error in 
+    // __badIndexCreationCheck below
+    if(!W.__DATA_LOAD_COMPLETE)
+        { W.__registerTableIndexEntry(tablename);}
+    else
+        { W.checkTableName(tablename); }
 
     const indexname = W.__composeInternalIndexName(fnamelist);
     massert(!W.__GLOBAL_INDEX_MAP.get(tablename).has(indexname),
@@ -553,8 +558,8 @@ __badIndexCreationCheck: function()
 
     [... W.__GLOBAL_INDEX_MAP.keys()].forEach(function(tablename) {
 
-        // massert(okaylist.includes(tablename),
-        //    `Index created for table name ${tablename}, but it has not been loaded, tables are ${okaystr}`);
+        massert(okaylist.includes(tablename),
+            `Index created for table name ${tablename}, but it has not been loaded, tables are ${okaystr}`);
     });
 
 },

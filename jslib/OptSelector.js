@@ -43,8 +43,50 @@ OptSelector.prototype.sortByDisplay = function(kdisp)
 
 
 
+// Configure the key/values in this selector from a JavaScript Map
+// Keys are the interior values, Map values are the display values
+OptSelector.prototype.configureFromMap = function(themap)
+{
+    this.resetData();
+
+    this._keyList = [... themap.keys()];;
+    this._dspList = this._keyList.map(k => themap.get(k));
+
+    return this;
+}
+
+
+// Configure the key/values in this selector from single list
+// Both interior values and display values are the list elements
+OptSelector.prototype.configureFromList = function(thelist)
+{
+    this.resetData();
+
+    this._keyList = thelist;
+    this._dspList = thelist;
+
+    return this;
+}
+
+
+// Configure the key/values in this selector from a JavaScript hash/dict
+// Interior values are hash keys, display values are hash values
+OptSelector.prototype.configureFromHash = function(thehash)
+{
+    this.resetData();
+
+    this._keyList = [... Object.keys(thehash)];
+    this._dspList = this._keyList.map(k => thehash[k]);
+
+    return this;
+}
+
+
+
+
 // Sets the keys and values from the given flat list
 // In this case keys and values will be the same.
+// Deprecated: use configureFromList instead
 OptSelector.prototype.setKeyList = function(kdisp)
 {
     return this.setKeyDispList(kdisp, kdisp);
@@ -157,6 +199,8 @@ OptSelector.prototype.setSelectedKey = function(skey)
 
 // Set key/value pairs from the given map.
 // Keys will be keys of map, displays will be values.
+// Deprecated: this method is misnamed
+// Use configureFromMap or configureFromHash instead
 OptSelector.prototype.setFromMap = function(optmap)
 {
     this.resetData();
@@ -172,6 +216,7 @@ OptSelector.prototype.setFromMap = function(optmap)
 
 // Sets the key/values from the given flat list
 // Keys will be INDEXES, values will be items.
+// Deprecated: use one of the configureFrom(...) methods instead
 OptSelector.prototype.setIndex2DispList = function(dlist)
 {
     this.resetData();
@@ -180,7 +225,7 @@ OptSelector.prototype.setIndex2DispList = function(dlist)
     {
         this._keyList.push(idx);
         this._dspList.push(dlist[idx]);
-    }   
+    } 
     
     return this;
 }
@@ -188,6 +233,7 @@ OptSelector.prototype.setIndex2DispList = function(dlist)
 
 // Sets key/values from given list pair.
 // Keys are from first list, values are from second list
+// Deprecated: use one of the configureFrom(...) methods instead
 OptSelector.prototype.setKeyDispList = function(klist, dlist)
 {
     
