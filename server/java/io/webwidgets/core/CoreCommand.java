@@ -881,7 +881,7 @@ public class CoreCommand
 
 		// This is a "virtual" file, meaning that it is never actually used
 		// It is just a coordinate that gets passed to the blob storage
-		private static File getDbArchiveFile(WidgetItem dbitem, DayCode dc)
+		public static File getDbArchiveFile(WidgetItem dbitem, DayCode dc)
 		{
 			String localpath = Util.sprintf("%s/%s/%s/%s", CoreUtil.DB_ARCHIVE_VDIR, 
 				dc, dbitem.theOwner, dbitem.getLocalDbFile().getName());

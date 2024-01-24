@@ -89,6 +89,8 @@ OptSelector.prototype.configureFromHash = function(thehash)
 // Deprecated: use configureFromList instead
 OptSelector.prototype.setKeyList = function(kdisp)
 {
+    showLegacyOptApiWarning('setKeyList');
+
     return this.setKeyDispList(kdisp, kdisp);
 }
 
@@ -203,6 +205,9 @@ OptSelector.prototype.setSelectedKey = function(skey)
 // Use configureFromMap or configureFromHash instead
 OptSelector.prototype.setFromMap = function(optmap)
 {
+    showLegacyOptApiWarning('setFromMap');
+
+
     this.resetData();
     
     for(var k in optmap)
@@ -219,6 +224,10 @@ OptSelector.prototype.setFromMap = function(optmap)
 // Deprecated: use one of the configureFrom(...) methods instead
 OptSelector.prototype.setIndex2DispList = function(dlist)
 {
+
+    showLegacyOptApiWarning('setIndex2DispList');
+
+
     this.resetData();
     
     for(var idx in dlist)
@@ -236,6 +245,9 @@ OptSelector.prototype.setIndex2DispList = function(dlist)
 // Deprecated: use one of the configureFrom(...) methods instead
 OptSelector.prototype.setKeyDispList = function(klist, dlist)
 {
+
+    showLegacyOptApiWarning('setKeyDispList');
+
     
     for(var idx in klist)
     {

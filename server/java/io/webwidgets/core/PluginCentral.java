@@ -62,6 +62,8 @@ public class PluginCentral
 			uploadLocalToTarget(localpath, localpath);
 		}
 
+		// TODO: it seems like we should rationally want to have a downloadToLocal that
+		// has a separate argument
 		public void uploadLocalToTarget(File localpath, File remotepath) throws IOException;
 
 		public boolean blobPathExists(File localpath) throws IOException;

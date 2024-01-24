@@ -515,5 +515,12 @@ function composeNavBarCode(headerdata, headerselected) {
 
 }
 
+function showLegacyOptApiWarning(funcname)
+{
+    if (W.__RAW_DEP_WARNING_COUNT < 3) {
+        console.log(`**Warning**, use of old OptSelector function ${funcname} is deprecated and will be removed in a future version, please use configureFrom(...) methods`);
+    }
 
+    W.__RAW_DEP_WARNING_COUNT++;    
+}
 
