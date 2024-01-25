@@ -18,6 +18,7 @@ import net.danburfoot.shared.CoreDb.QueryCollector;
 
 import io.webwidgets.core.CoreUtil.*;
 import io.webwidgets.core.WidgetOrg.*;
+import io.webwidgets.core.MailSystem.ValidatedEmail;
 
 public class AuthLogic
 {
@@ -103,6 +104,24 @@ public class AuthLogic
 		// DAY_MILLI is milliseconds; divide by 1000 and mult by 10 days = divide by 100
 		mycookie.setMaxAge((int) (TimeUtil.DAY_MILLI / 100));
 		response.addCookie(mycookie);
+	}
+
+
+	// Confirm to the system that the user has authenticated with the given email address
+	// This is an entry hook to techniques like Sign in with Google
+	// This implies that we need to check that a given email address is who they say they are
+	public static boolean confirmExternalAuth(HttpServletRequest request, HttpServletResponse response, ValidatedEmail vemail)
+	{
+		List<WidgetUser> hitlist = Util.filter2list(WidgetUser.values(), user -> vemail.emailAddr.equals(user.getEmail()));
+		Util.massert(hitlist.size() <= 1, "Found multiple accounts with email %s", vemail.emailAddr);
+
+		if(hitlist.isEmpty())
+			{ return false; }
+
+		WidgetUser user = hitlist.get(0);
+		setUserCookie(request, response, user.getUserName());
+		setAuthCookie(request, response, user.getAccessHash());
+		return true;
 	}
 	
 	public static void performLogOut(HttpServletRequest request, HttpServletResponse response)
