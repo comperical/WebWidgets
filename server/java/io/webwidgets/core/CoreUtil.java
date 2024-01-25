@@ -8,7 +8,6 @@ import java.time.LocalDate;
 import java.util.stream.Stream;
 import java.nio.charset.StandardCharsets;
 
-
 import net.danburfoot.shared.Util;
 import net.danburfoot.shared.CoreDb;
 import net.danburfoot.shared.DayCode;
