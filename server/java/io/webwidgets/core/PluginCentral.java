@@ -90,6 +90,13 @@ public class PluginCentral
 		{
 			return s -> "";
 		}
+
+		// If you return a valid Google Client ID here, the LogIn page will give users the option
+		// of signing in with Google Sign On
+		public Optional<String> getGoogleClientId()
+		{
+			return Optional.empty();
+		}
 	}
 
 	public static IMailSender getMailPlugin()
