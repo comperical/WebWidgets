@@ -1,5 +1,5 @@
 
-<%@include file="CoreImport.jsp_inc" %>
+<%@include file="../admin/CoreImport.jsp_inc" %>
 
 
 <%
@@ -74,6 +74,11 @@
     if(noAuthUser.isPresent())
       { userHome = Util.sprintf("/%s/index.jsp", noAuthUser.get()); }
 
+    String bounceBackAppend = optBounceBack.isPresent() ? "?bounceback=" + optBounceBack.get() : "";
+
+
+    Optional<String> optClientId = PluginCentral.getGeneralPlugin().getGoogleClientId();
+    // Optional<String> optClientId = Optional.empty();
 %>
 
 
@@ -97,7 +102,11 @@
   <!-- endinject -->
   <link rel="shortcut icon" href="/u/shared/majestic/images/favicon.png" />
   
-<%@include file="AssetInclude.jsp_inc" %>
+<%@include file="../admin/AssetInclude.jsp_inc" %>
+
+
+<script src="https://accounts.google.com/gsi/client" async></script>
+
 
 <style>
 code 
@@ -106,6 +115,11 @@ code
   color: black;
   border: 1px solid;
   border-color: black;
+}
+
+.g_id_signin {
+    max-width: 300px; /* Adjust to your preferred width */
+    display: inline-block; /* Or as per your layout needs */
 }
 
 </style>
@@ -139,7 +153,7 @@ function serverSideHashLogin()
     <!-- partial -->
     <div class="container-fluid page-body-wrapper">
       <!-- partial:partials/_sidebar.html -->
-      <%@include file="MajesticNavBar.jsp_inc" %>
+      <%@include file="../admin/MajesticNavBar.jsp_inc" %>
       <!-- partial -->
       <div class="main-panel">
         <div class="content-wrapper">
@@ -178,6 +192,39 @@ function serverSideHashLogin()
 
                   <button class="btn btn-primary mr-2" onclick="javascript:serverSideHashLogin()">Submit</button>
 
+
+                  <%
+
+                    if(optClientId.isPresent())
+                    {
+                  %>
+
+                  <br/>
+                  <br/>
+
+                  <p>Or login with Google (admin users only)</p>
+
+
+                  <div id="g_id_onload"
+                       data-client_id="<%= optClientId.get() %>"
+                       data-context="signin"
+                       data-ux_mode="popup"
+                       data-login_uri="https://webwidgets.io/u/exadmin/OAuthHandler.jsp<%= bounceBackAppend %>"
+                       data-auto_prompt="false">
+                  </div>
+
+
+                  <div class="g_id_signin"
+                       data-type="standard"
+                       data-shape="pill"
+                       data-theme="filled_blue"
+                       data-text="signin_with"
+                       data-size="large"
+                       data-logo_alignment="left">
+                  </div>
+
+                  <% } %>
+
                 </div>
               </div>
             </div>
@@ -209,6 +256,8 @@ function serverSideHashLogin()
                   <p class="mb-4">
                   <%= messageBody %>
                   </p>
+
+
 
                   <%
                     if(passwordFailCode != null)
@@ -297,6 +346,12 @@ function serverSideHashLogin()
                   <p class="mb-4">
                   You are logged in as <code><%= currentUser.get() %></code>
                   </p>
+
+
+
+
+
+
 
                   <p>You can access your home page from the User Home link on the side bar, or log-out and log-in as another user.</p>
 
