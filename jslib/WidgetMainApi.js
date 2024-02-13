@@ -74,6 +74,9 @@ buildItem : function(tabname, record)
     if(!record.hasOwnProperty("id"))
         { record["id"] = W.newBasicId(tabname); }
 
+    const theid = parseInt(record["id"]);
+    massert(!W.haveItem(tabname, theid), `A record with ID ${theid} already exists in table ${tabname}`);
+
     return buildfunc(record);
 },
 
@@ -391,6 +394,19 @@ createIndexForTable : function(tablename, fnamelist)
         W.__placeItemInIndexes(item, [indexname]);
     });
 },
+
+
+// Same as createIndexForTable, but if the index is already present, return early
+createIndexIfAbsent : function(tablename, fnamelist)
+{
+    const indexname = W.__composeInternalIndexName(fnamelist);
+    const submap = W.__GLOBAL_INDEX_MAP.get(tablename);
+    if(submap != null && submap.has(indexname))
+        { return; }
+
+    W.createIndexForTable(tablename, fnamelist);
+},
+
 
 // This is the main exposed API call
 // The tablename is a normal Widget tablename
