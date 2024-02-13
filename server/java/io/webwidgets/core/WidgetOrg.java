@@ -145,6 +145,11 @@ public class WidgetOrg
 		}
 
 
+		public Optional<File> findPreferredTargetPage()
+		{
+			return CoreUtil.findPreferredWidgetFile(getWidgetBaseDir());
+		}
+
 		private List<String> getDefaultWidgetSrc()
 		{
 			return Util.listify("<html><body></body></html");

@@ -587,6 +587,32 @@ public class CoreUtil
 		return result;
 	}
 
+	public static Optional<File> findPreferredWidgetFile(File targetdir)
+	{
+		if(!targetdir.exists())
+			{ return Optional.empty(); }
+
+		Util.massert(targetdir.isDirectory(), "Bad directory %s", targetdir);
+
+		Map<String, File> filemap = Util.map2map(Util.listify(targetdir.listFiles()), file -> file.getName(), file -> file);
+
+		for(String pref : Util.listify("widget.wisp", "widget.jsp"))
+		{
+			if(filemap.containsKey(pref))
+				{ return Optional.of(filemap.get(pref)); }
+		}
+
+		for(String ext : Util.listify(".wisp", ".jsp"))
+		{
+			List<String> hits = Util.filter2list(filemap.keySet(), fname -> fname.endsWith(ext));
+
+			if(!hits.isEmpty())
+				{ return Optional.of(filemap.get(hits.get(0))); }
+
+		}
+
+		return Optional.empty();
+	}
 
 	public static Set<WidgetUser> getCodeFormatExemptSet()
 	{

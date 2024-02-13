@@ -19,14 +19,36 @@ function deleteItem(itemid) {
 // Auto-generated create new function
 function createNew() {
 
+	const scorestr = prompt('Please enter the sleep score');
+
+	if(scorestr)
+	{
+		if(scorestr == null || !okayInt(scorestr))
+		{
+			alert("Please enter an integer");
+			return;
+		}
+
+		createNewSub(parseInt(scorestr));
+	}
+}
+
+function createNewSub(score)
+{
 	const newrec = {
-		'sleep_score' : 0,
+		'sleep_score' : score,
 		'notes' : '' ,
 		'day_code' : getTodayCode().dayBefore().getDateString()
 	};
 	const newitem = W.buildItem('sleep_log', newrec);
 	newitem.syncItem();
 	redisplay();
+}
+
+function editNoteInfo(itemid)
+{
+	genericEditTextField('sleep_log', 'notes', itemid);
+
 }
 
 
@@ -88,6 +110,13 @@ function getEditPageInfo() {
 function getMainPageInfo() {
 
 	var pageinfo = `<h3>Sleep Log</h3>
+
+		<a href="javascript:createNew()"><button>new</button></a>
+
+		<br/>
+		<br/>
+
+
 		<table class="basic-table" width="80%">
 		<tr>
 		<th>Date</th>
@@ -96,7 +125,7 @@ function getMainPageInfo() {
 		<th>..</th></tr>
 	`;
 
-	const itemlist = W.getItemList('sleep_log');
+	const itemlist = W.getItemList('sleep_log').sort(proxySort(item => [item.getDayCode()])).reverse();
 
 	itemlist.forEach(function(item) {
 		const rowstr = `
@@ -105,6 +134,10 @@ function getMainPageInfo() {
 			<td>${item.getSleepScore()}</td>
 			<td>${shorten4Display(item.getNotes())}</td>
 			<td>
+			<a href="javascript:editNoteInfo(${item.getId()})"><img src="/u/shared/image/edit.png" height="16"/></a>
+			&nbsp;&nbsp;&nbsp;
+
+
 			<a href="javascript:editStudyItem(${item.getId()})"><img src="/u/shared/image/inspect.png" height="16"/></a>
 			&nbsp;&nbsp;&nbsp;
 			<a href="javascript:deleteItem(${item.getId()})"><img src="/u/shared/image/remove.png" height="16"/></a>
@@ -115,7 +148,6 @@ function getMainPageInfo() {
 	});
 
 	pageinfo += `</table>`;
-	pageinfo += `<br/><br/><a href="javascript:createNew()"><button>new</button></a>`;
 	return pageinfo;
 }
 

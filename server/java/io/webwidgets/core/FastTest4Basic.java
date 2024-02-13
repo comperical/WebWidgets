@@ -1266,5 +1266,28 @@ public class FastTest4Basic
 			);
 		}
 	}
+
+	public static class FindPreferredGalleryTest extends ArgMapRunnable
+	{
+		public void runOp()
+		{
+			File galldir = new File(CoreUtil.GALLERY_CODE_DIR);
+			Util.massert(galldir.exists() && galldir.isDirectory(), 
+				"Problem with gallery directory %s", CoreUtil.GALLERY_CODE_DIR);
+
+			for(File subdir : galldir.listFiles())
+			{
+				if(!subdir.isDirectory())
+					{ continue; }
+
+				Optional<File> prefer = CoreUtil.findPreferredWidgetFile(subdir);
+				Util.massert(prefer.isPresent(),
+					"Failed to find preferred widget file gallery directory %s", subdir);
+
+
+				Util.pf("Success, found preferred file %s for gallery %s\n", prefer.get().getName(), subdir.getName());
+			}
+		}
+	}
 } 
 
