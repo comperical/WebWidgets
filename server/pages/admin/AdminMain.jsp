@@ -230,11 +230,9 @@ function deleteWidget(widgetname)
 
         Set<String> tableset = CoreDb.getLiteTableNameSet(witem);
 
-        // TODO: use a standard method to produce Widget URL
-        String widgetlink = Util.sprintf("/u/%s/%s/widget.jsp", usercode, witem.theName);
 
-
-%>                      
+        Optional<File> targetFile = witem.findPreferredTargetPage();
+%>
                       
 <td><b><%= witem.theName %></b></td>
 <td><%= tableset.size() %></td>
@@ -243,8 +241,21 @@ function deleteWidget(widgetname)
 
 <!-- TODO: rebuild the InspectTable tool -->
 
+<%
+  if(targetFile.isPresent())
+  {
+    String widgetlink = Util.sprintf("/u/%s/%s/%s", usercode, witem.theName, targetFile.get().getName());
+
+%>
+
 <a href="<%= widgetlink %>">
 <img src="/u/shared/image/chainlink.png" style="height: 18px; width: 18px" /></a>
+
+<% } else { %>
+
+<img src="/u/shared/image/purewhite.png" style="height: 18px; width: 18px" /></a>
+
+<% } %>
 
 
 &nbsp;

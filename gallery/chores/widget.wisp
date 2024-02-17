@@ -11,11 +11,13 @@ Goal here is to work with laptop and tablet, but not phone
 */
 .smarttable {
 
-	min-width: 800px;
-	width: 80%;
+    min-width: 800px;
+    width: 80%;
 }
 
 </style>
+
+<script src="https://unpkg.com/current-device/umd/current-device.min.js"></script>
 
 <wisp/>
 
@@ -33,65 +35,75 @@ var SHOW_BASIC_LOG = true;
 
 function swap2MiniTask(choreid)
 {
-	const choreitem = W.lookupItem("chore_def", choreid);
-	const todaycode = getTodayCode().getDateString();
-	const shortdesc =  "LifeChore:" + choreitem.getShortName();
-	
-	const newrec = {
-		"task_type" : "life",
-		"short_desc" : shortdesc,
-		"extra_info" : "",
-		"alpha_date" : todaycode,
-		"omega_date" : "",
-		"priority" : 5,
-		"is_backlog" : 0
-	};
-	
-	const newitem = W.buildItem("mini_task_list", newrec);
-	newitem.syncItem();
-		
-	if(confirm("Created MTL item, should I mark the chore as complete?")) 
-	{ 
-		const comprec = {
-			"chore_id" : choreid,
-			"day_code" : todaycode
-		};
-		
-		const compitem = W.buildItem("chore_comp", comprec);
-		compitem.syncItem();
-	}
-	
-	redisplay();
+    const choreitem = W.lookupItem("chore_def", choreid);
+    const todaycode = getTodayCode().getDateString();
+    const shortdesc =  "LifeChore:" + choreitem.getShortName();
+    
+    const newrec = {
+        "task_type" : "life",
+        "short_desc" : shortdesc,
+        "extra_info" : "",
+        "alpha_date" : todaycode,
+        "omega_date" : "",
+        "priority" : 5,
+        "is_backlog" : 0
+    };
+    
+    const newitem = W.buildItem("mini_task_list", newrec);
+    newitem.syncItem();
+        
+    if(confirm("Created MTL item, should I mark the chore as complete?")) 
+    { 
+        const comprec = {
+            "chore_id" : choreid,
+            "day_code" : todaycode
+        };
+        
+        const compitem = W.buildItem("chore_comp", comprec);
+        compitem.syncItem();
+    }
+    
+    redisplay();
 }
 
 function markComplete(choreid)
 {
-	const newrec = {
-		"chore_id" : choreid,
-		"day_code" : getTodayCode().getDateString()
-	};
-	
-	const newitem = W.buildItem("chore_comp", newrec);
-	newitem.syncItem();
-	redisplay();
+    const newrec = {
+        "chore_id" : choreid,
+        "day_code" : getTodayCode().getDateString()
+    };
+    
+    const newitem = W.buildItem("chore_comp", newrec);
+    newitem.syncItem();
+    redisplay();
+}
+
+function confirmComplete(choreid)
+{
+
+    const chore = W.lookupItem("chore_def", choreid);
+    if(confirm(`Confirm completion of chore ${chore.getShortName()}?`))
+    {
+        markComplete(choreid);
+    }
 }
 
 
 function getLastCompletedMap()
 {
-	var bigloglist = W.getItemList("chore_comp");
-	
-	bigloglist.sort(proxySort(logitem => [logitem.getDayCode()])).reverse();
+    var bigloglist = W.getItemList("chore_comp");
+    
+    bigloglist.sort(proxySort(logitem => [logitem.getDayCode()])).reverse();
 
-	var compmap = {};
-	
-	bigloglist.forEach(function(compitem) {
-			
-		if(!compmap.hasOwnProperty(compitem.getChoreId()))
-			{ compmap[compitem.getChoreId()] = compitem.getDayCode(); }
-	});
-	
-	return compmap;
+    var compmap = {};
+    
+    bigloglist.forEach(function(compitem) {
+            
+        if(!compmap.hasOwnProperty(compitem.getChoreId()))
+            { compmap[compitem.getChoreId()] = compitem.getDayCode(); }
+    });
+    
+    return compmap;
 }
 
 
@@ -99,54 +111,54 @@ function getLastCompletedMap()
 
 function toggleChoreActive(choreid, chorename)
 {
-	genericToggleActive("chore_def", choreid);
+    genericToggleActive("chore_def", choreid);
 }
 
 function createNew()
 {
-	const chorename = prompt("Enter a name for the chore: ");
-	
-	if(chorename)
-	{		
-		const newrec = {
-			"day_freq" : 30,
-			"short_name" : chorename,
-			"extra_info" : "",
-			"promoted_on" : "",
-			"is_active" : 1,
-			"web_link" : ""
-		};
-		
-		const newitem = W.buildItem("chore_def", newrec);
-		newitem.syncItem();
-		redisplay();
-	}
+    const chorename = prompt("Enter a name for the chore: ");
+    
+    if(chorename)
+    {       
+        const newrec = {
+            "day_freq" : 30,
+            "short_name" : chorename,
+            "extra_info" : "",
+            "promoted_on" : "",
+            "is_active" : 1,
+            "web_link" : ""
+        };
+        
+        const newitem = W.buildItem("chore_def", newrec);
+        newitem.syncItem();
+        redisplay();
+    }
 }
 
 function setEditStudyItem(itemid)
 {
-	EDIT_STUDY_ITEM = itemid;	
-	redisplay();	
+    EDIT_STUDY_ITEM = itemid;   
+    redisplay();    
 }
 
 function return2Main()
 {
-	setEditStudyItem(-1);	
+    setEditStudyItem(-1);   
 }
 
 function getPageComponent()
 {
-	if(EDIT_STUDY_ITEM != -1)
-		{ return "chore_item"; }
-	
-	return SHOW_BASIC_LOG ? "chore_log" : "chore_list";
+    if(EDIT_STUDY_ITEM != -1)
+        { return "chore_item"; }
+    
+    return SHOW_BASIC_LOG ? "chore_log" : "chore_list";
 }
 
 function handleNavBar() {
 
-	const selected = SHOW_BASIC_LOG ? "Chore Log" : "Chore List";
+    const selected = SHOW_BASIC_LOG ? "Chore Log" : "Chore List";
 
-	const headerinfo = [
+    const headerinfo = [
         ["Chore Log", "javascript:goToLog()"],
         ["Chore List", "javascript:goToDefinition()"]
     ];
@@ -157,309 +169,367 @@ function handleNavBar() {
 
 function redisplay()
 {
-	handleNavBar();
+    handleNavBar();
 
-	redisplayChoreList();
-	
-	redisplayChoreItem();
-	
-	redisplayChoreLog();
+    redisplayChoreList();
+    
+    redisplayChoreItem();
+    
+    redisplayChoreLog();
 
-	setPageComponent(getPageComponent());
+    setPageComponent(getPageComponent());
 }
 
 function redisplayChoreList()
 {
-	const showinact = getUniqElementByName("show_inactive").checked;
-	
-	var itemlist = W.getItemList("chore_def");
-	itemlist.sort(proxySort(a => [a.getShortName()]));
-	
-	var tablestr = `
-		<table  class="basic-table smarttable">
-		<tr>
-		<th>Name</th>
-		<th>Frequency</th>
-		<th>Active?</th>
-		<th>Op</th>
-		</tr>
-	`;
-				
-	
-	itemlist.forEach(function(chore) {
-		
-		if(!showinact && chore.getIsActive() == 0) 
-			{ return; }
-		
-		const activestr = chore.getIsActive() == 1 ? "YES" : "NO";
-		
-		var weblinkstr = `<img src="/u/shared/image/purewhite.png" height="18"/>`;
-		
-		if(chore.getWebLink().length > 0)
-		{
-			weblinkstr = `
-				&nbsp;&nbsp;
-				<a href="${chore.getWebLink()}"><img src="/u/shared/image/chainlink.png" height="18"/></a>
-			`;
-			
-		}
-		
-		
-		const rowstr = `
-			<tr>
-			<td>${chore.getShortName()}</td>
-			<td>${chore.getDayFreq()}</td>
-			<td>${activestr}</td>
-			<td width="15%">
-				<a href="javascript:setEditStudyItem(${chore.getId()})">
-				<img src="/u/shared/image/inspect.png" height=18"/a></a>
-				
-				&nbsp; 
-				&nbsp; 
-				&nbsp; 
+    const showinact = getUniqElementByName("show_inactive").checked;
+    
+    var itemlist = W.getItemList("chore_def");
+    itemlist.sort(proxySort(a => [a.getShortName()]));
+    
+    var tablestr = `
+        <table  class="basic-table smarttable">
+        <tr>
+        <th>Name</th>
+        <th>Frequency</th>
+        <th>Active?</th>
+        <th>Op</th>
+        </tr>
+    `;
+                
+    
+    itemlist.forEach(function(chore) {
+        
+        if(!showinact && chore.getIsActive() == 0) 
+            { return; }
+        
+        const activestr = chore.getIsActive() == 1 ? "YES" : "NO";
+        
+        var weblinkstr = `<img src="/u/shared/image/purewhite.png" height="18"/>`;
+        
+        if(chore.getWebLink().length > 0)
+        {
+            weblinkstr = `
+                &nbsp;&nbsp;
+                <a href="${chore.getWebLink()}"><img src="/u/shared/image/chainlink.png" height="18"/></a>
+            `;
+            
+        }
+        
+        
+        const rowstr = `
+            <tr>
+            <td>${chore.getShortName()}</td>
+            <td>${chore.getDayFreq()}</td>
+            <td>${activestr}</td>
+            <td width="15%">
+                <a href="javascript:setEditStudyItem(${chore.getId()})">
+                <img src="/u/shared/image/inspect.png" height=18"/a></a>
+                
+                &nbsp; 
+                &nbsp; 
+                &nbsp; 
 
-				<a href="javascript:toggleChoreActive(${chore.getId()}, '${chore.getShortName()}')">
-				<img src="/u/shared/image/cycle.png" height="18"/></a>				
-			
-				${weblinkstr}
-			</td>
-			</tr>
-		`;
+                <a href="javascript:toggleChoreActive(${chore.getId()}, '${chore.getShortName()}')">
+                <img src="/u/shared/image/cycle.png" height="18"/></a>              
+            
+                ${weblinkstr}
+            </td>
+            </tr>
+        `;
 
-		tablestr += rowstr;
-		
-	});
-	
-	tablestr += `
-		</table>
-	`;
-	
-	populateSpanData({'chore_list_table' : tablestr});
+        tablestr += rowstr;
+        
+    });
+    
+    tablestr += `
+        </table>
+    `;
+    
+    populateSpanData({'chore_list_table' : tablestr});
 }
 
 function redisplayChoreItem()
 {
-	if(EDIT_STUDY_ITEM == -1)
-		{ return; }
-		
-	const edititem = lookupItem("chore_def", EDIT_STUDY_ITEM);
+    if(EDIT_STUDY_ITEM == -1)
+        { return; }
+        
+    const edititem = W.lookupItem("chore_def", EDIT_STUDY_ITEM);
 
-	const extrainfo = edititem.getExtraInfo();
-	
-	// Okay, this took me a while to get right. The issue is that 
-	// the standard string.replace(...) won't do a global, and there is no replaceAll
-	const desclinelist = extrainfo.replace(/\n/g, "<br/>");	
-	
-	const spanmap = {
-		"item_id" : 		edititem.getId(),	
-		"short_name" : 		edititem.getShortName(),
-		"day_freq" : 		edititem.getDayFreq(),
-		"isactive" : 		edititem.getIsActive() == 1 ? "YES" : "NO",
-		"web_link" : 		edititem.getWebLink() == "" ? "--" : edititem.getWebLink(),
-		"fullitemdesc" : 	edititem.getExtraInfo(),
-		"itemdescline" : 	desclinelist
-	};
-	
-	populateSpanData(spanmap);
+    const extrainfo = edititem.getExtraInfo();
+    
+    // Okay, this took me a while to get right. The issue is that 
+    // the standard string.replace(...) won't do a global, and there is no replaceAll
+    const desclinelist = extrainfo.replace(/\n/g, "<br/>"); 
+    
+    const spanmap = {
+        "item_id" :         edititem.getId(),
+        "short_name" :      edititem.getShortName(),
+        "day_freq" :        edititem.getDayFreq(),
+        "isactive" :        edititem.getIsActive() == 1 ? "YES" : "NO",
+        "web_link" :        edititem.getWebLink() == "" ? "--" : edititem.getWebLink(),
+        "itemdescline" :    desclinelist
+    };
+
+
+    document.getElementById("fullitemdesc").value = edititem.getExtraInfo();
+    
+    populateSpanData(spanmap);
 }
 
 
 function goToLog() 
 {
-	SHOW_BASIC_LOG = true;
-	redisplay();
+    SHOW_BASIC_LOG = true;
+    redisplay();
 }
 
 function goToDefinition() 
 {
-	SHOW_BASIC_LOG = false;
-	redisplay();
+    SHOW_BASIC_LOG = false;
+    redisplay();
 }
 
 function promoteItem(choreid)
 {
-	const chore = W.lookupItem("chore_def", choreid);
-	chore.setPromotedOn(getTodayCode().getDateString());
-	chore.syncItem();
-	redisplay();
+    const chore = W.lookupItem("chore_def", choreid);
+    chore.setPromotedOn(getTodayCode().getDateString());
+    chore.syncItem();
+    redisplay();
 
 }
 
+
+
 function redisplayChoreLog()
 {
-	const showall = getUniqElementByName("show_all").checked;
+    const showall = getUniqElementByName("show_all").checked;
 
-	
-	var itemlist = W.getItemList("chore_def");
-	itemlist.sort(proxySort(a => [a.getShortName()]));
-	
-	// var lastlogmap = getLastLogMap();
-	const maintable = getChoreLogTable(itemlist, showall, false);	
-	const promotable = getChoreLogTable(itemlist, showall, true);	
-	
-	populateSpanData({
-		'chore_log_table' : maintable,
-		'promoted_table' : promotable
-	});
+    
+    var itemlist = W.getItemList("chore_def");
+    itemlist.sort(proxySort(a => [a.getShortName()]));
+    
+    // var lastlogmap = getLastLogMap();
+    const maintable = getChoreLogTable(itemlist, showall, false);
+    const promotable = getChoreLogTable(itemlist, showall, true);
+    
+    populateSpanData({
+        'chore_log_table' : maintable,
+        'promoted_table' : promotable
+    });
 }
 
 
 function getChoreLogTable(itemlist, showall, ispromo)
 {
 
-	const header = ispromo ? "Promoted" : "Main";
-
-	var activetable = `
-
-		<h3>${header}</h3>
 
 
-		<table class="basic-table smarttable">
-		<tr>
-		<th width="25%">Chore Name</th>
-		<th>Last Completed</th>
-		<th>Days Since</th>		
-		<th>Overdue</th>
-		<th width="25%">...</th>
-		</tr>
-	`;
+    const getheader = function(headerstr)
+    {
 
-	
-	itemlist.forEach(function(chore) {
-			
-		
-		const choreage = getChoreAge(chore);
-		const lastupdate = getLastChoreCompletion(chore.getId());
+        if(device.mobile())
+        {
+            return `<h3>${headerstr}</h3>`;
+        }
 
-		const okaypromo = isPromoValid(chore, lastupdate);
-		const overdue = choreage - chore.getDayFreq();
+        return `
+            <h3>${headerstr}</h3>
 
-		if (okaypromo != ispromo) 
-			{ return; }
 
-		if(chore.getIsActive() == 0)
-			{ return; }
-				
-		if(!showall && overdue <= 0)
-			{ return; }
+            <table class="basic-table smarttable">
+            <tr>
+            <th width="25%">Chore Name</th>
+            <th>Last Completed</th>
+            <th>Days Since</th>
+            <th>Overdue</th>
+            <th width="25%">...</th>
+            </tr>
+        `
+    }
 
-		var weblinkstr = `<a href="#"><img src="/u/shared/image/purewhite.png" height="18" width="18"></a>`;
-		
-		if(chore.getWebLink().length > 0) 
-		{	
-			weblinkstr = weblinkstr.replace("purewhite", "chainlink").replace("#", chore.getWebLink());
-		}
-		
+    function getfooter()
+    {
+        if(device.mobile())
+        {
+            return "";
+        }
 
-		const lastdisplay = lastupdate == null ? "never" : lastupdate.substring(5);
-					
-		const rowstr = `
-			<tr>
-			<td>${chore.getShortName()}</td>
-			<td>${lastdisplay}</td>
-			<td>${choreage}</td>
-			<td>${overdue}</td>
-			<td>
+        return "</table>";
+    }
 
-				<a href="javascript:promoteItem(${chore.getId()})">
-				<img src="/u/shared/image/upicon.png" height=18"/a></a>
-				
-				&nbsp;&nbsp;
+    const getrow = function(chore)
+    {
 
-				<a href="javascript:swap2MiniTask(${chore.getId()})">
-				<img src="/u/shared/image/swap2mtl.png" height=18"/a></a>
-				
-				&nbsp;&nbsp;
-			
-				<a href="javascript:markComplete(${chore.getId()})">
-				<img src="/u/shared/image/checkmark.png" height=18"/a></a>
-				
-				&nbsp;&nbsp;
-				
-				<a href="javascript:setEditStudyItem(${chore.getId()})">
-				<img src="/u/shared/image/inspect.png" height=18"/a></a>
-				
-				&nbsp;&nbsp;
+        const choreage = getChoreAge(chore);
+        const lastupdate = getLastChoreCompletion(chore.getId());
 
-												
-				${weblinkstr}
-			</td>
-			</tr>
-		`;
-		
-		activetable += rowstr;
-	});
-	
-	activetable += `</table>`;
+        const okaypromo = isPromoValid(chore, lastupdate);
+        const overdue = choreage - chore.getDayFreq();
 
-	return activetable;
+        if (okaypromo != ispromo) 
+            { return ""; }
+
+        if(chore.getIsActive() == 0)
+            { return ""; }
+                
+        if(!showall && overdue <= 0)
+            { return ""; }
+
+        var weblinkstr = `<a href="#"><img src="/u/shared/image/purewhite.png" height="18" width="18"></a>`;
+        
+        if(chore.getWebLink().length > 0) 
+        {
+            weblinkstr = weblinkstr.replace("purewhite", "chainlink").replace("#", chore.getWebLink());
+        }
+        
+                    
+        if(device.mobile())
+        {
+            const lastdisplay = lastupdate == null ? "never" : lookupDayCode(lastupdate).getNiceDisplay();
+
+            return `
+                <table class="basic-table" width="60%" onClick="javascript:confirmComplete(${chore.getId()})">
+                <tr>
+                <td colspan="2"><b>${chore.getShortName()}</b></td>
+                </tr>
+
+                <td>
+                Last Done: ${lastdisplay}
+                </td>
+
+                <td>
+                Overdue: ${overdue}
+                </td>
+                </tr>
+                </table>
+
+                <br/>
+                <br/>
+            `;
+        }
+
+
+        const lastdisplay = lastupdate == null ? "never" : lastupdate.substring(5);
+
+        const promocell = ispromo 
+                ? `<img src="/u/shared/image/purewhite.png" height=18"/>`
+                : `<a href="javascript:promoteItem(${chore.getId()})"><img src="/u/shared/image/upicon.png" height=18"/></a>`
+
+
+        return `
+            <tr>
+            <td>${chore.getShortName()}</td>
+            <td>${lastdisplay}</td>
+            <td>${choreage}</td>
+            <td>${overdue}</td>
+            <td>
+
+                ${promocell}
+                
+                &nbsp;&nbsp;
+
+                <a href="javascript:swap2MiniTask(${chore.getId()})">
+                <img src="/u/shared/image/swap2mtl.png" height=18"/a></a>
+                
+                &nbsp;&nbsp;
+            
+                <a href="javascript:markComplete(${chore.getId()})">
+                <img src="/u/shared/image/checkmark.png" height=18"/a></a>
+                
+                &nbsp;&nbsp;
+                
+                <a href="javascript:setEditStudyItem(${chore.getId()})">
+                <img src="/u/shared/image/inspect.png" height=18"/a></a>
+                
+                &nbsp;&nbsp;
+
+                                                
+                ${weblinkstr}
+            </td>
+            </tr>
+        `;
+    }
+
+
+    const header = ispromo ? "Promoted" : "Main";
+    var activetable = getheader(header);
+    
+    itemlist.forEach(function(chore) {
+
+        activetable += getrow(chore);
+    });
+
+    activetable += getfooter();
+
+    return activetable;
 }
 
 
 
 function getEditStudyItem()
 {
-	return lookupItem("chore_def", EDIT_STUDY_ITEM);	
+    return W.lookupItem("chore_def", EDIT_STUDY_ITEM);    
 }
 
 function editChoreFreq()
 {
-	const showItem = getEditStudyItem();
-	
-	var newfreq = prompt("Enter a new frequency for this chore: ", showItem.getDayFreq());
-	
-	if(!newfreq)
-		{ return; }
-	
-	if(!okayInt(newfreq))
-	{
-		alert("Invalid number, please reenter: " + newfreq);
-		return;
-	}
-		
-	showItem.setDayFreq(parseInt(newfreq));
-	syncSingleItem(showItem);	
-	redisplay();
+    const showItem = getEditStudyItem();
+    
+    var newfreq = prompt("Enter a new frequency for this chore: ", showItem.getDayFreq());
+    
+    if(!newfreq)
+        { return; }
+    
+    if(!okayInt(newfreq))
+    {
+        alert("Invalid number, please reenter: " + newfreq);
+        return;
+    }
+        
+    showItem.setDayFreq(parseInt(newfreq));
+    showItem.syncItem();
+    redisplay();
 }
 
 function editChoreName()
 {
-	genericEditTextField("chore_def", "short_name", EDIT_STUDY_ITEM);
+    genericEditTextField("chore_def", "short_name", EDIT_STUDY_ITEM);
 }
 
 
 function editWebLink()
 {
-	var showItem = getEditStudyItem();
+    var showItem = getEditStudyItem();
 
-	var newlink = prompt("Enter a web link for this chore: ", showItem.getWebLink());
+    var newlink = prompt("Enter a web link for this chore: ", showItem.getWebLink());
 
-	if(newlink)
-	{
-		showItem.setWebLink(newlink);
-		syncSingleItem(showItem);		
-		redisplay();
-	}
+    if(newlink)
+    {
+        showItem.setWebLink(newlink);
+        showItem.syncItem();
+        redisplay();
+    }
 }
 
 function saveNewDesc()
 {
-	const showItem = getEditStudyItem();
-	const newDesc = getDocFormValue("fullitemdesc");
-	
-	showItem.setExtraInfo(newDesc);
-	syncSingleItem(showItem);
-	redisplay();
+    const showItem = getEditStudyItem();
+    const newDesc = getDocFormValue("fullitemdesc");
+    
+    showItem.setExtraInfo(newDesc);
+    showItem.syncItem();
+    redisplay();
 }
 
 function flipActive()
 {
-	const showItem = getEditStudyItem();
-	const curActive = showItem.getIsActive();
-	
-	showItem.setIsActive(curActive == 1 ? 0 : 1);
-	syncSingleItem(showItem);		
-	redisplay();
+    const showItem = getEditStudyItem();
+    const curActive = showItem.getIsActive();
+    
+    showItem.setIsActive(curActive == 1 ? 0 : 1);
+    showItem.syncItem();
+    redisplay();
 }
 
 
@@ -575,7 +645,7 @@ Show All: <input type="checkbox" name="show_all" onChange="javascript:redisplay(
 <textarea id="fullitemdesc" name="fullitemdesc" rows="10" cols="50"></textarea>
 </form>
 
-<a href="javascript:saveNewDesc()">save desc</a>
+<a href="javascript:saveNewDesc()"><button>save</button></a>
 
 
 </span>

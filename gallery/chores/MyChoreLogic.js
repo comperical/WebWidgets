@@ -36,3 +36,16 @@ function isPromoValid(chore, lastcomplete)
 
     return lastcomplete == null ? true : chore.getPromotedOn() > lastcomplete;
 }
+
+
+function handleNavBar() {
+
+    const selected = SHOW_BASIC_LOG ? "Chore Log" : "Chore List";
+
+    const headerinfo = [
+        ["Chore Log", "javascript:goToLog()"],
+        ["Chore List", "javascript:goToDefinition()"]
+    ];
+
+    populateTopNavBar(headerinfo, selected);
+}

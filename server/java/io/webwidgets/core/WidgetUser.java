@@ -221,6 +221,8 @@ public class WidgetUser implements Comparable<WidgetUser>
         GlobalIndex.clearUserIndexes();
     }
 
+
+
     public WidgetItem createBlankItem(String newname)
     {
         WidgetItem witem = new WidgetItem(this, newname);
