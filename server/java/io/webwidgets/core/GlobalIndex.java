@@ -120,6 +120,7 @@ public class GlobalIndex
                     if(!optown.isPresent())
                         { continue; }
 
+
                     String widgetname = onemap.getStr("widget_name");
                     WidgetItem dbitem = new WidgetItem(optown.get(), widgetname);
 

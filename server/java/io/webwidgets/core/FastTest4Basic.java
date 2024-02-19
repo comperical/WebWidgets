@@ -37,6 +37,29 @@ public class FastTest4Basic
 		return Util.filter2set(WidgetUser.values(), user -> user.isAdmin());
 	}
 
+	public static class SimpleIndexLoadTest extends DescRunnable
+	{
+
+		public String getDesc()
+		{
+			return 
+				"Simple test load of global indexes\n" + 
+				"Useful for local testing, when you don't want to blow up your system";
+		}
+
+		public void runOp()
+		{
+			Map<String, WidgetUser> sysmap = GlobalIndex.getUserLookup();
+
+			Util.pf("Have %d widget users\n", sysmap.size());
+
+
+			Util.pf("System settings are:\n\t%s\n", GlobalIndex.getSystemSetting());
+
+		}
+
+	}
+
 	public static class CheckUserHardReference extends DescRunnable
 	{
 		public String getDesc()
@@ -180,6 +203,33 @@ public class FastTest4Basic
 		}
 
 	}
+
+	// This is really just a foreign key check for the Perm Grant table
+	// The Perm-loading code is cautious to make sure it doesn't break when the FKey here is invalid,
+	// But we don't want to have invalid references hanging around
+	public static class PermGrantPermissionTest extends ArgMapRunnable
+	{
+		public void runOp()
+		{
+			for(String colname : Util.listify("owner", "grantee"))
+			{
+				String query = String.format("SELECT %s FROM perm_grant", colname);
+				QueryCollector qcol = QueryCollector.buildAndRun(query, CoreUtil.getMasterWidget());
+
+				for(ArgMap rec : qcol.recList())
+				{
+					String username = rec.getSingleStr();
+					if(username.equals(AuthLogic.PUBLIC_READ_GRANTEE))
+						{ continue; }
+
+					Util.massert(WidgetUser.softLookup(username).isPresent(),
+						"User %s specified in perm grant table is not actually a user!!", username);
+				}
+				Util.pf("Success, checked %d records for column %s\n", qcol.getNumRec(), colname);
+			}
+		}
+	}
+
 
 	public static class TestUserEntryLookup extends ArgMapRunnable
 	{
@@ -358,6 +408,9 @@ public class FastTest4Basic
 			Util.pf("Success, found base directory for all %d WidgetUsers\n", WidgetUser.values().size());
 		}
 	}
+
+
+
 
 	public static class PluginLoadCheck extends DescRunnable
 	{

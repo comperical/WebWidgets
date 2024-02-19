@@ -592,20 +592,24 @@ public class CoreCommand
 			for(File rmdir : rmlist)
 			{
 				FileUtils.recursiveDeleteFile(rmdir);
-				Util.pf("Deleted directory %s\n", rmdir);
+				mypf("Deleted directory %s\n", rmdir);
 			}
 
-			Util.pf("Removed data related to user %s, remember to restart Resin\n", username);
+			GlobalIndex.clearUserIndexes();
+
+			Util.massert(!WidgetUser.softLookup(username).isPresent(), "Somehow still retained a user entry for %s", username);
+
+			mypf("Removed username %s from global index\n", username);
 		}
 
-		private static void deleteMasterRecord(String username)
+		private void deleteMasterRecord(String username)
 		{
 			int numdel = CoreDb.deleteFromColMap(CoreUtil.getMasterWidget(), "user_main", CoreDb.getRecMap(
 				"username", username
 			));
 
 			Util.massert(numdel == 1, "Somehow failed to delete the right number of records, expected 1, got %d", numdel);
-			Util.pf("Deleted master record from DB\n");
+			mypf("Deleted master record from DB\n");
 		}
 	}
 

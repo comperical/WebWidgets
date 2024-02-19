@@ -351,7 +351,12 @@ public class AuthLogic
 				return;
 			}
 
-			_coreMap.put(WidgetUser.lookup(grantee), level);
+			// Careful here, the FKey relationship is not enforced by the DB
+			Optional<WidgetUser> optgrant = WidgetUser.softLookup(grantee);
+			if(!optgrant.isPresent())
+				{ return; }
+
+			_coreMap.put(optgrant.get(), level);
 		}
 
 		private synchronized void save2Db(WidgetItem dbItem)
