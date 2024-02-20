@@ -104,10 +104,6 @@
   
 <%@include file="../admin/AssetInclude.jsp_inc" %>
 
-
-<script src="https://accounts.google.com/gsi/client" async></script>
-
-
 <style>
 code 
 {
@@ -136,11 +132,72 @@ function serverSideHashLogin()
 }
 
 
+function redisplay()
+{
+  updateGoogleLoginButton();
+}
+
+function updateGoogleLoginButton()
+{
+  const okaygoogle = <%= optClientId.isPresent() %>;
+
+  if(!okaygoogle)
+    { return; }
+
+  const googledata = `
+
+    <br/>
+    <br/>
+
+    <p>Login with Google</p>
+
+    <div id="g_id_onload"
+         data-client_id="<%= optClientId.get() %>"
+         data-context="signin"
+         data-ux_mode="popup"
+         data-login_uri="https://webwidgets.io/u/exadmin/OAuthHandler.jsp<%= bounceBackAppend %>"
+         data-auto_prompt="false">
+    </div>
+
+
+    <div class="g_id_signin"
+         data-type="standard"
+         data-shape="pill"
+         data-theme="filled_blue"
+         data-text="signin_with"
+         data-size="large"
+         data-logo_alignment="left">
+    </div>
+  `;
+
+  const loginsection = document.getElementById("google_sign_on");
+
+  if(loginsection != null)
+  {
+    loginsection.innerHTML = googledata;
+    loadGoogleClientInfo();
+  }
+}
+
+function loadGoogleClientInfo()
+{
+  var script = document.createElement("script");
+  
+  // Set the type attribute
+  script.type = "text/javascript";
+    
+  script.src = "https://accounts.google.com/gsi/client";
+    
+  // Append the script element to the document's head (or body)
+  document.head.appendChild(script);
+}
+
+
 </script>
   
   
 </head>
-<body>
+<body onLoad="javascript:redisplay()">
   <div class="container-scroller">
     <!-- partial:partials/_navbar.html -->
     <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
@@ -192,38 +249,8 @@ function serverSideHashLogin()
 
                   <button class="btn btn-primary mr-2" onclick="javascript:serverSideHashLogin()">Submit</button>
 
-
-                  <%
-
-                    if(optClientId.isPresent())
-                    {
-                  %>
-
-                  <br/>
-                  <br/>
-
-                  <p>Or login with Google (admin users only)</p>
-
-
-                  <div id="g_id_onload"
-                       data-client_id="<%= optClientId.get() %>"
-                       data-context="signin"
-                       data-ux_mode="popup"
-                       data-login_uri="https://webwidgets.io/u/exadmin/OAuthHandler.jsp<%= bounceBackAppend %>"
-                       data-auto_prompt="false">
-                  </div>
-
-
-                  <div class="g_id_signin"
-                       data-type="standard"
-                       data-shape="pill"
-                       data-theme="filled_blue"
-                       data-text="signin_with"
-                       data-size="large"
-                       data-logo_alignment="left">
-                  </div>
-
-                  <% } %>
+                  <!-- This remains empty if Google SSO is not present -->
+                  <div id="google_sign_on"></div>
 
                 </div>
               </div>
@@ -279,10 +306,17 @@ function serverSideHashLogin()
 
                   <button class="btn btn-primary mr-2" onclick="javascript:serverSideHashLogin()">Submit</button>
 
-                  <br/>
-                  <br/>
+                  &nbsp;
+                  &nbsp;
+                  &nbsp;
+
 
                   <button class="btn btn-primary mr-2" onclick="javascript:logoutAndReturn()">Log-Out</button>
+
+
+                  <!-- This remains empty if Google configuration is not present -->
+                  <div id="google_sign_on"></div>
+
                 </div>
               </div>
             </div>

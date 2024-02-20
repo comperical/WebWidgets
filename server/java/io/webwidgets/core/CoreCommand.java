@@ -697,6 +697,22 @@ public class CoreCommand
 		}
 	}
 	
+	public static class UpdateUserEmail extends ArgMapRunnable
+	{
+		public void runOp()
+		{
+			WidgetUser user = WidgetUser.lookup(_argMap.getStr("username"));
+			ValidatedEmail email = ValidatedEmail.from(_argMap.getStr("email"));
+
+			user.updateEmailAddress(email);
+
+			Util.pf("Updated address for user %s, it's now %s\n", user, user.getEmail());
+
+
+		}
+
+	}
+
 	
 	public static class ShowAutoInclude extends ArgMapRunnable
 	{

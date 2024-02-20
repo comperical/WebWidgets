@@ -31,6 +31,14 @@
               <span class="menu-title">Log-In/Out</span>
             </a>
           </li>
+
+          <li class="nav-item">
+            <a class="nav-link" href="/u/admin/AccountSetting.jsp">
+              <i class="mdi mdi-cogs menu-icon"></i>
+              <span class="menu-title">Account Settings</span>
+            </a>
+          </li>
+
           <li class="nav-item">
             <a class="nav-link" href="/u/admin/ChangePass.jsp">
               <i class="mdi mdi-key-change menu-icon"></i>

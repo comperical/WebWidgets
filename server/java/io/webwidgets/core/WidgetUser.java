@@ -17,6 +17,7 @@ import net.danburfoot.shared.CollUtil.*;
 
 
 import io.webwidgets.core.WidgetOrg.*;
+import io.webwidgets.core.MailSystem.*;
 
 
 public class WidgetUser implements Comparable<WidgetUser>
@@ -218,6 +219,22 @@ public class WidgetUser implements Comparable<WidgetUser>
         // Note: this is a bit hacky; reloading the entire user index just because one user changed password
         // However, reloading the indexes is relatively fast. 
         // This should be fine until we get to a user count where people are changing passwords every minute or so
+        GlobalIndex.clearUserIndexes();
+    }
+
+
+    public void updateEmailAddress(ValidatedEmail email)
+    {
+        Integer masterid = getMasterId();
+        Util.massert(masterid != null, 
+            "User entry is missing an ID, please contact administrator");
+        
+        CoreDb.upsertFromRecMap(CoreUtil.getMasterWidget(), "user_main", 1, CoreDb.getRecMap(
+            "id", masterid,
+            "email", email.emailAddr
+        ));
+        
+        // See note about hackiness above
         GlobalIndex.clearUserIndexes();
     }
 
