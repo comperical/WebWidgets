@@ -12,7 +12,7 @@ __buildItemFuncMap : {},
 // __databaseCheckSum : {},
 
 // List of tables for which the current user has read access only
-__readOnlyAccess : [], 
+__readOnlyAccess : [],
 
 // Map of short table name to Widget Table objects
 __tableNameIndex : new Map(),
@@ -102,9 +102,6 @@ getTableOwner : function(tabname)
     W.checkTableName(tabname);
     return W.__tableNameIndex.get(tabname).widgetOwner;
 },
-
-
-
 
 // True if the current user has write access to the given table
 // Widgets that serve multiple users, some of whom have write access and some of whom do not,
