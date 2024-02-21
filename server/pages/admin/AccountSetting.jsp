@@ -20,15 +20,17 @@
     String opcode = argMap.getStr("opcode", "");
     if(opcode.equals("update_email"))
     {
-      
 
-      
+      String newemail = argMap.getStr("new_email");
+      currentUser.get().updateEmailAddress(ValidatedEmail.from(newemail));
+      response.sendRedirect(request.getRequestURI());
+      return;
     }
 
 
     String emailAddrDisp = currentUser.get().getEmail();
+    emailAddrDisp = emailAddrDisp == null ? "" : emailAddrDisp;
     String userHome = Util.sprintf("/%s/index.jsp", currentUser.get());
-
 %>
 
 
@@ -82,6 +84,28 @@ Please answer the following confirmation question to proceed.
     "checkconfirm" : checkconfirm,
     "opcode": "deleteuser"
   });
+
+}
+
+
+function updateEmail()
+{
+  const curemail = '<%= emailAddrDisp %>';
+  const newemail = prompt("Please enter your new email address: ", curemail);
+
+
+  if(newemail)
+  {
+    if(newemail.length < 4 || newemail.indexOf("@") == -1)
+    {
+      alert("That email does not appear to be valid, please enter an email in username@emailservice.com format");
+      return;
+    }
+
+    const subpack = {"opcode" : "update_email", "new_email" : newemail };
+    submit2Base(subpack);
+  }
+
 
 }
 
@@ -181,8 +205,9 @@ Please answer the following confirmation question to proceed.
                       Email: <%= emailAddrDisp %>
                       </div>
 
-
-
+                      <center>
+                      <a href="javascript:updateEmail()"><button>Update Email</button></a>
+                      </center>
                 </div>
               </div>
             </div>
