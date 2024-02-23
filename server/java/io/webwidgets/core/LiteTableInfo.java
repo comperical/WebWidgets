@@ -504,11 +504,12 @@ public class LiteTableInfo
 			
 			Object payload = getPayLoad(onecol, onetype, argmap);
 			
-			paymap.put(onecol, payload);
+			paymap.put(onecol, maybeConvertNull(payload));
 		}
 		
 		return paymap;
 	}
+
 
 	LinkedHashMap<String, Object> getPayLoadMap(JSONObject jsonob)
 	{
@@ -521,9 +522,14 @@ public class LiteTableInfo
 		for(var coltype : _colTypeMap.entrySet())
 		{
 			Object payload = getJsonPayLoad(coltype.getKey(), coltype.getValue(), jsonob);
-			paymap.put(coltype.getKey(), payload);
+			paymap.put(coltype.getKey(), maybeConvertNull(payload));
 		}
 		return paymap;
+	}
+
+	private static Object maybeConvertNull(Object o)
+	{
+		return CoreUtil.MAGIC_NULL_STRING.equals(o) ? null : o;
 	}
 
 	

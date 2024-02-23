@@ -31,6 +31,10 @@ public class CoreUtil
 	public static String BASE_WIDGET_NAME = "base";
 
 
+	// This is used by the system to represent nulls. Sorry, you cannot have values that equal this literal string.
+	// This much match the JS code.
+	public static String MAGIC_NULL_STRING = "_x_NULL_y_";
+
 	// Probably need a pluging that provides extra reserved names
 	public static List<String> RESERVED_WIDGET_NAMES = Arrays.asList(
 		MailSystem.MAILBOX_WIDGET_NAME,
