@@ -382,6 +382,24 @@ public class LiteTableInfo
 		return reclist;
 	}
 	
+	private String getArrayRep(ArgMap onemap, String onecol)
+	{
+		String s = onemap.getStr(onecol);
+
+		// Util.massert(s != null,
+		//	"Found null value for column %s, this system cannot handle nulls, use empty strings", onecol);
+		
+		// Need to put quotes around string types
+		if(s == null || !SQLITE_STR_TYPE.contains(_colTypeMap.get(onecol).toLowerCase()))
+			{ return s; }
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("\"");
+		sb.append(myEncodeURIComponent(s));
+		sb.append("\"");
+		return sb.toString();
+	}
+
 
 	// Return list of list of column names
 	// Each index is a list of columns
@@ -408,59 +426,7 @@ public class LiteTableInfo
 		return getDefaultReadout(coldef);
 	}
 
-	private String getArrayRep(ArgMap onemap, String onecol)
-	{
-		String s = onemap.getStr(onecol);
-		Util.massert(s != null, 
-			"Found null value for column %s, this system cannot handle nulls, use empty strings", onecol);
-		
-		// Need to put quotes around string types
-		if(!SQLITE_STR_TYPE.contains(_colTypeMap.get(onecol).toLowerCase()))
-			{ return s; }
 
-		StringBuilder sb = new StringBuilder();	
-		sb.append("\"");
-		sb.append(myEncodeURIComponent(s));
-		sb.append("\"");
-		return sb.toString();
-	}
-	
-	/*
-	private String getJsonRep(ArgMap onemap, String onecol)
-	{
-		StringBuffer sb = new StringBuffer();
-		
-		sb.append(onecol);
-		sb.append(" : ");
-		
-		
-		if(SQLITE_STR_TYPE.contains(_colTypeMap.get(onecol).toLowerCase()))
-		{
-			String s = onemap.getStr(onecol);
-			
-			Util.massert(s != null, 
-				"Found null value for column %s, this system cannot handle nulls, use empty strings", onecol);
-			
-			sb.append(DECODE_URI_SHORTHAND);
-			sb.append("(\"");
-			sb.append(myEncodeURIComponent(onemap.getStr(onecol)));
-			sb.append("\")");
-		} else {
-			
-			sb.append(onemap.getStr(onecol));
-		}
-		
-		return sb.toString();
-	}
-	*/
-	
-	// http://stackoverflow.com/questions/607176/java-equivalent-to-javascripts-encodeuricomponent-that-produces-identical-outpu		
-	/*
-	public static String encodeURIComponent(String s)
-	{
-		return CoreUtil.encodeURIComponent(s);
-	}  
-	*/
 	
 	void processAjaxOp(ArgMap argmap)
 	{

@@ -190,6 +190,28 @@ function okayFloat(floatstr)
     return /^-?\d*\.\d+$/.test(floatstr.trim());
 }
 
+function __strictIntParseOkayNull(intstr)
+{
+    return __strictParseOkayNull(intstr, parseInt, 'int');
+}
+
+function __strictFloatParseOkayNull(floatstr)
+{
+    return __strictParseOkayNull(floatstr, parseFloat, 'float');
+}
+
+function __strictParseOkayNull(inputstr, parsefunc, typename)
+{
+    if(inputstr == null)
+        { return null; }
+
+    const r = parsefunc(inputstr);
+    massert(!isNaN(r), `Invalid string for ${typename} : ${inputstr}`);
+    return r;
+}
+
+
+
 __ERRORS_ON_PAGE = 0;
 
 __MAX_ERRORS_PER_PAGE = 3;

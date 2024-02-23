@@ -149,20 +149,20 @@ public class CodeGenerator
 		{
 			ExchangeType extype = _liteTable.getColumnExType(onecol);
 			
+			// Update Feb 2024, these now call a utility method that returns null if the input is null,
+			// otherwise requires the input to be a valid integer or float 
 			if(extype.isJsInteger())
 			{
-				add(String.format("\tthis.%s = parseInt(%s); ", onecol, onecol));
-				add(String.format("\tmassert(!isNaN(this.%s), \"Failed to convert value to integer for column %s\");", onecol, onecol));
+				add(String.format("\tthis.%s = __strictIntParseOkayNull(%s); ", onecol, onecol));
 				add("");
-				continue;	
+				continue;
 			}
 			
 			if(extype.isJsFloat())
 			{
-				add(String.format("\tthis.%s = parseFloat(%s); ", onecol, onecol));
-				add(String.format("\tmassert(!isNaN(this.%s), \"Failed to convert value to float for column %s\");", onecol, onecol));
+				add(String.format("\tthis.%s = __strictFloatParseOkayNull(%s); ", onecol, onecol));
 				add("");
-				continue;	
+				continue;
 			}
 						
 			add(String.format("\tthis.%s = %s; ", onecol, onecol));
