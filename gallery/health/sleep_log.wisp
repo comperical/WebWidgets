@@ -33,6 +33,26 @@ function createNew() {
 	}
 }
 
+function createGood() {
+	createNewSub(100);
+}
+
+
+function copyToNewDay(itemid)
+{
+	const copyitem = W.lookupItem("sleep_log", itemid);
+	const newrec = {
+		'sleep_score' : copyitem.getSleepScore(),
+		'notes' : copyitem.getNotes(),
+		'day_code' : getTodayCode().dayBefore().getDateString()
+	};
+
+
+	const newitem = W.buildItem('sleep_log', newrec);
+	newitem.syncItem();
+	redisplay();
+}
+
 function createNewSub(score)
 {
 	const newrec = {
@@ -87,10 +107,7 @@ function getEditPageInfo() {
 	<td></td>
 	<td><a href="javascript:back2Main()"><img src="/u/shared/image/leftarrow.png" height="18"/></a></td>
 	</tr>
-	<tr><td>Id</td>
-	<td>${item.getId()}</td>
-	<td></td>
-	</tr>
+
 	<tr><td>SleepScore</td>
 	<td>${item.getSleepScore()}</td>
 	<td><a href="javascript:genericEditIntField('sleep_log', 'sleep_score', EDIT_STUDY_ITEM)"><img src="/u/shared/image/edit.png" height="18"></a></td>
@@ -113,6 +130,13 @@ function getMainPageInfo() {
 
 		<a href="javascript:createNew()"><button>new</button></a>
 
+		&nbsp;
+		&nbsp;
+		&nbsp;
+
+		<a href="javascript:createGood()"><button>good</button></a>
+
+
 		<br/>
 		<br/>
 
@@ -134,8 +158,16 @@ function getMainPageInfo() {
 			<td>${item.getSleepScore()}</td>
 			<td>${shorten4Display(item.getNotes())}</td>
 			<td>
+
+            <a href="javascript:copyToNewDay(${item.getId()})"><img src="/u/shared/image/upicon.png" height="18"/></a>
+
+            &nbsp;
+            &nbsp;
+
+
 			<a href="javascript:editNoteInfo(${item.getId()})"><img src="/u/shared/image/edit.png" height="16"/></a>
 			&nbsp;&nbsp;&nbsp;
+
 
 
 			<a href="javascript:editStudyItem(${item.getId()})"><img src="/u/shared/image/inspect.png" height="16"/></a>

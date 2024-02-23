@@ -356,7 +356,7 @@ public class LiteTableInfo
 				if(SQLITE_STR_TYPE.contains(_colTypeMap.get(col).toLowerCase()))
 					{ assign = Util.sprintf("decodeURIComponent(%s)", assign); }
 				
-				reclist.add(Util.sprintf("\td['%s'] = %s;", col, assign));				
+				reclist.add(Util.sprintf("\td['%s'] = %s;", col, assign));
 				idx++;
 			}
 			
@@ -379,7 +379,7 @@ public class LiteTableInfo
 		reclist.add("");
 		reclist.add("// " + LOAD_SUCCESS_TAG);
 		
-		return reclist;			
+		return reclist;
 	}
 	
 
@@ -421,10 +421,11 @@ public class LiteTableInfo
 		StringBuilder sb = new StringBuilder();	
 		sb.append("\"");
 		sb.append(myEncodeURIComponent(s));
-		sb.append("\"");		
+		sb.append("\"");
 		return sb.toString();
 	}
 	
+	/*
 	private String getJsonRep(ArgMap onemap, String onecol)
 	{
 		StringBuffer sb = new StringBuffer();
@@ -451,6 +452,7 @@ public class LiteTableInfo
 		
 		return sb.toString();
 	}
+	*/
 	
 	// http://stackoverflow.com/questions/607176/java-equivalent-to-javascripts-encodeuricomponent-that-produces-identical-outpu		
 	/*
