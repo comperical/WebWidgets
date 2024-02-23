@@ -389,8 +389,11 @@ public class LiteTableInfo
 		// Util.massert(s != null,
 		//	"Found null value for column %s, this system cannot handle nulls, use empty strings", onecol);
 		
+		if(s == null)
+			{ return null + ""; }
+
 		// Need to put quotes around string types
-		if(s == null || !SQLITE_STR_TYPE.contains(_colTypeMap.get(onecol).toLowerCase()))
+		if(!SQLITE_STR_TYPE.contains(_colTypeMap.get(onecol).toLowerCase()))
 			{ return s; }
 
 		StringBuilder sb = new StringBuilder();
