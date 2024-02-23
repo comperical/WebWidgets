@@ -27,6 +27,8 @@ __REQUEST_IN_FLIGHT : false,
 
 __RAW_DEP_WARNING_COUNT : 0,
 
+// WWIO converts nulls to this string. This must match CoreUtil.MAGIC_NULL_STRING
+__MAGIC_NULL_STRING : "_x_NULL_y_",
 
 // https://stackoverflow.com/questions/417142/what-is-the-maximum-length-of-a-url-in-different-browsers
 // Could actually be much smaller than this
@@ -580,12 +582,11 @@ __badIndexCreationCheck: function()
 genericUpsertUrl : function(tablemaster, item, keylist)
 {
     var subpack = W.__getTableCoords(tablemaster);
-    
-    for (var i in keylist)
-    {
-        var onekey = keylist[i];
-        subpack[onekey] = item[onekey];
-    }
+
+    keylist.forEach(function(k) {
+        const payload = item[k];
+        subpack[k] = payload == null ? W.__MAGIC_NULL_STRING : payload;
+    });
     
     massert(!("ajaxop" in subpack), "Shouldn't have an ajaxop!!");
     subpack["ajaxop"] = "upsert";

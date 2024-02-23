@@ -504,7 +504,7 @@ public class LiteTableInfo
 			
 			Object payload = getPayLoad(onecol, onetype, argmap);
 			
-			paymap.put(onecol, maybeConvertNull(payload));
+			paymap.put(onecol, payload);
 		}
 		
 		return paymap;
@@ -522,20 +522,18 @@ public class LiteTableInfo
 		for(var coltype : _colTypeMap.entrySet())
 		{
 			Object payload = getJsonPayLoad(coltype.getKey(), coltype.getValue(), jsonob);
-			paymap.put(coltype.getKey(), maybeConvertNull(payload));
+			paymap.put(coltype.getKey(), payload);
 		}
 		return paymap;
 	}
-
-	private static Object maybeConvertNull(Object o)
-	{
-		return CoreUtil.MAGIC_NULL_STRING.equals(o) ? null : o;
-	}
-
 	
 	static Object getPayLoad(String onecol, String onetype, ArgMap recmap)
 	{
-		try 
+		String probe = recmap.get(onecol);
+		if(CoreUtil.MAGIC_NULL_STRING.equals(probe))
+			{ return null; }
+
+		try
 		{
 			switch(onetype)
 			{
@@ -560,24 +558,27 @@ public class LiteTableInfo
 
 	static Object getJsonPayLoad(String onecol, String onetype, JSONObject jsonob)
 	{
+		Object probe = jsonob.get(onecol);
+		if(CoreUtil.MAGIC_NULL_STRING.equals(probe))
+			{ return null; }
+
 		java.util.function.Function<Object, Integer> convertlong = ob -> (ob == null ? null : ((Long) ob).intValue());
 		java.util.function.Function<Object, Double> convertreal = ob -> (ob == null ? null : ((Number) ob).doubleValue());
-
 
 		switch(onetype)
 		{
 			case "INT":
 			case "TINYINT":
 			case "SMALLINT":
-			case "INTEGER" : return convertlong.apply(jsonob.get(onecol));
+			case "INTEGER" : return convertlong.apply(probe);
 
 
 			case "REAL":
-			case "DOUBLE": return convertreal.apply(jsonob.get(onecol));
+			case "DOUBLE": return convertreal.apply(probe);
 
 			case "VARCHAR":
 			case "TEXT": 
-			case "STRING": return (String) jsonob.get(onecol);
+			case "STRING": return (String) probe;
 
 			default: throw new RuntimeException("Unknown Type: " + onetype);
 		}
