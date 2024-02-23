@@ -537,15 +537,18 @@ public class LiteTableInfo
 		{
 			switch(onetype)
 			{
-				case "INT": return recmap.getInt(onecol);
+				case "INT":
+				case "TINYINT":
+				case "SMALLINT":
 				case "INTEGER" : return recmap.getInt(onecol);
-				case "TINYINT": return recmap.getInt(onecol);
-				case "SMALLINT": return recmap.getInt(onecol);
-				case "VARCHAR": return recmap.getStr(onecol);
-				case "TEXT"   : return recmap.getStr(onecol);
-				case "STRING": return recmap.getStr(onecol);
-				case "REAL" : return recmap.getDbl(onecol);
+
+				case "REAL":
 				case "DOUBLE": return recmap.getDbl(onecol);
+
+				case "TEXT":
+				case "VARCHAR":
+				case "STRING": return recmap.getStr(onecol);
+
 				default: throw new RuntimeException("Unknown Type: " + onetype);
 			}
 		} catch (NumberFormatException nfex) {
