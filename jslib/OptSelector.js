@@ -62,8 +62,10 @@ OptSelector.prototype.configureFromList = function(thelist)
 {
     this.resetData();
 
-    this._keyList = thelist;
-    this._dspList = thelist;
+    // Gotcha, need to make copies of these, otherwise altering the keyList/dspList
+    // will change the underlying list!!
+    this._keyList = thelist.slice();
+    this._dspList = thelist.slice();
 
     return this;
 }

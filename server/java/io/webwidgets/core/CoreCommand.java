@@ -1161,7 +1161,7 @@ public class CoreCommand
 			Util.massert(outputdir.exists(), "Output directory %s  does not exist");
 
 			File outputfile = getOutputFile(outputdir, item.theName);
-			Util.massert(!outputfile.exists(), "Output file %s already exists, please delete before continuing");
+			Util.massert(!outputfile.exists(), "Output file %s already exists, please delete before continuing", outputfile);
 
 			String dumpcall = Util.sprintf("sqlite3 %s .dump", item.getLocalDbFile().getAbsolutePath());
 			SyscallWrapper wrapper = SyscallWrapper

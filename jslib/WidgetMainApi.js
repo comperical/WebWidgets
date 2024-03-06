@@ -254,9 +254,20 @@ __bulkOpSub : function(tablename, idlist, isdelete, options)
         return;
     }
 
+    const maybecall = function()
+    {
+        if(options != null && "callback" in options)
+        {
+            const callback = options["callback"];
+            callback(tablename, idlist, isdelete);
+        }
+    }
+
     if(idlist.length == 0)
     {
         // alert("No records specified in bulk update, returning");
+        // Gotcha: need to call the callback here!!, even if we don't do anything
+        maybecall();
         return;
     }
 
@@ -284,11 +295,7 @@ __bulkOpSub : function(tablename, idlist, isdelete, options)
 
                 // Notify user code when the update is complete
                 // This is actually quite important, because the bulk updates can take longer standard widget sync/delete ops
-                if(options != null && "callback" in options)
-                {
-                    const callback = options["callback"];
-                    callback(tablename, idlist, isdelete);
-                }
+                maybecall();
 
             } else {
                 alert(`Bulk update failed with ${xhr.statusText}, please report this message to developer/admin and refresh page`);
