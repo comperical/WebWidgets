@@ -112,7 +112,9 @@ public class AuthLogic
 	// This implies that we need to check that a given email address is who they say they are
 	public static boolean confirmExternalAuth(HttpServletRequest request, HttpServletResponse response, ValidatedEmail vemail)
 	{
-		List<WidgetUser> hitlist = Util.filter2list(WidgetUser.values(), user -> vemail.emailAddr.equals(user.getEmail()));
+		List<WidgetUser> hitlist = Util.filter2list(WidgetUser.values(),
+										user -> user.getEmailSet().contains(vemail.emailAddr));
+
 		Util.massert(hitlist.size() <= 1, "Found multiple accounts with email %s", vemail.emailAddr);
 
 		if(hitlist.isEmpty())

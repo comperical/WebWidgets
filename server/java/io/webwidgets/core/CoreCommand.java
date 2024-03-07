@@ -697,18 +697,30 @@ public class CoreCommand
 		}
 	}
 	
-	public static class UpdateUserEmail extends ArgMapRunnable
+	public static class AddEmailForUser extends ArgMapRunnable
 	{
 		public void runOp()
 		{
 			WidgetUser user = WidgetUser.lookup(_argMap.getStr("username"));
 			ValidatedEmail email = ValidatedEmail.from(_argMap.getStr("email"));
 
-			user.updateEmailAddress(email);
+			user.addEmailAddress(email);
 
-			Util.pf("Updated address for user %s, it's now %s\n", user, user.getEmail());
+			Util.pf("Updated address for user %s, it's now %s\n", user, user.getEmailSet());
+		}
 
+	}
 
+	public static class RemoveEmailForUser extends ArgMapRunnable
+	{
+		public void runOp()
+		{
+			WidgetUser user = WidgetUser.lookup(_argMap.getStr("username"));
+			ValidatedEmail email = ValidatedEmail.from(_argMap.getStr("email"));
+
+			user.removeEmailAddress(email);
+
+			Util.pf("Updated address for user %s, it's now %s\n", user, user.getEmailSet());
 		}
 
 	}

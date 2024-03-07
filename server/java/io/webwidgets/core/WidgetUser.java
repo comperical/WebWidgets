@@ -5,6 +5,7 @@ import java.io.*;
 import java.util.*; 
 import java.sql.*; 
 import java.nio.file.*;
+import java.util.function.Consumer;
 
 import java.time.LocalDate;
 
@@ -116,10 +117,18 @@ public class WidgetUser implements Comparable<WidgetUser>
         return _userName;
     }
     
-    public String getEmail()
+    public Set<String> getEmailSet()
     {
         ArgMap entry = getUserEntry();
-        return entry == null ? null : entry.getStr("email");
+        if(entry == null)
+            { return Collections.emptySet(); }
+
+        String emailstr = entry.getStr("email").trim().toLowerCase();
+        return Util.listify(emailstr.split(","))
+                        .stream()
+                        .map(s -> s.trim())
+                        .filter(s -> s.length() > 0)
+                        .collect(CollUtil.toSet());
     }
     
     public String getAccessHash()
@@ -223,15 +232,39 @@ public class WidgetUser implements Comparable<WidgetUser>
     }
 
 
-    public void updateEmailAddress(ValidatedEmail email)
+
+    private static String emailSet2Str(Set<String> emailset)
+    {
+        return Util.join(emailset, ",").toLowerCase();
+    }
+
+
+    public void addEmailAddress(ValidatedEmail email)
+    {
+        updateEmailSet(emset -> emset.add(email.emailAddr));
+    }
+
+    public void removeEmailAddress(ValidatedEmail email)
+    {
+        updateEmailSet(emset -> emset.remove(email.emailAddr));
+    }
+
+    private void updateEmailSet(Consumer<Set<String>> updater)
     {
         Integer masterid = getMasterId();
         Util.massert(masterid != null, 
             "User entry is missing an ID, please contact administrator");
+
+
+        var emailset = getEmailSet();
+        Util.pf("Email set is %s\n", emailset);
+        updater.accept(emailset);
+        Util.pf("Email set is now %s\n", emailset);
+
         
         CoreDb.upsertFromRecMap(CoreUtil.getMasterWidget(), "user_main", 1, CoreDb.getRecMap(
             "id", masterid,
-            "email", email.emailAddr
+            "email", emailSet2Str(emailset)
         ));
         
         // See note about hackiness above
