@@ -18,17 +18,29 @@
 
 
     String opcode = argMap.getStr("opcode", "");
-    if(opcode.equals("update_email"))
+    if(opcode.equals("add_email"))
     {
 
       String newemail = argMap.getStr("new_email");
-      currentUser.get().updateEmailAddress(ValidatedEmail.from(newemail));
+      currentUser.get().addEmailAddress(ValidatedEmail.from(newemail));
+      response.sendRedirect(request.getRequestURI());
+      return;
+    }
+
+    if(opcode.equals("remove_email"))
+    {
+
+      String email = argMap.getStr("old_email");
+      currentUser.get().removeEmailAddress(ValidatedEmail.from(email));
       response.sendRedirect(request.getRequestURI());
       return;
     }
 
 
-    String emailAddrDisp = currentUser.get().getEmail();
+
+
+
+    String emailAddrDisp = currentUser.get().getEmailSet().toString();
     emailAddrDisp = emailAddrDisp == null ? "" : emailAddrDisp;
     String userHome = Util.sprintf("/%s/index.jsp", currentUser.get());
 %>
@@ -88,11 +100,9 @@ Please answer the following confirmation question to proceed.
 }
 
 
-function updateEmail()
+function addNewEmail()
 {
-  const curemail = '<%= emailAddrDisp %>';
-  const newemail = prompt("Please enter your new email address: ", curemail);
-
+  const newemail = prompt("Please enter a NEW email address for this account: ");
 
   if(newemail)
   {
@@ -102,7 +112,21 @@ function updateEmail()
       return;
     }
 
-    const subpack = {"opcode" : "update_email", "new_email" : newemail };
+    const subpack = {"opcode" : "add_email", "new_email" : newemail };
+    submit2Base(subpack);
+  }
+
+
+}
+
+
+function removeEmail(oldemail)
+{
+  if(confirm(`Are you sure you want to remove the email address ${oldemail}?`))
+  {
+
+
+    const subpack = {"opcode" : "remove_email", "old_email" : oldemail };
     submit2Base(subpack);
   }
 
@@ -201,12 +225,27 @@ function updateEmail()
                       User: <%= currentUser.get() %>
                       </div>
 
+                      <%
+
+                        for(String anemail : currentUser.get().getEmailSet())
+                        {
+                      %>
+
                       <div class="row">
-                      Email: <%= emailAddrDisp %>
+                      Email: <%= anemail %>
+
+                      &nbsp; 
+                      &nbsp; 
+                      &nbsp; 
+
+                      <a href="javascript:removeEmail('<%= anemail %>')"><button>remove</button></a>
                       </div>
+                      <br/>
+
+                      <% } %>
 
                       <center>
-                      <a href="javascript:updateEmail()"><button>Update Email</button></a>
+                      <a href="javascript:addNewEmail()"><button>Add New Email</button></a>
                       </center>
                 </div>
               </div>
