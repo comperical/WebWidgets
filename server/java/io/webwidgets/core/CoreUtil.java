@@ -101,8 +101,6 @@ public class CoreUtil
 	// Jclass is the direct peer of the config directory
 	public static final String JCLASS_BASE_DIR = getSubDirectory(WWIO_BASE_CONFIG_DIR, "jclass", 1);
 
-	// TODO: this is no longer used except for the IMPORT_TEMP_DIR below it. We could move the import temp
-	// into the base config dir. Do we need random misc data files?
 	// Directory for miscellaneous config etc files. Not checked into repo, but used in the application
 	public static final String WWIO_MISC_DATA_DIR = getSubDirectory(WWIO_BASE_CONFIG_DIR, "miscdata", 1);
 
