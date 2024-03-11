@@ -248,6 +248,17 @@ public class DayCode implements Comparable<DayCode>
 	{
 		return this._strForm.compareTo(that._strForm);	
 	}
+
+
+	public boolean isBefore(DayCode that)
+	{
+		return compareTo(that) < 0;
+	}
+
+	public boolean isAfter(DayCode that)
+	{
+		return compareTo(that) > 0;
+	}
 	
 	public String toString()
 	{
