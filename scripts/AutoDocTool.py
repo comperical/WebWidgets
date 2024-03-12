@@ -374,4 +374,11 @@ if __name__ == "__main__":
     usefull = argmap.getBit("usefull", True)
 
     result = get_full_html() if usefull else get_basic_html()
-    print(result)
+
+    if argmap.containsKey("output"):
+        with open(argmap.getStr("output"), 'w') as fh:
+            fh.write(result)
+
+    else:
+        print(result)
+

@@ -71,7 +71,7 @@ def get_jar_list():
 
 
 def od_setup_working_dir():
-	for mydir in [get_working_dir(), get_jar_file_dir(), get_java_class_dir()]:
+	for mydir in [get_working_dir(), get_jar_file_dir(), get_java_class_dir(), get_misc_data_dir()]:
 		if not os.path.exists(mydir):
 			os.mkdir(mydir)
 			print(f"Created directory {mydir}")
