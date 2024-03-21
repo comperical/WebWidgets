@@ -28,7 +28,8 @@
 
     WidgetItem selectedItem = new WidgetItem(currentUser.get(), argMap.getStr("widget"));
 
-    Map<String, String> schemaInfo = CoreUtil.getCreateTableMap(selectedItem);
+    // false : hide tables with __ prefix, including __archived_table
+    Map<String, String> schemaInfo = CoreUtil.getCreateTableMap(selectedItem, false);
 %>
 
 

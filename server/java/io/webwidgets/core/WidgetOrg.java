@@ -16,8 +16,9 @@ import net.danburfoot.shared.CoreDb.QueryCollector;
 import net.danburfoot.shared.CoreDb.ConnectionSource;
 
 
+// TODO: this can be just WidgetItem
 public class WidgetOrg
-{ 	
+{ 
 	
 	public static class WidgetItem implements ConnectionSource, Comparable<WidgetItem>
 	{
@@ -160,12 +161,10 @@ public class WidgetOrg
 			return Util.sprintf("jdbc:sqlite:%s", getLocalDbPath());
 		}
 		
-
-		// Should this really be public...?
 		public Set<String> getDbTableNameSet()
 		{
-			Set<String> allset =  CoreDb.getLiteTableNameSet(this);
-			return Util.filter2set(allset, tn -> !tn.startsWith("__"));
+			// False: do not show __ - prefix tables
+			return CoreUtil.getLiteTableNameSet(this, false);
 		}
 
 		public Set<String> getDbViewNameSet()
