@@ -289,34 +289,6 @@ function redisplayMainList()
 	populateSpanData({
 		"templatelist" : mainstr
 	});	
-}	
-	
-
-function getHourTimeMap()
-{
-	var hourmap = {};
-
-	hourmap[30] = "30 min";
-	hourmap[60] = "60 min";
-	hourmap[90] = "90 min";
-
-	
-	for(var exhour = 2; exhour < 10; exhour++)
-	{
-		[true, false].forEach(function(ishalf) {
-
-			// Don't need to be precise for > 5 hours
-			if(exhour > 4 && ishalf == true)
-				{ return; }
-
-			const halfstr = ishalf ? ".5" : "";
-			const label = `${exhour}${halfstr} hr`;
-			const mincount = exhour * 60 + (ishalf ? 30 : 0);
-			hourmap[mincount] = label;
-		});
-	}
-
-	return hourmap;
 }
 
 

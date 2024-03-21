@@ -6,10 +6,12 @@ import java.sql.*;
 import java.util.zip.*;
 import java.time.LocalDate;
 import java.util.stream.Stream;
+import java.util.function.Predicate;
 import java.nio.charset.StandardCharsets;
 
 import net.danburfoot.shared.Util;
 import net.danburfoot.shared.CoreDb;
+import net.danburfoot.shared.ArgMap;
 import net.danburfoot.shared.DayCode;
 import net.danburfoot.shared.CollUtil;
 import net.danburfoot.shared.FileUtils;
@@ -305,20 +307,35 @@ public class CoreUtil
 	// TODO: this is in CoreDb
 	public static Set<String> getLiteTableNameSet(ConnectionSource litedb)
 	{
-		String sql = "SELECT name FROM sqlite_master WHERE type='table'";
-		
-		return Util.map2set(QueryCollector.buildAndRun(sql, litedb).recList(), amap -> amap.getSingleStr());
-
+		return getLiteTableNameSet(litedb, true);
 	}
 
-	// TODO: this is redundant with getCreateTableSql below
+
+	// Allinclude = false :: skip table names that start with __
+	public static Set<String> getLiteTableNameSet(ConnectionSource litedb, boolean allinclude)
+	{
+		return getCreateTableMap(litedb, allinclude).keySet();
+	}
+
 	public static Map<String, String> getCreateTableMap(ConnectionSource litedb)
 	{
-		String sql = "SELECT name, sql FROM sqlite_master WHERE type='table'";
-		
-		return Util.map2map(QueryCollector.buildAndRun(sql, litedb).recList(), amap -> amap.getStr("name"), amap -> amap.getStr("sql"));
+		return getCreateTableMap(litedb, true);
 	}
 	
+
+	public static Map<String, String> getCreateTableMap(ConnectionSource litedb, boolean allinclude)
+	{
+		String sql = "SELECT name, sql FROM sqlite_master WHERE type='table'";
+
+		Predicate<ArgMap> mypred = allinclude 
+										? argmap -> true 
+										: argmap -> !argmap.getStr("name").startsWith("__");
+
+		List<ArgMap> reclist = Util.filter2list(QueryCollector.buildAndRun(sql, litedb).recList(), mypred);
+		
+		return Util.map2map(reclist, amap -> amap.getStr("name"), amap -> amap.getStr("sql"));
+	}
+
 	// TODO: this should no longer be necessary/used
 	public static DayCode getTodayTzAware() 
 	{
@@ -333,8 +350,8 @@ public class CoreUtil
 		return qcol.getSingleArgMap().getSingleStr();
 	}
 	
-	
 
+	// TODO: re-implement, move to extension package
 	public static File convert2Excel(WidgetItem witem) 
 	{
 		Util.massert(witem.getLocalDbFile().exists(), "Widget Item DB not found at %s", witem.getLocalDbFile());

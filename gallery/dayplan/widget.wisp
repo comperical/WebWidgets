@@ -11,27 +11,7 @@ PLAN_DAY_CODE = getTodayCode();
 
 W.createIndexForTable("day_plan_main", ["day_code"]);
 
-function getHourTimeMap()
-{
-	const hourmap = {
-		30 : "30 min",
-		60 : "60 min",
-		90 : "90 min"
-	}
 
-	for(var exhour = 2; exhour < 10; exhour++) {
-
-		[true, false].forEach(function(ishalf) {
-
-			const halfstr = ishalf ? ".5" : "";
-			const label = `${exhour}${halfstr} hr`;
-			const mincount = exhour * 60 + (ishalf ? 30 : 0);
-			hourmap[mincount] = label;
-		});
-	}
-
-	return hourmap;
-}
 
 function doTemplateImport()
 {
@@ -201,23 +181,6 @@ function getTemplateIdMap()
 }
 
 
-// This is a copy of a function in my personal shared JS code
-function getDateDisplayMap()
-{
-
-	var dayptr = getTodayCode().dayAfter().dayAfter();
-    const displaymap = {};
-
-	for(var idx = 0; idx < 14; idx++)
-	{
-		displaymap[dayptr.getDateString()] = dayptr.getNiceDisplay();
-		dayptr = dayptr.dayBefore();
-	}
-
-    return displaymap;
-}
-
-
 function redisplay()
 {
 	var activelist = getPlanDayItemList();
@@ -308,12 +271,12 @@ function redisplay()
 	`;
 
 	const timeminsel = buildOptSelector()
-							.setFromMap(getHourTimeMap())
+							.configureFromHash(getHourTimeMap())
 							.setElementName("time_spent_min")
 							.getSelectString()
 	
 	const tempsel = buildOptSelector()
-						.setFromMap(getTemplateIdMap())
+						.configureFromHash(getTemplateIdMap())
 						.sortByDisplay()
 						.insertStartingPair(-1, "---")
 						.setElementName("temp_id")
@@ -324,7 +287,7 @@ function redisplay()
 	const displaymap = getDateDisplayMap();
 
 	const datesel = buildOptSelector()
-					.setFromMap(displaymap)
+					.configureFromHash(displaymap)
 					.setSelectedKey(PLAN_DAY_CODE.getDateString())
 					.setOnChange("javascript:updatePlanDay()")
 					.setElementName("plan_day_sel")

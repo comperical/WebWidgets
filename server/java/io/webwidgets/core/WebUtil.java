@@ -96,6 +96,7 @@ public class WebUtil
 	// If you are not sure if it will conform, use getWidgetFromPageUrl
 	static WidgetItem getWidgetFromUrl(String pageurl)
 	{
+		// TODO: this technique makes it impossible to run tests against a server that does not have the webwidgets.io URL
 		String subpath = getRelativeResource(pageurl);
 		Util.massert(subpath.startsWith("/u/"),
 			"Expected to start with /u/ patter, got %s", subpath);
