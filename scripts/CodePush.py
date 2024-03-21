@@ -15,6 +15,10 @@ SUBFOLDER_NAME = ".ssh"
 
 WWIO_DOCS_URL = "https://webwidgets.io/docs.jsp"
 
+# Cannot upload data bigger than this. This number must agree with the value defined in the Java code.
+# TODO: probably increase this, 10 Mb seems low
+MAX_UPLOAD_SIZE_BYTES = 10_000_000
+
 
 def get_domain_prefix(local=False):
 	return  "https://webwidgets.io"
@@ -100,6 +104,12 @@ class AssetUploader:
 	def ensure_okay(self):
 		assert self.basedir != None, "Failed to find a good base directory in config"
 		#assert os.path.exists(self.get_widget_dir()), "Widget directory {} does not exists".format(self.get_widget_dir())
+
+		paypath = self.get_payload_path()
+		assert os.path.exists(paypath), f"Could not find payload path {paypath}"
+
+		filesize = os.path.getsize(paypath)
+		assert filesize <= MAX_UPLOAD_SIZE_BYTES, f"Your upload file {paypath} is too big ({filesize}), the max upload size is {MAX_UPLOAD_SIZE_BYTES}"
 
 
 	def compose_curl_call(self, configmap):
