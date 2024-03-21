@@ -65,6 +65,8 @@ if __name__ == "__main__":
 
 	
 	uploader.do_prep()
+	uploader.ensure_okay(postprep=True)
+
 	uploader.do_upload(configmap)
 	uploader.do_cleanup()
 	

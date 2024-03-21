@@ -101,15 +101,16 @@ class AssetUploader:
 		self.local = argmap.getBit("local", False)
 		self.basedir = None
 
-	def ensure_okay(self):
+	def ensure_okay(self, postprep=False):
 		assert self.basedir != None, "Failed to find a good base directory in config"
 		#assert os.path.exists(self.get_widget_dir()), "Widget directory {} does not exists".format(self.get_widget_dir())
 
-		paypath = self.get_payload_path()
-		assert os.path.exists(paypath), f"Could not find payload path {paypath}"
+		if postprep:
+			paypath = self.get_payload_path()
+			assert os.path.exists(paypath), f"Could not find payload path {paypath}"
 
-		filesize = os.path.getsize(paypath)
-		assert filesize <= MAX_UPLOAD_SIZE_BYTES, f"Your upload file {paypath} is too big ({filesize}), the max upload size is {MAX_UPLOAD_SIZE_BYTES}"
+			filesize = os.path.getsize(paypath)
+			assert filesize <= MAX_UPLOAD_SIZE_BYTES, f"Your upload file {paypath} is too big ({filesize}), the max upload size is {MAX_UPLOAD_SIZE_BYTES}"
 
 
 	def compose_curl_call(self, configmap):
@@ -246,11 +247,14 @@ if __name__ == "__main__":
 	widget = argmap.getStr("widgetname")
 	uploader = BaseUploader(argmap) if widget == "base" else ZipUploader(argmap)
 	uploader.find_base_dir(configmap)
+
+	# Little bit weird, do the ensure okay twice, to make sure the .zip is checked
 	uploader.ensure_okay()
+	uploader.do_prep()
+	uploader.ensure_okay(postprep=True)
 
 	# print("Going to run upload for type {}".format(uploader.__class__.__name__))
 	
-	uploader.do_prep()
 	uploader.do_upload(configmap)
 	uploader.do_cleanup()
 		
