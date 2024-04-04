@@ -15,6 +15,8 @@ SUBFOLDER_NAME = ".ssh"
 
 WWIO_DOCS_URL = "https://webwidgets.io/docs.jsp"
 
+WWIO_USER_ENV_VAR = "WWIO_USER_NAME"
+
 # Cannot upload data bigger than this. This number must agree with the value defined in the Java code.
 # TODO: probably increase this, 10 Mb seems low
 MAX_UPLOAD_SIZE_BYTES = 10_000_000
@@ -44,7 +46,13 @@ def find_username(argmap):
 	# Okay, the user decided to specify in the command line, respect that
 	if argmap.containsKey("username"):
 		username = argmap.getStr("username")
-		assert username in candidates, "User name {} not found in config list, options are {}".format(username, str(candidates))
+		assert username in candidates, f"User name {username} from command line not found in config list, options are {str(candidates)}"
+		return username
+
+
+	if WWIO_USER_ENV_VAR in os.environ:
+		username = os.environ.get(WWIO_USER_ENV_VAR)
+		assert username in candidates, f"User name {username} from environment variables not found in config list, options are {str(candidates)}"
 		return username
 
 
@@ -57,7 +65,7 @@ def find_username(argmap):
 		print("Defaulting to admin user name")
 		return "dburfoot"
 
-	assert False, "System could not find the username from config files, please specify on command line using username= option"
+	assert False, f"System could not find the username from config files, please specify on command line using username= option or {WWIO_USER_ENV_VAR} environment variable"
 
 
 def get_username_configs():
