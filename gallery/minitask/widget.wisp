@@ -423,10 +423,10 @@ function reDispEditItem()
 	const extralinelist = extrainfo.replace(/\n/g, "<br/>");	
 
 	const ttypesel = buildOptSelector()
-					.setKeyList(MASTER_TYPE_LIST)
+					.configureFromList(MASTER_TYPE_LIST)
 					.setSelectOpener(`<select name="task_type_sel" onChange="javascript:updateTaskType()">`)
 					.setSelectedKey(studyitem.getTaskType())
-					.getSelectString();
+					.getHtmlString();
 	
 	populateSpanData({
 		"taskid" : studyitem.getId(),

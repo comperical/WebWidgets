@@ -260,9 +260,16 @@ OptSelector.prototype.setKeyDispList = function(klist, dlist)
     return this;
 }
 
+
+OptSelector.prototype.getSelectString = function()
+{
+    console.log("**Warning**, function getSelectString() is deprecated and will be removed in future versions, please use getHtmlString()");
+    return this.getHtmlString();
+}
+
 // Get the actual full select string for the OptSelector.
 // This starts with the select tag and ends with closing select tag.
-OptSelector.prototype.getSelectString = function()
+OptSelector.prototype.getHtmlString = function()
 {
     const ostr = this.getFullOptionStr();
     
@@ -272,6 +279,9 @@ OptSelector.prototype.getSelectString = function()
         </select>
     `;  
 }
+
+
+
 
 // Clears the key/value pairs
 // this is primarily for internal use, callers should prefer to just
