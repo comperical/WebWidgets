@@ -31,6 +31,8 @@ public class DataServer
 
 		view_prefixes("Comma-separated list of view prefixes to be used for these lookups. If a prefix matches multiple view/table pairs, you will get multiple views"),
 		
+		from_url("If true, pull any valid DataIncludeArgs from the request URL. Do not overwrite args in the wisp tag. This enables a simple form of dynamic loading. Default false"),
+
 		okay_if_absent(
 			"By default, system will throw an error if a table is requested that is not present. " + 
 			"Set this to true to suppress the error"); 
@@ -46,6 +48,8 @@ public class DataServer
 	
 	public static final Set<String> OKAY_ARG_SET = Util.map2set(Util.listify(DataIncludeArg.values()), dia -> dia.toString());
 	
+	// TODO: remove all the special include operations, these are no longer used
+
 	// Get widget from request.
 	// Get user from request, authenticate.
 	// Include all tables for widget.
@@ -154,6 +158,7 @@ public class DataServer
 
 		private Optional<String> _fullViewName = Optional.empty();
 
+		// TODO: refactor this to use a normal Map<DataIncludeArg, String>
 		protected ServerUtilCore(ArgMap amap)
 		{
 			_argMap = amap;

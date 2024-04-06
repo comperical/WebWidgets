@@ -66,7 +66,7 @@ public class WispFileLogic
 
 
             WispFileFormat wff = new WispFileFormat(wispfile, pageitem.get());
-            wff.sendResultToStream(response.getOutputStream(), accessor);
+            wff.sendResultToStream(request, response.getOutputStream(), accessor);
             response.getOutputStream().close();
 
             WebUtil.logPageLoad(request);
@@ -142,7 +142,7 @@ public class WispFileLogic
         }
 
 
-        public void sendResultToStream(OutputStream out, Optional<WidgetUser> optacc) throws IOException
+        public void sendResultToStream(HttpServletRequest request, OutputStream out, Optional<WidgetUser> optacc) throws IOException
         {
             boolean includedone = false;
 
@@ -176,6 +176,8 @@ public class WispFileLogic
                         throw new RuntimeException(mssg);
                     }
 
+                    maybePullUrlInfo(request, include);
+
                     // THis conversion is dumb, the other code is just going to convert it back again
                     ArgMap convert = new ArgMap();
                     for(DataIncludeArg arg : include.keySet())
@@ -189,6 +191,40 @@ public class WispFileLogic
                 } catch (IllegalArgumentException illex) {
                     throw illex;
                 }
+            }
+        }
+
+        private void maybePullUrlInfo(HttpServletRequest request, Map<DataIncludeArg, String> include)
+        {
+            if(!include.containsKey(DataIncludeArg.from_url))
+                { return; }
+
+            {
+                String bitflag = include.get(DataIncludeArg.from_url);
+                Util.massert(Util.setify(true+"", false+"").contains(bitflag),
+                    "Argument of DataIncludeArg::from_url must be exactly equal to strings true or false, found %s", bitflag);
+
+                if(!bitflag.equals(""+true))
+                    { return; }
+            }
+
+            ArgMap reqmap = WebUtil.getArgMap(request);
+
+            for(String k : reqmap.keySet())
+            {
+                String klow = k.toLowerCase();
+
+                // If it's not a DataIncludeArg, skip it
+                if(!DataServer.OKAY_ARG_SET.contains(klow))
+                    { continue; }
+
+                DataIncludeArg dia = DataIncludeArg.valueOf(klow);
+
+                // Do not overwrite params that are already in the wisp tag
+                if(include.containsKey(dia))
+                    { continue; }
+
+                include.put(dia, reqmap.get(k));
             }
         }
 
