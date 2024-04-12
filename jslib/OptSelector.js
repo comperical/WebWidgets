@@ -181,7 +181,7 @@ OptSelector.prototype.autoPopulate = function()
         "To use the auto-populate approach, you must set the element name attribute");
 
     const spanmap = {};
-    spanmap[`${this._myAttributes["name"]}_span`] = this.getSelectString();
+    spanmap[`${this._myAttributes["name"]}_span`] = this.getHtmlString();
 
     populateSpanData(spanmap);
 

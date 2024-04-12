@@ -384,6 +384,15 @@ createIndexForTable : function(tablename, fnamelist)
     else
         { W.checkTableName(tablename); }
 
+
+    {
+        const allfields = W.getFieldList(tablename);
+        const badnames = fnamelist.filter(fname => !allfields.includes(fname));
+        massert(badnames.length == 0, 
+            `Attempt to build index with field ${badnames[0]}, but that field name is not present, options are ${allfields}`);
+    }
+
+
     const indexname = W.__composeInternalIndexName(fnamelist);
     massert(!W.__GLOBAL_INDEX_MAP.get(tablename).has(indexname),
         `You have already defined an index ${fnamelist.join("--")} on table ${tablename}, do not redefine`);

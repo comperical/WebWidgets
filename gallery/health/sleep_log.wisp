@@ -141,7 +141,7 @@ function getMainPageInfo() {
 		<br/>
 
 
-		<table class="basic-table" width="80%">
+		<table class="basic-table" width="70%">
 		<tr>
 		<th>Date</th>
 		<th>Score</th>
@@ -156,7 +156,7 @@ function getMainPageInfo() {
 			<tr>
 			<td>${item.getDayCode()}</td>
 			<td>${item.getSleepScore()}</td>
-			<td>${shorten4Display(item.getNotes())}</td>
+			<td>${item.getNotes()}</td>
 			<td>
 
             <a href="javascript:copyToNewDay(${item.getId()})"><img src="/u/shared/image/upicon.png" height="18"/></a>
