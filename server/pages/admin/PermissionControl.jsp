@@ -13,6 +13,7 @@
     }
 
     ArgMap argMap = WebUtil.getArgMap(request);
+    List<WidgetItem> widgetList = currentUser.get().getUserWidgetList();
     List<String> widgetNameList = Util.map2list(currentUser.get().getUserWidgetList(), item -> item.theName);
 
     // User will see ugly error, but better than just being confused.
@@ -21,7 +22,8 @@
 
     if(!argMap.containsKey("widget"))
     {
-      String bounce = Util.sprintf("PermissionControl.jsp?widget=" + widgetNameList.get(0));
+      CollUtil.sortListByFunction(widgetList, item -> -item.getLocalDbFile().lastModified());
+      String bounce = Util.sprintf("PermissionControl.jsp?widget=" + widgetList.get(0).theName);
       response.sendRedirect(bounce);
       return;
     }

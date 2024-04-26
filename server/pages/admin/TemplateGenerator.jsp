@@ -13,23 +13,25 @@
     }
 
     ArgMap argMap = WebUtil.getArgMap(request);
-    List<String> widgetNameList = Util.map2list(currentUser.get().getUserWidgetList(), item -> item.theName);
+    List<WidgetItem> widgetList = currentUser.get().getUserWidgetList();
 
     // User will see ugly error, but better than just being confused.
-    Util.massert(widgetNameList.size() > 0, 
+    Util.massert(widgetList.size() > 0, 
       "You must have at least one widget defined before accessing this page");
 
     if(!argMap.containsKey("widget"))
     {
-      String bounce = Util.sprintf("TemplateGenerator.jsp?widget=" + widgetNameList.get(0));
+      CollUtil.sortListByFunction(widgetList, item -> -item.getLocalDbFile().lastModified());
+      String bounce = Util.sprintf("TemplateGenerator.jsp?widget=" + widgetList.get(0).theName);
       response.sendRedirect(bounce);
       return;
     }
 
+
+
+    List<String> widgetNameList = Util.map2list(widgetList, item -> item.theName);
     WidgetItem selectedItem = new WidgetItem(currentUser.get(), argMap.getStr("widget"));
-
     Set<String> dbTableNameSet = selectedItem.getDbTableNameSet();
-
     String userHome = Util.sprintf("/%s/index.jsp", currentUser.get());
 
 %>
