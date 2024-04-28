@@ -6,8 +6,8 @@ EXTRA = {
 
     TEXT_AREA_DEFAULT_NAME : "extRA_infO_eDIt",
 
-    getEiBox : function(text) {
-        return new ExtraInfoBox(text);
+    getEiBox : function() {
+        return new ExtraInfoBox();
     },
 
     go2EditMode : function(areaid) {
@@ -19,15 +19,28 @@ EXTRA = {
     clearEditMode : function() {
         EXTRA.EDIT_TEXT_MODE = false;
         redisplay();
+    },
+
+    standardSave : function(boxbuilder) {
+
+        massert(boxbuilder.startsWith("javascript:"), `Expected box-builder to start with javascript: prefix, found ${boxbuilder}`);
+        const boxfunc = boxbuilder.substring("javascript:".length);
+        const thebox = eval(boxfunc);
+
+        const newval = getDocFormValue(thebox.textAreaName);
+        thebox.consumerFunc(newval);
     }
 };
 
-function ExtraInfoBox(textdata) {
+function ExtraInfoBox() {
 
-    this.theText = textdata;
+    this.providerFunc = null;
+    this.consumerFunc = null;
 
     this.textRows = null;
     this.textCols = null;
+
+    this.boxBuilder = null;
 
     // default to 50%
     this.tableWidth = 50;
@@ -36,7 +49,72 @@ function ExtraInfoBox(textdata) {
 
     this.saveFuncName = null;
     this.textAreaName = EXTRA.TEXT_AREA_DEFAULT_NAME;
+
+    this.doRedisplay = true;
 }
+
+
+ExtraInfoBox.prototype.withProvider = function(provfunc)
+{
+    massert(typeof(provfunc) == 'function', `Expected provfunc to be a function, found ${provfunc}`);
+    massert(this.providerFunc == null, `Attempt to set provider function, but it has already been set`);
+
+    this.providerFunc = provfunc;
+    return this;
+}
+
+
+ExtraInfoBox.prototype.withConsumer = function(consfunc)
+{
+    massert(typeof(consfunc) == 'function', `Expected consumer func to be a function, found ${consfunc}`);
+    massert(this.consumerFunc == null, `Attempt to set provider function, but it has already been set`);
+
+    this.consumerFunc = consfunc;
+    return this;
+}
+
+ExtraInfoBox.prototype.withTextInput = function(text)
+{
+    massert(typeof(text) == 'string', "Expected string argument for withTextInput(...)");
+
+    const provider = () => text;
+    return withProvider(provider);
+}
+
+
+ExtraInfoBox.prototype.withStandardConfig = function(tablename, itemid, fieldname)
+{
+    const consfunc = function(newval)
+    {
+        const item = W.lookupItem(tablename, itemid);
+        item.setField(fieldname, newval);
+        item.syncItem();
+
+        EXTRA.EDIT_TEXT_MODE = false;
+
+        if(this.doRedisplay)
+            { redisplay(); }
+    }
+
+    const provfunc = function()
+    {
+        const item = W.lookupItem(tablename, itemid);
+        return item.getField(fieldname);
+    }
+
+    return this.withConsumer(consfunc).withProvider(provfunc);
+}
+
+ExtraInfoBox.prototype.withBoxBuilder = function(boxbuilder)
+{
+    massert(typeof(boxbuilder) == 'string' && boxbuilder.startsWith("javascript:"),
+        `By convention, boxbuilder is a JS function name, starting with javascript:, found ${boxbuilder}`
+    );
+
+    this.boxBuilder = boxbuilder;
+    return this;
+}
+
 
 ExtraInfoBox.prototype.setSaveFunction = function(savefunc)
 {
@@ -57,29 +135,44 @@ ExtraInfoBox.prototype.setTableWidth = function(twidth)
     return this;
 }
 
+ExtraInfoBox.prototype.__getSaveFunc = function()
+{
+    if(this.saveFuncName != null)
+        { return this.saveFuncName; }
+
+
+    return `javascript:EXTRA.standardSave('${this.boxBuilder}')`;
+}
+
+
 
 ExtraInfoBox.prototype.getHtmlString = function()
 {
-    massert(this.saveFuncName != null, "You must supply a saveFuncName");
+    massert(this.providerFunc != null, "You must supply a provider function");
+    massert(this.consumerFunc != null, "You must supply a consumer function");
+    const thetext = this.providerFunc();
+
 
     if(EXTRA.EDIT_TEXT_MODE) {
 
+        const savefunc = this.__getSaveFunc();
+
         return `
 
-            <textarea id="${this.textAreaId}" name="${this.textAreaName}" cols="80" rows="10">${this.theText}</textarea>
+            <textarea id="${this.textAreaId}" name="${this.textAreaName}" cols="80" rows="10">${thetext}</textarea>
             <br/>
             <br/>
-            <a href="${this.saveFuncName}"><button>save</button></a>
+            <a href="${savefunc}"><button>save</button></a>
         `;
 
     } else {
 
-        let extrainfo = this.theText;
+        let extradisp = thetext;
 
-        if(extrainfo.length == 0)
-            { extrainfo = "Not Yet Set"; }
+        if(extradisp.length == 0)
+            { extradisp = "Not Yet Set"; }
         
-        const extralist = extrainfo.replace(/\n/g, "<br/>");
+        const extralist = extradisp.replace(/\n/g, "<br/>");
 
         return `
             <table class="basic-table" width="${this.tableWidth}%">
