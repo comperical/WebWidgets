@@ -19,6 +19,8 @@ Goal here is to work with laptop and tablet, but not phone
 
 </style>
 
+<script src="/u/shared/optjs/ExtraInfoBox/v1.js"></script>
+
 <script>
 
 var TODAY_CODE = getTodayCode();
@@ -259,9 +261,18 @@ function saveExtraInfo()
 	
 	syncSingleItem(studyitem);		
 			
-	redisplay();	
+	redisplay();
 	
 	toggleHidden4Class('edit_info');
+}
+
+function getExtraInfoBox()
+{
+	return EXTRA.getEiBox()
+					.withStandardConfig("mini_task_list", EDIT_STUDY_ITEM, "extra_info")
+					.withBoxBuilder("javascript:getExtraInfoBox()");
+
+
 }
 
 
@@ -420,13 +431,14 @@ function reDispEditItem()
 	if(extrainfo.length == 0)
 		{ extrainfo = "Not Yet Set"; }
 	
-	const extralinelist = extrainfo.replace(/\n/g, "<br/>");	
+	const extralinelist = extrainfo.replace(/\n/g, "<br/>");
 
 	const ttypesel = buildOptSelector()
-					.configureFromList(MASTER_TYPE_LIST)
-					.setSelectOpener(`<select name="task_type_sel" onChange="javascript:updateTaskType()">`)
-					.setSelectedKey(studyitem.getTaskType())
-					.getHtmlString();
+						.configureFromList(MASTER_TYPE_LIST)
+						.setOnChange("javascript:updateTaskType()")
+						.setElementName("task_type_sel")
+						.setSelectedKey(studyitem.getTaskType())
+						.getHtmlString();
 	
 	populateSpanData({
 		"taskid" : studyitem.getId(),
@@ -436,10 +448,9 @@ function reDispEditItem()
 		"omegadate" : studyitem.getOmegaDate(),
 		"item_status" : itemstat,
 		"priority" : studyitem.getPriority(),
-		"extrainfo" : extralinelist
+		"extra_info_box" : getExtraInfoBox().getHtmlString()
 	});
 	
-	document.getElementById("set_extra_info").value = extrainfo;	
 }
 
 
@@ -613,38 +624,8 @@ function redisplay()
 
 <br/><br/>
 
-<table class="basic-table" width="50%" border="0">
-<tr>
-<td>
-<span id="extrainfo"></span>
-</td>
 
-<td width="10%">
-<a href="javascript:toggleHidden4Class('edit_info')"><img src="/u/shared/image/edit.png" height="18"></a>
-</td>
-</tr>
-</table>
-<br/>
-</span>
-
-
-<span class="edit_info" hidden>
-
-<form>
-<textarea id="set_extra_info" cols="80" rows="10">
-</textarea>
-</form>
-
-<a class="css3button" onclick="javascript:saveExtraInfo()">save</a>
-
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-
-<a class="css3button" onclick="javascript:toggleHidden4Class('edit_info')">cancel</a>
-
-</span>
+<span id="extra_info_box"></span>
 
 </span>
 

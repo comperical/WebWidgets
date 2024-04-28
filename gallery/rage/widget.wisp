@@ -5,6 +5,9 @@
 
 <wisp/>
 
+<script src="/u/shared/optjs/ExtraInfoBox/v1.js"></script>
+
+
 <script>
 
 var EDIT_STUDY_ITEM = -1;
@@ -85,18 +88,17 @@ function getPageComponent()
 	return EDIT_STUDY_ITEM == -1 ? "maintable_cmp" : "edit_item";
 }
 
-function saveNewDesc()
+function getExtraInfoBox()
 {
-	const myitem = lookupItem("rage_log", EDIT_STUDY_ITEM);
-	const newdesc = getDocFormValue("full_desc");
-	myitem.setFullDesc(newdesc);
-	myitem.syncItem();
-	redisplay();
+	return EXTRA.getEiBox()
+					.withStandardConfig("rage_log", EDIT_STUDY_ITEM, "full_desc")
+					.withBoxBuilder("javascript:getExtraInfoBox()");
 }
+
 
 function getTagList(itemid)
 {
-	const myitem = lookupItem("rage_log", itemid);
+	const myitem = W.lookupItem("rage_log", itemid);
 	return tagListFromItem(myitem);
 }
 
@@ -110,7 +112,7 @@ function getTagUniverse()
 {
 	const tagset = new Set();
 
-	getItemList("rage_log").forEach(function(ritem) {
+	W.getItemList("rage_log").forEach(function(ritem) {
 		tagListFromItem(ritem).forEach(tag => tagset.add(tag));		
 	});
 
@@ -123,7 +125,7 @@ function addStudyTag()
 	var thetags = getTagList(EDIT_STUDY_ITEM);
 	thetags.push(newtag);
 
-	const myitem = lookupItem("rage_log", EDIT_STUDY_ITEM);
+	const myitem = W.lookupItem("rage_log", EDIT_STUDY_ITEM);
 	myitem.setCategory(thetags.join(";"));
 	myitem.syncItem();
 	redisplay();
@@ -135,7 +137,7 @@ function removeStudyTag(tagidx)
 	oldtags.splice(tagidx, 1);
 
 
-	const myitem = lookupItem("rage_log", EDIT_STUDY_ITEM);
+	const myitem = W.lookupItem("rage_log", EDIT_STUDY_ITEM);
 	myitem.setCategory(oldtags.join(";"));
 	myitem.syncItem();
 	redisplay();
@@ -164,33 +166,29 @@ function redisplayStudyItem()
 	var fulltaglist = ['---'];
 	fulltaglist.push(... getTagUniverse());
 	const tagsel = buildOptSelector()
-						.setKeyList(fulltaglist)
-						.setSelectOpener(`<select name="add_tag_sel" onChange="javascript:addStudyTag()">`)
+						.configureFromList(fulltaglist)
+						.setElementName("add_tag_sel")
+						.setOnChange("javascript:addStudyTag()")
 						.setSelectedKey('---');
 
 
 
-	const studyitem = lookupItem("rage_log", EDIT_STUDY_ITEM);
+	const studyitem = W.lookupItem("rage_log", EDIT_STUDY_ITEM);
 	
-	// Okay, this took me a while to get right. The issue is that 
-	// the standard string.replace(...) won't do a global, and there is no replaceAll
-	var desclinelist = studyitem.getFullDesc().replace(/\n/g, "<br/>");
 	
 	populateSpanData({
 		"day_code" : studyitem.getDayCode(),
 		"short_name" : studyitem.getShortName(),
 		"category_list" : tagstr,
-		"itemdescline" : desclinelist,
-		"add_tag_sel_span" : tagsel.getSelectString()
+		"add_tag_sel_span" : tagsel.getHtmlString(),
+		"extra_info_box" : getExtraInfoBox().getHtmlString()
 	});
-
-	getUniqElementByName("full_desc").value = studyitem.getFullDesc();
 }
 
 function redisplayMainTable()
 {
 
-	var ragelist = getItemList("rage_log");
+	var ragelist = W.getItemList("rage_log");
 	ragelist.sort(proxySort(a => [a.getDayCode()])).reverse();
 
 	var tablestr = `
@@ -298,22 +296,7 @@ onclick="javascript:createNew()">NEW</a>
 <br/>
 <br/>
 
-<table class="basic-table" width="30%">
-<tr>
-<td>
-<span id="itemdescline">xxx<br/>yyy</span>
-</td>
-</tr>
-</table>
-
-<br/>
-<br/>
-
-<form>
-<textarea id="full_desc" name="full_desc" rows="10" cols="50"></textarea>
-</form>
-
-<a href="javascript:saveNewDesc()">save desc</a>
+<span id="extra_info_box"></span>
 
 </span>
 
