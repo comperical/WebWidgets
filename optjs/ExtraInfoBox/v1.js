@@ -116,7 +116,7 @@ ExtraInfoBox.prototype.withBoxBuilder = function(boxbuilder)
 }
 
 
-ExtraInfoBox.prototype.setSaveFunction = function(savefunc)
+ExtraInfoBox.prototype.withSaveFunction = function(savefunc)
 {
     massert(typeof(savefunc) == "string" && savefunc.startsWith("javascript:"), 
         `By convention, savefunc is a text string that starts with javascript:, found ${savefunc}`);
@@ -126,7 +126,7 @@ ExtraInfoBox.prototype.setSaveFunction = function(savefunc)
 }
 
 
-ExtraInfoBox.prototype.setTableWidth = function(twidth)
+ExtraInfoBox.prototype.withTableWidth = function(twidth)
 {
     massert(parseInt(twidth) == twidth, `Expected integer, got ${twidth}`);
     massert(3 <= twidth && twidth <= 100, `Invalid value for table width, expected integer from 3-100, got ${twidth}`);
