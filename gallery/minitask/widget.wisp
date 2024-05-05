@@ -292,7 +292,7 @@ function reDispActiveTable()
 		<table class="basic-table tasktable">
 		<tr>
 		${showtypecol ? "<th>Type</th>" : ""}
-		<th>ShortDesc</th>
+		<th>Description</th>
 		<th>Start</th>
 		<th>Age</th>
 		<th>Priority</th>
