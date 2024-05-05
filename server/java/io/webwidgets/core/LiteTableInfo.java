@@ -398,6 +398,10 @@ public class LiteTableInfo
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("\"");
+
+		// May 2024 note: could not detect any performance improvements by using the library version of the escape operation
+		// sb.append(_useJsonQuote ? org.json.simple.JSONValue.escape(s) : myEncodeURIComponent(s));
+
 		sb.append(myEncodeURIComponent(s));
 		sb.append("\"");
 		return sb.toString();
