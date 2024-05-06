@@ -265,12 +265,50 @@ function parseBankData(csvtext)
 
     // 8578,05/03/22,-100.00,Debit,ATM Withdrawal - CAPITAL ONE A5C8 BERKELEY  CA,8312.75
 
+    // Changed, May 2024!!
+    // New format:
+    // 8578,Withdrawal from PAYPAL to DANIEL BURFOOT INST XFER,04/12/24,Debit,15.95,8284.22
+    // Account Number,Transaction Description,Transaction Date,Transaction Type,Transaction Amount,Balance
 
+
+    const converter = function(ppitem)
+    {
+        massert(parseInt(ppitem["Account Number"]) == 8578, "Bad account number");
+
+        const bankrecord = new Object();
+
+        bankrecord.transact = handleAnnoyingDate(ppitem["Transaction Date"]);
+        bankrecord.desc = ppitem["Transaction Description"];
+        bankrecord.logsource = 'bank';
+
+
+        // This field only exists for credit
+        bankrecord.cap1_category = "N/A";
+
+        {
+            const cordstr = ppitem["Transaction Type"];
+            const sign = { "Debit" : -1, "Credit" : +1 }[cordstr];
+            massert(sign != null, `Unknown credit/debit string ${cordstr}`);
+
+            bankrecord.centamount = sign * Math.round(100 * parseFloat(ppitem["Transaction Amount"]));  
+        }
+
+        return bankrecord;
+    }
+
+
+    const ppfulldata =  Papa.parse(csvtext.trim(), { header : true } );
+    return ppfulldata.data.map(converter);
+
+
+    /*
     csvtext.trim().split("\n").forEach(function(line) {
 
         // header
         if(line.startsWith("Account Number")) 
             { return; }
+
+        console.log(line);
 
         const tokens = line.trim().split(",");
 
@@ -292,14 +330,13 @@ function parseBankData(csvtext)
         bankrecord.desc = tokens[4];
         bankrecord.logsource = 'bank';
 
-        // This field only exists for credit
-        bankrecord.cap1_category = "N/A";
+
 
         records.push(bankrecord);
 
     });
+    */
 
-    return records;
 }
 
 function annoyingDateFormat(daycode)
@@ -354,6 +391,7 @@ function testCreditParse()
 
 function testBankParse()
 {
+        /*
     const probedata = `
         Account Number,Transaction Date,Transaction Amount,Transaction Type,Transaction Description,Balance
         1473,05/16/22,-2000.00,Debit,Debit Card Purchase - XXXYYYZZ DELAWARE DE,1236.71
@@ -379,22 +417,41 @@ function testBankParse()
         1473,03/17/22,2242.30,Credit,Deposit from BIGTECH CO CORPORA DIRECT DEP,22451.12
     `;
 
+    */
+
+    const probedata = `
+Account Number,Transaction Description,Transaction Date,Transaction Type,Transaction Amount,Balance
+8578,Withdrawal from PAYPAL to DANIEL BURFOOT INST XFER,04/12/24,Debit,15.95,8284.22
+8578,Withdrawal from PAYPAL to DANIEL BURFOOT INST XFER,04/11/24,Debit,34.15,8300.17
+8578,Check #580 Cashed,04/09/24,Debit,467.97,8334.32
+8578,Withdrawal from CAPITAL ONE ONLINE PMT,04/03/24,Debit,1116.97,8802.29
+8578,Monthly Interest Paid,03/31/24,Credit,1.2,9919.26
+8578,Zelle money sent to HEATHER BALDYGA,03/29/24,Debit,806,9918.06
+8578,Withdrawal from CAPITAL ONE ONLINE PMT,03/26/24,Debit,3220.54,10724.06
+8578,Check #530 Cashed,03/22/24,Debit,220,13944.6
+8578,Withdrawal from CAPITAL ONE ONLINE PMT,03/16/24,Debit,1830.57,14164.6
+8578,Withdrawal from NU/UNITIL/EZPAY UTILITY,03/13/24,Debit,145.35,15995.17
+8578,Zelle money sent to HEATHER BALDYGA,03/01/24,Debit,806,16140.52
+8578,Monthly Interest Paid,02/29/24,Credit,1.51,16946.52
+    `;
+
+
     records = parseBankData(probedata);
 
 
     const centsum = records.map(r => r.centamount).reduce((a,b) => a+b);
-    console.log("CEnt sum is " + centsum);
-    massert(centsum == -1897211, `Expected -1897211 from fixture data, but got ${centsum}`);
+    massert(centsum == -866079, `Expected -1897211 from fixture data, but got ${centsum}`);
 
     const monthset = extractMonthSet(records);
     const monthresult = [... monthset].sort().join(",");
-    massert(monthresult == "2022-03,2022-04,2022-05", `Got month result ${monthresult}`);
+    massert(monthresult == "2024-02,2024-03,2024-04", `Got month result ${monthresult}`);
 
     {
         const padded = filterByPaddingLogic(records);
         const padmonth = extractMonthSet(padded);
-        massert([... padmonth].join(",") == "2022-04");
+        massert([... padmonth].join(",") == "2024-03");
     }
+
 
     console.log("Bank Parse worked okay");
 }

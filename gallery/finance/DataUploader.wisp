@@ -6,7 +6,13 @@
 
 <wisp/>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+
 <script>
+
+
+
 
 var FILTERED_RECORDS = [];
 
@@ -29,8 +35,8 @@ function redisplay()
         <tr>
         <th>Transact Date</th>
         <th>Desc</th>
+        <th>Category</th>
         <th>Amount</th>
-        <th>...</th>
         </tr>
     `
 
