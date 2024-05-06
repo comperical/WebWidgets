@@ -1342,5 +1342,50 @@ public class FastTest4Basic
 			}
 		}
 	}
+
+	public static class TestFilterColumn extends ArgMapRunnable
+	{
+
+		public void runOp()
+		{
+			// TODO: need an approach to writing tests for other users
+			WidgetUser admin = WidgetUser.lookup("dburfoot");
+			WidgetItem item = new WidgetItem(admin, "systest");
+
+			// 
+			CoreDb.execSqlUpdate("DELETE FROM filter_test", item);
+
+			for(int i : Util.range(26))
+			{
+				char theletter = (char) ('a' + i);
+				String theblock = ("" + theletter + theletter + theletter + theletter + theletter).toUpperCase();
+				CoreDb.upsertFromRecMap(item, "filter_test", 1, CoreDb.getRecMap(
+					"id", i,
+					"letter", theletter +"",
+					"fullblock", theblock
+				));
+			}
+
+			for(boolean usefilter : Util.listify(true, false))
+			{
+				LiteTableInfo LTI = new LiteTableInfo(item, "filter_test");
+				LTI.runSetupQuery();
+				if(usefilter)
+					{ LTI.withColumnTarget("letter", "x"); }
+
+				String result = Util.join(LTI.composeDataRecSpool(), "\n");
+
+				Util.massert(result.contains("XXXXX"));
+
+				boolean haveA = result.contains("AAAAA");
+				boolean haveT = result.contains("TTTTT");
+
+				// Set(...).size == 2 means they are opposite
+				Util.massert(Util.setify(haveA, usefilter).size() == 2);
+				Util.massert(Util.setify(haveT, usefilter).size() == 2);
+
+			}
+		}
+	}
 } 
 

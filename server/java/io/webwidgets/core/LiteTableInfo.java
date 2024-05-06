@@ -100,6 +100,8 @@ public class LiteTableInfo
 	
 	private List<String> _pkeyList = Util.vector();
 
+	private Pair<String, Object> _colFilterTarget = null;
+
 	private Boolean _isBlobStore = null;
 
 	private final boolean _noDataMode;
@@ -169,6 +171,16 @@ public class LiteTableInfo
 	}
 	
 	
+
+	public LiteTableInfo withColumnTarget(String colname, Object value)
+	{
+		Util.massert(_colTypeMap != null, "You must run the setup query first");
+		Util.massert(_colTypeMap.containsKey(colname), 
+			"Attempt to filter on missing column %s, options are %s", colname, _colTypeMap.keySet());
+
+		_colFilterTarget = Pair.build(colname, value);
+		return this;
+	}
 	
 	public void printInfo()
 	{
@@ -226,7 +238,7 @@ public class LiteTableInfo
 	
 	public WidgetItem getWidget()
 	{
-		return dbTabPair._1;	
+		return dbTabPair._1;
 	}
 	
 	public String getWidgetOwner()
@@ -236,7 +248,7 @@ public class LiteTableInfo
 	
 	public String getWidgetName()
 	{
-		return dbTabPair._1.theName;	
+		return dbTabPair._1.theName;
 	}
 	
 	public String getBasicName()
@@ -314,7 +326,16 @@ public class LiteTableInfo
 
 		if(!_noDataMode) 
 		{
-			QueryCollector bigcol = QueryCollector.buildAndRun("SELECT * FROM " + querytarget, dbTabPair._1);
+			String query = "SELECT * FROM " + querytarget;
+			QueryCollector bigcol;
+
+			if(_colFilterTarget == null)
+			{
+				bigcol = QueryCollector.buildAndRun(query, dbTabPair._1);
+			} else { 
+				query += String.format(" WHERE %s = ? ", _colFilterTarget._1);
+				bigcol = QueryCollector.buildRunPrepared(query, dbTabPair._1, _colFilterTarget._2);
+			}
 
 			recordList = bigcol.getArgMapList();
 		}

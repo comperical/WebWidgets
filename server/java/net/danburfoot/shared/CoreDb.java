@@ -56,6 +56,28 @@ public class CoreDb
 			return qcol;
 		}
 
+
+		public static QueryCollector buildRunPrepared(String prepsql, ConnectionSource csource, Object... vargs)
+		{
+			QueryCollector qcol = new QueryCollector(prepsql);
+
+			try (var conn = csource.createConnection()) {
+
+				PreparedStatement pstmt = conn.prepareStatement(prepsql);
+				for(int i : Util.range(vargs.length)) 
+					{ pstmt.setObject(i+1, vargs[i]); }
+
+				ResultSet rset = pstmt.executeQuery();
+				qcol.grabData(rset);
+				return qcol;
+
+			} catch(Exception ex) {
+
+				throw new RuntimeException(ex); 
+
+			}
+
+		}
 		
 		public static QueryCollector buildAndRun(String sql, ConnectionSource csource)
 		{

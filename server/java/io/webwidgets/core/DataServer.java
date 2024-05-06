@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import net.danburfoot.shared.Util;
 import net.danburfoot.shared.ArgMap;
 import net.danburfoot.shared.CollUtil;
+import net.danburfoot.shared.CollUtil.*;
 
 import io.webwidgets.core.CoreUtil.*;
 import io.webwidgets.core.WidgetOrg.*;
@@ -32,6 +33,10 @@ public class DataServer
 		view_prefixes("Comma-separated list of view prefixes to be used for these lookups. If a prefix matches multiple view/table pairs, you will get multiple views"),
 		
 		from_url("If true, pull any valid DataIncludeArgs from the request URL. Do not overwrite args in the wisp tag. This enables a simple form of dynamic loading. Default false"),
+
+		filter_column("Name of column to filter results by. If present, you must also include target_value argument"),
+
+		target_value("Desired value of filter column to search for. May only be present if filter_column is present"),
 
 		okay_if_absent(
 			"By default, system will throw an error if a table is requested that is not present. " + 
@@ -157,6 +162,8 @@ public class DataServer
 		private boolean _noDataMode = false;
 
 		private Optional<String> _fullViewName = Optional.empty();
+
+		private Optional<Pair<String, Object>> _optFilterTarget = Optional.empty();
 
 		// TODO: refactor this to use a normal Map<DataIncludeArg, String>
 		protected ServerUtilCore(ArgMap amap)
@@ -290,6 +297,17 @@ public class DataServer
 				}
 			}
 
+			{
+				Optional<String> fc = _argMap.optGetStr(DataIncludeArg.filter_column.toString());
+				Optional<String> tv = _argMap.optGetStr(DataIncludeArg.target_value.toString());
+
+				Util.massert(fc.isPresent() == tv.isPresent(),
+					"If filter_column argument is present, target value argument must be present and vice versa");
+
+				if(fc.isPresent())
+					{ _optFilterTarget = Optional.of(Pair.build(fc.get(), tv.get())); }
+			}
+
 			AuthChecker checker = AuthChecker.build().directSetAccessor(getPageAccessor()).directDbWidget(_theItem);
 
 			// In theory, we could allow read here if noDataMode is set. But the only reason to set noDataMode
@@ -402,11 +420,11 @@ public class DataServer
 
 			StringBuilder sb = new StringBuilder();
 			maybeGetAssetInclude(sb);
-			return sb.append(getScriptInfo(getPageAccessor(), _theItem, _base2Target, _noDataMode)).toString();
+			return sb.append(getScriptInfo(getPageAccessor(), _theItem, _base2Target, _noDataMode, _optFilterTarget)).toString();
 		}
 
 
-		private static String getScriptInfo(Optional<WidgetUser> accessor, WidgetItem dbitem, Map<String, String> base2view, boolean nodata)
+		private static String getScriptInfo(Optional<WidgetUser> accessor, WidgetItem dbitem, Map<String, String> base2view, boolean nodata, Optional<Pair<String, Object>> filter)
 		{
 			// This should be redundant at this point, I have already checked it
 			// But paranoia is good
@@ -420,6 +438,12 @@ public class DataServer
 			{
 				LiteTableInfo LTI = new LiteTableInfo(dbitem, onetab, nodata);
 				LTI.runSetupQuery();
+
+				if(filter.isPresent())
+				{
+					if(LTI.getColTypeMap().containsKey(filter.get()._1))
+						{ LTI.withColumnTarget(filter.get()._1, filter.get()._2); }
+				}
 				
 				// dogenerate=false
 				// This will only generate the code if it's not available.
