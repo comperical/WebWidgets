@@ -31,7 +31,7 @@ public class MailSystem {
     
     public static final String MAILBOX_CREATE_SQL = 
         "CREATE TABLE " + MAILBOX_DB_TABLE + " (id int, sent_at_utc varchar(19), send_target_utc varchar(19), recipient varchar(100), \n" + 
-        " subject varchar(100), email_content varchar(1000), is_text smallint, primary key(id))";
+        " subject varchar(100), email_content varchar(1000), is_text smallint, primary key(id)   )";
 
 
     public static Optional<String> checkForEmailError(LiteTableInfo tableInfo, ArgMap argmap)
