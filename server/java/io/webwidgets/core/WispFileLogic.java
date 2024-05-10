@@ -144,54 +144,67 @@ public class WispFileLogic
 
         public void sendResultToStream(HttpServletRequest request, OutputStream out, Optional<WidgetUser> optacc) throws IOException
         {
-            boolean includedone = false;
+            // Line number => Wisp data
+            TreeMap<Integer, WispServerUtil> tagmap = Util.treemap();
 
             for(int idx : Util.range(_srcList))
             {
                 String s = _srcList.get(idx);
 
                 // Warning if the <wisp tag is not in the right place, ie within the <head> section?
-                if(!s.trim().startsWith("<wisp"))
+                if(s.trim().startsWith("<wisp"))
                 {
-                    // TODO: warning here if you see a <wisp tag but it's not at the start of the line
-                    out.write(s.getBytes());
-                    out.write("\n".getBytes());
-                    continue;
-                }
+                    try {
+                        // TODO: this needs to be integrated with the CodeFormatChecker,
+                        // this should never happen here
+                        Map<DataIncludeArg, String> dargmap = WispTagParser.parse2DataMap(s);
 
-                try {
-                    // TODO: this needs to be integrated with the CodeFormatChecker,
-                    // this should never happen here
-                    Map<DataIncludeArg, String> include = WispTagParser.parse2DataMap(s);
+                        // This means the Wisp tag parsing failed
+                        // Usually, but not always, this should be detected by the uploader
+                        if(dargmap == null)
+                        { 
+                            String mssg =
+                                "Your wisp file has a badly formatted wisp tag on line " + (idx+1) + 
+                                " Any line starting with &lt;wisp must include a wisp tag " + 
+                                " that is properly formatted and nothing else";
 
-                    // This means the Wisp tag parsing failed
-                    // Usually, but not always, this should be detected by the uploader
-                    if(include == null)
-                    { 
-                        String mssg =
-                            "Your wisp file has a badly formatted wisp tag on line " + (idx+1) + 
-                            " Any line starting with &lt;wisp must include a wisp tag " + 
-                            " that is properly formatted and nothing else";
+                            throw new RuntimeException(mssg);
+                        }
 
-                        throw new RuntimeException(mssg);
+                        maybePullUrlInfo(request, dargmap);
+                        WispServerUtil wisptag = new WispServerUtil(optacc, pageItem, dargmap);
+                        tagmap.put(idx, wisptag);
+
+                    } catch (IllegalArgumentException illex) {
+                        throw illex;
                     }
-
-                    maybePullUrlInfo(request, include);
-
-                    WispServerUtil dstest = new WispServerUtil(optacc, pageItem, include, includedone);
-                    out.write(dstest.include().getBytes());
-                    out.write("\n".getBytes());
-                    includedone = true;
-
-                } catch (IllegalArgumentException illex) {
-                    throw illex;
                 }
             }
+
+            // If we have any tags, set the FIRST one to do the global include,
+            // and the LAST one to do the user include, thanks TreeMap!!
+            if(!tagmap.isEmpty())
+            {
+                tagmap.firstEntry().getValue().setGlobalInclude();
+                tagmap.lastEntry().getValue().setUserInclude();
+            }
+
+
+            for(int idx : Util.range(_srcList))
+            {
+                WispServerUtil tag = tagmap.get(idx);
+                String r = tag == null ? _srcList.get(idx) : tag.include();
+
+                out.write(r.getBytes());
+                out.write("\n".getBytes());
+            }
+
         }
 
         private void maybePullUrlInfo(HttpServletRequest request, Map<DataIncludeArg, String> include)
         {
-            if(!include.containsKey(DataIncludeArg.from_url))
+
+            if(request == null || !include.containsKey(DataIncludeArg.from_url))
                 { return; }
 
             {
@@ -325,23 +338,32 @@ public class WispFileLogic
     // "mark" that the inclusion of the core JS files is complete
     public static class WispServerUtil extends DataServer.ServerUtilCore
     {
-        final boolean _includeComplete;
-
         final Optional<WidgetUser> pageAccessor;
 
         final WidgetItem pageItem;
+
+        private boolean _doGlobalInclude = false;
+
+        private boolean _doUserInclude = false;
         
-        public WispServerUtil(Optional<WidgetUser> accessor, WidgetItem pitem, Map<DataIncludeArg, String> dargmap, boolean complete)
+        public WispServerUtil(Optional<WidgetUser> accessor, WidgetItem pitem, Map<DataIncludeArg, String> dargmap)
         {
             super(dargmap);
 
             pageAccessor = accessor;
 
             pageItem = pitem;
-
-            _includeComplete = complete;
         }
         
+        void setGlobalInclude()
+        {
+            _doGlobalInclude = true;
+        }
+
+        void setUserInclude()
+        {
+            _doUserInclude = true;
+        }
         
         @Override
         protected Optional<WidgetUser> getPageAccessor()
@@ -349,16 +371,19 @@ public class WispFileLogic
             return pageAccessor;
         }
 
+
         @Override
-        protected boolean isIncludeComplete()
+        protected boolean shouldPerformInclude(boolean global)
         {
-            return _includeComplete;
+            // return _includeComplete;
+            return global ? _doGlobalInclude : _doUserInclude;
         }
 
         @Override
-        protected void markIncludeComplete()
+        protected void markIncludeComplete(boolean global)
         {
-            // 
+            boolean relbit = global ? _doGlobalInclude : _doUserInclude;
+            Util.massert(relbit, "Marked include complete for global=%s, but this tag was not configured to include it!!");
         }
 
         @Override

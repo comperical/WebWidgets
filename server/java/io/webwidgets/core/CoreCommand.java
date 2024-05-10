@@ -1305,6 +1305,26 @@ public class CoreCommand
 			}
 		}
 	}
+
+
+	public static class TestWispFileGeneration extends ArgMapRunnable
+	{
+
+		public void runOp() throws IOException
+		{
+
+			WidgetUser user = WidgetUser.lookup("japayton");
+			WidgetItem item = new WidgetItem(user, "main");
+
+			File wispfile = new File("/opt/userdata/widgetserve/japayton/main/enter_price.wisp");
+
+			var wff = new WispFileLogic.WispFileFormat(wispfile, item);
+
+			wff.sendResultToStream(null, System.out, Optional.of(user));
+
+		}
+
+	}
 }
 
 

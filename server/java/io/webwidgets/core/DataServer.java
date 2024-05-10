@@ -143,11 +143,7 @@ public class DataServer
 	
 
 	
-	public static void markAssetIncludeComplete(HttpServletRequest request)
-	{
-		request.setAttribute(ASSET_INCLUDE_COMPLETE, true+"");
-	}
-	
+
 
 	public abstract static class ServerUtilCore
 	{
@@ -176,9 +172,9 @@ public class DataServer
 
 		protected abstract Optional<WidgetUser> getPageAccessor();
 
-		protected abstract void markIncludeComplete();
+		protected abstract void markIncludeComplete(boolean global);
 
-		protected abstract boolean isIncludeComplete();
+		protected abstract boolean shouldPerformInclude(boolean global);
 
 		private void onDemandSetup() throws WidgetRequestException
 		{
@@ -328,21 +324,19 @@ public class DataServer
 		}
 
 
-		private void maybeGetAssetInclude(StringBuilder sb)
+		private void maybeGetAssetInclude(StringBuilder sb, boolean global)
 		{
-			if(isIncludeComplete())
-				{ return; }
-
-			addAssetInclude(sb);
-			markIncludeComplete();
+			if(shouldPerformInclude(global))
+			{
+				sb.append(global ? getGlobalInclude() : getUserAutoInclude(_theItem));
+				markIncludeComplete(global);
+			}
 		}
 
-		// This is a replacement for the old AssetInclude.jsp_inc file.
-		// We don't want to expose end users to that complexity
-		private void addAssetInclude(StringBuilder sb)
+		private static String getGlobalInclude()
 		{
+			StringBuilder sb = new StringBuilder();
 			sb.append("<!-- Widget Core Asset Include -->\n");
-
 
 			// These two blocks are very similar, but there are a few subtle differences, that make me feel
 			// like it's not worth trying to combine
@@ -386,12 +380,18 @@ public class DataServer
 			}
 			
 			sb.append("<!-- End Core Asset Include -->\n\n\n");
-			
+			return sb.toString();
+		}
+
+		private static String getUserAutoInclude(WidgetItem dbitem)
+		{
+			StringBuilder sb = new StringBuilder();
+
 			// Gotcha - need to request JS auto-include from the Widget - owner, not the logged-in user
 			// This feature is tricky, think more about it
-			List<String> includeList = WebUtil.getAutoIncludeStatement(_theItem);
+			List<String> includeList = WebUtil.getAutoIncludeStatement(dbitem);
 			
-			sb.append("<!-- Custom JS code for user -->\n");
+			sb.append("\n\n<!-- Custom JS code for user -->\n");
 			
 			for(String include : includeList) 
 			{ 
@@ -400,6 +400,7 @@ public class DataServer
 			}
 			
 			sb.append("<!-- End custom JS code for user -->\n\n");
+			return sb.toString();
 		}
 
 
@@ -421,8 +422,10 @@ public class DataServer
 			}
 
 			StringBuilder sb = new StringBuilder();
-			maybeGetAssetInclude(sb);
-			return sb.append(getScriptInfo(getPageAccessor(), _theItem, _base2Target, _noDataMode, _optFilterTarget)).toString();
+			maybeGetAssetInclude(sb, true);
+			sb.append(getScriptInfo(getPageAccessor(), _theItem, _base2Target, _noDataMode, _optFilterTarget));
+			maybeGetAssetInclude(sb, false);
+			return sb.toString();
 		}
 
 
@@ -479,6 +482,8 @@ public class DataServer
 			reclist.add("// Check for bad index creation in user code");
 			reclist.add("W.__badIndexCreationCheck();");
 			reclist.add("</script>");
+			reclist.add("");
+			reclist.add("");
 			
 			return Util.join(reclist, "\n");
 		}
@@ -487,6 +492,10 @@ public class DataServer
 
 	static class LegacyServerUtil extends ServerUtilCore
 	{
+
+		public static final String GLOBAL_INCLUDE_COMPLETE = "GlobalAsestIncDone";
+
+		public static final String USER_AUTO_INCLUDE_COMPLETE = "UserAutoIncludeDone";
 
 		private final HttpServletRequest _theRequest;
 		
@@ -515,16 +524,23 @@ public class DataServer
 		}
 
 		@Override
-		protected boolean isIncludeComplete()
+		protected boolean shouldPerformInclude(boolean global)
 		{
-			String already = (String) _theRequest.getAttribute(ASSET_INCLUDE_COMPLETE);
+			return !isIncludeComplete(global);
+		}
+
+		private boolean isIncludeComplete(boolean global)
+		{
+			String attname = global ? GLOBAL_INCLUDE_COMPLETE : USER_AUTO_INCLUDE_COMPLETE;
+			String already = (String) _theRequest.getAttribute(attname);
 			return (true+"").equals(already);
 		}
 
 		@Override
-		protected void markIncludeComplete()
+		protected void markIncludeComplete(boolean global)
 		{
-			markAssetIncludeComplete(_theRequest);
+			String attname = global ? GLOBAL_INCLUDE_COMPLETE : USER_AUTO_INCLUDE_COMPLETE;
+			_theRequest.setAttribute(attname, true+"");
 		}
 
 		@Override
