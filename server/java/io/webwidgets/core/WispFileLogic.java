@@ -178,12 +178,7 @@ public class WispFileLogic
 
                     maybePullUrlInfo(request, include);
 
-                    // THis conversion is dumb, the other code is just going to convert it back again
-                    ArgMap convert = new ArgMap();
-                    for(DataIncludeArg arg : include.keySet())
-                        { convert.put(arg.toString(), include.get(arg)); }
-
-                    WispServerUtil dstest = new WispServerUtil(optacc, pageItem, convert, includedone);
+                    WispServerUtil dstest = new WispServerUtil(optacc, pageItem, include, includedone);
                     out.write(dstest.include().getBytes());
                     out.write("\n".getBytes());
                     includedone = true;
@@ -336,9 +331,9 @@ public class WispFileLogic
 
         final WidgetItem pageItem;
         
-        public WispServerUtil(Optional<WidgetUser> accessor, WidgetItem pitem, ArgMap amap, boolean complete)
+        public WispServerUtil(Optional<WidgetUser> accessor, WidgetItem pitem, Map<DataIncludeArg, String> dargmap, boolean complete)
         {
-            super(amap);
+            super(dargmap);
 
             pageAccessor = accessor;
 

@@ -95,18 +95,18 @@ public class DataServer
 	
 	private static String includeSub(HttpServletRequest request, String query)
 	{
-		ArgMap argmap = buildIncludeMap(query);
+		Map<DataIncludeArg, String> argmap = buildIncludeMap(query);
 		
-		return ServerUtil
-			.build(request, argmap)
-			.include();
+		return LegacyServerUtil.build(request, argmap).include();
 	}
 
-	static ArgMap buildIncludeMap(String paramstr)
+	static Map<DataIncludeArg, String> buildIncludeMap(String paramstr)
 	{
-		ArgMap mymap = new ArgMap();
 		if(paramstr.trim().isEmpty())
-			{ return mymap; }
+			{ return Collections.emptyMap(); }
+
+
+		Map<DataIncludeArg, String> mymap = Util.treemap();
 
 		String[] terms = paramstr.trim().split("&");
 
@@ -119,8 +119,8 @@ public class DataServer
 
 			try {
 				DataIncludeArg diarg = DataIncludeArg.valueOf(tokens[0]);
-				Util.massert(!mymap.containsKey(diarg.toString()), "Duplicate DataServer include argument __%s__", diarg);
-				mymap.setStr(diarg.toString(), tokens[1]);
+				Util.massert(!mymap.containsKey(diarg), "Duplicate DataServer include argument __%s__", diarg);
+				mymap.put(diarg, tokens[1]);
 
 			} catch (IllegalArgumentException ilex) {
 				Util.massert(false, 
@@ -151,7 +151,7 @@ public class DataServer
 
 	public abstract static class ServerUtilCore
 	{
-		private final ArgMap _argMap;
+		private final Map<DataIncludeArg, String> _dargMap;
 		
 		protected WidgetItem _theItem;
 		
@@ -165,11 +165,12 @@ public class DataServer
 
 		private Optional<Pair<String, Object>> _optFilterTarget = Optional.empty();
 
-		// TODO: refactor this to use a normal Map<DataIncludeArg, String>
-		protected ServerUtilCore(ArgMap amap)
+		protected ServerUtilCore(Map<DataIncludeArg, String> amap)
 		{
-			_argMap = amap;
+			_dargMap = amap;
 		}
+
+
 
 		protected abstract Optional<WidgetItem> lookupPageWidget();
 
@@ -197,7 +198,7 @@ public class DataServer
 			// This is NOT necessarily the user who is logged-in
 			WidgetUser wdgOwner;
 			{
-				Optional<String> optuser = _argMap.optGetStr(DataIncludeArg.username.toString());
+				Optional<String> optuser = getArg(DataIncludeArg.username);
 				
 				if(optuser.isPresent())
 				{
@@ -214,7 +215,8 @@ public class DataServer
 
 			// Option to request data from Widget A in Widget B
 			{
-				Optional<String> wdgname = _argMap.optGetStr(DataIncludeArg.widgetname.toString());
+				Optional<String> wdgname = getArg(DataIncludeArg.widgetname);
+
 				if(wdgname.isPresent())
 				{
 					Set<String> okset = Util.map2set(wdgOwner.getUserWidgetList(), wdg -> wdg.theName);
@@ -240,8 +242,8 @@ public class DataServer
 			// Option to slim down the amount of data you request by specifying only a few tables
 			// Idea here is to reduce bandwidth and load time if you don't need all the data in a widget
 			{
-				Optional<String> tableStr = _argMap.optGetStr(DataIncludeArg.tables.toString());
-				
+				Optional<String> tableStr = getArg(DataIncludeArg.tables);
+
 				if(tableStr.isPresent())
 				{
 					String[] tabs = tableStr.get().split(",");
@@ -262,7 +264,7 @@ public class DataServer
 			_base2Target = Util.map2map(tableset, tbl -> tbl, tbl -> tbl);
 
 			{
-				Optional<String> viewpref = _argMap.optGetStr(DataIncludeArg.view_prefixes.toString());
+				Optional<String> viewpref = getArg(DataIncludeArg.view_prefixes);
 				
 				if(viewpref.isPresent())
 				{
@@ -283,7 +285,8 @@ public class DataServer
 
 
 			{
-				Optional<String> noData = _argMap.optGetStr(DataIncludeArg.no_data.toString());
+
+				Optional<String> noData = getArg(DataIncludeArg.no_data);
 
 				if(noData.isPresent())
 				{
@@ -298,8 +301,8 @@ public class DataServer
 			}
 
 			{
-				Optional<String> fc = _argMap.optGetStr(DataIncludeArg.filter_column.toString());
-				Optional<String> tv = _argMap.optGetStr(DataIncludeArg.target_value.toString());
+				Optional<String> fc = getArg(DataIncludeArg.filter_column);
+				Optional<String> tv = getArg(DataIncludeArg.target_value);
 
 				Util.massert(fc.isPresent() == tv.isPresent(),
 					"If filter_column argument is present, target value argument must be present and vice versa");
@@ -318,6 +321,12 @@ public class DataServer
 				throw new WidgetRequestException(mssg);
 			}
 		}
+
+		private Optional<String> getArg(DataIncludeArg diarg)
+		{
+			return Optional.ofNullable(_dargMap.get(diarg));
+		}
+
 
 		private void maybeGetAssetInclude(StringBuilder sb)
 		{
@@ -396,15 +405,8 @@ public class DataServer
 
 		public String include()
 		{
-			for(String argkey : _argMap.keySet())
-			{
-				Util.massert(OKAY_ARG_SET.contains(argkey),
-					"Invalid DataServer include argument %s, options are %s", argkey, OKAY_ARG_SET);
-			}
-			
-			
-			boolean okay2skip = _argMap.getBit("okay_if_absent", false);
-			
+			boolean okay2skip = (""+true).equals(_dargMap.get(DataIncludeArg.okay_if_absent));
+						
 			try 
 				{ onDemandSetup(); }
 			catch (WidgetRequestException wrex) 
@@ -483,26 +485,26 @@ public class DataServer
 	}
 
 
-	static class ServerUtil extends ServerUtilCore
+	static class LegacyServerUtil extends ServerUtilCore
 	{
 
 		private final HttpServletRequest _theRequest;
 		
-		private ServerUtil(HttpServletRequest req, ArgMap amap)
+		private LegacyServerUtil(HttpServletRequest req, Map<DataIncludeArg, String> amap)
 		{
 			super(amap);
 
 			_theRequest = req;
 		}
 		
-		public static ServerUtil build(HttpServletRequest req)
+		public static LegacyServerUtil build(HttpServletRequest req)
 		{
-			return build(req, new ArgMap());
+			return build(req, Collections.emptyMap());
 		}
 		
-		public static ServerUtil build(HttpServletRequest req, ArgMap amap)
+		public static LegacyServerUtil build(HttpServletRequest req, Map<DataIncludeArg, String> amap)
 		{
-			return new ServerUtil(req, amap);
+			return new LegacyServerUtil(req, amap);
 		}
 		
 		@Override

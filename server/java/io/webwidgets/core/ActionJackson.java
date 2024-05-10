@@ -930,7 +930,7 @@ public class ActionJackson extends HttpServlet
 			Util.massert(dataformat.isPresent(), "Expect a line with a dataformat at this point");
 
 			try {
-				ArgMap mymap = DataServer.buildIncludeMap(dataformat.get());
+				Map<DataIncludeArg, String> mymap = DataServer.buildIncludeMap(dataformat.get());
 				return null;
 			} catch (Exception ex) {
 				return ex.getMessage();
