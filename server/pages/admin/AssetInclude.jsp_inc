@@ -33,24 +33,10 @@ function bounce2WidgetHome()
 
 </script>
 
+
 <%
-
-
-
-            List<String> includeList = WebUtil.getAutoIncludeStatement(optUser.get());
-            for(String inc : includeList)
-            {
-%>
-<!-- AutoIncluded file -->
-<%= inc %>
-<%
-            }
         }
     }
 %>
 
-<%
-    // Tell DataServer not to double-include
-    DataServer.markAssetIncludeComplete(request);
-%>
 
