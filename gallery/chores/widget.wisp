@@ -19,9 +19,11 @@ Goal here is to work with laptop and tablet, but not phone
 
 <script src="https://unpkg.com/current-device/umd/current-device.min.js"></script>
 
+<wisp widgetname="minitask" tables="mini_task_list" okay_if_absent="true"/>
+
+
 <wisp/>
 
-<wisp widgetname="minitask" tables="mini_task_list" okay_if_absent="true"/>
 
 <script>
 

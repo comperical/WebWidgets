@@ -1,18 +1,19 @@
-
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<title>Simple Item Entry</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Note App</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
 
 <wisp no_data="true"/>
 
 <script>
 
-
-function createNewTask(priority)
+function createNote(priority)
 {
-
-    
-    var itemname = getDocFormValue("simple_item")
+    const itemname = getDocFormValue("simple_item")
     
     if(itemname)
     {           
@@ -49,55 +50,27 @@ function doClear()
 function redisplay()
 {
     getUniqElementByName("simple_item").value = "";
-    getUniqElementByName("simple_item").focus();
+    // getUniqElementByName("simple_item").focus();
+
+    document.getElementById("noteText").focus();
 }
-
-
-
-
 
 </script>
 
+
 </head>
-
 <body onLoad="javascript:redisplay()">
+    <div class="container p-3">
+        <h2 class="mb-3">Simple Entry</h2>
+        <textarea name="simple_item" class="form-control mb-3" id="noteText" rows="4" placeholder="Type your note here..."></textarea>
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-danger" onclick="createNote(20)">Top Priority</button>
+            <button type="button" class="btn btn-warning" onclick="createNote(10)">High Priority</button>
+            <button type="button" class="btn btn-secondary" onclick="createNote(5)">Regular Priority</button>
+        </div>
+    </div>
 
-<center>
-
-<h2>Simple Task Entry</h2>
-
-
-<textarea name="simple_item" rows="10" cols="60"></textarea>
-
-<br/><br/>
-
-<a class="css3button" style="background:-webkit-gradient(linear,left top,left bottom,from(#f39),to(#f39));"
-href="javascript:createNewTask(20)">TOP</a>
-
-&nbsp;
-&nbsp;
-&nbsp;
-
-&nbsp;
-&nbsp;
-
-
-
-<a class="css3button" href="javascript:createNewTask(10)"
-style="background:-webkit-gradient(linear,left top,left bottom,from(#c0c),to(#c0c));">HIGH</a>
-
-&nbsp;
-&nbsp;
-
-
-&nbsp;
-&nbsp;
-&nbsp;
-
-<a class="css3button" href="javascript:createNewTask(5)">REG.</a>
-
-
-</center>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>
