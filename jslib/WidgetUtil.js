@@ -485,12 +485,18 @@ function spreadConvert(it)
 
     while(true)
     {
-        const newitem = it.next();
+        try {
+            const newitem = it.next();
 
-        if(newitem.done)
-            { break; }
+            if(newitem.done)
+                { break; }
 
-        result.push(newitem.value);
+            result.push(newitem.value);
+
+        } catch (e) {
+            const message = `Failed to apply spreadConvert operator: ${e.message}`;
+            throw new Error(message);
+        }
     }
 
     return result;
