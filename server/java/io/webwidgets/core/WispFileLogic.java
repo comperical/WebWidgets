@@ -368,6 +368,7 @@ public class WispFileLogic
             pageItem = pitem;
         }
         
+        // TODO: no longer use these, can remove them
         void setGlobalInclude()
         {
             _doGlobalInclude = true;
