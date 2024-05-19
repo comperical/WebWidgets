@@ -181,32 +181,19 @@ public class WispFileLogic
                 }
             }
 
+            // If we have any tags, set the FIRST one to do the global include,
+            // and the LAST one to do the user include, thanks TreeMap!!
+            if(!tagmap.isEmpty())
+            {
+                tagmap.firstEntry().getValue().setGlobalInclude();
+                tagmap.lastEntry().getValue().setUserInclude();
+            }
 
-
-            Optional<WidgetItem> optItem = WebUtil.lookupWidgetFromPageUrl(request);
 
             for(int idx : Util.range(_srcList))
             {
-                String r = _srcList.get(idx);
                 WispServerUtil tag = tagmap.get(idx);
-
-                if(tag != null)
-                {
-                    StringBuilder sb = new StringBuilder();
-
-                    // Pull in the Global includes BEFORE the first batch of Widget data.
-                    if(idx == tagmap.firstKey())
-                        { sb.append(ServerUtilCore.getGlobalInclude()); }
-
-                    sb.append(tag.include());
-
-
-                    // If the Home widget is present, pull in user-defined auto-includes AFTER the last tag
-                    if(idx == tagmap.lastKey() && optItem.isPresent());
-                        { sb.append(ServerUtilCore.getUserAutoInclude(optItem.get())); }
-
-                    r = sb.toString();
-                }
+                String r = tag == null ? _srcList.get(idx) : tag.include();
 
                 out.write(r.getBytes());
                 out.write("\n".getBytes());

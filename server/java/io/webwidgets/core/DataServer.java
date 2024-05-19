@@ -333,7 +333,7 @@ public class DataServer
 			}
 		}
 
-		static String getGlobalInclude()
+		private static String getGlobalInclude()
 		{
 			StringBuilder sb = new StringBuilder();
 			sb.append("<!-- Widget Core Asset Include -->\n");
@@ -383,7 +383,7 @@ public class DataServer
 			return sb.toString();
 		}
 
-		static String getUserAutoInclude(WidgetItem dbitem)
+		private static String getUserAutoInclude(WidgetItem dbitem)
 		{
 			StringBuilder sb = new StringBuilder();
 
