@@ -150,6 +150,16 @@ OptSelector.prototype.setOnChange = function(funcname)
         if you don't like this, use setAttribute('onChange', ...`
     );
 
+
+    if(this._myAttributes != null)
+    {
+        const previous = this._myAttributes["onChange"];
+        massert(previous == null,
+            `You have already set the onChange attribute to ${previous}, you cannot reset it`
+        );
+    }
+
+
     return this.setAttribute("onChange", funcname);
 }
 
@@ -331,7 +341,7 @@ const GENERIC_OPT_SELECT_MAP = new Map();
 // You must provide an element name before calling this function
 OptSelector.prototype.useGenericUpdater = function()
 {
-    massert("name" in this._myAttributes, 
+    massert(this._myAttributes != null && ("name" in this._myAttributes),
         "You must set the element name of the OptSelector before calling useGenericUpdater()");
 
     const myname = this._myAttributes["name"];
