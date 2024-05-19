@@ -1312,18 +1312,16 @@ public class CoreCommand
 
 		public void runOp() throws IOException
 		{
+			WidgetUser user = WidgetUser.lookup(_argMap.getStr("username"));
+			WidgetItem item = new WidgetItem(user, _argMap.getStr("widgetname"));
 
-			WidgetUser user = WidgetUser.lookup("japayton");
-			WidgetItem item = new WidgetItem(user, "main");
 
-			File wispfile = new File("/opt/userdata/widgetserve/japayton/main/enter_price.wisp");
+			File wispfile = new File(_argMap.getStr("wispfile"));
+			Util.massert(wispfile.exists(), "Could not find file %s", wispfile);
 
 			var wff = new WispFileLogic.WispFileFormat(wispfile, item);
-
 			wff.sendResultToStream(null, System.out, Optional.of(user));
-
 		}
-
 	}
 }
 
