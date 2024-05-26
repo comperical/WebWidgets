@@ -181,7 +181,9 @@ public class CodeGenerator
 		add("{");
 		
 		String signature = Util.join(_liteTable.getColTypeMap().keySet(), "', '");
-		add("\tvar fieldlist = ['%s'];", signature);
+		add("\tconst fieldlist = ['%s'];", signature);
+		add("\tconst tableob = W.__tableNameIndex.get('%s');", _liteTable.getSimpleTableName());
+
 		add("");
 		
 		add("\tfor(var fi in fieldlist)");
@@ -189,9 +191,9 @@ public class CodeGenerator
 		add("\t\tvar fname = fieldlist[fi];");
 		add("");
 
-		add("\t// Fold in default value if it is available");
-		add("\t\tif(!(fname in record) && (fname in %s._defaultInfo))", _liteTable.getCollectName());
-		add("\t\t\t{ record[fname] = %s._defaultInfo[fname]; }", _liteTable.getCollectName());
+		add("\t\t// Fold in default value if it is available");
+		add("\t\tif(!(fname in record) && (fname in tableob._defaultInfo))");
+		add("\t\t\t{ record[fname] = tableob._defaultInfo[fname]; }");
 		add("");
 
 

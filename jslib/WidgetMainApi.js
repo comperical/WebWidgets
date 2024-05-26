@@ -609,17 +609,13 @@ genericUpsertUrl : function(tablemaster, item, keylist)
     return W.CALLBACK_URL + "?" + encodeHash2QString(subpack);
 },
 
-genericDeleteUrl : function(tablemaster, item, keylist)
+genericDeleteUrl : function(_, item, _)
 {
-    var subpack = W.__getTableCoords(tablemaster);
+    const subpack = W.__getTableCoords(item.__getTableObject());
+    subpack["id"] = item.getId();
+
     
-    for (var i in keylist)
-    {
-        var onekey = keylist[i];
-        subpack[onekey] = item[onekey];
-    }
-    
-    massert(!("ajaxop" in subpack), "Shouldn't have an ajaxop!!");  
+    massert(!("ajaxop" in subpack), "Shouldn't have an ajaxop!!");
     subpack["ajaxop"] = "delete";
     return W.CALLBACK_URL + "?" + encodeHash2QString(subpack);
 },
