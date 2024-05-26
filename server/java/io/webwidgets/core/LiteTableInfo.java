@@ -393,6 +393,9 @@ public class LiteTableInfo
 			String maybecomma = i < jsonitems.size() - 1 ? " , " : "";
 			reclist.add(jsitem + maybecomma);
 		}
+
+		// This is the primary connection between the code generation and the code library
+		// The tableNameIndex returns the table object, which has a register(...) function
 		reclist.add(Util.sprintf("].forEach(function(myrec) { \n\tW.__tableNameIndex.get('%s').register(W.buildItem('%s', %s(myrec)));\n});", 
 			dbTabPair._2, dbTabPair._2, converter));
 

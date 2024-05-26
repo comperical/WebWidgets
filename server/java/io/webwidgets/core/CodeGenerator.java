@@ -225,11 +225,13 @@ public class CodeGenerator
 
 	private void genObjectMethods()
 	{
-		
+		String signature = Util.join(_liteTable.getColTypeMap().keySet(), "', '");
+
 		add("// Sync Item to Lite DB");
 		add("%s.prototype.syncItem = function()", _liteTable.getRecordName());
 		add("{");
-		add("\tW.__submitNewRequest(this.getUpsertUrl(), \"sync\", this.getId());");
+		add("\tconst upsert = W.__genericUpsertUrl(this, ['%s']);", signature);
+		add("\tW.__submitNewRequest(upsert, \"sync\", this.getId());");
 		add("}");
 		add("");
 		add("");
@@ -247,24 +249,11 @@ public class CodeGenerator
 		add("\tW.__removeItemFromIndexes(this, null);");
 		add("");
 		add("\t// This is a call to global AJAX JS");
-		add("\tW.__submitNewRequest(this.getDeleteUrl(), \"delete\", this.getId());");
+		add("\tconst delurl = W.__genericDeleteUrl(this);");
+		add("\tW.__submitNewRequest(delurl, \"delete\", this.getId());");
 		add("}");
 		add("");
 		add("");
-		
-		String signature = Util.join(_liteTable.getColTypeMap().keySet(), "', '");
-		add("%s.prototype.getUpsertUrl = function()", _liteTable.getRecordName());
-		add("{");
-		add("\treturn W.__genericUpsertUrl(this, ['%s']);", signature);
-		add("}");
-		add("");
-		add("");
-		
-
-		add("%s.prototype.getDeleteUrl = function()", _liteTable.getRecordName());
-		add("{");
-		add("\treturn W.__genericDeleteUrl(this);");
-		add("}");
 		
 		
 		add("");
