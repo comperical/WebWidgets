@@ -272,7 +272,7 @@ function redisplayEditItem()
 	const optmap = getCategoryMap();
 
 	buildOptSelector()
-			.setFromMap(optmap)
+			.configureFromHash(optmap)
 			.sortByDisplay()
 			.setSelectedKey(getMainCategory())
 			.setElementName("item_category_sel")
@@ -427,11 +427,11 @@ function redisplayMainTable()
 
 	const optmap = getCategoryMap();
 	const optsel = buildOptSelector()
-						.setFromMap(getCategoryMap())
+						.configureFromHash(getCategoryMap())
 						.setElementName(SELECTED_CATEGORY)
 						.useGenericUpdater()
 						.sortByDisplay()
-						.getSelectString();
+						.getHtmlString();
 
 	
 	const linkmainlist = W.getItemList("link_main").filter(lmi => lmi.getCatId() == getMainCategory());
