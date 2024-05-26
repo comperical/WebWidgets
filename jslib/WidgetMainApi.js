@@ -595,9 +595,9 @@ __badIndexCreationCheck: function()
 
 },
 
-genericUpsertUrl : function(tablemaster, item, keylist)
+__genericUpsertUrl : function(item, keylist)
 {
-    var subpack = W.__getTableCoords(tablemaster);
+    const subpack = W.__getTableCoords(item.__getTableObject());
 
     keylist.forEach(function(k) {
         const payload = item[k];
@@ -609,7 +609,7 @@ genericUpsertUrl : function(tablemaster, item, keylist)
     return W.CALLBACK_URL + "?" + encodeHash2QString(subpack);
 },
 
-genericDeleteUrl : function(_, item, _)
+__genericDeleteUrl : function(item)
 {
     const subpack = W.__getTableCoords(item.__getTableObject());
     subpack["id"] = item.getId();

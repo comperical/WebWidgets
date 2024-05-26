@@ -393,8 +393,8 @@ public class LiteTableInfo
 			String maybecomma = i < jsonitems.size() - 1 ? " , " : "";
 			reclist.add(jsitem + maybecomma);
 		}
-		reclist.add(Util.sprintf("].forEach(function(myrec) { \n\t%sTable.register(W.buildItem(\"%s\", %s(myrec)));\n});", 
-			getBasicName(), dbTabPair._2, converter));
+		reclist.add(Util.sprintf("].forEach(function(myrec) { \n\tW.__tableNameIndex.get('%s').register(W.buildItem('%s', %s(myrec)));\n});", 
+			dbTabPair._2, dbTabPair._2, converter));
 
 		
 		reclist.add("");

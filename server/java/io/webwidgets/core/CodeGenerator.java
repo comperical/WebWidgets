@@ -61,11 +61,11 @@ public class CodeGenerator
 	
 	private void genMainCollection()
 	{
-		add("// Definition of main collection name");
+
 		add("");
-		
-		add(_liteTable.getCollectName() + " = ");
-		add("{");
+		add("// Register the Widget Table with the table index");
+		add("W.__tableNameIndex.set('%s', { ", _liteTable.getSimpleTableName());
+
 		add("");
 
 		add("\t// Table properties");
@@ -98,12 +98,8 @@ public class CodeGenerator
 
 
 		add("\t}");
-		add("};");
+		add("});");
 		
-		add("");
-		add("// Register the Widget Table with the table index");
-		add("W.__tableNameIndex.set('%s', %s);", _liteTable.getSimpleTableName(), _liteTable.getCollectName());
-
 
 		add("");
 		add("// Create entry for table indexes");
@@ -213,7 +209,7 @@ public class CodeGenerator
 		add("");
 		add("\tvar item = new %s(%s);", _liteTable.getRecordName(), recordLookupStr);
 		add("\t// Update, Jan 2022 - buildItem now registers new object");
-		add("\t%s.register(item);", _liteTable.getCollectName());
+		add("\ttableob.register(item);");
 
 
 		add("");
@@ -230,23 +226,6 @@ public class CodeGenerator
 	private void genObjectMethods()
 	{
 		
-		add("// Register Item with DataMap and sync 2 LiteDb");
-		add("%s.prototype.registerNSync = function()", _liteTable.getRecordName());
-		add("{");
-		add("\tconsole.log(\"Warning: registerNSync is deprecated and no longer necessary: buildItem command now registers new objects\");");
-		
-		add("\t%s.register(this);", _liteTable.getCollectName());
-		add("");
-		add("\t// This is a call to global AJAX JS");
-		add("\tsyncSingleItem(this);");
-		add("}");
-		add("");
-		add("");
-		
-
-
-
-		
 		add("// Sync Item to Lite DB");
 		add("%s.prototype.syncItem = function()", _liteTable.getRecordName());
 		add("{");
@@ -259,8 +238,10 @@ public class CodeGenerator
 		add("%s.prototype.deleteItem = function()", _liteTable.getRecordName());
 		add("{");
 		add("\tconst myid = this.getId();");
+		add("\tconst tableob = this.__getTableObject();");
+
 		add("");
-		add("\t%s._dataMap.delete(myid);", _liteTable.getCollectName());
+		add("\ttableob._dataMap.delete(myid);");
 		add("");
 		add("\t// Remove the item from the indexes");
 		add("\tW.__removeItemFromIndexes(this, null);");
@@ -274,24 +255,23 @@ public class CodeGenerator
 		String signature = Util.join(_liteTable.getColTypeMap().keySet(), "', '");
 		add("%s.prototype.getUpsertUrl = function()", _liteTable.getRecordName());
 		add("{");
-		add("\treturn W.genericUpsertUrl(%s, this, ['%s']);", _liteTable.getCollectName(), signature);
+		add("\treturn W.__genericUpsertUrl(this, ['%s']);", signature);
 		add("}");
 		add("");
 		add("");
 		
 
-		String delsign = Util.join(_liteTable.getPkeyList(), "', '");
 		add("%s.prototype.getDeleteUrl = function()", _liteTable.getRecordName());
 		add("{");
-		add("\treturn W.genericDeleteUrl(%s, this, ['%s']);", _liteTable.getCollectName(), delsign);
-		add("}");		
+		add("\treturn W.__genericDeleteUrl(this);");
+		add("}");
 		
 		
 		add("");
 		add("// Get reference to the Table object, which holds metadata; normal WWIO dev should not require this");
 		add("%s.prototype.__getTableObject = function()", _liteTable.getRecordName());
 		add("{");
-		add("\treturn %s;", _liteTable.getCollectName());
+		add("\treturn W.__tableNameIndex.get('%s');", _liteTable.getSimpleTableName());
 		add("}");
 
 
@@ -357,10 +337,9 @@ public class CodeGenerator
 			add("// Special Blob Record function");
 			add("%s.prototype.%s = function()", _liteTable.getRecordName(), BlobDataManager.GET_BLOB_STORE_METHOD);			
 			add("{");
-			add("\treturn W.getBlobStoreUrl(%s.widgetOwner, %s.widgetName, %s.tableName, this.id);", 
-				_liteTable.getCollectName(), _liteTable.getCollectName(), _liteTable.getCollectName());
-
-			add("}");			
+			add("\tconst tableob = this.__getTableObject();");
+			add("\treturn W.getBlobStoreUrl(tableob.widgetOwner, tableob.widgetName, tableob.tableName, this.id);");
+			add("}");
 		} else {
 			
 			add("");
