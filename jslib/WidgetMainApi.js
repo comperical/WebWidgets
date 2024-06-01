@@ -453,7 +453,10 @@ __findRelevantIndex : function(tablename, lookup)
 {
     // Okay, there is no notion of order for a set of lookup keys
     // If you don't write them in the right order, it's not a big deal
-    const kcols = [... Object.keys(lookup)].sort();
+    // const kcols = [... Object.keys(lookup)].sort();
+
+    const kcols = Object.keys(lookup).sort();
+
 
     const haveallprefs = function(idxname)
     {
