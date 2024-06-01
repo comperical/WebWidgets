@@ -22,10 +22,6 @@ Goal here is to work with laptop and tablet, but not phone
 
 var EDIT_STUDY_ITEM = -1;
 
-var SHOW_CONTAINER_ID = -1;
-
-var SHOW_LOCATION_ID = -1;
-
 var EDIT_NOTES_FIELD = false;
 
 var SHOW_CONTAINED_ITEM = false;
@@ -36,10 +32,10 @@ const SHOW_CONTAINER_KEY = "show_container";
 
 const SHOW_LOCATION_KEY = "show_location";
 
-initGenericSelect(new Map([
-    [SHOW_CONTAINER_KEY, -1],
-    [SHOW_LOCATION_KEY, -1]
-]));
+
+GENERIC_OPT_SELECT_MAP.set(SHOW_LOCATION_KEY, -1);
+GENERIC_OPT_SELECT_MAP.set(SHOW_CONTAINER_KEY, -1);
+
 
 function createNew()
 {
@@ -48,8 +44,8 @@ function createNew()
     if(itemname) 
     {
         const newrec = {
-            "container_id" : SHOW_CONTAINER_ID,
-            "location_id" : -1,
+            "container_id" : GENERIC_OPT_SELECT_MAP.get(SHOW_CONTAINER_KEY),
+            "location_id" : GENERIC_OPT_SELECT_MAP.get(SHOW_LOCATION_KEY),
             "is_container" : 0,
             "short_name" : itemname,
             "notes" : ""
@@ -271,21 +267,21 @@ function getEditListing()
     const cnamemap = getContainerNameMap();
 
     const contsel = buildOptSelector()
-                        .setFromMap(cnamemap)
+                        .configureFromHash(cnamemap)
                         .setSelectedKey(item.getContainerId())
                         .setElementName("container_sel")
                         .setOnChange("javascript:updateContainer()")
-                        .getSelectString();
+                        .getHtmlString();
 
 
     const locnamemap = getLocationNameMap();
 
     const locatesel = buildOptSelector()
-                        .setFromMap(locnamemap)
+                        .configureFromHash(locnamemap)
                         .setSelectedKey(item.getLocationId())
                         .setElementName("location_sel")
                         .setOnChange("javascript:updateLocation()")
-                        .getSelectString();                        
+                        .getHtmlString();
 
 
     var containerlink = "---";
@@ -445,18 +441,18 @@ function getMainListing()
     const locnamemap = getLocationNameMap();
 
     const showContainerSel = buildOptSelector()
-                        .setFromMap(cnamemap)
+                        .configureFromHash(cnamemap)
                         .sortByDisplay()
                         .setElementName(SHOW_CONTAINER_KEY)
                         .useGenericUpdater()
-                        .getSelectString();
+                        .getHtmlString();
 
     const showLocationSel = buildOptSelector()
-                        .setFromMap(locnamemap)
+                        .configureFromHash(locnamemap)
                         .sortByDisplay()
                         .setElementName(SHOW_LOCATION_KEY)
                         .useGenericUpdater()
-                        .getSelectString();
+                        .getHtmlString();
 
 
 
