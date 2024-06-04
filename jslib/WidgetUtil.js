@@ -483,6 +483,10 @@ function spreadConvert(it)
 {
     const result = [];
 
+    // Try to provide compatibility with Array and Set arguments
+    if(it.next == null && it.values != null)
+        { it = it.values(); }
+
     while(true)
     {
         try {
