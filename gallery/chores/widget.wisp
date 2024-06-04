@@ -17,6 +17,8 @@ Goal here is to work with laptop and tablet, but not phone
 
 </style>
 
+<script src="/u/shared/optjs/ExtraInfoBox/v1.js"></script>
+
 <script src="https://unpkg.com/current-device/umd/current-device.min.js"></script>
 
 <wisp widgetname="minitask" tables="mini_task_list" okay_if_absent="true"/>
@@ -139,8 +141,9 @@ function createNew()
 
 function setEditStudyItem(itemid)
 {
-    EDIT_STUDY_ITEM = itemid;   
-    redisplay();    
+    EXTRA.EDIT_TEXT_MODE = false;
+    EDIT_STUDY_ITEM = itemid;
+    redisplay();
 }
 
 function return2Main()
@@ -167,6 +170,15 @@ function handleNavBar() {
 
     populateTopNavBar(headerinfo, selected);
 }
+
+function getExtraInfoBox()
+{
+    return EXTRA.getEiBox()
+                    .withStandardConfig("chore_def", EDIT_STUDY_ITEM, "extra_info")
+                    .withBoxBuilder("javascript:getExtraInfoBox()");
+}
+
+
 
 
 function redisplay()
@@ -265,16 +277,15 @@ function redisplayChoreItem()
     const desclinelist = extrainfo.replace(/\n/g, "<br/>"); 
     
     const spanmap = {
-        "item_id" :         edititem.getId(),
         "short_name" :      edititem.getShortName(),
         "day_freq" :        edititem.getDayFreq(),
         "isactive" :        edititem.getIsActive() == 1 ? "YES" : "NO",
         "web_link" :        edititem.getWebLink() == "" ? "--" : edititem.getWebLink(),
-        "itemdescline" :    desclinelist
+        "extra_info_data" : getExtraInfoBox().getHtmlString()
     };
 
 
-    document.getElementById("fullitemdesc").value = edititem.getExtraInfo();
+
     
     populateSpanData(spanmap);
 }
@@ -597,11 +608,7 @@ Show All: <input type="checkbox" name="show_all" onChange="javascript:redisplay(
 <td></td>
 <td><a name="back_url" href="javascript:return2Main()"><img src="/u/shared/image/leftarrow.png" height="18"/></a></td>
 </tr>
-<tr>
-<td>ID</td>
-<td><span id="item_id"></span></td>
-<td></td>
-</tr>
+
 <tr>
 <td>Name</td>
 <td><span id="short_name"></span></td>
@@ -631,23 +638,7 @@ Show All: <input type="checkbox" name="show_all" onChange="javascript:redisplay(
 <br/>
 <br/>
 
-<!-- Full description table -->
-<table class="basic-table" width="30%">
-<tr>
-<td>
-<span id="itemdescline">xxx<br/>yyy</span>
-</td>
-</tr>
-</table>
-
-<br/>
-<br/>
-
-<form>
-<textarea id="fullitemdesc" name="fullitemdesc" rows="10" cols="50"></textarea>
-</form>
-
-<a href="javascript:saveNewDesc()"><button>save</button></a>
+<span id="extra_info_data"></span>
 
 
 </span>
