@@ -48,10 +48,8 @@ public class WidgetOrg
 		
 		public Connection createConnection() throws SQLException
 		{
-			
 			CoreUtil.maybeInitClass();
-			
-			return DriverManager.getConnection(geJdbcUrl());
+			return DriverManager.getConnection(geJdbcUrl(), CoreDb.getSqliteConfigProps());
 		}
 		
 		public String getCheckSumKey()
