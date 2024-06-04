@@ -5,20 +5,29 @@
 
 <wisp/>
 
+<script src="/u/shared/optjs/ExtraInfoBox/v1.js"></script>
+
 <script>
 
 SEARCH_INPUT = "";
 
-_EDIT_STUDY_ITEM = -1;
-
-_EDIT_TEXT_MODE = false;
+let _EDIT_STUDY_ITEM = -1;
 
 function createNew()
-{	
-	var qtext = prompt("Enter the text of the question: ");
-	
+{
+	const qtext = prompt("Enter the text of the question: ");
 	createNewSub(qtext);
 }
+
+
+// Standard InterOp with ExtraInfoBox package
+function getExtraInfoBox()
+{
+	return EXTRA.getEiBox()
+					.withStandardConfig("question_log", _EDIT_STUDY_ITEM, "full_notes")
+					.withBoxBuilder("javascript:getExtraInfoBox()");
+}
+
 
 function createNewSub(qtext)
 {	
@@ -87,14 +96,13 @@ function redisplay()
 function back2Main()
 {
 	_EDIT_STUDY_ITEM = -1;
-	_EDIT_TEXT_MODE = false;
+	EXTRA.EDIT_TEXT_MODE = false;
 	redisplay();
 }
 
 function editStudyItem(editid)
 {
 	_EDIT_STUDY_ITEM = editid;
-	_EDIT_TEXT_MODE = false;
 	redisplay();
 }
 
@@ -210,7 +218,7 @@ function getResultSection()
 		if(spair[0] < 5)
 			{ return; }
 			
-		const qitem = lookupItem("question_log", spair[1]);
+		const qitem = W.lookupItem("question_log", spair[1]);
 		
 		var weblinkstr = `<img src="/u/shared/image/purewhite.png" height="18"/>`;
 		
@@ -379,12 +387,12 @@ function getQuestionTableSub(hasanswer)
 
 function getStudyItem()
 {
-	return lookupItem("question_log", _EDIT_STUDY_ITEM);
+	return W.lookupItem("question_log", _EDIT_STUDY_ITEM);
 }
 
 function getEditItemData()
 {	
-	var studyitem = lookupItem("question_log", _EDIT_STUDY_ITEM);
+	var studyitem = W.lookupItem("question_log", _EDIT_STUDY_ITEM);
 		
 	const extralineinfo = studyitem.getFullNotes().replace(/\n/g, "<br/>");
 	
@@ -399,10 +407,7 @@ function getEditItemData()
 		<td>Back</td>
 		<td><a name="back_url" href="javascript:back2Main()"><img src="/u/shared/image/leftarrow.png" height="18"/></a></td>
 		</tr>
-		<tr>
-		<td>ID</td>
-		<td>${studyitem.getId()}</td>
-		</tr>
+
 		<tr>
 		<td>Question</td>
 		<td><b>${studyitem.getQuestionText()}</span></b>
@@ -459,32 +464,12 @@ function getEditItemData()
 		</table>
 		
 		<br/>
-		
-		<table class="basic-table" width="50%" border="0">
-		<tr>
-		<td>${extralineinfo}</td>
-		
-		<td width="10%">
-		<a href="javascript:editExtraInfo()"><img src="/u/shared/image/edit.png" height="18"></a>
-		</td>
-		</tr>
-		</table>		
 	`;
-	
-	if(_EDIT_TEXT_MODE)
-	{
-		mainblock += `
-	
-			<br/>
-			<br/>
-			<form>
-			<textarea id="set_extra_info" cols="80" rows="10">${studyitem.getFullNotes()}</textarea>
-			</form>
-			
-			<a class="css3button" onclick="javascript:saveExtraInfo()">save</a>
-		`;
-	}
-	
+
+
+	mainblock += `
+		${getExtraInfoBox().getHtmlString()}
+	`;
 	
 	return mainblock;
 
@@ -528,22 +513,6 @@ function editWebLink()
 	}
 }
 
-
-function editExtraInfo()
-{
-	_EDIT_TEXT_MODE = true;
-	redisplay();
-}
-
-// This is the old name of the function
-function saveExtraInfo()
-{
-	var studyitem = getStudyItem();
-	studyitem.setFullNotes(document.getElementById("set_extra_info").value);
-	syncSingleItem(studyitem);	
-	_EDIT_TEXT_MODE = false;
-	redisplay();	
-}
 
 // }}}
 
