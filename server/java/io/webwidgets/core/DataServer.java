@@ -166,8 +166,6 @@ public class DataServer
 			_dargMap = amap;
 		}
 
-
-
 		protected abstract Optional<WidgetItem> lookupPageWidget();
 
 		protected abstract Optional<WidgetUser> getPageAccessor();
