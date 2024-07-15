@@ -701,7 +701,7 @@ __maybeSendNewRequest : function()
         
         // This block of code is actually called several times before
         // It is ready. readyState == 4 implies the request completed.
-        if (this.readyState == 4) {         
+        if (this.readyState == 4) {
             massert(this.status == 200, "Unexpected error code on Ajax operation: " + this.status);
             W.__checkAjaxResponse(opname, itemid, this.responseText);
             W.__REQUEST_IN_FLIGHT = false;

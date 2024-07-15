@@ -621,7 +621,7 @@ public class FastTest4Basic
 		@SuppressWarnings( "deprecation" )
 		public List<ArgMapRunnable> getTestList()
 		{
-			
+			// TODO: this does not pick up new classes if we are creating them and deploying them with PackageShip
 			List<String> allclass = Util.loadClassNameListFromDir(new File(CoreUtil.JCLASS_BASE_DIR));
 
 			List<String> biglist = Util.filter2list(allclass, s -> s.contains(FAST_TEST_MARKER));
