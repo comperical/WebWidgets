@@ -50,22 +50,13 @@ public class DataServer
 		}
 	}
 	
-	
 	public static final Set<String> OKAY_ARG_SET = Util.map2set(Util.listify(DataIncludeArg.values()), dia -> dia.toString());
 	
-	// TODO: remove all the special include operations, these are no longer used
-
 	// Get widget from request.
 	// Get user from request, authenticate.
 	// Include all tables for widget.
-	public static String basicInclude(HttpServletRequest request)
-	{
-		return includeSub(request, "");
-	}
-	
-	// Get widget from request.
-	// Get user from request, authenticate.
-	// Include all tables for widget.
+	// Only the basic include() and include(request, ...) are now supported, others removed in favor of 
+	// using appropriate DataIncludeArg options
 	public static String include(HttpServletRequest request)
 	{
 		return include(request, "");
@@ -73,30 +64,7 @@ public class DataServer
 	
 	public static String include(HttpServletRequest request, String query)
 	{
-		return includeSub(request, query);
-	}	
-	
-	public static String includeIfOkay(HttpServletRequest request, String query)
-	{
-		Util.massert(!query.contains(DataIncludeArg.okay_if_absent.toString()),
-			"By convention, when using this method, do not use okay_if_absent command");
-		
-		String addtag = DataIncludeArg.okay_if_absent + "=true";
-		String augquery = query.trim().isEmpty() ? addtag : query + "&" + addtag;
-		return includeSub(request, augquery);
-	}
-		
-	public static String basicIncludeOnly(HttpServletRequest request, String... tables)
-	{		
-		String tablestr = Util.join(Util.listify(tables), ",");
-		String query = Util.sprintf("%s=%s", DataIncludeArg.tables, tablestr);
-		return includeSub(request, query);		
-	}
-	
-	private static String includeSub(HttpServletRequest request, String query)
-	{
 		Map<DataIncludeArg, String> argmap = buildIncludeMap(query);
-		
 		return LegacyServerUtil.build(request, argmap).include();
 	}
 
@@ -131,20 +99,6 @@ public class DataServer
 		return mymap;
 	}
 	
-	
-	public static String includeIfAvailable(HttpServletRequest request, String widgetname, String... tables)
-	{
-		String tablestr = Util.join(Util.listify(tables), ",");
-		String query = Util.sprintf("%s=%s&%s=%s&%s=true", 
-			DataIncludeArg.widgetname, widgetname, DataIncludeArg.tables, tablestr, DataIncludeArg.okay_if_absent);
-		
-		return includeSub(request, query);
-	}
-	
-
-	
-
-
 	public abstract static class ServerUtilCore
 	{
 		private final Map<DataIncludeArg, String> _dargMap;

@@ -407,8 +407,8 @@ public class ActionJackson extends HttpServlet
 
 		protected boolean prependAuthTag()
 		{
-			return false;	
-		}				
+			return false;
+		}
 		
 		// Scan all the JSP files in the output directory. 
 		// If they do not include the AuthHeader tag, swap it in as the FIRST line of the line.
@@ -530,7 +530,6 @@ public class ActionJackson extends HttpServlet
 			ZipFile myfile = new ZipFile(codeloc.getCodeFile());
 			Enumeration<? extends ZipEntry> zipen = myfile.entries();
 			
-
 			while(zipen.hasMoreElements()) {
 				ZipEntry zent = zipen.nextElement();
 				String zname = zent.getName();
@@ -564,6 +563,10 @@ public class ActionJackson extends HttpServlet
 
 
 					} else {
+
+						// TODO: this is used only very rarely now (july 2024), perhaps remove it
+						// The idea here is to fast-detect problems with the DataServer include line
+						// But only admins are uploading JSP files, so it's not really that important
 						CodeFormatChecker cfchecker = new CodeFormatChecker(srclist);
 						if(cfchecker.codeFormatMessage.isPresent())
 						{

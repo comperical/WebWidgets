@@ -111,7 +111,7 @@ public class WebUtil
 
 		String pageName = toklist.pollLast();
 		return toklist.isEmpty() ? wuser.baseWidget() : new WidgetItem(wuser, toklist.peek());
-	}	
+	}
 	
 	static String getRelativeResource(String fullurl) 
 	{
