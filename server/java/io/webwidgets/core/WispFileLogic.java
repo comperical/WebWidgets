@@ -182,6 +182,7 @@ public class WispFileLogic
             }
 
             Optional<WidgetItem> optItem = WebUtil.lookupWidgetFromPageUrl(request);
+            double alphatime = Util.curtime();
 
             for(int idx : Util.range(_srcList))
             {
@@ -190,6 +191,7 @@ public class WispFileLogic
 
                 if(tag != null)
                 {
+
                     StringBuilder sb = new StringBuilder();
 
                     // Pull in the Global includes BEFORE the first batch of Widget data.
@@ -203,7 +205,10 @@ public class WispFileLogic
 
                     // If the Home widget is present, pull in user-defined auto-includes AFTER the last tag
                     if(idx == tagmap.lastKey() && optItem.isPresent())
-                        { sb.append(ServerUtilCore.getUserAutoInclude(optItem.get())); }
+                    { 
+                        sb.append(ServerUtilCore.getUserAutoInclude(optItem.get())); 
+                        sb.append(Util.sprintf("<!-- WISP_TAG_PROCESS_COMPLETE, took %.03f seconds -->\n", (Util.curtime()-alphatime)/1000));
+                    }
 
                     r = sb.toString();
                 }
