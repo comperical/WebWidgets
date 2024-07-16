@@ -73,7 +73,6 @@ public class DataServer
 		if(paramstr.trim().isEmpty())
 			{ return Collections.emptyMap(); }
 
-
 		Map<DataIncludeArg, String> mymap = Util.treemap();
 
 		String[] terms = paramstr.trim().split("&");
@@ -375,31 +374,36 @@ public class DataServer
 
 			StringBuilder sb = new StringBuilder();
 			maybeGetAssetInclude(sb, true);
-			sb.append(getScriptInfo(getPageAccessor(), _theItem, _base2Target, _noDataMode, _optFilterTarget));
+			sb.append(composeScriptInfo());
 			maybeGetAssetInclude(sb, false);
 			return sb.toString();
 		}
 
 
-		private static String getScriptInfo(Optional<WidgetUser> accessor, WidgetItem dbitem, Map<String, String> base2view, boolean nodata, Optional<Pair<String, Object>> filter)
+		private String composeScriptInfo()
 		{
 			// This should be redundant at this point, I have already checked it
 			// But paranoia is good
-			AuthChecker checker = AuthChecker.build().directDbWidget(dbitem).directSetAccessor(accessor);
-			Util.massert(checker.allowRead(),
-				"Access denied, user %s lacks permissions to read data from widget %s", accessor, dbitem);
-			
-			List<String> reclist = Util.vector();
-			
-			for(String onetab : base2view.keySet())
+			AuthChecker checker;
 			{
-				LiteTableInfo LTI = new LiteTableInfo(dbitem, onetab, nodata);
+				var accessor = getPageAccessor();
+				checker = AuthChecker.build().directDbWidget(_theItem).directSetAccessor(accessor);
+				Util.massert(checker.allowRead(),
+					"Access denied, user %s lacks permissions to read data from widget %s", accessor, _theItem);
+			}
+
+			List<String> reclist = Util.arraylist();
+			
+			for(String onetab : _base2Target.keySet())
+			{
+				var LTI = new LiteTableInfo(_theItem, onetab, _noDataMode);
 				LTI.runSetupQuery();
 
-				if(filter.isPresent())
+				if(_optFilterTarget.isPresent())
 				{
-					if(LTI.getColTypeMap().containsKey(filter.get()._1))
-						{ LTI.withColumnTarget(filter.get()._1, filter.get()._2); }
+					// If the column you're filtering on is not present in the table,
+					// you'll get a nasty error
+					LTI.withColumnTarget(_optFilterTarget.get()._1, _optFilterTarget.get()._2);
 				}
 				
 				// dogenerate=false
@@ -413,7 +417,7 @@ public class DataServer
 				reclist.add(Util.sprintf("<script src=\"%s\"></script>", LTI.getWebAutoGenJsPath()));
 				
 				reclist.add("<script>");
-				reclist.addAll(LTI.composeDataRecSpool(base2view.get(onetab)));
+				reclist.addAll(LTI.composeDataRecSpool(_base2Target.get(onetab)));
 				
 				// If the user has read-only access to the table, record that info
 				if(!checker.allowWrite())
