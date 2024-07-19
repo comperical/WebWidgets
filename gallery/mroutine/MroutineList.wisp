@@ -5,13 +5,19 @@
 
 <wisp tables="mroutine_phase"/>
 
+<script src="/u/shared/optjs/ExtraInfoBox/v1.js"></script>
+
 <script>
 
-var EDIT_STUDY_ITEM = -1;
+
+
+let EDIT_STUDY_ITEM = -1;
 
 const SHOW_INACTIVE_KEY = "ShowInactiveKey";
 
 GENERIC_OPT_SELECT_MAP.set(SHOW_INACTIVE_KEY, 'false');
+
+
 
 function changeShowType()
 {
@@ -30,14 +36,14 @@ function deleteItem(killid)
 
 function cycleStatus(cycid)
 {
-	var item = W.lookupItem("mroutine_phase", cycid);
+	const item = W.lookupItem("mroutine_phase", cycid);
 	item.setIsActive(item.getIsActive() == 1 ? 0 : 1);
-	syncSingleItem(item);
+	item.syncItem();
 	redisplay();
 }
 
 function createNew()
-{	
+{
 	const shortname = prompt("Name of new phase: ");
 	const neworder = 0;
 	
@@ -47,7 +53,7 @@ function createNew()
 			"is_active" : 1,
 			"short_name" : shortname,
 			"full_desc": "NotYetSet",
-			"web_link" : "http://danburfoot.net",
+			"web_link" : "",
 			"order_key" : neworder,
 			"on_day_list" : "all"
 		};
@@ -55,7 +61,7 @@ function createNew()
 		const newitem = W.buildItem("mroutine_phase", comrecord);
 		newitem.syncItem();
 		redisplay();
-	}	
+	}
 }
 
 function editOrderKey(itemid)
@@ -65,7 +71,7 @@ function editOrderKey(itemid)
 	
 	if(!newokstr)
 	{
-		return;	
+		return;
 	}
 	
 	if(!okayFloat(newokstr))
@@ -75,7 +81,7 @@ function editOrderKey(itemid)
 	}
 	
 	phaseitem.setOrderKey(parseFloat(newokstr));
-	syncSingleItem(phaseitem);
+	phaseitem.syncItem();
 	redisplay();
 }
 
@@ -83,44 +89,20 @@ function editOrderKey(itemid)
 
 function flipActive()
 {
-	var showItem = getEditStudyItem();
-
-	var curActive = showItem.getIsActive();
-	
-	showItem.setIsActive(curActive == 1 ? 0 : 1);
-	
-	syncSingleItem(showItem);		
-
-	redisplay();
-}
-
-function saveNewDesc()
-{
-	var showItem = getEditStudyItem();
-
-	var newDesc = getDocFormValue("fullitemdesc");
-	
-	showItem.setFullDesc(newDesc);
-	
-	syncSingleItem(showItem);		
-
-	redisplay();
-}
-
-function editIssueDesc()
-{
 	const showItem = getEditStudyItem();
-	const newissue = prompt("Enter issue: ");
-	
-	if(newissue)
-	{
-		showItem.setIssueDesc(newissue);
-	
-		syncSingleItem(showItem);		
-		
-		redisplay();	
-	
-	}
+	const curActive = showItem.getIsActive();
+	showItem.setIsActive(curActive == 1 ? 0 : 1);
+	showItem.syncItem();
+	redisplay();
+}
+
+
+function getExtraInfoBox()
+{
+	return EXTRA.getEiBox()
+					.withStandardConfig("mroutine_phase", EDIT_STUDY_ITEM, "full_desc")
+					.withBoxBuilder("javascript:getExtraInfoBox()");
+
 }
 
 function editItemName()
@@ -129,10 +111,10 @@ function editItemName()
 	const newname = prompt("Enter a new short name: ", showitem.getShortName());
 	
 	if(newname)
-	{		
+	{
 		showitem.setShortName(newname);
-		syncSingleItem(showitem);		
-		redisplay();		
+		showitem.syncItem();
+		redisplay();
 	}
 }
 
@@ -142,10 +124,10 @@ function editWebLink()
 	var newlink = prompt("Enter a new web link: ", showitem.getWebLink());
 	
 	if(newlink)
-	{		
+	{
 		showitem.setWebLink(newlink);
-		syncSingleItem(showitem);		
-		redisplay();		
+		showitem.syncItem();
+		redisplay();
 	}
 }
 
@@ -245,7 +227,7 @@ function redisplayMainTable()
 	var mtstr = `
 	<table  class="basic-table" width="60%">
 	<tr>
-	<th>OrderKey</th>
+	<th colspan="2">OrderKey</th>
 	<th>Name</th>
 	<th>Days</th>	
 	<th>Active?</th>
@@ -260,10 +242,10 @@ function redisplayMainTable()
 	
 	const boolSelector = buildOptSelector()
 							// Big gotcha. We can use JS boolean literals here, but the genericUpdater turns them into strings
-							.setKeyList([true, false])
+							.configureFromList([true, false])
 							.setElementName(SHOW_INACTIVE_KEY)
 							.useGenericUpdater()
-							.getSelectString();
+							.getHtmlString();
 
 
 
@@ -296,8 +278,8 @@ function redisplayMainTable()
 
 		const mainrow = `
 			<tr>
-			<td>${onephase.getOrderKey()}
-			&nbsp;&nbsp;&nbsp;
+			<td>${onephase.getOrderKey()}</td>
+			<td width="5%">
 			<a href="javascript:editOrderKey(${onephase.getId()})"><img src="/u/shared/image/edit.png" height="18"></a>
 			</td>
 			<td>${onephase.getShortName()}</td>
@@ -353,25 +335,20 @@ function redisplayEditItem()
 	const addDays = ["---"].concat(SHORT_DAY_WEEK_LIST.filter(dow => !currentDays.includes(dow)));
 
 	const dayaddsel = buildOptSelector()
-						.setKeyList(addDays)
+						.configureFromList(addDays)
 						.setElementName("on_day_sel")
 						.setOnChange("javascript:addOnDayItem()")
-						.getSelectString();
+						.getHtmlString();
 
 	const showSelStr = currentDays.length == 7 ? "" : dayaddsel;
-	// Okay, this took me a while to get right. The issue is that 
-	// the standard string.replace(...) won't do a global, and there is no replaceAll
-	const desclinelist = showItem.getFullDesc().replace(/\n/g, "<br/>");
 	
 	const spandata = {
-		"item_id" : showItem.getId(),
 		"itemname" : showItem.getShortName(),
 		"web_link" : showItem.getWebLink(),
-		"itemdescline" : desclinelist,
-		"fullitemdesc" : showItem.getFullDesc(),
 		"isactive" : showItem.getIsActive() == 1 ? "YES" : "NO",
 		"on_days" : daylistEdit,
 		"on_day_sel_span" : showSelStr,
+		"extra_info_box" : getExtraInfoBox().getHtmlString()
 	};
 	
 	populateSpanData(spandata);
@@ -419,26 +396,23 @@ Show InActive: <span id="show_inactive"></span>
 <tr>
 <td>Back</td>
 <td></td>
-<td width="20%"><a href="javascript:back2Main()"><img src="/u/shared/image/leftarrow.png" height="18"/></a></td>
+<td><a href="javascript:back2Main()"><img src="/u/shared/image/leftarrow.png" height="18"/></a></td>
 </tr>
+
+
 <tr>
-<td>ID</td>
-<td><div id="item_id"></div></td>
-<td></td>
-</tr>
-<tr>
-<td width="50%">Name</td>
+<td width="20%">Name</td>
 <td><div id="itemname"></div></td>
 <td><a href="javascript:editItemName()"><img src="/u/shared/image/edit.png" height=18/></a></td>
 </tr>
 <tr>
-<td width="50%">Link</td>
+<td>Link</td>
 <td><div id="web_link"></div></td>
 <td><a href="javascript:editWebLink()"><img src="/u/shared/image/edit.png" height=18/></a></td>
 </tr>
 
 <tr>
-<td width="50%">Active?</td>
+<td>Active?</td>
 <td><span id="isactive"></span>
 
 </td>
@@ -446,7 +420,7 @@ Show InActive: <span id="show_inactive"></span>
 </tr>    
 
 <tr>
-<td width="50%">Days</td>
+<td>Days</td>
 <td><span id="on_days"></span></td>
 <td><span id="on_day_sel_span"></td>
 </tr>    
@@ -456,22 +430,7 @@ Show InActive: <span id="show_inactive"></span>
 <br/>
 <br/>
 
-<table class="basic-table" width="30%">
-<tr>
-<td>
-<span id="itemdescline">xxx<br/>yyy</span>
-</td>
-</tr>
-</table>
-
-<br/>
-<br/>
-
-<form>
-<textarea id="fullitemdesc" name="fullitemdesc" rows="10" cols="50"></textarea>
-</form>
-
-<a href="javascript:saveNewDesc()">save desc</a>
+<div id="extra_info_box"></div>
 
 </span>
 
