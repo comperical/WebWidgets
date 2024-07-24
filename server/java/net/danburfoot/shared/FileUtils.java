@@ -399,7 +399,7 @@ public class FileUtils
 				bwrite.write("\n");
 			}
 			
-			bwrite.close();				
+			bwrite.close();
 		}
 		
 		public void writeBytes(byte[] buffer) throws IOException

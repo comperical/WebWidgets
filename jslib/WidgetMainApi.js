@@ -7,10 +7,6 @@ __getListFuncMap : {},
 // table name to builder function
 __buildItemFuncMap : {},
 
-// Map of of username::widgetname --> Unix checksum for the Widget DB
-// Sept 2022: removing old naive checksum technique
-// __databaseCheckSum : {},
-
 // List of tables for which the current user has read access only
 __readOnlyAccess : [],
 
@@ -32,7 +28,7 @@ __MAGIC_NULL_STRING : "_x_NULL_y_",
 
 // https://stackoverflow.com/questions/417142/what-is-the-maximum-length-of-a-url-in-different-browsers
 // Could actually be much smaller than this
-MAX_GET_PARAM_VALUE : 2000,
+__MAX_GET_PARAM_VALUE : 2000,
 
 __GLOBAL_INDEX_MAP : new Map(),
 
@@ -346,7 +342,7 @@ __augmentWithCheckSum : function(opurl)
     for(var k in allparams) 
     {
         const v = allparams[k];
-        const relpms = v.length > W.MAX_GET_PARAM_VALUE ? combined.biggpms : combined.smllpms;
+        const relpms = v.length > W.__MAX_GET_PARAM_VALUE ? combined.biggpms : combined.smllpms;
         relpms[k] = v;
     }
 

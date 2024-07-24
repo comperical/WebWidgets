@@ -1014,7 +1014,7 @@ public class Util
                 // This should probably be an iterator or something.
                 public SyscallWrapper setInputList(List<String> inlist)
                 {
-                	_innList = inlist;	
+                	_innList = inlist;
                 	return this;
                 }
                 

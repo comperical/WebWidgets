@@ -54,8 +54,7 @@ if __name__ == "__main__":
 
 	# Widgetname and username are required
 	username = argmap.getStr("username")
-	widget = argmap.getStr("widgetname")	
-	local = argmap.getBit("local", False)
+	widget = argmap.getStr("widgetname")
 	configmap = CodePush.get_config_map(username)
 
 	dbdir = lookup_db_dir(argmap, configmap)
@@ -70,7 +69,7 @@ if __name__ == "__main__":
 		print("**Error** : DB path {} already exists, please delete or move first, or use deleteold=true".format(dbpath))
 		quit()
 	
-	domainpref = CodePush.get_domain_prefix(local)
+	domainpref = CodePush.get_domain_prefix()
 	url = "{}/u/pull2you?username={}&widget={}&accesshash={}".format(domainpref, username, widget, configmap['accesshash'])	
 	
 	curlcall = "curl  \"{}\" --output {}".format(url, dbpath)
