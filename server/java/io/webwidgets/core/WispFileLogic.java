@@ -26,8 +26,9 @@ public class WispFileLogic
 {
 
 
-    // Experimental new WISP file format
-    // This is a much cleaner way of pulling in the data than the old JSP format
+    // WISP file format servlet
+    // This is now the preferred way to build WWIO apps. JSP is now restricted to admin users
+    // WISP format is cleaner and more secure
     @WebServlet(urlPatterns = "*.wisp") 
     public static class WispServlet extends HttpServlet {
 
