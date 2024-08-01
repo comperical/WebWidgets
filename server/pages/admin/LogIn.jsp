@@ -105,6 +105,7 @@
 <%@include file="../admin/AssetInclude.jsp_inc" %>
 
 <style>
+
 code 
 {
   background-color: lightgrey;
@@ -121,6 +122,9 @@ code
 </style>
 
 <script>
+
+// TODO: make the goddam code style above global
+
 
 function serverSideHashLogin()
 {
