@@ -127,6 +127,12 @@ public class IncludeInternal
         {
             return pageAccessor;
         }
+
+        @Override
+        protected boolean coreIncludeScriptTag()
+        {
+            return false;
+        }
     }
 
 

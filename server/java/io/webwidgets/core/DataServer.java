@@ -127,6 +127,15 @@ public class DataServer
 
 		protected abstract boolean shouldPerformInclude(boolean global);
 
+		// If true, include the script tags for the auto-include JS file,
+		// as well as open/close script tags around the JS
+		// In other words, when true, the include(...) produces something that can go into the
+		// head section of a document on its own, if false, it is pure JS.
+		protected boolean coreIncludeScriptTag()
+		{
+			return true;
+		}
+
 		private void onDemandSetup() throws WidgetRequestException
 		{
 			if(_base2Target != null)
@@ -414,9 +423,12 @@ public class DataServer
 				Util.massert(jsfile.isPresent(), 
 					"AutoGen JS file not present even after we asked to create it if necessary!!!");
 				
-				reclist.add(Util.sprintf("<script src=\"%s\"></script>", LTI.getWebAutoGenJsPath()));
-				
-				reclist.add("<script>");
+				if(coreIncludeScriptTag())
+				{
+					reclist.add(Util.sprintf("<script src=\"%s\"></script>", LTI.getWebAutoGenJsPath()));
+					reclist.add("<script>");
+				}
+
 				reclist.addAll(LTI.composeDataRecSpool(_base2Target.get(onetab)));
 				
 				// If the user has read-only access to the table, record that info
@@ -428,16 +440,26 @@ public class DataServer
 					reclist.add("");
 				}
 				
+				if(coreIncludeScriptTag())
+				{
+					reclist.add("</script>");
+				}
+			}
+
+			// TODO: August 2024, I don't think this stuff is required anymore,
+			// This was to protect against issues with creating indexes before the data was ready,
+			// shouldn't happen anymore
+			if(coreIncludeScriptTag())
+			{
+				reclist.add("<script>");
+				reclist.add("// Data Loading is now complete ");
+				reclist.add("W.__DATA_LOAD_COMPLETE = true;");
+
+				reclist.add("// Check for bad index creation in user code");
+				reclist.add("W.__badIndexCreationCheck();");
 				reclist.add("</script>");
 			}
 
-			reclist.add("<script>");
-			reclist.add("// Data Loading is now complete ");
-			reclist.add("W.__DATA_LOAD_COMPLETE = true;");
-
-			reclist.add("// Check for bad index creation in user code");
-			reclist.add("W.__badIndexCreationCheck();");
-			reclist.add("</script>");
 			reclist.add("");
 			reclist.add("");
 			
