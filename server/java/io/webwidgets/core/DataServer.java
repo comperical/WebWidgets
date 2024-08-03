@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import net.danburfoot.shared.Util;
 import net.danburfoot.shared.ArgMap;
 import net.danburfoot.shared.CollUtil;
+import net.danburfoot.shared.FileUtils;
 import net.danburfoot.shared.CollUtil.*;
 
 import io.webwidgets.core.CoreUtil.*;
@@ -427,6 +428,10 @@ public class DataServer
 				{
 					reclist.add(Util.sprintf("<script src=\"%s\"></script>", LTI.getWebAutoGenJsPath()));
 					reclist.add("<script>");
+				} else {
+
+					var autogen = FileUtils.getReaderUtil().setFile(LTI.getWebAutoGenJsPath()).readLineListE();
+					reclist.addAll(autogen);
 				}
 
 				reclist.addAll(LTI.composeDataRecSpool(_base2Target.get(onetab)));
