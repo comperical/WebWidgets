@@ -429,8 +429,7 @@ public class DataServer
 					reclist.add(Util.sprintf("<script src=\"%s\"></script>", LTI.getWebAutoGenJsPath()));
 					reclist.add("<script>");
 				} else {
-
-					var autogen = FileUtils.getReaderUtil().setFile(LTI.getWebAutoGenJsPath()).readLineListE();
+					var autogen = FileUtils.getReaderUtil().setFile(jsfile.get()).readLineListE();
 					reclist.addAll(autogen);
 				}
 
