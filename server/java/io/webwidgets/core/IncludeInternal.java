@@ -40,7 +40,9 @@ public class IncludeInternal
 
             Optional<WidgetUser> accessor = AuthLogic.getLoggedInUser(request);
 
-            Map<DataIncludeArg, String> dargmap = WispTagParser.parse2DataMap(request.getQueryString());
+            Map<DataIncludeArg, String> dargmap = getDargMap(request.getQueryString());
+
+            Util.massert(dargmap != null, "Failed to parse DARG map with query string %s", request.getQueryString());
 
             var directinc = new DirectLoadInclude(dargmap, AuthLogic.getLoggedInUser(request));
 
@@ -60,6 +62,20 @@ public class IncludeInternal
             response.getOutputStream().write(directinc.include().getBytes());
             response.getOutputStream().write("\n".getBytes());
             response.getOutputStream().close();
+        }
+
+        private static Map<DataIncludeArg, String> getDargMap(String querystring)
+        {
+            ArgMap submap = ArgMap.buildFromQueryString("?" + querystring);
+            Map<DataIncludeArg, String> dargmap = Util.treemap();
+
+            for(String k : submap.keySet())
+            {
+                var kd = DataIncludeArg.valueOf(k);
+                dargmap.put(kd, submap.get(k));
+            }
+
+            return dargmap;
         }
     }
 

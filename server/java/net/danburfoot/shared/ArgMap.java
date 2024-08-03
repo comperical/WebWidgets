@@ -246,7 +246,7 @@ public class ArgMap extends TreeMap<String, String>
 	
 	public static ArgMap buildFromQueryString(String qstr)
 	{
-		return buildFromQueryString(qstr, false);	
+		return buildFromQueryString(qstr, false);
 	}
 	
 	
