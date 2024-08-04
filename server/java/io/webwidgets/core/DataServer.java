@@ -115,6 +115,7 @@ public class DataServer
 
 		private Optional<Pair<String, Object>> _optFilterTarget = Optional.empty();
 
+
 		protected ServerUtilCore(Map<DataIncludeArg, String> amap)
 		{
 			_dargMap = amap;
@@ -364,6 +365,12 @@ public class DataServer
 			return sb.toString();
 		}
 
+		// If true, instead of generating the JSON data directly,
+		// Create a directload script include tag
+		protected boolean sendToDirectLoad()
+		{
+			return false;
+		}
 
 		public String include()
 		{
@@ -401,6 +408,10 @@ public class DataServer
 				Util.massert(checker.allowRead(),
 					"Access denied, user %s lacks permissions to read data from widget %s", accessor, _theItem);
 			}
+
+			if(sendToDirectLoad())
+				{ return composeDirectLoadTag(); }
+
 
 			List<String> reclist = Util.arraylist();
 			
@@ -468,6 +479,24 @@ public class DataServer
 			reclist.add("");
 			
 			return Util.join(reclist, "\n");
+		}
+
+		private String composeDirectLoadTag()
+		{
+			var dargcopy = new HashMap<>(_dargMap);
+
+			if(!dargcopy.containsKey(DataIncludeArg.username))
+				{ dargcopy.put(DataIncludeArg.username, _theItem.theOwner.toString()); }
+
+			if(!dargcopy.containsKey(DataIncludeArg.widgetname))
+				{ dargcopy.put(DataIncludeArg.widgetname, _theItem.theName); }
+
+			List<String> kvlist = Util.map2list(dargcopy.entrySet(),
+				pr -> Util.sprintf("%s=%s", pr.getKey(), pr.getValue()));
+
+			String tagstr = Util.join(kvlist, "&");
+
+			return Util.sprintf("<script src=\"/u/directload?%s\"></script>", tagstr);
 		}
 	}
 

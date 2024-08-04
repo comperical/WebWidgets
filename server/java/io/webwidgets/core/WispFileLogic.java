@@ -410,5 +410,12 @@ public class WispFileLogic
         {
             return Optional.of(pageItem);
         }
+
+        @Override
+        protected boolean sendToDirectLoad()
+        {
+            // August 2024, temporary testing approach, use only for me
+            return getPageAccessor().map(user -> user.toString()).orElse(".....").equals("dburfoot");
+        }
     }
 }
