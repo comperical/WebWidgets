@@ -345,8 +345,14 @@ public class WebUtil
 	}
 
 
-	/*
+	// This filter blocks the app from serving flat files in a user directory,
+	// if the accessor does not have appropriate (read) permission
+	// Thus, flat files in the /u/dburfoot/links/... folder will be readable or not
+	// exactly if the Widget data in the dburfoot::links DB is readable
+	// The question of what to do with base-level data, and data that is in a folder other than the widget folder, is TBD
+	// Currently it is public, for backwards - compat reasons
 	// TODO: comment this back in at a convenient time.
+	/*
 	@WebFilter("/*")
 	public static class ProtectUserDataFilter implements Filter {
 
@@ -412,5 +418,67 @@ public class WebUtil
 	*/
 
 
+	// This is a targeted/surgical filter operation that does just one thing:
+	// allow the apps to leave out the file extension for .wisp and .jsp files
+	// This results in cleaner URLs, and hides details of the underlying JSP implementation
+	// The logic is very simple: if you see a request that could be serviced by adding a ".wisp" or ".jsp" suffix,
+	// go ahead and service it using the appropriate suffix.
+	// TODO: comment this back in at a convenient time.
+	/*
+	@WebFilter("/*")
+	public static class SkipExtensionFilter implements Filter {
+
+		private static Set<String> KNOWN_API_PATH_SET = Util.setify("directload", "bulkupdate", "callback", "blobstore", "push2me", "pull2you", "extend");
+
+		@Override
+		public void init(FilterConfig filterConfig) throws ServletException {}
+
+	    @Override
+	    public void doFilter(javax.servlet.ServletRequest _request, javax.servlet.ServletResponse _response, FilterChain chain)
+	            throws IOException, ServletException {
+
+	        var request = (HttpServletRequest) _request;
+	        var uri = request.getRequestURI();
+	        var infopair = widgetInfoFromUri(uri);
+
+	        // Gotcha: you cannot split on ".", it is interpreted as a wildcard, must escape it
+	        if(infopair == null || uri.split("\\.").length > 1 || KNOWN_API_PATH_SET.contains(infopair._1))
+	        {
+		        chain.doFilter(_request, _response);
+				return;
+	        }
+
+	        var suburi = uri.startsWith("/u") ? uri.substring("/u".length()) : uri;
+	        var realpath = request.getServletContext().getRealPath(suburi);
+
+	        for(String ext : approvedExtensionList(infopair))
+	        {
+				var probefile = new File(realpath + ext);
+				if(probefile.exists())
+				{
+					var dispatcher = request.getRequestDispatcher(suburi + ext);
+					dispatcher.forward(request, _response);
+					return;
+				}
+	        }
+
+	        chain.doFilter(_request, _response);
+	    }
+
+	    private static List<String> approvedExtensionList(Pair<String, String> infopair)
+	    {
+			if(infopair == null)
+				{ return Collections.emptyList(); }
+
+			var optuser = WidgetUser.softLookup(infopair._1);
+			if(optuser.isPresent())
+				{ return Util.listify(".wisp", ".jsp"); }
+
+			// I am a bit scared about this, but I want to be able to skip the .jsp extensions
+			// things like AdminMain.jsp, LogIn.jsp, etc
+			return Util.listify(".jsp");
+		}
+	}
+	*/
 }
 
