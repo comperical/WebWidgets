@@ -821,7 +821,7 @@ public class LiteTableInfo
 		
 	String getAutoGenProbePath(int version)
 	{
-		File wdir = WebUtil.getAutoGenJsDir(dbTabPair._1);
+		File wdir = dbTabPair._1.getAutoGenJsDir();
 		return Util.sprintf("%s/%s__%03d.js", wdir.toString(), getBasicName(), version);
 	}
 	
@@ -844,7 +844,7 @@ public class LiteTableInfo
 	
 	public Optional<File> findAutoGenFile()
 	{
-		File wdir = WebUtil.getAutoGenJsDir(dbTabPair._1);
+		File wdir = dbTabPair._1.getAutoGenJsDir();
 		Util.massert(wdir.exists() && wdir.isDirectory(),
 			"AutoGen JS Directory does not exist or is not directory %s", wdir);
 		

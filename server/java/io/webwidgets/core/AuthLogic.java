@@ -245,6 +245,8 @@ public class AuthLogic
 			return directDbWidget(WebUtil.getWidgetFromUrl(pageurl));
 		}
 
+		// Note: this argument might not actually exist on disk
+		// this could be a "virtual" widget
 		public AuthChecker directDbWidget(WidgetItem item)
 		{
 			Util.massert(_dbItem == null, "Widget has already been set");

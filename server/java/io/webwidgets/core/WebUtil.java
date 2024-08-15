@@ -7,14 +7,19 @@ import java.sql.*;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
+import javax.servlet.annotation.WebFilter;
+import javax.servlet.annotation.WebServlet;
 
 import net.danburfoot.shared.Util;
 import net.danburfoot.shared.ArgMap;
 import net.danburfoot.shared.CoreDb;
 import net.danburfoot.shared.FileUtils;
 import net.danburfoot.shared.TimeUtil.*;
+import net.danburfoot.shared.CollUtil.Pair;
+
 
 import io.webwidgets.core.WidgetOrg.*;
+import io.webwidgets.core.AuthLogic.AuthChecker;
 
 
 public class WebUtil
@@ -51,7 +56,7 @@ public class WebUtil
 		try {
 			return Optional.of(getWidgetFromUrl(pageurl));
 		} catch (Exception ex) {
-			return Optional.empty();	
+			return Optional.empty();
 		}
 
 	}
@@ -82,15 +87,6 @@ public class WebUtil
 
 		response.sendRedirect(redirect);
 	}
-
-	public static String rewriteAsLocal(String remoteurl) 
-	{
-		int lifept = remoteurl.indexOf("/life");
-		Util.massert(lifept != -1);
-		
-		String suburl = remoteurl.substring(lifept);
-		return Util.sprintf("http://localhost:8080%s", suburl);
-	}
 		
 	// For this method, the URL MUST conform to the expected pattern
 	// If you are not sure if it will conform, use getWidgetFromPageUrl
@@ -112,6 +108,30 @@ public class WebUtil
 		String pageName = toklist.pollLast();
 		return toklist.isEmpty() ? wuser.baseWidget() : new WidgetItem(wuser, toklist.peek());
 	}
+
+	static Pair<String, String> widgetInfoFromUri(String uri)
+	{
+		LinkedList<String> toklist = Util.linkedlistify(uri.split("/"));
+		Util.massert(toklist.pollFirst().equals(""), "URIs must start with /, got %s", uri);
+
+		// Need to at least have /u/<username
+		if(toklist.size() < 2)
+			{ return null;}
+
+		// Peel off the /u prefix
+		if(!toklist.pollFirst().toLowerCase().equals("u"))
+				{ return null; }
+
+		// Now we have the actual user. The name may or may not be present
+		String userprobe = toklist.pollFirst();
+		String nameprobe = null;
+
+		if(toklist.size() > 1)
+			{ nameprobe = toklist.pollFirst(); }
+
+		// The second argument can be null
+		return Pair.build(userprobe, nameprobe);
+	}
 	
 	static String getRelativeResource(String fullurl) 
 	{
@@ -121,20 +141,11 @@ public class WebUtil
 			if(domidx == -1)
 				{ continue; }
 	
-			return fullurl.substring(domidx + probe.length());			
+			return fullurl.substring(domidx + probe.length());
 		}
 		
 		Util.massert(false, "Failed to find domain name in page url %s", fullurl);
 		return null;
-	}
-	
-	// TODO: why isn't this a method on WidgetItem...?
-	public static File getAutoGenJsDir(WidgetItem witem)
-	{
-		// /opt/userdata/lifecode/widgets/heather/links/		
-		String userdir = witem.theOwner.getAutoGenJsDir().getAbsolutePath();
-		String bdir = userdir + "/" + witem.theName;
-		return new File(bdir);
 	}
 	
 	public static List<String> getConfigTemplate(WidgetUser wuser)
@@ -332,5 +343,74 @@ public class WebUtil
 		}
 
 	}
-} 
+
+
+	/*
+	// TODO: comment this back in at a convenient time.
+	@WebFilter("/*")
+	public static class ProtectUserDataFilter implements Filter {
+
+		// This thing is apparently required
+		@Override
+		public void init(FilterConfig filterConfig) throws ServletException {}
+
+	    @Override
+	    public void doFilter(javax.servlet.ServletRequest _request, javax.servlet.ServletResponse _response, FilterChain chain)
+	            throws IOException, ServletException {
+
+	        var request = (HttpServletRequest) _request;
+
+	        // Important: remove the /autogenjs from a URI if you see it
+	        // autogenjs data will be treated the same as the Widget it corresponds to
+	        String uri = request.getRequestURI().replaceAll("/autogenjs", "");
+	        var infopair = widgetInfoFromUri(uri);
+
+	        // For these two types of files, we include the auth checking and forwarding in the downstream handler
+	        boolean downcheck = uri.endsWith(".jsp") || uri.endsWith(".wisp");
+
+	        if(!downcheck && blockUserDataRead(request, infopair))
+	        {
+	            ((HttpServletResponse) _response).sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
+	            return;
+	        }
+
+	        chain.doFilter(_request, _response);
+	    }
+
+	    private static boolean blockUserDataRead(HttpServletRequest request, Pair<String, String> infopair)
+	    {
+			// there's no way for it to be a user's stuff. Will be protected by other pieces of code.
+			if(infopair == null)
+				{ return false; }
+
+			// Lookup the user. If there's no user, can't be user's stuff, same idea as above.
+			var user = WidgetUser.softLookup(infopair._1);
+			if(!user.isPresent())
+				{ return false; }
+
+			// Don't block the shared user!!!
+			if(user.get() == WidgetUser.getSharedUser())
+				{ return false; }
+
+			// Here we're checking if it's a "normal" widget
+			// Block unless the logged-in user can read the widget data
+			if(infopair._2 != null)
+			{
+				// What do we do about non-DB subfolders here? This is a point of study.
+				// Hopefully the AuthChecker will not throw an error if you 
+				var item = new WidgetItem(user.get(), infopair._2);
+				var okayread = AuthChecker.build().userFromRequest(request).directDbWidget(item).allowRead();
+				return !okayread;
+			}
+
+			// We are now dealing with the "base" widget, ie the user's root directory
+			// For backward compat, and because I don't know the right thing to do here, 
+			// allow the read.
+			return false;
+		}
+	}
+	*/
+
+
+}
 

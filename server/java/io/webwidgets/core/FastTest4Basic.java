@@ -280,7 +280,7 @@ public class FastTest4Basic
 
 			for(WidgetItem dbitem : user.getUserWidgetList())
 			{
-				File jsdir = WebUtil.getAutoGenJsDir(dbitem);
+				File jsdir = dbitem.getAutoGenJsDir();
 				Util.massert(jsdir.exists() && jsdir.isDirectory(), "Problem with autogen JS dir %s", jsdir);
 
 				for(File jsfile : jsdir.listFiles())

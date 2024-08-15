@@ -90,6 +90,13 @@ public class WidgetOrg
 		{
 			return getLocalDbFile().exists();
 		}
+
+		public File getAutoGenJsDir()
+		{
+			String userdir = theOwner.getAutoGenJsDir().getAbsolutePath();
+			String bdir = userdir + "/" + theName;
+			return new File(bdir);
+		}
 		
 		public int compareTo(WidgetItem other) 
 		{
@@ -102,7 +109,7 @@ public class WidgetOrg
 		}
 
 		void createEmptyLocalDb()
-		{			
+		{
 			File dbfile = new File(getLocalDbPath());
 			if(dbfile.exists())
 			{

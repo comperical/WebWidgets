@@ -728,7 +728,7 @@ public class ActionJackson extends HttpServlet
 	public static List<String> createCode4Widget(WidgetItem witem)
 	{
 		List<String> loglist = Util.vector();
-		File autogendir = WebUtil.getAutoGenJsDir(witem);
+		File autogendir = witem.getAutoGenJsDir();
 		
 		if(!autogendir.exists())
 		{
