@@ -17,12 +17,21 @@ WWIO_DOCS_URL = "https://webwidgets.io/docs.jsp"
 
 WWIO_USER_ENV_VAR = "WWIO_USER_NAME"
 
+WWIO_HOST_ENV_VAR = "WWIO_HOST_NAME"
+
 # Cannot upload data bigger than this. This number must agree with the value defined in the Java code.
 # TODO: probably increase this, 10 Mb seems low
 MAX_UPLOAD_SIZE_BYTES = 10_000_000
 
 
 def get_domain_prefix(local=False):
+
+	if WWIO_HOST_ENV_VAR in os.environ:
+		host = os.environ.get(WWIO_HOST_ENV_VAR)
+		assert not host.startswith("http"), f"By convention, host name does not start with http prefix"
+		print(f"Sending data to host {host}")
+		return f"https://{host}"
+
 	return  "https://webwidgets.io"
 
 def get_config_directory():
@@ -97,7 +106,7 @@ def get_config_map(username):
 	for k, _ in configmap.items():
 		assert k in CONFIG_MAP_OKAY_KEYS, "Unknown configuration parameter '{}' in file, options are {}".format(k, CONFIG_MAP_OKAY_KEYS)
 
-	return configmap	
+	return configmap
 
 
 class AssetUploader:
@@ -107,6 +116,7 @@ class AssetUploader:
 		self.widget = argmap.getStr("widgetname")
 		self.username = argmap.getStr("username")
 		self.local = argmap.getBit("local", False)
+		self.securecurl = argmap.getBit("securecurl", True)
 		self.basedir = None
 
 	def ensure_okay(self, postprep=False):
@@ -127,8 +137,10 @@ class AssetUploader:
 		extend = self.get_file_type()
 		acchash = configmap['accesshash']
 		domainpref = get_domain_prefix(local=self.local)
+		securestr = "" if self.securecurl else " --insecure "
+
 		assert os.path.exists(payload), "Payload path {} does not exist".format(payload)
-		return "curl --request POST --form payload=@{}  --form filetype={} --form username={} --form widget={} --form accesshash={} {}/u/push2me".format(payload, extend, self.username, self.widget, acchash, domainpref)
+		return "curl --request POST {} --form payload=@{}  --form filetype={} --form username={} --form widget={} --form accesshash={} {}/u/push2me".format(securestr, payload, extend, self.username, self.widget, acchash, domainpref)
 	
 	def do_upload(self, configmap):
 		curlcall = self.compose_curl_call(configmap)
