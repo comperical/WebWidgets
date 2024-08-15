@@ -146,12 +146,12 @@ function redisplay()
     const widgetnames = ["<%= Util.join(widgetNameList, "\", \"") %>"];
 
     const optsel = buildOptSelector()
-                        .setKeyList(widgetnames)
+                        .configureFromList(widgetnames)
                         .sortByDisplay()
                         .setOnChange("javascript:changeWidgetSelect()")
                         .setElementName("widget_selector")
                         .setSelectedKey("<%= selectedItem.theName %>")
-                        .getSelectString();
+                        .getHtmlString();
 
     populateSpanData({"widget_select_span" : optsel});
 }
@@ -327,6 +327,13 @@ function promptAddPerm(permlevel)
     <!-- page-body-wrapper ends -->
   </div>
   <!-- container-scroller -->
+
+
+  <!-- These two are empty / no-op elements that are for compatibility with the Majestic JS Code -->
+  <div id="proBanner"></div>
+  <div id="bannerClose"></div>
+
+
 
   <!-- plugins:js -->
   <script src="/u/shared/majestic/vendors/base/vendor.bundle.base.js"></script>

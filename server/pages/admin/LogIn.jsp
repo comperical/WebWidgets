@@ -418,6 +418,10 @@ function loadGoogleClientInfo()
   </div>
   <!-- container-scroller -->
 
+  <!-- These two are empty / no-op elements that are for compatibility with the Majestic JS Code -->
+  <div id="proBanner"></div>
+  <div id="bannerClose"></div>
+
   <!-- plugins:js -->
   <script src="/u/shared/majestic/vendors/base/vendor.bundle.base.js"></script>
   <!-- endinject -->
