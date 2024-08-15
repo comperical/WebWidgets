@@ -237,30 +237,8 @@
   </div>
   <!-- container-scroller -->
 
-  <!-- These two are empty / no-op elements that are for compatibility with the Majestic JS Code -->
-  <div id="proBanner"></div>
-  <div id="bannerClose"></div>
+  <%@include file="MajesticFooter.jsp_inc" %>
 
-  <!-- plugins:js -->
-  <script src="/u/shared/majestic/vendors/base/vendor.bundle.base.js"></script>
-  <!-- endinject -->
-  <!-- Plugin js for this page-->
-  <script src="/u/shared/majestic/vendors/chart.js/Chart.min.js"></script>
-  <script src="/u/shared/majestic/vendors/datatables.net/jquery.dataTables.js"></script>
-  <script src="/u/shared/majestic/vendors/datatables.net-bs4/dataTables.bootstrap4.js"></script>
-  <!-- End plugin js for this page-->
-  <!-- inject:js -->
-  <script src="/u/shared/majestic/js/off-canvas.js"></script>
-  <script src="/u/shared/majestic/js/hoverable-collapse.js"></script>
-  <script src="/u/shared/majestic/js/template.js"></script>
-  <!-- endinject -->
-  <!-- Custom js for this page-->
-  <script src="/u/shared/majestic/js/dashboard.js"></script>
-  <script src="/u/shared/majestic/js/data-table.js"></script>
-  <script src="/u/shared/majestic/js/jquery.dataTables.js"></script>
-  <script src="/u/shared/majestic/js/dataTables.bootstrap4.js"></script>
-  <!-- End custom js for this page-->
-  <script src="/u/shared/majestic/js/jquery.cookie.js" type="text/javascript"></script>
 </body>
 
 </html>
