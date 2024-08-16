@@ -99,7 +99,7 @@ public class CallBack2Me extends HttpServlet
 		// which potentially involves a significant amount of overhead (?)
 		// Caching would be powerful here, because usage patterns will follow a "session" pattern,
 		// where the user accesses a widget and interacts with it several times before moving on
-		LiteTableInfo tableInfo = new LiteTableInfo(innmap);
+		LiteTableInfo tableInfo = LiteTableInfo.fromArgMap(innmap);
 		tableInfo.runSetupQuery();
 		
 		Optional<WidgetUser> optuser = AuthLogic.getLoggedInUser(request);

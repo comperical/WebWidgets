@@ -177,8 +177,7 @@ public class TemplateGenerator
             "\tif(s.length < 40) { return s; }",
             "\treturn s.substring(0, 37) + '...';",
             "}"
-        );        
-
+        );
     }
 
     private static String getGenericEditFunc(Class colclass)
@@ -291,10 +290,6 @@ public class TemplateGenerator
 
             add("\t\t\t<td>${shorten4Display(item.get%s())}</td>", CoreUtil.snake2CamelCase(col));
         }
-
-            // "\t\t<td></td>"
-        // );
-
 
         additems(
             "\t\t\t<td>", 

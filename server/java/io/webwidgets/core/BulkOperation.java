@@ -38,7 +38,7 @@ public class BulkOperation
 
             // TODO: see note about caching on the main update servlet
             // Though this operation is going to be called less often
-            LiteTableInfo tableInfo = new LiteTableInfo(innmap);
+            LiteTableInfo tableInfo = LiteTableInfo.fromArgMap(innmap);
             tableInfo.runSetupQuery();
 
             boolean haveissue = standardCheckForIssue(request, tableInfo, outmap);

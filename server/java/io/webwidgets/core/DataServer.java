@@ -417,8 +417,10 @@ public class DataServer
 			
 			for(String onetab : _base2Target.keySet())
 			{
-				var LTI = new LiteTableInfo(_theItem, onetab, _noDataMode);
+				var LTI = new LiteTableInfo(_theItem, onetab);
 				LTI.runSetupQuery();
+
+				LTI.withNoDataMode(_noDataMode);
 
 				if(_optFilterTarget.isPresent())
 				{

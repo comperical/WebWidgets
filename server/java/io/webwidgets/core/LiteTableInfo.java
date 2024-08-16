@@ -38,13 +38,10 @@ public class LiteTableInfo
 
     public static final Pattern DEFAULT_PATTERN = Pattern.compile("DEFAULT\\s+(?:(?:'([^']*)')|(\\d+(?:\\.\\d+)?)(?=\\s|,|$)|(\\w+))", Pattern.CASE_INSENSITIVE);
 
-
     public static final Pattern SIMPLE_STRING_OKAY = Pattern.compile("^[A-Za-z0-9]+$");
 
 	public static final String LOAD_SUCCESS_TAG = LiteTableInfo.class.getSimpleName() + "__LOAD_SUCCESS";
-	
-	public static final String DECODE_URI_SHORTHAND = "__duric";
-	
+		
 	public static final Set<String> SQLITE_STR_TYPE = Util.setify("varchar", "text");
 	
 	public enum ExchangeType
@@ -98,49 +95,30 @@ public class LiteTableInfo
 	// Note: the order of these keys are very important
 	private LinkedHashMap<String, String> _colTypeMap = Util.linkedhashmap();
 	
-	private List<String> _pkeyList = Util.vector();
-
 	private Pair<String, Object> _colFilterTarget = null;
 
 	private Boolean _isBlobStore = null;
 
-	private final boolean _noDataMode;
-	
-	
+	private boolean _noDataMode;
+
 	public LiteTableInfo(WidgetItem widget, String table)
-	{
-		this(widget, table, false);
-	}
-
-
-	public LiteTableInfo(WidgetItem widget, String table, boolean nodata)
 	{
 		dbTabPair = Pair.build(widget, table);
 				
 		Util.massert(table.length() > 0, "Empty table name");
-		Util.massert(table.toLowerCase().equals(table),
-			"Table names should be lower case");
-		String basic = getBasicName();
-		_noDataMode = nodata;
-	}
-	
-	public LiteTableInfo(ArgMap onemap)
-	{
-		WidgetUser wowner = WidgetUser.valueOf(onemap.getStr("wowner"));
-		String wname = onemap.getStr("wname");
-		String table = onemap.getStr("tablename");
-				
-		dbTabPair = Pair.build(new WidgetItem(wowner, wname), table);
-		
-		// TODO: need to document the assumptions made regarding the table names
-		// If we are really requiring all table names to be lowercase, we'd better check that on DB upload
-		Util.massert(table.length() > 0, "Empty table name");
-		Util.massert(table.toLowerCase().equals(table),
-			"Table names should be lower case");
-		
-		// Util.pf("%s\n", dbTabPair);
+		Util.massert(table.toLowerCase().equals(table), "Table names should be lower case");
+
 		String basic = getBasicName();
 		_noDataMode = false;
+	}
+	
+
+	public static LiteTableInfo fromArgMap(ArgMap onemap)
+	{
+		WidgetUser owner = WidgetUser.valueOf(onemap.getStr("wowner"));
+		String wname = onemap.getStr("wname");
+		String table = onemap.getStr("tablename");
+		return new LiteTableInfo(new WidgetItem(owner, wname), table);
 	}
 
 	public void runSetupQuery()
@@ -157,20 +135,23 @@ public class LiteTableInfo
 			ResultSetMetaData rsmd = rset.getMetaData();
 			
 			popColTypeMap(rsmd);
-			
-			popKeyList(conn);
-			
+						
 			conn.close();
 
 			_isBlobStore = BlobDataManager.isBlobStorageTable(_colTypeMap.keySet());
 			
 		} catch (Exception ex) {
 			
-			throw new RuntimeException(ex);	
+			throw new RuntimeException(ex);
 		}
 	}
 	
 	
+	public LiteTableInfo withNoDataMode(boolean ndmode)
+	{
+		_noDataMode = ndmode;
+		return this;
+	}
 
 	public LiteTableInfo withColumnTarget(String colname, Object value)
 	{
@@ -180,13 +161,6 @@ public class LiteTableInfo
 
 		_colFilterTarget = Pair.build(colname, value);
 		return this;
-	}
-	
-	public void printInfo()
-	{
-		Util.pf("Col2Type map: %s\n", _colTypeMap);
-		
-		Util.pf("PKey List: %s\n", _pkeyList);
 	}
 	
 	private void popColTypeMap(ResultSetMetaData rsmd) throws SQLException
@@ -212,30 +186,6 @@ public class LiteTableInfo
 		return ExchangeType.lookupFromSql(classname);
 	}
 	
-	private void popKeyList(Connection conn) throws SQLException
-	{
-		String pragsql = Util.sprintf("PRAGMA table_info(%s)", dbTabPair._2);
-		
-		PreparedStatement pstmt = conn.prepareStatement(pragsql);
-		
-		ResultSet rset = pstmt.executeQuery();
-		
-		while(rset.next())
-		{
-			String colname = rset.getString(2);
-			
-			int ispkey = rset.getInt(6);
-			
-			if(ispkey > 0)
-				{ _pkeyList.add(colname); }
-		}
-		
-		conn.close();
-		
-		Util.massert(!_pkeyList.isEmpty(), 
-			"Found no Primary Key for table %s", dbTabPair._2);
-	}
-	
 	public WidgetItem getWidget()
 	{
 		return dbTabPair._1;
@@ -243,7 +193,7 @@ public class LiteTableInfo
 	
 	public String getWidgetOwner()
 	{
-		return dbTabPair._1.theOwner.toString();	
+		return dbTabPair._1.theOwner.toString();
 	}
 	
 	public String getWidgetName()
@@ -263,7 +213,7 @@ public class LiteTableInfo
 	
 	public String getRecordName()
 	{
-		return getBasicName() + "Item";	
+		return getBasicName() + "Item";
 	}
 	
 	// TODO: remove references to this in actual hand-written code,
@@ -275,7 +225,7 @@ public class LiteTableInfo
 	
 	public List<String> getPkeyList()
 	{
-		return Collections.unmodifiableList(_pkeyList);	
+		return Arrays.asList("id");
 	}
 	
 	public ConnectionSource getDbRef()
@@ -287,11 +237,6 @@ public class LiteTableInfo
 	{
 		return Collections.unmodifiableMap(_colTypeMap);	
 		
-	}
-	
-	public String getCsvPkeyStr()
-	{
-		return Util.join(_pkeyList, ", ");	
 	}
 	
 	// Okay, this method can't be offloaded to JS creator, it needs to run every time.
@@ -406,6 +351,8 @@ public class LiteTableInfo
 		return reclist;
 	}
 	
+	// Return the JSON-valid representation of the value in the given column
+	// This could be the literal null, a literal numeric representation, or a quoted string
 	private String getArrayRep(ArgMap onemap, String onecol)
 	{
 		String s = onemap.getStr(onecol);
@@ -430,26 +377,6 @@ public class LiteTableInfo
 		sb.append("\"");
 		return sb.toString();
 	}
-
-
-	// Return list of list of column names
-	// Each index is a list of columns
-	// Order matters!!
-	public List<List<String>> getIndexInfo()
-	{
-		// This is all the indexes for the whole DB
-		Map<String, String> indexmap = CoreDb.getLiteIndexMap(dbTabPair._1);
-
-		// Filter down to the ones for this table
-		return indexmap.entrySet()
-						.stream()
-						.filter(pr -> !pr.getKey().contains("sqlite_autoindex"))
-						.filter(pr -> pr.getValue().equals(dbTabPair._2))
-						.map(pr -> CoreDb.getIndexColumnList(dbTabPair._1, pr.getKey()))
-						.collect(CollUtil.toList());
-	}
-
-
 
 	public Map<String, Object> getDefaultInfo()
 	{
@@ -503,7 +430,8 @@ public class LiteTableInfo
 		// What gets entered into the SQLite table is the blob coords, not the blob data itself
 		BlobDataManager.optProcessBlobInput(this, paymap);
 		
-		CoreDb.upsertFromRecMap(dbTabPair._1, dbTabPair._2, _pkeyList.size(), paymap);
+		// The getPkeyList().size() is a bit unnecessary, all WWIO tables have exactly 1 PK column "id"
+		CoreDb.upsertFromRecMap(dbTabPair._1, dbTabPair._2, getPkeyList().size(), paymap);
 	}
 	
 	public void doDelete(ArgMap argmap)
@@ -514,7 +442,8 @@ public class LiteTableInfo
 		// TODO: historical versions of WWIO allowed multi-column primary keys
 		// Current version (Oct 2023) allows only single-column primary key with Integer "id"
 		// So this command really just getRecMap("id", argmap.getInt("id"))); 
-		LinkedHashMap<String, Object> paymap = getPayLoadMap(argmap, _pkeyList);
+		// LinkedHashMap<String, Object> paymap = getPayLoadMap(argmap, _pkeyList);
+		LinkedHashMap<String, Object> paymap = CoreDb.getRecMap("id", argmap.getInt("id"));
 
 		BlobDataManager.optProcessDelete(this, paymap);
 		

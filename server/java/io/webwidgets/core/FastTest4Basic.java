@@ -546,7 +546,9 @@ public class FastTest4Basic
 							{ continue; }
 						
 						// nodatamode = true, this makes it run much faster
-						LiteTableInfo tinfo = new LiteTableInfo(witem, dbname, true);
+						LiteTableInfo tinfo = new LiteTableInfo(witem, dbname);
+						tinfo.withNoDataMode(true);
+
 						Optional<File> autofile = tinfo.findAutoGenFile();
 						Util.massert(autofile.isPresent(),
 							"JS data path for widget %s::%s does not exist", witem, dbname);
@@ -676,6 +678,48 @@ public class FastTest4Basic
 			}
 		}
 	}
+
+	public static class CheckPrimaryKeyConfig extends DescRunnable
+	{
+		public String getDesc()
+		{
+			return "Check that every Widget table has a single primary Key 'id'";
+		}
+
+		public void runOp()
+		{
+			var expected = Arrays.asList("id");
+			var badcount = 0;
+			var okaycount = 0;
+
+			for(var user : WidgetUser.values())
+			{
+				for(var item : user.getUserWidgetList())
+				{
+					if(user.toString().equals("dburfoot") && item.theName.equals("life"))
+						{ continue; }
+
+
+					for(var table : item.getDbTableNameSet())
+					{
+						var LTI = new LiteTableInfo(item, table);
+						LTI.runSetupQuery();
+						if(!LTI.getPkeyList().equals(expected))
+						{
+							Util.pferr("Have PK list %s for %s :: %s\n", LTI.getPkeyList(), item, table);
+							badcount += 1;
+						} else {
+							okaycount += 1;
+						}
+					}
+				}
+			}
+
+			Util.massert(badcount == 0, "Got %d errors, see above", badcount);
+			Util.pf("Checked %d tables okay\n", okaycount);
+		}
+	}
+
 
 	public static class CheckUrlWidgetLookup extends DescRunnable
 	{
