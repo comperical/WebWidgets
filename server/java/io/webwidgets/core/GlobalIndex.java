@@ -36,7 +36,6 @@ public class GlobalIndex
 
     private static Map<WidgetItem, PermInfoPack> _PERMISSION_MAP;
 
-
     static synchronized Map<String, ArgMap> getMasterData()
     {
         onDemandLoadIndexes();
@@ -110,7 +109,7 @@ public class GlobalIndex
             {
                 _PERMISSION_MAP = Util.treemap();
 
-                QueryCollector qcol = CoreUtil.fullTableQuery(CoreUtil.getMasterWidget(), AuthLogic.PERM_GRANT_TABLE);
+                QueryCollector qcol = CoreUtil.fullTableQuery(WidgetItem.getMasterWidget(), AuthLogic.PERM_GRANT_TABLE);
 
                 for(ArgMap onemap : qcol.recList())
                 {
@@ -134,7 +133,7 @@ public class GlobalIndex
     }
 
     // This is a special "back-door" that is used only to load the indexes
-    // The gotcha is that CoreUtil.getMasterWidget requires a reference to WidgetUser.shared
+    // The gotcha is that WidgetItem.getMasterWidget requires a reference to WidgetUser.shared
     // But WidgetUser objects are generally only created by the GlobalIndex code
     private static WidgetItem getLoadOnlyMaster()
     { 
@@ -152,14 +151,14 @@ public class GlobalIndex
     {
         if(!optval.isPresent())
         {
-            CoreDb.deleteFromColMap(CoreUtil.getMasterWidget(), MasterTable.system_setting.toString(), CoreDb.getRecMap(
+            CoreDb.deleteFromColMap(WidgetItem.getMasterWidget(), MasterTable.system_setting.toString(), CoreDb.getRecMap(
                 "key_str", setting
             ));
 
             return;
         }
 
-        CoreDb.upsertFromRecMap(CoreUtil.getMasterWidget(), MasterTable.system_setting.toString(), 1, CoreDb.getRecMap(
+        CoreDb.upsertFromRecMap(WidgetItem.getMasterWidget(), MasterTable.system_setting.toString(), 1, CoreDb.getRecMap(
             "key_str", setting, 
             "val_str", optval.get()
         ));
@@ -176,4 +175,35 @@ public class GlobalIndex
 
         return _PERMISSION_MAP.getOrDefault(dbitem, new PermInfoPack());
     }
+
+
+    // Users 
+    public static Set<WidgetUser> getCodeFormatExemptSet()
+    {
+        return getCodeFormatExemptSet(false);
+    }
+
+    public static Set<WidgetUser> getCodeFormatExemptSet(boolean strict)
+    {
+        String exemptlist = GlobalIndex.getSystemSetting(SystemPropEnum.CODE_FORMAT_EXEMPT_LIST).orElse("").trim();
+        if(exemptlist.isEmpty())
+            { return Collections.emptySet(); }
+
+
+        Set<WidgetUser> result = Util.treeset();
+        for(String token : exemptlist.split(","))
+        {
+            Optional<WidgetUser> optuser = WidgetUser.softLookup(token);
+            if(optuser.isPresent())
+            {
+                result.add(optuser.get());
+                continue;
+            }
+
+            Util.massert(!strict, "Failed to find user in strict mode for token %s", token);
+        }
+
+        return result;
+    }
+
 }

@@ -177,7 +177,7 @@ public class DataServer
 
 				if(wdgname.isPresent())
 				{
-					Set<String> okset = Util.map2set(wdgOwner.getUserWidgetList(), wdg -> wdg.theName);
+					Set<String> okset = Util.map2set(WidgetItem.getUserWidgetList(wdgOwner), wdg -> wdg.theName);
 					if(!okset.contains(wdgname.get()))
 					{
 						String mssg = Util.sprintf("No widget with name %s found for user %s", wdgname.get(), wdgOwner);
@@ -304,7 +304,7 @@ public class DataServer
 			// like it's not worth trying to combine
 			{
 				// Sort list by file name length for pleasing effect
-				List<File> csslist = Util.listify(CoreUtil.SHARED_CSS_ASSET_DIR.listFiles());
+				List<File> csslist = Util.listify(AdvancedUtil.SHARED_CSS_ASSET_DIR.listFiles());
 				CollUtil.sortListByFunction(csslist, cssfile -> cssfile.getName().length());
 				
 				for(File cssfile : csslist)
@@ -324,7 +324,7 @@ public class DataServer
 
 			{
 				// Sort list by file name length for pleasing effect
-				List<File> jslist = Util.listify(CoreUtil.SHARED_JSLIB_ASSET_DIR.listFiles());
+				List<File> jslist = Util.listify(AdvancedUtil.SHARED_JSLIB_ASSET_DIR.listFiles());
 				CollUtil.sortListByFunction(jslist, jsfile -> jsfile.getName().length());
 				
 				for(File jsfile : jslist)

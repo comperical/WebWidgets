@@ -214,7 +214,7 @@ public class FastTest4Basic
 			for(String colname : Util.listify("owner", "grantee"))
 			{
 				String query = String.format("SELECT %s FROM perm_grant", colname);
-				QueryCollector qcol = QueryCollector.buildAndRun(query, CoreUtil.getMasterWidget());
+				QueryCollector qcol = QueryCollector.buildAndRun(query, WidgetItem.getMasterWidget());
 
 				for(ArgMap rec : qcol.recList())
 				{
@@ -278,7 +278,7 @@ public class FastTest4Basic
 
 			String deftag = String.format("widgetOwner : \"%s\"", user.toString());
 
-			for(WidgetItem dbitem : user.getUserWidgetList())
+			for(WidgetItem dbitem : WidgetItem.getUserWidgetList(user))
 			{
 				File jsdir = dbitem.getAutoGenJsDir();
 				Util.massert(jsdir.exists() && jsdir.isDirectory(), "Problem with autogen JS dir %s", jsdir);
@@ -471,9 +471,9 @@ public class FastTest4Basic
 			
 			List<WidgetItem> problist = Util.vector();
 			
-			for(WidgetUser wuser : WidgetUser.values())
+			for(var wuser : WidgetUser.values())
 			{
-				for(WidgetItem witem : wuser.getUserWidgetList())
+				for(var witem : WidgetItem.getUserWidgetList(wuser))
 				{
 					Set<String> nameset = CoreDb.getLiteTableNameSet(witem);
 					
@@ -537,7 +537,7 @@ public class FastTest4Basic
 				if(!wuser.haveLocalDb())
 					{ continue; }
 				
-				List<WidgetItem> itemlist = wuser.getUserWidgetList();
+				List<WidgetItem> itemlist = WidgetItem.getUserWidgetList(wuser);
 				for(WidgetItem witem : itemlist)
 				{
 					for(String dbname : witem.getDbTableNameSet())
@@ -694,7 +694,7 @@ public class FastTest4Basic
 
 			for(var user : WidgetUser.values())
 			{
-				for(var item : user.getUserWidgetList())
+				for(var item : WidgetItem.getUserWidgetList(user))
 				{
 					if(user.toString().equals("dburfoot") && item.theName.equals("life"))
 						{ continue; }

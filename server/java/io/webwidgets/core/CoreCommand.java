@@ -55,7 +55,7 @@ public class CoreCommand
 			Util.pferr("Failed to find class %s\n", fullclass);
 			throw new RuntimeException(cnfex);
 		} catch (ClassCastException ccex) {
-			Util.pferr("Failed to convert class %s into an ArgMapRunnable\n", fullclass);	
+			Util.pferr("Failed to convert class %s into an ArgMapRunnable\n", fullclass);
 			throw new RuntimeException(ccex);
 		} catch (InstantiationException inex) {
 			Util.pferr("Failed to instantiate class %s with newInstance call, does it have 0-arg constructor?\n", fullclass);	
@@ -78,7 +78,7 @@ public class CoreCommand
 		
 		public void runOp()
 		{
-			Optional<String> prevmode = CoreUtil.maintenanceModeInfo();
+			Optional<String> prevmode = AdvancedUtil.maintenanceModeInfo();
 			if(prevmode.isPresent())
 			{
 				Util.pf("Server is already in maintenance mode: %s\n", prevmode.get());
@@ -104,7 +104,7 @@ public class CoreCommand
 		
 		public void runOp() 
 		{
-			Optional<String> prevmode = CoreUtil.maintenanceModeInfo();
+			Optional<String> prevmode = AdvancedUtil.maintenanceModeInfo();
 			if(!prevmode.isPresent())
 			{
 				Util.pf("Server is not in maintenance mode!!\n");
@@ -215,12 +215,12 @@ public class CoreCommand
 					return;
 				}
 
-				recid = CoreUtil.getNewDbId(CoreUtil.getMasterWidget(), MasterTable.system_setting.toString());
+				recid = CoreUtil.getNewDbId(WidgetItem.getMasterWidget(), MasterTable.system_setting.toString());
 			}
 
 			if(optval.isPresent())
 			{
-				CoreDb.upsertFromRecMap(CoreUtil.getMasterWidget(), MasterTable.system_setting.toString(), 1, CoreDb.getRecMap(
+				CoreDb.upsertFromRecMap(WidgetItem.getMasterWidget(), MasterTable.system_setting.toString(), 1, CoreDb.getRecMap(
 					"id", recid,
 					"key_str", keystr,
 					"val_str", optval.get()
@@ -229,7 +229,7 @@ public class CoreCommand
 				Util.pf("Updated system setting for ID=%d, Key=%s, Val=%s\n", recid, keystr, optval.get());
 
 			} else {
-				CoreDb.deleteFromColMap(CoreUtil.getMasterWidget(), MasterTable.system_setting.toString(), CoreDb.getRecMap("id", recid));
+				CoreDb.deleteFromColMap(WidgetItem.getMasterWidget(), MasterTable.system_setting.toString(), CoreDb.getRecMap("id", recid));
 				Util.pf("Deleted system setting ID=%d, key=%s\n", recid, keystr);
 			}
 
@@ -249,7 +249,7 @@ public class CoreCommand
 		private static Integer getKeyRecordId(String keystr)
 		{
 			String query = Util.sprintf("SELECT id FROM system_setting WHERE key_str = '%s'", keystr);
-			QueryCollector qcol = QueryCollector.buildAndRun(query, CoreUtil.getMasterWidget());
+			QueryCollector qcol = QueryCollector.buildAndRun(query, WidgetItem.getMasterWidget());
 			if(qcol.getNumRec() == 0)
 				{ return null; }
 
@@ -327,7 +327,7 @@ public class CoreCommand
 
 			for(WidgetUser wuser : userlist)
 			{
-				List<WidgetItem> itemlist = wuser.getUserWidgetList();
+				List<WidgetItem> itemlist = WidgetItem.getUserWidgetList(wuser);
 				for(WidgetItem witem : itemlist)
 				{
 					Util.pf("Attempting to create code for %s\n", witem);
@@ -361,7 +361,8 @@ public class CoreCommand
 			String widgetname = _argMap.getStr("widgetname");
 			Util.massert(widgetname.toLowerCase().equals(widgetname));
 			
-			WidgetItem witem = wuser.createBlankItem(widgetname);
+
+			WidgetItem witem = WidgetItem.createBlankItem(wuser, widgetname);
 			Util.pf("Created blank widget %s\n", witem);
 		}
 	}
@@ -378,11 +379,12 @@ public class CoreCommand
 			String reversed = _argMap.getStr("reversed");
 			Util.massert(widgetname.toLowerCase().equals(widgetname));
 			
-			Set<String> curset = Util.map2set(wuser.getUserWidgetList(), witem -> witem.theName);
+			Set<String> curset = Util.map2set(WidgetItem.getUserWidgetList(wuser), witem -> witem.theName);
 			Util.massert(curset.contains(widgetname),
 				"That widget does not exist: %s", widgetname);
 			
-			wuser.checkAndDelete(widgetname, reversed);
+			WidgetItem victim = new WidgetItem(wuser, widgetname);
+			victim.checkAndDelete(reversed);
 		}
 	}
 	
@@ -479,7 +481,7 @@ public class CoreCommand
 			
 			String acchash = AuthLogic.canonicalHash(getNewPass()).toLowerCase();
 			
-			wuser.hardPasswordUpdate(acchash);
+			AdvancedUtil.hardPasswordUpdate(wuser, acchash);
 
 			Util.pf("Updated password for user %s, now run %s to confirm password\n",
 				wuser, CheckUserPassword.class.getSimpleName());
@@ -506,10 +508,10 @@ public class CoreCommand
 		
 		private int lookupUserId(WidgetUser wuser)
 		{
-			WidgetItem master = CoreUtil.getMasterWidget();
+			WidgetItem master = WidgetItem.getMasterWidget();
 			QueryCollector qcol = QueryCollector.buildAndRun(
 				Util.sprintf("SELECT id FROM user_main WHERE username = '%s'", wuser), master);
-			int userid = qcol.getSingleArgMap().getSingleInt();			
+			int userid = qcol.getSingleArgMap().getSingleInt();
 			return userid;
 		}
 	}
@@ -535,7 +537,7 @@ public class CoreCommand
 						
 			int curmaxid = Collections.max(Util.map2list(WidgetUser.values(), user -> user.getMasterId()));
 			
-			CoreDb.upsertFromRecMap(CoreUtil.getMasterWidget(), MasterTable.user_main.toString(), 1, CoreDb.getRecMap(
+			CoreDb.upsertFromRecMap(WidgetItem.getMasterWidget(), MasterTable.user_main.toString(), 1, CoreDb.getRecMap(
 				"id", curmaxid+1,
 				"username", username,
 				"accesshash", WidgetUser.getDummyHash(),
@@ -604,7 +606,7 @@ public class CoreCommand
 
 		private void deleteMasterRecord(String username)
 		{
-			int numdel = CoreDb.deleteFromColMap(CoreUtil.getMasterWidget(), "user_main", CoreDb.getRecMap(
+			int numdel = CoreDb.deleteFromColMap(WidgetItem.getMasterWidget(), "user_main", CoreDb.getRecMap(
 				"username", username
 			));
 
@@ -704,7 +706,7 @@ public class CoreCommand
 			WidgetUser user = WidgetUser.lookup(_argMap.getStr("username"));
 			ValidatedEmail email = ValidatedEmail.from(_argMap.getStr("email"));
 
-			user.addEmailAddress(email);
+			AdvancedUtil.addEmailAddress(user, email);
 
 			Util.pf("Updated address for user %s, it's now %s\n", user, user.getEmailSet());
 		}
@@ -718,11 +720,9 @@ public class CoreCommand
 			WidgetUser user = WidgetUser.lookup(_argMap.getStr("username"));
 			ValidatedEmail email = ValidatedEmail.from(_argMap.getStr("email"));
 
-			user.removeEmailAddress(email);
-
+			AdvancedUtil.removeEmailAddress(user, email);
 			Util.pf("Updated address for user %s, it's now %s\n", user, user.getEmailSet());
 		}
-
 	}
 
 	
@@ -745,11 +745,8 @@ public class CoreCommand
 		public void runOp()
 		{
 			WidgetUser wuser = WidgetUser.valueOf(_argMap.getStr("username"));
-			
 			MailSystem.createMailBox4User(wuser);
-			
 		}
-		
 	}
 	
 	public static class LoadMailReadyMap extends ArgMapRunnable
@@ -900,9 +897,9 @@ public class CoreCommand
 				Util.pf("Using non-standard daycode %s for backup\n", dc);
 			}
 			
-			for(WidgetUser user : WidgetUser.values())
+			for(var user : WidgetUser.values())
 			{
-				for(WidgetItem dbitem : user.getUserWidgetList())
+				for(var dbitem : WidgetItem.getUserWidgetList(user))
 				{
 					File localdb = dbitem.getLocalDbFile();
 					File archfile = getDbArchiveFile(dbitem, dc);
@@ -931,10 +928,8 @@ public class CoreCommand
 		}
 	}
 
-
 	public static class ShowPluginInfo extends ArgMapRunnable
 	{
-
 		public void runOp()
 		{
 			for(PluginType ptype : PluginType.values())
@@ -999,14 +994,11 @@ public class CoreCommand
 
 	public static class MarkPublicRead extends ArgMapRunnable
 	{
-
 		public void runOp()
 		{
 			WidgetUser user = WidgetUser.lookup(_argMap.getStr("username"));
 			WidgetItem item = new WidgetItem(user, _argMap.getStr("widgetname"));
-
 			boolean isread = _argMap.getBit("read", false);
-
 			AuthLogic.markPublicRead(item, isread);
 		}
 	}
@@ -1261,17 +1253,17 @@ public class CoreCommand
 
 			{
 				File cssrepo = new File(CoreUtil.getSubDirectory(CoreUtil.WWIO_BASE_CONFIG_DIR, "css", 3));
-				shallowDirectoryCopy(cssrepo, CoreUtil.SHARED_CSS_ASSET_DIR);
+				shallowDirectoryCopy(cssrepo, AdvancedUtil.SHARED_CSS_ASSET_DIR);
 			}
 
 			{
 				File repodir = new File(CoreUtil.getSubDirectory(CoreUtil.WWIO_BASE_CONFIG_DIR, "jslib", 3));
-				shallowDirectoryCopy(repodir, CoreUtil.SHARED_JSLIB_ASSET_DIR);
+				shallowDirectoryCopy(repodir, AdvancedUtil.SHARED_JSLIB_ASSET_DIR);
 			}
 
 			{
 				File repodir = new File(CoreUtil.getSubDirectory(CoreUtil.WWIO_BASE_CONFIG_DIR, "image", 3));
-				shallowDirectoryCopy(repodir, CoreUtil.SHARED_IMAGE_ASSET_DIR);
+				shallowDirectoryCopy(repodir, AdvancedUtil.SHARED_IMAGE_ASSET_DIR);
 			}
 
 			{
@@ -1303,24 +1295,6 @@ public class CoreCommand
 	            Files.copy(srcfile.toPath(), dstfile.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 	            Util.pf("Copied file %s -> %s\n", srcfile.getAbsolutePath(), dstfile.getAbsolutePath());
 			}
-		}
-	}
-
-
-	public static class TestWispFileGeneration extends ArgMapRunnable
-	{
-
-		public void runOp() throws IOException
-		{
-			WidgetUser user = WidgetUser.lookup(_argMap.getStr("username"));
-			WidgetItem item = new WidgetItem(user, _argMap.getStr("widgetname"));
-
-
-			File wispfile = new File(_argMap.getStr("wispfile"));
-			Util.massert(wispfile.exists(), "Could not find file %s", wispfile);
-
-			var wff = new WispFileLogic.WispFileFormat(wispfile, item);
-			wff.sendResultToStream(null, System.out, Optional.of(user));
 		}
 	}
 }

@@ -23,10 +23,6 @@ import io.webwidgets.core.MailSystem.ValidatedEmail;
 public class AuthLogic
 {
 	public static final String WIDGET_PASSWORD_SALT = "the pelagic argosy sights land";
-	
-	public static final String USER_NAME_COOKIE = "username";
-
-	public static String ACCESS_HASH_COOKIE = "accesshash";
 
 	public static String PERM_GRANT_TABLE = "perm_grant";
 
@@ -51,7 +47,7 @@ public class AuthLogic
 			{ return Optional.empty(); }
 				
 		ArgMap argmap = WebUtil.getCookieArgMap(request);
-		String accesshash = argmap.getStr(ACCESS_HASH_COOKIE, "");
+		String accesshash = argmap.getStr(CoreUtil.ACCESS_HASH_COOKIE, "");
 		
 		boolean authokay = noauth.get().matchPassHash(accesshash);
 
@@ -61,7 +57,7 @@ public class AuthLogic
 	public static Optional<WidgetUser> getUserNoAuthCheck(HttpServletRequest request)
 	{
 		ArgMap argmap = WebUtil.getCookieArgMap(request);
-		String username = argmap.getStr(USER_NAME_COOKIE, "");
+		String username = argmap.getStr(CoreUtil.USER_NAME_COOKIE, "");
 		return WidgetUser.softLookup(username);
 	}
 
@@ -81,7 +77,7 @@ public class AuthLogic
 	
 	public static void setUserCookie(HttpServletRequest request, HttpServletResponse response, String username)
 	{
-		Cookie mycookie = new Cookie(USER_NAME_COOKIE, username);
+		Cookie mycookie = new Cookie(CoreUtil.USER_NAME_COOKIE, username);
 		mycookie.setPath("/");
 		
 		// Make these configurable?
@@ -94,7 +90,7 @@ public class AuthLogic
 		Util.massert(request.isSecure() || CoreUtil.allowInsecureConnection(),
 			"Attempt to set AUTH cookie over insecure connection, insecure connections disallowed");
 		
-		Cookie mycookie = new Cookie(ACCESS_HASH_COOKIE, accesshash);
+		Cookie mycookie = new Cookie(CoreUtil.ACCESS_HASH_COOKIE, accesshash);
 		mycookie.setPath("/");
 
 		// This was previously just TRUE, but if the request is not secure due to config, there's no point
@@ -128,7 +124,7 @@ public class AuthLogic
 	
 	public static void performLogOut(HttpServletRequest request, HttpServletResponse response)
 	{
-		Set<String> clearset = Util.setify(ACCESS_HASH_COOKIE, USER_NAME_COOKIE);
+		Set<String> clearset = Util.setify(CoreUtil.ACCESS_HASH_COOKIE, CoreUtil.USER_NAME_COOKIE);
 
 		if(request.getCookies() == null)
 			{ return; }
@@ -366,7 +362,7 @@ public class AuthLogic
 		private synchronized void save2Db(WidgetItem dbItem)
 		{
 
-			CoreDb.deleteFromColMap(CoreUtil.getMasterWidget(), AuthLogic.PERM_GRANT_TABLE, CoreDb.getRecMap(
+			CoreDb.deleteFromColMap(WidgetItem.getMasterWidget(), AuthLogic.PERM_GRANT_TABLE, CoreDb.getRecMap(
 				"owner", dbItem.theOwner.toString(),
 				"widget_name", dbItem.theName
 			));
@@ -385,9 +381,9 @@ public class AuthLogic
 
 			for(Pair<String, PermLevel> permpair : updates)
 			{
-				int id = CoreUtil.getNewDbId(CoreUtil.getMasterWidget(), AuthLogic.PERM_GRANT_TABLE);
+				int id = CoreUtil.getNewDbId(WidgetItem.getMasterWidget(), AuthLogic.PERM_GRANT_TABLE);
 
-				CoreDb.upsertFromRecMap(CoreUtil.getMasterWidget(), AuthLogic.PERM_GRANT_TABLE, 1, CoreDb.getRecMap(
+				CoreDb.upsertFromRecMap(WidgetItem.getMasterWidget(), AuthLogic.PERM_GRANT_TABLE, 1, CoreDb.getRecMap(
 					"id", id,
 					"owner", dbItem.theOwner.toString(),
 					"widget_name", dbItem.theName,

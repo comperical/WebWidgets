@@ -266,7 +266,7 @@ public class MailSystem {
 
     public static boolean haveMailBox4User(WidgetUser wuser)
     {
-        Set<String> existset = Util.map2set(wuser.getUserWidgetList(), witem -> witem.theName);
+        Set<String> existset = Util.map2set(WidgetItem.getUserWidgetList(wuser), witem -> witem.theName);
         return existset.contains(MAILBOX_WIDGET_NAME);
 
     }
@@ -276,7 +276,7 @@ public class MailSystem {
     {
         Util.massert(!haveMailBox4User(wuser), "Already have mailbox DB for this user");
         
-        WidgetItem mailbox = wuser.createBlankItem("mailbox");
+        WidgetItem mailbox = WidgetItem.createBlankItem(wuser, "mailbox");
 
         CoreDb.execSqlUpdate(MAILBOX_CREATE_SQL, mailbox);
 

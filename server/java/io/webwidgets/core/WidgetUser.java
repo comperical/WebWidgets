@@ -5,7 +5,6 @@ import java.io.*;
 import java.util.*; 
 import java.sql.*; 
 import java.nio.file.*;
-import java.util.function.Consumer;
 
 import java.time.LocalDate;
 
@@ -23,7 +22,6 @@ import io.webwidgets.core.MailSystem.*;
 
 public class WidgetUser implements Comparable<WidgetUser>
 {
-
     private final String _userName;
 
     WidgetUser(String uname)
@@ -38,7 +36,7 @@ public class WidgetUser implements Comparable<WidgetUser>
 
     public static Optional<WidgetUser> softLookup(String s)
     {
-        return Optional.ofNullable(GlobalIndex.getUserLookup().get(s));
+        return Optional.ofNullable(lookup(s));
     }
 
     public static WidgetUser lookup(String s)
@@ -71,31 +69,6 @@ public class WidgetUser implements Comparable<WidgetUser>
         return new File(getDbDirPath());
     }
     
-    public List<WidgetItem> getUserWidgetList()
-    {
-        File dbdir = new File(getDbDirPath());
-        List<File> flist = dbdir.listFiles() == null ? Collections.emptyList() : Util.listify(dbdir.listFiles());
-
-        List<WidgetItem> result = Util.vector();
-        for(File f : flist)
-        {
-            String fn = f.getName();
-            int suffix = fn.indexOf("_DB.sqlite");
-            Util.massert(suffix != -1,
-                "Bad file in database dir: %s", fn);
-            
-            String wname = fn.substring(0, suffix);
-            Util.massert(wname.toUpperCase().equals(wname),
-                "Widget DB names should be uppercase, got %s", wname);
-            
-            WidgetItem witem = new WidgetItem(this, wname.toLowerCase());
-            result.add(witem);
-        }
-        
-        return result;
-        
-    }
-
     public boolean haveLocalDb()
     {
         File dbdir = new File(getDbDirPath());
@@ -110,7 +83,7 @@ public class WidgetUser implements Comparable<WidgetUser>
     public String toString()
     {
         return _userName;
-    }   
+    }
 
     public String getUserName()
     {
@@ -134,7 +107,7 @@ public class WidgetUser implements Comparable<WidgetUser>
     public String getAccessHash()
     {
         ArgMap entry = getUserEntry();
-        return entry == null ? null : entry.getStr(AuthLogic.ACCESS_HASH_COOKIE);
+        return entry == null ? null : entry.getStr(CoreUtil.ACCESS_HASH_COOKIE);
         
     }
 
@@ -144,20 +117,16 @@ public class WidgetUser implements Comparable<WidgetUser>
         return entry == null ? null : entry.getInt("id");
     }
 
-    public WidgetItem baseWidget()
-    {
-        return new WidgetItem(this, "base", true);        
-    }
         
     public boolean matchPassHash(String hashed)
-    {   
+    {
         Util.massert(hashed.toLowerCase().equals(hashed),
             "You must lowercase the hash string first");
 
         if(getAccessHash().equals(getDummyHash()))
             { return false; }
         
-        return hashed.equals(getAccessHash());  
+        return hashed.equals(getAccessHash());
     }
 
     public File getAutoGenJsDir()
@@ -197,117 +166,6 @@ public class WidgetUser implements Comparable<WidgetUser>
     public Map<String, String> getUserEntryMap()
     {
         return Collections.unmodifiableMap(getUserEntry());
-    }
-
-    // Must be public to be accessed from JSP
-    public void updateAccessHash(Pair<String, String> oldnew)
-    {
-        // This should be checked elsewhere
-        // This is one final check before doing the update
-        Util.massert(oldnew._1.equals(getAccessHash()),
-            "Old password does not match");
-        
-        hardPasswordUpdate(oldnew._2);
-    }
-
-    // This is accessed from the admin JSP pages
-    public void hardPasswordUpdate(String newhash)
-    {
-        Util.massert(newhash.length() == 64, 
-            "Expected hash to be length 64, got %d, this is the HASH not the password itself!", newhash.length());
-
-        Integer masterid = getMasterId();
-        Util.massert(masterid != null, 
-            "User entry is missing an ID, please contact administrator");
-        
-        CoreDb.upsertFromRecMap(CoreUtil.getMasterWidget(), "user_main", 1, CoreDb.getRecMap(
-            "id", masterid,
-            AuthLogic.ACCESS_HASH_COOKIE, newhash
-        ));
-        
-        // Note: this is a bit hacky; reloading the entire user index just because one user changed password
-        // However, reloading the indexes is relatively fast. 
-        // This should be fine until we get to a user count where people are changing passwords every minute or so
-        GlobalIndex.clearUserIndexes();
-    }
-
-
-
-    private static String emailSet2Str(Set<String> emailset)
-    {
-        return Util.join(emailset, ",").toLowerCase();
-    }
-
-
-    public void addEmailAddress(ValidatedEmail email)
-    {
-        updateEmailSet(emset -> emset.add(email.emailAddr));
-    }
-
-    public void removeEmailAddress(ValidatedEmail email)
-    {
-        updateEmailSet(emset -> emset.remove(email.emailAddr));
-    }
-
-    private void updateEmailSet(Consumer<Set<String>> updater)
-    {
-        Integer masterid = getMasterId();
-        Util.massert(masterid != null, 
-            "User entry is missing an ID, please contact administrator");
-
-
-        var emailset = getEmailSet();
-        Util.pf("Email set is %s\n", emailset);
-        updater.accept(emailset);
-        Util.pf("Email set is now %s\n", emailset);
-
-        
-        CoreDb.upsertFromRecMap(CoreUtil.getMasterWidget(), "user_main", 1, CoreDb.getRecMap(
-            "id", masterid,
-            "email", emailSet2Str(emailset)
-        ));
-        
-        // See note about hackiness above
-        GlobalIndex.clearUserIndexes();
-    }
-
-
-
-    public WidgetItem createBlankItem(String newname)
-    {
-        WidgetItem witem = new WidgetItem(this, newname);
-        witem.createEmptyLocalDb();
-        witem.createLocalDataFile();
-        return witem;
-    }
-    
-    public void checkAndDelete(String widget, String wreverse)
-    {
-        {
-            String checkit = new StringBuilder(widget).reverse().toString();
-            Util.massert(wreverse.equals(checkit),
-                "You must enter the widget name REVERSED, got %s", wreverse);
-        }
-        
-        Set<String> curset = Util.map2set(getUserWidgetList(), witem -> witem.theName);
-        Util.massert(curset.contains(widget),
-            "Unknown widget %s, options are %s", widget, curset);
-        
-        WidgetItem victim = new WidgetItem(this, widget);
-        File dbfile = victim.getLocalDbFile();
-        if(dbfile.exists())
-        { 
-            dbfile.delete();    
-            Util.pf("Deleted DB file %s\n", dbfile);
-        }   
-        
-        File localdir = victim.getWidgetBaseDir();
-        try 
-            { FileUtils.recursiveDeleteFile(localdir); }
-        catch (IOException ioex) 
-            { throw new RuntimeException(ioex); }
-            
-        Util.pf("Deleted local dir %s\n", localdir);
     }
 
     public Map<String, Long> getFileNameCheckMap()
@@ -356,13 +214,13 @@ public class WidgetUser implements Comparable<WidgetUser>
     
     static WidgetUser buildBackDoorSharedUser()
     {
-    	return new WidgetUser(SHARED_USER_NAME);	
+    	return new WidgetUser(SHARED_USER_NAME);
     }
     
     public static WidgetUser getSharedUser()
     {
         return valueOf(SHARED_USER_NAME);
-    }    
+    }
 
     private static String __DUMMY_HASH = null;
 

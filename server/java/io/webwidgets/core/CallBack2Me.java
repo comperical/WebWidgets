@@ -119,7 +119,7 @@ public class CallBack2Me extends HttpServlet
 			return;
 		}
 		
-		Optional<String> maintmode = CoreUtil.maintenanceModeInfo();
+		Optional<String> maintmode = AdvancedUtil.maintenanceModeInfo();
 		if(maintmode.isPresent())
 		{
 			placeFailCode(outmap, FailureCode.MaintenanceMode, maintmode.get());

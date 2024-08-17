@@ -21,9 +21,9 @@ import net.danburfoot.shared.Util.SyscallWrapper;
 import net.danburfoot.shared.CoreDb.QueryCollector;
 import net.danburfoot.shared.CoreDb.ConnectionSource;
 
-import io.webwidgets.core.WidgetOrg.*;
 
-
+// This is the first class in the core package in incremental compilation mode,
+// it cannot refer to any other classes in WWIO 
 public class CoreUtil
 { 
 	// This string is spliced into the code by the Python script when it is compiled
@@ -32,16 +32,13 @@ public class CoreUtil
 
 	public static String BASE_WIDGET_NAME = "base";
 
-
 	// This is used by the system to represent nulls. Sorry, you cannot have values that equal this literal string.
 	// This much match the JS code.
 	public static String MAGIC_NULL_STRING = "_x_NULL_y_";
 
-	// Probably need a pluging that provides extra reserved names
-	public static List<String> RESERVED_WIDGET_NAMES = Arrays.asList(
-		MailSystem.MAILBOX_WIDGET_NAME,
-		BASE_WIDGET_NAME
-	);
+	public static final String USER_NAME_COOKIE = "username";
+
+	public static String ACCESS_HASH_COOKIE = "accesshash";
 
 	// TODO: probably want to expand this to include other things like "include"
 	public static final Set<String> AUX_CODE_OKAY = Collections.unmodifiableSet(
@@ -121,12 +118,6 @@ public class CoreUtil
 	// TODO: need to rationalize this. The BlobStorageManager should probably use a workdir directory
 	public static final String WWIO_BLOB_BASE_DIR = "/opt/rawdata/wwio/blob";
 
-	public static final File SHARED_CSS_ASSET_DIR = (new WidgetItem(WidgetUser.buildBackDoorSharedUser(), "css")).getWidgetBaseDir();
-	public static final File SHARED_JSLIB_ASSET_DIR = (new WidgetItem(WidgetUser.buildBackDoorSharedUser(), "jslib")).getWidgetBaseDir();
-	public static final File SHARED_IMAGE_ASSET_DIR = (new WidgetItem(WidgetUser.buildBackDoorSharedUser(), "image")).getWidgetBaseDir();
-
-
-
 	static final String MASTER_WIDGET_NAME = "master";
 	
 	private static boolean _CLASS_INIT = false;
@@ -155,11 +146,6 @@ public class CoreUtil
 	}
 
 
-	public static WidgetItem getMasterWidget()
-	{
-		return new WidgetItem(WidgetUser.getSharedUser(), MASTER_WIDGET_NAME);
-	}
-
 	public static File getDemoDataDumpFile(String widgetname)
 	{
 		String filename = Util.sprintf("%s_DB.sql.dump", widgetname.toUpperCase());
@@ -183,58 +169,13 @@ public class CoreUtil
 
 	}
 
-	// This is the same algorithm that the JS code uses
-	// Not 100% required for it to be the same, but it gratifies my feeling of seiketsukan
-	public static int createNewIdRandom(WidgetItem witem, String tabname)
-	{
-		// This has been checked before. We check again out of paranoia
-		// this is protection against SQL injection attacks
-		Util.massert(witem.getDbTableNameSet().contains(tabname),
-			"Table Name %s not present for widget %s", tabname, witem);
-
-		Random r = new Random();
-
-		for(int attempt : Util.range(10))
-		{
-			int probe = r.nextInt();
-
-	        // Reserve this small range for "magic" ID numbers like -1
-			if(-1000 <= probe && probe <= 0)
-				{ continue; }
-
-			if(!haveRecordWithId(witem, tabname, probe))
-				{ return probe; }
-		}
-
-		Util.massert(false, "Failed to find new ID after 10 tries, this table is too big!!!");
-		return -1;
-	}
-
-	private static boolean haveRecordWithId(WidgetItem witem, String tabname, int rid) 
-	{
-		String query = String.format("SELECT * FROM %s WHERE id = %d", tabname, rid);
-		int numrec = QueryCollector.buildAndRun(query, witem).getNumRec();
-		Util.massert(numrec == 0 || numrec == 1, 
-			"Violation of DB contract for table %s, ID %d, multiple records found", tabname, rid);
-
-		return numrec == 1;
-	}
-
-
 	// If true, the server will allow insecure connections
 	// This config is read only once at system startup
 	// The file contents must be the string "true" in order to return true
+	// TODO: ensure that this method is not being called in the JSP anymore, move references to AdvancedUtil
 	public static boolean allowInsecureConnection()
 	{
-		return GlobalIndex.getSystemSetting()
-								.getOrDefault(SystemPropEnum.INSECURE_ALLOW_MODE.toString(), "...")
-								.equals(true+"");
-	}
-
-
-	public static Optional<String> maintenanceModeInfo()
-	{
-		return Optional.ofNullable(GlobalIndex.getSystemSetting().get(SystemPropEnum.MAINTENANCE_MODE.toString()));
+		return false;
 	}
 
 	public static int getNewDbId(ConnectionSource witem, String tabname)
@@ -262,20 +203,6 @@ public class CoreUtil
 		return tableQuery(csrc, tabname, Collections.emptyList());
 	}
 	
-	public static QueryCollector dayCodeCutoffQuery(ConnectionSource csrc, String tabname, DayCode dc)
-	{
-		for(String permute : Util.listify("day_code", "daycode"))
-		{
-			try {
-				String where = Util.sprintf(" %s >= '%s' ", permute, dc);
-				return tableQuery(csrc, tabname, Util.listify(where));			
-			} catch (Exception sqlex) {}
-		}
-		
-		Util.massert(false, "Couldn't find either day_code or daycode columns in table %s", tabname);
-		return null;
-	}
-	
 	public static QueryCollector tableQuery(ConnectionSource csrc, String tabname, List<String> wherelist)
 	{
 		String wherestr = wherelist.isEmpty() ? "" : " WHERE " + Util.join(wherelist, " AND ");
@@ -285,7 +212,7 @@ public class CoreUtil
 		QueryCollector qcol = (new QueryCollector(sql)).doQuery(csrc);
 		return qcol;
 		
-	}	
+	}
 	
 	
 	public static QueryCollector tableQuery(ConnectionSource csrc, String tabname, Optional<Integer> optlimit)
@@ -349,35 +276,6 @@ public class CoreUtil
 		QueryCollector qcol = QueryCollector.buildAndRun(query, witem);
 		return qcol.getSingleArgMap().getSingleStr();
 	}
-	
-
-	// TODO: re-implement, move to extension package
-	public static File convert2Excel(WidgetItem witem) 
-	{
-		Util.massert(witem.getLocalDbFile().exists(), "Widget Item DB not found at %s", witem.getLocalDbFile());
-
-		/*
-		String xlpath = String.format("%s/%s__%s.xlsx", CoreUtil.TEMP_EXCEL_DIR, witem.theOwner, witem.theName);
-
-		String pycall = String.format("python3 /opt/userdata/lifecode/script/utility/Lite2Excel.py litepath=%s xlpath=%s",
-									witem.getLocalDbPath(), xlpath);
-
-		SyscallWrapper syswrap = SyscallWrapper.build(pycall).execE();
-
-		for(String err : syswrap.getErrList())
-			{ Util.pferr("** %s\n", err); }
-
-		for(String out : syswrap.getOutList())
-			{ Util.pf("%s\n", out); }						
-
-		File result = new File(xlpath);
-		Util.massert(result.exists(), "Failed to convert DB to excel");
-		return result;
-		*/
-		
-		throw new RuntimeException("Must re-implement");
-	}
-	
 
 	
 	public static <T> Set<T> combine2set(Collection<T> acol, Collection<T> bcol) 
@@ -582,30 +480,6 @@ public class CoreUtil
 
 	}
 
-
-	public static Set<WidgetUser> getCodeFormatExemptSet(boolean strict)
-	{
-		String exemptlist = GlobalIndex.getSystemSetting(SystemPropEnum.CODE_FORMAT_EXEMPT_LIST).orElse("").trim();
-		if(exemptlist.isEmpty())
-			{ return Collections.emptySet(); }
-
-
-		Set<WidgetUser> result = Util.treeset();
-		for(String token : exemptlist.split(","))
-		{
-			Optional<WidgetUser> optuser = WidgetUser.softLookup(token);
-			if(optuser.isPresent())
-			{
-				result.add(optuser.get());
-				continue;
-			}
-
-			Util.massert(!strict, "Failed to find user in strict mode for token %s", token);
-		}
-
-		return result;
-	}
-
 	public static Optional<File> findPreferredWidgetFile(File targetdir)
 	{
 		if(!targetdir.exists())
@@ -633,10 +507,7 @@ public class CoreUtil
 		return Optional.empty();
 	}
 
-	public static Set<WidgetUser> getCodeFormatExemptSet()
-	{
-		return getCodeFormatExemptSet(false);
-	}
+
 
     public static void zipDirectory(File zipsrc, File zipdst) {
         try (FileOutputStream fos = new FileOutputStream(zipdst); ZipOutputStream zos = new ZipOutputStream(fos)) {

@@ -238,7 +238,7 @@ public class ActionJackson extends HttpServlet
 
 		private boolean isCodeFormatExempt(WidgetUser user)
 		{
-			return user.isAdmin() || CoreUtil.getCodeFormatExemptSet().contains(user);
+			return user.isAdmin() || GlobalIndex.getCodeFormatExemptSet().contains(user);
 		}
 	}
 
@@ -753,7 +753,7 @@ public class ActionJackson extends HttpServlet
 	{
 		String checkname = widgetname.toLowerCase().trim();
 
-		if(CoreUtil.RESERVED_WIDGET_NAMES.contains(widgetname))
+		if(AdvancedUtil.RESERVED_WIDGET_NAMES.contains(widgetname))
 		{
 			String mssg = String.format("The Widget %s is a special system widget, it cannot be uploaded", widgetname);
 			throw new RuntimeException(mssg);
@@ -823,10 +823,40 @@ public class ActionJackson extends HttpServlet
 			String widgetname = innmap.getStr("widgetname");
 
 			WidgetItem witem = new WidgetItem(wuser, widgetname);
-			File result = CoreUtil.convert2Excel(witem);
+			File result = convert2Excel(witem);
 
 			FileUtils.in2out(new FileInputStream(result), response.getOutputStream());
 		}
+
+		public static File convert2Excel(WidgetItem witem) 
+		{
+			throw new RuntimeException("Must re-implement");
+
+
+			/*
+			Util.massert(witem.getLocalDbFile().exists(), "Widget Item DB not found at %s", witem.getLocalDbFile());
+
+			String xlpath = String.format("%s/%s__%s.xlsx", CoreUtil.TEMP_EXCEL_DIR, witem.theOwner, witem.theName);
+
+			String pycall = String.format("python3 /opt/userdata/lifecode/script/utility/Lite2Excel.py litepath=%s xlpath=%s",
+										witem.getLocalDbPath(), xlpath);
+
+			SyscallWrapper syswrap = SyscallWrapper.build(pycall).execE();
+
+			for(String err : syswrap.getErrList())
+				{ Util.pferr("** %s\n", err); }
+
+			for(String out : syswrap.getOutList())
+				{ Util.pf("%s\n", out); }						
+
+			File result = new File(xlpath);
+			Util.massert(result.exists(), "Failed to convert DB to excel");
+			return result;
+			
+			throw new RuntimeException("Must re-implement");
+			*/
+		}
+
 	}
 
 

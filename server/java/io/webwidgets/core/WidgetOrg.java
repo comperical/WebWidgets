@@ -35,7 +35,7 @@ public class WidgetOrg
 			this(user, name, false);
 		}
 		
-		WidgetItem(WidgetUser user, String name, boolean isvirt)
+		private WidgetItem(WidgetUser user, String name, boolean isvirt)
 		{
 			theOwner = user;
 			theName = name;
@@ -45,7 +45,28 @@ public class WidgetOrg
 				"Attempt to create WidgetItem with null owner (%s) or name (%s)", theOwner, name);
 		}
 				
-		
+
+		// TODO: it's a bad idea to have the Master widget be owned by the shared user
+		// Shared user assets are totally public, but master widget is maximally private!!!
+		public static WidgetItem getMasterWidget()
+		{
+			return new WidgetItem(WidgetUser.getSharedUser(), CoreUtil.MASTER_WIDGET_NAME);
+		}
+
+	    public static WidgetItem userBaseWidget(WidgetUser owner)
+	    {
+	        return new WidgetItem(owner, CoreUtil.BASE_WIDGET_NAME, true);
+	    }
+
+	    public static WidgetItem createBlankItem(WidgetUser owner, String newname)
+	    {
+	        WidgetItem witem = new WidgetItem(owner, newname);
+	        witem.createEmptyLocalDb();
+	        witem.createLocalDataFile();
+	        return witem;
+	    }
+    
+
 		public Connection createConnection() throws SQLException
 		{
 			CoreUtil.maybeInitClass();
@@ -54,7 +75,7 @@ public class WidgetOrg
 		
 		public String getCheckSumKey()
 		{
-			return String.format("%s::%s", theOwner, theName);	
+			return String.format("%s::%s", theOwner, theName);
 		}
 		
 		public long getDbCheckSum()
@@ -181,8 +202,99 @@ public class WidgetOrg
 		{
 			return Util.sprintf("%s::%s", theOwner.toString(), theName);
 		}
+
+	    public static List<WidgetItem> getUserWidgetList(WidgetUser user)
+	    {
+	        File dbdir = new File(user.getDbDirPath());
+	        List<File> flist = dbdir.listFiles() == null ? Collections.emptyList() : Util.listify(dbdir.listFiles());
+
+	        List<WidgetItem> result = Util.vector();
+	        for(File f : flist)
+	        {
+	            String fn = f.getName();
+	            int suffix = fn.indexOf("_DB.sqlite");
+	            Util.massert(suffix != -1,
+	                "Bad file in database dir: %s", fn);
+	            
+	            String wname = fn.substring(0, suffix);
+	            Util.massert(wname.toUpperCase().equals(wname),
+	                "Widget DB names should be uppercase, got %s", wname);
+	            
+	            WidgetItem witem = new WidgetItem(user, wname.toLowerCase());
+	            result.add(witem);
+	        }
+	        
+	        return result;
+	    }
+
+		private boolean haveRecordWithId(String tabname, int rid) 
+		{
+			String query = String.format("SELECT * FROM %s WHERE id = %d", tabname, rid);
+			int numrec = QueryCollector.buildAndRun(query, this).getNumRec();
+			Util.massert(numrec == 0 || numrec == 1, 
+				"Violation of DB contract for table %s, ID %d, multiple records found", tabname, rid);
+
+			return numrec == 1;
+		}
+
+		public int newRandomId(String tabname)
+		{
+			// This has been checked before. We check again out of paranoia
+			// this is protection against SQL injection attacks
+			Util.massert(getDbTableNameSet().contains(tabname),
+				"Table Name %s not present for widget %s", tabname, this);
+
+			Random r = new Random();
+
+			for(int attempt : Util.range(10))
+			{
+				int probe = r.nextInt();
+
+		        // Reserve this small range for "magic" ID numbers like -1
+				if(-1000 <= probe && probe <= 0)
+					{ continue; }
+
+				if(!this.haveRecordWithId(tabname, probe))
+					{ return probe; }
+			}
+
+			Util.massert(false, "Failed to find new ID after 10 tries, this table is too big!!!");
+			return -1;
+		}
+
+
+		// Delete the widget, including both the DB file and the code directory
+		// For safety, require the reversed name of the widget as an argument (user input)
+	    public void checkAndDelete(String wreverse)
+	    {
+	        {
+	            String checkit = new StringBuilder(theName).reverse().toString();
+	            Util.massert(wreverse.equals(checkit),
+	                "You must enter the widget name REVERSED, got %s", wreverse);
+	        }
+	        
+	        // Require that the DB file is present. If there is a subdirectory but not a DB file,
+	        // that should cause some other alarm
+	        Util.massert(dbFileExists(), "The DB file for this widget %s does not exist", this);
+	        
+	        File dbfile = getLocalDbFile();
+	        if(dbfile.exists())
+	        {
+	            dbfile.delete();
+	            Util.pf("Deleted DB file %s\n", dbfile);
+	        }
+	        
+	        File localdir = getWidgetBaseDir();
+	        if(!localdir.exists())
+	        	{ return; }
+
+	        try 
+	            { FileUtils.recursiveDeleteFile(localdir); }
+	        catch (IOException ioex) 
+	            { throw new RuntimeException(ioex); }
+	            
+	        Util.pf("Deleted local dir %s\n", localdir);
+	    }
 	}
-
-
-} 
+}
 

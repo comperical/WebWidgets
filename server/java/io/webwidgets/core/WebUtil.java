@@ -106,7 +106,7 @@ public class WebUtil
 		WidgetUser wuser = WidgetUser.valueOf(username);
 
 		String pageName = toklist.pollLast();
-		return toklist.isEmpty() ? wuser.baseWidget() : new WidgetItem(wuser, toklist.peek());
+		return toklist.isEmpty() ? WidgetItem.userBaseWidget(wuser) : new WidgetItem(wuser, toklist.peek());
 	}
 
 	static Pair<String, String> widgetInfoFromUri(String uri)
@@ -150,7 +150,7 @@ public class WebUtil
 	
 	public static List<String> getConfigTemplate(WidgetUser wuser)
 	{
-		String accessline = Util.sprintf("%s=%s", AuthLogic.ACCESS_HASH_COOKIE, wuser.getAccessHash());
+		String accessline = Util.sprintf("%s=%s", CoreUtil.ACCESS_HASH_COOKIE, wuser.getAccessHash());
 		
 		return Util.listify(
 			accessline,
@@ -266,9 +266,6 @@ public class WebUtil
 		}
 		
 		return statelist;
-
-
-
 	}
 
 	public static ArgMap getCookieArgMap(HttpServletRequest req)
