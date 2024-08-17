@@ -349,7 +349,6 @@ public class WebUtil
 	// The question of what to do with base-level data, and data that is in a folder other than the widget folder, is TBD
 	// Currently it is public, for backwards - compat reasons
 	// TODO: comment this back in at a convenient time.
-	/*
 	@WebFilter("/*")
 	public static class ProtectUserDataFilter implements Filter {
 
@@ -412,7 +411,6 @@ public class WebUtil
 			return false;
 		}
 	}
-	*/
 
 
 	// This is a targeted/surgical filter operation that does just one thing:
@@ -421,7 +419,6 @@ public class WebUtil
 	// The logic is very simple: if you see a request that could be serviced by adding a ".wisp" or ".jsp" suffix,
 	// go ahead and service it using the appropriate suffix.
 	// TODO: comment this back in at a convenient time.
-	/*
 	@WebFilter("/*")
 	public static class SkipExtensionFilter implements Filter {
 
@@ -476,6 +473,5 @@ public class WebUtil
 			return Util.listify(".jsp");
 		}
 	}
-	*/
 }
 
