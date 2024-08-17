@@ -34,9 +34,8 @@
 
             } else {
 
-                currentUser.get().updateAccessHash(Pair.build(oldhash, newhash));
+                AdvancedUtil.updateAccessHash(currentUser.get(), Pair.build(oldhash, newhash));
                 message = "Password changed successfully";
-
                 AuthLogic.setAuthCookie(request, response, newhash);
             }
 

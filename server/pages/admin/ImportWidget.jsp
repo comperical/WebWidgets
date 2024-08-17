@@ -19,7 +19,7 @@
     ArgMap argMap = WebUtil.getArgMap(request);
     String serverMessage = argMap.getStr("message", "");
 
-    List<WidgetItem> currentList = currentUser.get().getUserWidgetList();
+    List<WidgetItem> currentList = WidgetItem.getUserWidgetList(currentUser.get());
     List<String> currentNameList = Util.map2list(currentList, item -> item.theName);
 
 

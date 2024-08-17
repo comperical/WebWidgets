@@ -13,7 +13,7 @@
     }
 
     ArgMap argMap = WebUtil.getArgMap(request);
-    List<WidgetItem> widgetList = currentUser.get().getUserWidgetList();
+    List<WidgetItem> widgetList = WidgetItem.getUserWidgetList(currentUser.get());
 
     // User will see ugly error, but better than just being confused.
     Util.massert(widgetList.size() > 0, 

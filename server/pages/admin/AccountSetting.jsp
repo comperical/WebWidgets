@@ -22,7 +22,7 @@
     {
 
       String newemail = argMap.getStr("new_email");
-      currentUser.get().addEmailAddress(ValidatedEmail.from(newemail));
+      AdvancedUtil.addEmailAddress(currentUser.get(), ValidatedEmail.from(newemail));
       response.sendRedirect(request.getRequestURI());
       return;
     }
@@ -31,7 +31,7 @@
     {
 
       String email = argMap.getStr("old_email");
-      currentUser.get().removeEmailAddress(ValidatedEmail.from(email));
+      AdvancedUtil.removeEmailAddress(currentUser.get(), ValidatedEmail.from(email));
       response.sendRedirect(request.getRequestURI());
       return;
     }

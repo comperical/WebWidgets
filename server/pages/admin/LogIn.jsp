@@ -17,7 +17,7 @@
                                         : Optional.empty();
 
 
-    boolean anyPassWordInfo = WebUtil.getCookieArgMap(request).containsKey(AuthLogic.ACCESS_HASH_COOKIE);
+    boolean anyPassWordInfo = WebUtil.getCookieArgMap(request).containsKey(CoreUtil.ACCESS_HASH_COOKIE);
 
     // If the user has logged in another tab, don't require re-login.
     if(optBounceBack.isPresent())

@@ -20,7 +20,7 @@
     String serverMessage = argMap.getStr("message", "");
 
 
-    List<WidgetItem> widgetList = currentUser.get().getUserWidgetList();
+    List<WidgetItem> widgetList = WidgetItem.getUserWidgetList(currentUser.get());
     CollUtil.sortListByFunction(widgetList, witem -> -witem.getLocalDbFile().length());
 
 
@@ -37,7 +37,7 @@
 
             Util.massert(!nameset.contains(newname), "You already have a widget named %s", newname);
 
-            WidgetItem witem = currentUser.get().createBlankItem(newname);
+            WidgetItem witem = WidgetItem.createBlankItem(currentUser.get(), newname);
             message = Util.sprintf("New widget created with name %s", newname);
 
             ActionJackson.createCode4Widget(witem);
@@ -51,7 +51,8 @@
             Util.massert(nameset.contains(widgetname), 
                 "No widget named %s appears to exist", widgetname);
 
-            currentUser.get().checkAndDelete(widgetname, reversed);
+            var dbitem = new WidgetItem(currentUser.get(), widgetname);
+            dbitem.checkAndDelete(reversed);
             message = Util.sprintf("Successfully deleted widget %s", widgetname);
         }
 
@@ -106,7 +107,7 @@ function maybeAlertMessage()
 function isReservedName(myname)
 {
   <%
-    for(String rname : CoreUtil.RESERVED_WIDGET_NAMES)
+    for(String rname : AdvancedUtil.RESERVED_WIDGET_NAMES)
     {
   %>
 
