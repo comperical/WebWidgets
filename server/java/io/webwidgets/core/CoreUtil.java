@@ -22,6 +22,9 @@ import net.danburfoot.shared.CoreDb.QueryCollector;
 import net.danburfoot.shared.CoreDb.ConnectionSource;
 
 
+
+// SRCORDER::1
+
 // This is the first class in the core package in incremental compilation mode,
 // it cannot refer to any other classes in WWIO 
 public class CoreUtil
@@ -131,7 +134,7 @@ public class CoreUtil
 			Class.forName("org.sqlite.JDBC");
 			_CLASS_INIT = true;
 		} catch (Exception ex )  {
-			throw new RuntimeException(ex);	
+			throw new RuntimeException(ex);
 		}
 	}
 
@@ -228,7 +231,7 @@ public class CoreUtil
 	public static QueryCollector tableQuery(ConnectionSource csrc, String sql)
 	{
 		return (new QueryCollector(sql)).doQuery(csrc);
-	}	
+	}
 
 	// This is going to fail if the connection is not actually a Sqlite connector
 	// TODO: this is in CoreDb
@@ -507,34 +510,4 @@ public class CoreUtil
 		return Optional.empty();
 	}
 
-
-
-    public static void zipDirectory(File zipsrc, File zipdst) {
-        try (FileOutputStream fos = new FileOutputStream(zipdst); ZipOutputStream zos = new ZipOutputStream(fos)) {
-            zipSub(zipsrc, zipsrc, zos);
-        } catch (IOException ioex) {
-        	throw new RuntimeException(ioex);
-        }
-    }
-
-    private static void zipSub(File topdir, File onefile, ZipOutputStream zos) throws IOException {
-        if (onefile.isDirectory()) {
-            for (File file : onefile.listFiles()) 
-				{ zipSub(topdir, file, zos); }
-	        return;
-	    }
-
-        try (FileInputStream fis = new FileInputStream(onefile)) {
-            String entrypath = getRelativePath(topdir, onefile);
-            ZipEntry zipentry = new ZipEntry(entrypath);
-
-            zos.putNextEntry(zipentry);
-            FileUtils.in2out(fis, zos, false);
-            zos.closeEntry();
-        }
-    }
-
-    private static String getRelativePath(File topdir, File onefile) {
-        return topdir.toPath().relativize(onefile.toPath()).toString();
-    }
 } 

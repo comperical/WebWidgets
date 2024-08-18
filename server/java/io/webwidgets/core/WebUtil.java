@@ -111,8 +111,16 @@ public class WebUtil
 
 	static Pair<String, String> widgetInfoFromUri(String uri)
 	{
+
+		if(uri.length() == 0)
+			{ return null; }
+
 		LinkedList<String> toklist = Util.linkedlistify(uri.split("/"));
-		Util.massert(toklist.pollFirst().equals(""), "URIs must start with /, got %s", uri);
+		if(toklist.isEmpty() || !toklist.peekFirst().equals(""))
+			{ return null; }
+
+		// Peel off starting item
+		toklist.pollFirst();
 
 		// Need to at least have /u/<username
 		if(toklist.size() < 2)
@@ -150,9 +158,9 @@ public class WebUtil
 	
 	public static List<String> getConfigTemplate(WidgetUser wuser)
 	{
-		String accessline = Util.sprintf("%s=%s", CoreUtil.ACCESS_HASH_COOKIE, wuser.getAccessHash());
+		String accessline = String.format("%s=%s", CoreUtil.ACCESS_HASH_COOKIE, wuser.getAccessHash());
 		
-		return Util.listify(
+		return Arrays.asList(
 			accessline,
 			"codedir=PATH_TO_CODE_DIR",
 			"dbdir=PATH_TO_DATA_DIR"

@@ -19,6 +19,7 @@ import net.danburfoot.shared.CollUtil.*;
 import io.webwidgets.core.WidgetOrg.*;
 import io.webwidgets.core.MailSystem.*;
 
+// SRCORDER::2
 
 public class WidgetUser implements Comparable<WidgetUser>
 {

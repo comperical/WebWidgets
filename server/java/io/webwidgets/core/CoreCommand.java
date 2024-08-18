@@ -1079,7 +1079,6 @@ public class CoreCommand
 				return;
 			}
 
-
 			Util.massert(!item.dbFileExists(), "Already have DB file for widget %s", item);
 			loadDbFromDump(item);
 
@@ -1109,35 +1108,22 @@ public class CoreCommand
 
 		private static void runCodeImport(WidgetItem item)
 		{
-			CodeLocator locator = compileTempZip(item);
+			{
+				File itemdir = item.getWidgetBaseDir();
+				Util.massert(!itemdir.exists(), "Widget base dir %s already exists, you must delete first", item);
+			}
 
-			CodeExtractor codex = locator.getExtractor();
+			// NB: use the user's base dir, not the widget base dir, to ensure cp -r works correctly
+			String copycall = Util.sprintf("cp -r %s %s", getGalleryDir(item), item.theOwner.getUserBaseDir());
+			var wrapper = SyscallWrapper.build(copycall).execE();
 
-			// This stuff is al
-			codex.cleanOldCode();
-			codex.extractCode(locator);
-			codex.optAugmentAuthHeader();
-			
-			for(String log : codex.getLogList())
-				{ Util.pf("%s\n", log); }
-
-			locator.getCodeFile().delete();
-			Util.pf("Cleaned import file %s\n", locator.getCodeFile());
+			Util.massert(wrapper.getErrList().isEmpty(), "Have error output on copy %s", wrapper.getErrList());
+			Util.massert(item.getWidgetBaseDir().exists(), "Directory should exist now");
 		}
 
-		private static CodeLocator compileTempZip(WidgetItem item)
+		private static File getGalleryDir(WidgetItem item)
 		{
-			File gallerydir = new File(Util.varjoin(File.separator, CoreUtil.GALLERY_CODE_DIR, item.theName));
-			Util.massert(gallerydir.exists() && gallerydir.isDirectory(),
-				"Gallery directory for widget %s does not exist at expected path %s",
-				item.theName, gallerydir
-			);
-
-
-			ImportLocator locator = new ImportLocator(item);
-			CoreUtil.zipDirectory(gallerydir, locator.getCodeFile());
-			Util.pf("Generated .zip file at path %s\n", locator.getCodeFile());
-			return locator;
+			return new File(Util.varjoin(File.separator, CoreUtil.GALLERY_CODE_DIR, item.theName));
 		}
 
 		private static void loadDbFromDump(WidgetItem newitem)

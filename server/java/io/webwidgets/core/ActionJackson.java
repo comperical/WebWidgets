@@ -213,7 +213,7 @@ public class ActionJackson extends HttpServlet
 				
 				if(witem.getLocalDbFile().exists())
 				{
-					witem.getLocalDbFile().delete();	
+					witem.getLocalDbFile().delete();
 					s += Util.sprintf("Deleted old DB file %s\n", witem.getLocalDbFile());
 				}
 				
@@ -304,28 +304,6 @@ public class ActionJackson extends HttpServlet
 				: new WidgetExtractor(_theUser, _widgetName);
 			
 		}
-	}
-
-	static class ImportLocator extends CodeLocator
-	{
-
-		ImportLocator(WidgetItem newitem)
-		{
-			super(newitem.theOwner, newitem.theName, UploadFileType.widgetzip);
-
-			{
-				File tdir = new File(CoreUtil.IMPORT_TEMP_DIR);
-				if(!tdir.exists())
-					{ tdir.mkdirs(); }
-			}
-		}
-
-		@Override
-		String getCodePath()
-		{
-			return Util.varjoin(File.separator, CoreUtil.IMPORT_TEMP_DIR, getCodeName());
-		}
-
 	}
 		
 	abstract static class CodeExtractor 
