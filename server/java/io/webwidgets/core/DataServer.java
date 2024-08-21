@@ -463,20 +463,6 @@ public class DataServer
 				}
 			}
 
-			// TODO: August 2024, I don't think this stuff is required anymore,
-			// This was to protect against issues with creating indexes before the data was ready,
-			// shouldn't happen anymore
-			if(coreIncludeScriptTag())
-			{
-				reclist.add("<script>");
-				reclist.add("// Data Loading is now complete ");
-				reclist.add("W.__DATA_LOAD_COMPLETE = true;");
-
-				reclist.add("// Check for bad index creation in user code");
-				reclist.add("W.__badIndexCreationCheck();");
-				reclist.add("</script>");
-			}
-
 			reclist.add("");
 			reclist.add("");
 			
