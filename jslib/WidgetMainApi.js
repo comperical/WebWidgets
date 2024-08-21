@@ -34,8 +34,6 @@ __GLOBAL_INDEX_MAP : new Map(),
 
 __DUMB_INDEX_DELIM : "/x/",
 
-__DATA_LOAD_COMPLETE : false,
-
 // Find the item with the given ID for the given table and return it.
 // Error if the item does not exist, if you are uncertain whether the ID exists or not,
 // call haveItem(tabname, itemid)
@@ -372,14 +370,7 @@ __getTableCoords : function(tablemaster)
 createIndexForTable : function(tablename, fnamelist)
 {
 
-    // Okay there's a carve-out here, in case the data loads have not yet finished
-    // If you create a bad index name in the user-include code, you will get an error in 
-    // __badIndexCreationCheck below
-    if(!W.__DATA_LOAD_COMPLETE)
-        { W.__registerTableIndexEntry(tablename);}
-    else
-        { W.checkTableName(tablename); }
-
+    W.checkTableName(tablename);
 
     {
         const allfields = W.getFieldList(tablename);
@@ -520,6 +511,7 @@ __finalIndexUpdateSub : function(item, updatefunc, indexes)
     });
 },
 
+// Create an entry for the table in the Global meta-index
 __registerTableIndexEntry : function(tablename)
 {
     if(!W.__GLOBAL_INDEX_MAP.has(tablename))
@@ -579,19 +571,6 @@ __followIndexFarAsPossible : function(tablename, indexname, lookup)
 
     // This may be null, a shallow map, or a wide map, caller must understand how to deal with each one
     return ptrmap;
-},
-
-__badIndexCreationCheck: function()
-{
-    const okaylist = W.getWidgetTableList();
-    const okaystr = okaylist.join(", ");
-
-    [... W.__GLOBAL_INDEX_MAP.keys()].forEach(function(tablename) {
-
-        massert(okaylist.includes(tablename),
-            `Index created for table name ${tablename}, but it has not been loaded, tables are ${okaystr}`);
-    });
-
 },
 
 __genericUpsertUrl : function(item, keylist)
