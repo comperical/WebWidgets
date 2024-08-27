@@ -324,7 +324,11 @@ public class CoreCommand
 		public void runOp()
 		{
 			List<WidgetUser> userlist = getWidgetUserList(_argMap);
+			runForUserList(userlist);
+		}
 
+		public static void runForUserList(List<WidgetUser> userlist)
+		{
 			for(WidgetUser wuser : userlist)
 			{
 				List<WidgetItem> itemlist = WidgetItem.getUserWidgetList(wuser);
