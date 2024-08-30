@@ -385,15 +385,17 @@ function loadGoogleClientInfo()
                   You are logged in as <code><%= currentUser.get() %></code>
                   </p>
 
-
-
-
-
-
-
-                  <p>You can access your home page from the User Home link on the side bar, or log-out and log-in as another user.</p>
+                  <p>You can access your home page from the User Home button, or log-out and log-in as another user.</p>
 
                   <br/>
+                  <br/>
+
+                  <a href="<%= WebUtil.getUserHomeRelative(currentUser.get()) %>">
+                  <button class="btn btn-primary mr-2">User Home</button></a>
+
+                  &nbsp;
+                  &nbsp;
+                  &nbsp;
 
                   <button class="btn btn-primary mr-2" onclick="javascript:logoutAndReturn()">Log-Out</button>
 

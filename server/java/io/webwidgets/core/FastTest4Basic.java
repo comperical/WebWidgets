@@ -19,7 +19,7 @@ import net.danburfoot.shared.RunnableTech.*;
 import net.danburfoot.shared.Util.SyscallWrapper;
 import net.danburfoot.shared.CoreDb.QueryCollector;
 
-
+import	io.webwidgets.core.WebUtil.*;
 import	io.webwidgets.core.CoreUtil.*;
 import	io.webwidgets.core.WidgetOrg.*;
 import	io.webwidgets.core.AuthLogic.*;
@@ -721,65 +721,7 @@ public class FastTest4Basic
 	}
 
 
-	public static class CheckUrlWidgetLookup extends DescRunnable
-	{
 
-		public String getDesc()
-		{
-			return "Check logic of looking up WidgetItem from URL";
-		}
-
-		public void runOp()
-		{
-			// TODO: refactor
-			/*
-
-			{
-				WidgetItem dbbase = getTestDburfootUser().baseWidget();
-				for(String baseurl : getDbBaseList()) 
-				{
-					WidgetItem probe = WebUtil.getWidgetFromUrl(baseurl);
-					Util.massert(dbbase.equals(probe), "Wanted %s but got %s", dbbase, probe);
-				}
-			}
-
-			LinkedList<String> otherlist = Util.linkedlistify(getOtherList());
-
-			while(!otherlist.isEmpty())
-			{
-				String url = otherlist.poll();
-				WidgetUser wuser = WidgetUser.valueOf(otherlist.poll());
-				WidgetItem witem = new WidgetItem(wuser, otherlist.poll());
-
-				WidgetItem probe = WebUtil.getWidgetFromUrl(url);
-				Util.massert(witem.equals(probe), "Expected %s but got %s", witem, probe);
-			}
-			*/
-
-		}
-
-		private List<String> getDbBaseList() 
-		{
-			return Arrays.asList(
-				"https://webwidgets.io/u/dburfoot/",
-				"https://webwidgets.io/u/dburfoot",
-				"https://webwidgets.io/u/dburfoot/index.jsp",
-				"https://webwidgets.io/u/dburfoot/widget.jsp"
-			);
-		}
-
-		private List<String> getOtherList()
-		{
-			return Arrays.asList(
-				"https://webwidgets.io/u/d57tm/index.jsp",
-				"d57tm",
-				"base",
-				"https://webwidgets.io/u/dburfoot/links/widget.jsp",
-				"dburfoot",
-				"links"
-			);
-		}
-	}
 	
 	public static class TestGuessMimeType extends DescRunnable
 	{
@@ -1130,6 +1072,9 @@ public class FastTest4Basic
 	}
 
 
+
+
+
 	public static class WispTagParseTest extends ArgMapRunnable
 	{
 
@@ -1431,5 +1376,63 @@ public class FastTest4Basic
 			}
 		}
 	}
-} 
+
+	public static class UriParserFixtureTest extends DescRunnable
+	{
+
+		public String getDesc()
+		{
+			return 
+				"Fixture-based test for the URI parser utility\n" + 
+				"Extension code can subclass, to test ability to lookup specific users and widgets";
+		}
+
+
+		public void runOp() throws Exception
+		{
+			var testlist = Util.linkedlistify(loadFixtureData());
+			Util.massert(testlist.size() % 2 == 0);
+
+			for(int i = 0; i < testlist.size(); i += 2)
+			{
+				String inputuri = testlist.get(i);
+				var expected = Util.listify(testlist.get(i+1).split(","));
+				Util.pf("%s\n", expected);
+
+				var parser = UriParser.fromUri(new java.net.URI(inputuri));
+				var observed = getResult(parser);
+				Util.massertEqual(observed, expected, "Observed %s but expected %s");
+
+				runExtensionCheck(parser, i);
+			}
+		}
+
+		// Subclasses extend to check widget user lookups
+		protected void runExtensionCheck(UriParser parser, int idx) {} 
+
+		private static List<String> getResult(UriParser parser) throws Exception
+		{
+
+			var result = new LinkedList<String>();
+			result.add(parser.isUserArea() + "");
+			result.add(parser.getLeafSegment());
+			result.addAll(parser.getDirTokenList());
+			return result;
+		}
+
+		private List<String> loadFixtureData()
+		{
+			// TODO: fix this path
+			String inputfile = Util.sprintf("/opt/userdata/wwiocore/server/testdata/URIParserTest.txt");
+			if(!(new File(inputfile)).exists())
+				{ return null; }
+
+			Util.pf("Loading file %s\n", inputfile);
+			var datalist = FileUtils.getReaderUtil().setFile(inputfile).readLineListE();
+			return Util.filter2list(datalist, s -> s.trim().length() > 0 && !s.trim().startsWith("//"));
+		}
+
+
+	}
+}
 

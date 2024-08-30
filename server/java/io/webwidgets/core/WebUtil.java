@@ -90,7 +90,7 @@ public class WebUtil
 		
 	// For this method, the URL MUST conform to the expected pattern
 	// If you are not sure if it will conform, use getWidgetFromPageUrl
-	static WidgetItem getWidgetFromUrl(String pageurl)
+	public static WidgetItem getWidgetFromUrl(String pageurl)
 	{
 		// TODO: this technique makes it impossible to run tests against a server that does not have the webwidgets.io URL
 		String subpath = getRelativeResource(pageurl);
@@ -356,7 +356,6 @@ public class WebUtil
 	// exactly if the Widget data in the dburfoot::links DB is readable
 	// The question of what to do with base-level data, and data that is in a folder other than the widget folder, is TBD
 	// Currently it is public, for backwards - compat reasons
-	// TODO: comment this back in at a convenient time.
 	@WebFilter("/*")
 	public static class ProtectUserDataFilter implements Filter {
 
@@ -365,51 +364,50 @@ public class WebUtil
 		public void init(FilterConfig filterConfig) throws ServletException {}
 
 	    @Override
-	    public void doFilter(javax.servlet.ServletRequest _request, javax.servlet.ServletResponse _response, FilterChain chain)
+	    public void doFilter(javax.servlet.ServletRequest request, javax.servlet.ServletResponse response, FilterChain chain)
 	            throws IOException, ServletException {
 
-	        var request = (HttpServletRequest) _request;
+	        var httprequest = (HttpServletRequest) request;
 
-	        // Important: remove the /autogenjs from a URI if you see it
-	        // autogenjs data will be treated the same as the Widget it corresponds to
-	        String uri = request.getRequestURI().replaceAll("/autogenjs", "");
-	        var infopair = widgetInfoFromUri(uri);
+	        String uri = httprequest.getRequestURI();
 
 	        // For these two types of files, we include the auth checking and forwarding in the downstream handler
 	        boolean downcheck = uri.endsWith(".jsp") || uri.endsWith(".wisp");
 
-	        if(!downcheck && blockUserDataRead(request, infopair))
+	        if(!downcheck && blockUserDataRead(httprequest))
 	        {
-	            ((HttpServletResponse) _response).sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
+	            ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
 	            return;
 	        }
 
-	        chain.doFilter(_request, _response);
+	        chain.doFilter(request, response);
 	    }
 
-	    private static boolean blockUserDataRead(HttpServletRequest request, Pair<String, String> infopair)
+	    private static boolean blockUserDataRead(HttpServletRequest request)
 	    {
+	        // Important: remove the /autogenjs from a URI if you see it
+	        // autogenjs data will be treated the same as the Widget it corresponds to
+	    	var uriparser = new UriParser(request.getRequestURI().replaceAll("/autogenjs", ""));
+
 			// there's no way for it to be a user's stuff. Will be protected by other pieces of code.
-			if(infopair == null)
+			if(!uriparser.isUserArea())
 				{ return false; }
 
 			// Lookup the user. If there's no user, can't be user's stuff, same idea as above.
-			var user = WidgetUser.softLookup(infopair._1);
-			if(!user.isPresent())
+			var owner = uriparser.getOwner();
+			if(!owner.isPresent())
 				{ return false; }
 
-			// Don't block the shared user!!!
-			if(user.get() == WidgetUser.getSharedUser())
+			// Don't block the shared user!!
+			if(owner.get() == WidgetUser.getSharedUser())
 				{ return false; }
 
 			// Here we're checking if it's a "normal" widget
 			// Block unless the logged-in user can read the widget data
-			if(infopair._2 != null)
+			var dbitem = uriparser.getWidgetItem();
+			if(dbitem.isPresent())
 			{
-				// What do we do about non-DB subfolders here? This is a point of study.
-				// Hopefully the AuthChecker will not throw an error if you 
-				var item = new WidgetItem(user.get(), infopair._2);
-				var okayread = AuthChecker.build().userFromRequest(request).directDbWidget(item).allowRead();
+				var okayread = AuthChecker.build().userFromRequest(request).directDbWidget(dbitem.get()).allowRead();
 				return !okayread;
 			}
 
@@ -418,6 +416,7 @@ public class WebUtil
 			// allow the read.
 			return false;
 		}
+
 	}
 
 
@@ -426,7 +425,6 @@ public class WebUtil
 	// This results in cleaner URLs, and hides details of the underlying JSP implementation
 	// The logic is very simple: if you see a request that could be serviced by adding a ".wisp" or ".jsp" suffix,
 	// go ahead and service it using the appropriate suffix.
-	// TODO: comment this back in at a convenient time.
 	@WebFilter("/*")
 	public static class SkipExtensionFilter implements Filter {
 
@@ -479,6 +477,81 @@ public class WebUtil
 			// I am a bit scared about this, but I want to be able to skip the .jsp extensions
 			// things like AdminMain.jsp, LogIn.jsp, etc
 			return Util.listify(".jsp");
+		}
+	}
+
+	public static class UriParser
+	{
+
+		private LinkedList<String> _subDirList;
+
+		private final String _leafSegment;
+
+		private boolean _userArea = false;
+
+		private UriParser(String uri)
+		{
+			_subDirList = Util.linkedlistify(uri.split("/"));
+			var expempty = _subDirList.pollFirst();
+			Util.massert(expempty.equals(""), 
+				"By convention, expect the URI string to start with a forward path, got %s", uri);
+
+
+			_leafSegment = _subDirList.isEmpty() ? null : _subDirList.pollLast();
+
+			if(_subDirList.peek().equals("u"))
+			{
+				_userArea = true;
+				_subDirList.poll();
+			}
+
+		}
+
+		public static UriParser fromRequest(HttpServletRequest request)
+		{
+			return new UriParser(request.getRequestURI());
+		}
+
+		public static UriParser fromUri(java.net.URI myuri)
+		{
+			return new UriParser(myuri.getRawPath());
+		}
+
+		public List<String> getDirTokenList()
+		{
+			return Collections.unmodifiableList(_subDirList);
+		}
+
+		public String getLeafSegment()
+		{
+			return _leafSegment;
+		}
+
+
+		public boolean isUserArea()
+		{
+			return _userArea;
+		}
+
+		public Optional<WidgetUser> getOwner()
+		{
+			if(isUserArea() && !_subDirList.isEmpty())
+				{ return WidgetUser.softLookup(_subDirList.get(0)); }
+
+			return Optional.empty();
+		}
+
+		public Optional<WidgetItem> getWidgetItem()
+		{
+			Optional<WidgetUser> owner = getOwner();
+			if(owner.isPresent() && _subDirList.size() >= 2)
+			{
+				var item = new WidgetItem(owner.get(), _subDirList.get(1));
+				if(item.dbFileExists())
+					{ return Optional.of(item); }
+			}
+
+			return Optional.empty();
 		}
 	}
 }
