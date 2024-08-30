@@ -527,15 +527,14 @@ public class WebUtil
 
 		private UriParser(String uri)
 		{
-			_subDirList = Util.linkedlistify(uri.split("/"));
-			var expempty = _subDirList.pollFirst();
-			Util.massert(expempty.equals(""), 
-				"By convention, expect the URI string to start with a forward path, got %s", uri);
-
+			// This may cause some kind of issue with weirdly formatted URIs, that have multiple / back-to-back
+			// but the main point is just to drop any leading/trailing slashes
+			var basic = Util.filter2list(uri.split("/"), s -> !s.isEmpty());
+			_subDirList = Util.linkedlistify(basic);
 
 			_leafSegment = _subDirList.isEmpty() ? null : _subDirList.pollLast();
 
-			if(_subDirList.peek().equals("u"))
+			if(!_subDirList.isEmpty() && _subDirList.peek().equals("u"))
 			{
 				_userArea = true;
 				_subDirList.poll();
