@@ -383,6 +383,39 @@ public class WebUtil
 	        chain.doFilter(request, response);
 	    }
 
+	    private static boolean blockUserDataRead(HttpServletRequest request, Pair<String, String> infopair)
+	    {
+			// there's no way for it to be a user's stuff. Will be protected by other pieces of code.
+			if(infopair == null)
+				{ return false; }
+
+			// Lookup the user. If there's no user, can't be user's stuff, same idea as above.
+			var user = WidgetUser.softLookup(infopair._1);
+			if(!user.isPresent())
+				{ return false; }
+
+			// Don't block the shared user!!!
+			if(user.get() == WidgetUser.getSharedUser())
+				{ return false; }
+
+			// Here we're checking if it's a "normal" widget
+			// Block unless the logged-in user can read the widget data
+			if(infopair._2 != null)
+			{
+				// What do we do about non-DB subfolders here? This is a point of study.
+				// Hopefully the AuthChecker will not throw an error if you 
+				var item = new WidgetItem(user.get(), infopair._2);
+				var okayread = AuthChecker.build().userFromRequest(request).directDbWidget(item).allowRead();
+				return !okayread;
+			}
+
+			// We are now dealing with the "base" widget, ie the user's root directory
+			// For backward compat, and because I don't know the right thing to do here, 
+			// allow the read.
+			return false;
+		}
+	    
+
 	    private static boolean blockUserDataRead(HttpServletRequest request)
 	    {
 	        // Important: remove the /autogenjs from a URI if you see it
