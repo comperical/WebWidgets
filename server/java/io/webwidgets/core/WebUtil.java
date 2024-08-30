@@ -364,23 +364,26 @@ public class WebUtil
 		public void init(FilterConfig filterConfig) throws ServletException {}
 
 	    @Override
-	    public void doFilter(javax.servlet.ServletRequest request, javax.servlet.ServletResponse response, FilterChain chain)
+	    public void doFilter(javax.servlet.ServletRequest _request, javax.servlet.ServletResponse _response, FilterChain chain)
 	            throws IOException, ServletException {
 
-	        var httprequest = (HttpServletRequest) request;
+	        var request = (HttpServletRequest) _request;
 
-	        String uri = httprequest.getRequestURI();
+	        // Important: remove the /autogenjs from a URI if you see it
+	        // autogenjs data will be treated the same as the Widget it corresponds to
+	        String uri = request.getRequestURI().replaceAll("/autogenjs", "");
+	        var infopair = widgetInfoFromUri(uri);
 
 	        // For these two types of files, we include the auth checking and forwarding in the downstream handler
 	        boolean downcheck = uri.endsWith(".jsp") || uri.endsWith(".wisp");
 
-	        if(!downcheck && blockUserDataRead(httprequest))
+	        if(!downcheck && blockUserDataRead(request, infopair))
 	        {
-	            ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
+	            ((HttpServletResponse) _response).sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
 	            return;
 	        }
 
-	        chain.doFilter(request, response);
+	        chain.doFilter(_request, _response);
 	    }
 
 	    private static boolean blockUserDataRead(HttpServletRequest request, Pair<String, String> infopair)
