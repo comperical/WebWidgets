@@ -603,11 +603,13 @@ public class ActionJackson extends HttpServlet
 
 	}
 	
+	// TODO: we need a better approach to this that will work for open-core users also
 	public static Map<String, String> getSpecialRemapDir()
 	{
 		Map<String, String> themap = Util.treemap();
 		themap.put("admin", CoreUtil.WIDGET_ADMIN_DIR);
 		themap.put("exadmin", CoreUtil.WIDGET_ADMIN_DIR.replaceAll("/admin", "/exadmin"));
+		themap.put("docs", CoreUtil.WIDGET_ADMIN_DIR.replaceAll("/admin", "/docs"));
 		return themap;
 	}
 	
