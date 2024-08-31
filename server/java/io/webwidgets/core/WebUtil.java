@@ -521,25 +521,54 @@ public class WebUtil
 
 		private LinkedList<String> _subDirList;
 
-		private final String _leafSegment;
-
 		private boolean _userArea = false;
+
+		private Optional<WidgetUser> _optOwner = Optional.empty();
+
+		private Optional<WidgetItem> _optItem = Optional.empty();
 
 		private UriParser(String uri)
 		{
-			// This may cause some kind of issue with weirdly formatted URIs, that have multiple / back-to-back
-			// but the main point is just to drop any leading/trailing slashes
-			var basic = Util.filter2list(uri.split("/"), s -> !s.isEmpty());
-			_subDirList = Util.linkedlistify(basic);
+			// Canonical swap-out of autogenjs paths. These are considered to be part of the widget from which
+			// the JS code is generated.
+			_subDirList = Util.linkedlistify(uri.toLowerCase().replaceAll("/autogenjs", "").split("/"));
 
-			_leafSegment = _subDirList.isEmpty() ? null : _subDirList.pollLast();
+			if(!_subDirList.isEmpty() && _subDirList.peekFirst().isEmpty())
+				{ _subDirList.pollFirst(); }
 
-			if(!_subDirList.isEmpty() && _subDirList.peek().equals("u"))
+
+			// If the first token is specifically "u", we're in the user area of the site
+			// otherwise we're in the global area
+			if(!_subDirList.isEmpty() && _subDirList.peekFirst().equals("u"))
 			{
 				_userArea = true;
-				_subDirList.poll();
+				_subDirList.pollFirst();
 			}
 
+			// IF not user area, or no more tokens, no more analysis is necessary.
+			if(!_userArea || _subDirList.isEmpty())
+				{ return; }
+
+			// The widget owner will be the next token
+			_optOwner = WidgetUser.softLookup(_subDirList.peek());
+			if(_optOwner.isPresent())
+				{ _subDirList.pollFirst(); }
+
+
+			// If no owner, or out of tokens, we're done.
+			if(!_optOwner.isPresent() || _subDirList.isEmpty())
+				{ return; }
+
+
+			// Check to see if the WidgetItem exists.
+			// There's a conceptual question here about what to do if it's a user area,
+			// but not a widget, eg a "virtual" widget.
+			var probe = new WidgetItem(_optOwner.get(), _subDirList.peek());
+			if(probe.dbFileExists())
+			{
+				_optItem = Optional.of(probe);
+				_subDirList.pollFirst();
+			}
 		}
 
 		public static UriParser fromRequest(HttpServletRequest request)
@@ -552,16 +581,17 @@ public class WebUtil
 			return new UriParser(myuri.getRawPath());
 		}
 
-		public List<String> getDirTokenList()
+		// NOTE: do I want to commit to exposing this, or not?
+		// Is there ever any relevance to the "central" tokens?
+		public List<String> getExtraTokenList()
 		{
 			return Collections.unmodifiableList(_subDirList);
 		}
 
 		public String getLeafSegment()
 		{
-			return _leafSegment;
+			return _subDirList.isEmpty() ? null : _subDirList.peekLast();
 		}
-
 
 		public boolean isUserArea()
 		{
@@ -570,23 +600,12 @@ public class WebUtil
 
 		public Optional<WidgetUser> getOwner()
 		{
-			if(isUserArea() && !_subDirList.isEmpty())
-				{ return WidgetUser.softLookup(_subDirList.get(0)); }
-
-			return Optional.empty();
+			return _optOwner;
 		}
 
 		public Optional<WidgetItem> getWidgetItem()
 		{
-			Optional<WidgetUser> owner = getOwner();
-			if(owner.isPresent() && _subDirList.size() >= 2)
-			{
-				var item = new WidgetItem(owner.get(), _subDirList.get(1));
-				if(item.dbFileExists())
-					{ return Optional.of(item); }
-			}
-
-			return Optional.empty();
+			return _optItem;
 		}
 	}
 }
