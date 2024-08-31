@@ -33,15 +33,15 @@ public class CoreUtil
 	// The compile script detects it's install directory
 	public static final String WWIO_BASE_CONFIG_DIR = "WWIO_CONFIG_DIR_GOES_HERE";
 
-	public static String BASE_WIDGET_NAME = "base";
+	public static final String BASE_WIDGET_NAME = "base";
 
 	// This is used by the system to represent nulls. Sorry, you cannot have values that equal this literal string.
 	// This much match the JS code.
-	public static String MAGIC_NULL_STRING = "_x_NULL_y_";
+	public static final String MAGIC_NULL_STRING = "_x_NULL_y_";
 
 	public static final String USER_NAME_COOKIE = "username";
 
-	public static String ACCESS_HASH_COOKIE = "accesshash";
+	public static final String ACCESS_HASH_COOKIE = "accesshash";
 
 	// TODO: probably want to expand this to include other things like "include"
 	public static final Set<String> AUX_CODE_OKAY = Collections.unmodifiableSet(
