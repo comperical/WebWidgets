@@ -92,7 +92,22 @@ public class WebUtil
 	// If you are not sure if it will conform, use getWidgetFromPageUrl
 	public static WidgetItem getWidgetFromUrl(String pageurl)
 	{
+
+		var uri = convert2Uri(pageurl);
+		var parser = UriParser.fromUri(uri);
+
+		var dbitem = parser.getWidgetItem();
+		if(dbitem.isPresent())
+			{ return dbitem.get(); }
+
+		var owner = parser.getOwner();
+		if(owner.isPresent())
+			{ return WidgetItem.userBaseWidget(owner.get()); }
+
+		return null;
+
 		// TODO: this technique makes it impossible to run tests against a server that does not have the webwidgets.io URL
+		/*
 		String subpath = getRelativeResource(pageurl);
 		Util.massert(subpath.startsWith("/u/"),
 			"Expected to start with /u/ patter, got %s", subpath);
@@ -107,7 +122,20 @@ public class WebUtil
 
 		String pageName = toklist.pollLast();
 		return toklist.isEmpty() ? WidgetItem.userBaseWidget(wuser) : new WidgetItem(wuser, toklist.peek());
+		*/
+
+
 	}
+
+	private static java.net.URI convert2Uri(String pageurl)
+	{
+		try { 
+			return new java.net.URI(pageurl);
+		} catch (Exception ex) {
+			throw new RuntimeException("Failed to convert URL " + pageurl + " to valid URI, please use valid URL syntax");
+		}
+	}
+
 
 	static Pair<String, String> widgetInfoFromUri(String uri)
 	{
