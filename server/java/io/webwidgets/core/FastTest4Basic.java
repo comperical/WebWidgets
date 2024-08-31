@@ -150,6 +150,7 @@ public class FastTest4Basic
 
 			Set<String> codeset = getFolderKidSet(new File(CoreUtil.getWidgetCodeDir()));
 			{
+				codeset.remove("docs");
 				codeset.remove("admin");
 				codeset.remove("exadmin");
 				codeset.remove("resin-data");
