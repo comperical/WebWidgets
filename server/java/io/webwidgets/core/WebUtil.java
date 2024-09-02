@@ -136,38 +136,6 @@ public class WebUtil
 		}
 	}
 
-
-	static Pair<String, String> widgetInfoFromUri(String uri)
-	{
-
-		if(uri.length() == 0)
-			{ return null; }
-
-		LinkedList<String> toklist = Util.linkedlistify(uri.split("/"));
-		if(toklist.isEmpty() || !toklist.peekFirst().equals(""))
-			{ return null; }
-
-		// Peel off starting item
-		toklist.pollFirst();
-
-		// Need to at least have /u/<username
-		if(toklist.size() < 2)
-			{ return null;}
-
-		// Peel off the /u prefix
-		if(!toklist.pollFirst().toLowerCase().equals("u"))
-				{ return null; }
-
-		// Now we have the actual user. The name may or may not be present
-		String userprobe = toklist.pollFirst();
-		String nameprobe = null;
-
-		if(toklist.size() > 1)
-			{ nameprobe = toklist.pollFirst(); }
-
-		// The second argument can be null
-		return Pair.build(userprobe, nameprobe);
-	}
 	
 	static String getRelativeResource(String fullurl) 
 	{
@@ -397,15 +365,16 @@ public class WebUtil
 
 	        var request = (HttpServletRequest) _request;
 
-	        // Important: remove the /autogenjs from a URI if you see it
-	        // autogenjs data will be treated the same as the Widget it corresponds to
-	        String uri = request.getRequestURI().replaceAll("/autogenjs", "");
-	        var infopair = widgetInfoFromUri(uri);
+	        String uri = request.getRequestURI().toLowerCase();
 
 	        // For these two types of files, we include the auth checking and forwarding in the downstream handler
 	        boolean downcheck = uri.endsWith(".jsp") || uri.endsWith(".wisp");
 
-	        if(!downcheck && blockUserDataRead(request, infopair))
+	        // Update: we need to probe for files that don't have extensions also
+	        // The handler will forward to the wisp/jsp and handle it from there
+			downcheck |= SkipExtensionFilter.probeForExtension(request).isPresent();
+
+	        if(!downcheck && blockUserDataRead(request))
 	        {
 	            ((HttpServletResponse) _response).sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
 	            return;
@@ -414,44 +383,9 @@ public class WebUtil
 	        chain.doFilter(_request, _response);
 	    }
 
-	    private static boolean blockUserDataRead(HttpServletRequest request, Pair<String, String> infopair)
-	    {
-			// there's no way for it to be a user's stuff. Will be protected by other pieces of code.
-			if(infopair == null)
-				{ return false; }
-
-			// Lookup the user. If there's no user, can't be user's stuff, same idea as above.
-			var user = WidgetUser.softLookup(infopair._1);
-			if(!user.isPresent())
-				{ return false; }
-
-			// Don't block the shared user!!!
-			if(user.get() == WidgetUser.getSharedUser())
-				{ return false; }
-
-			// Here we're checking if it's a "normal" widget
-			// Block unless the logged-in user can read the widget data
-			if(infopair._2 != null)
-			{
-				// What do we do about non-DB subfolders here? This is a point of study.
-				// Hopefully the AuthChecker will not throw an error if you 
-				var item = new WidgetItem(user.get(), infopair._2);
-				var okayread = AuthChecker.build().userFromRequest(request).directDbWidget(item).allowRead();
-				return !okayread;
-			}
-
-			// We are now dealing with the "base" widget, ie the user's root directory
-			// For backward compat, and because I don't know the right thing to do here, 
-			// allow the read.
-			return false;
-		}
-	    
-
 	    private static boolean blockUserDataRead(HttpServletRequest request)
 	    {
-	        // Important: remove the /autogenjs from a URI if you see it
-	        // autogenjs data will be treated the same as the Widget it corresponds to
-	    	var uriparser = new UriParser(request.getRequestURI().replaceAll("/autogenjs", ""));
+	    	var uriparser = UriParser.fromRequest(request);
 
 			// there's no way for it to be a user's stuff. Will be protected by other pieces of code.
 			if(!uriparser.isUserArea())
@@ -463,6 +397,8 @@ public class WebUtil
 				{ return false; }
 
 			// Don't block the shared user!!
+			// TODO: having the shared user own both the MASTER db and the shared assets (js/css) is a TERRIBLE design
+			// As of Aug 2024, I think it's okay because the Master widget is not market as public read
 			if(owner.get() == WidgetUser.getSharedUser())
 				{ return false; }
 
@@ -492,8 +428,6 @@ public class WebUtil
 	@WebFilter("/*")
 	public static class SkipExtensionFilter implements Filter {
 
-		private static Set<String> KNOWN_API_PATH_SET = Util.setify("directload", "bulkupdate", "callback", "blobstore", "push2me", "pull2you", "extend");
-
 		@Override
 		public void init(FilterConfig filterConfig) throws ServletException {}
 
@@ -502,54 +436,77 @@ public class WebUtil
 	            throws IOException, ServletException {
 
 	        var request = (HttpServletRequest) _request;
-	        var uri = request.getRequestURI();
-	        var infopair = widgetInfoFromUri(uri);
+	        var uriparser = UriParser.fromRequest(request);
 
-	        // Gotcha: you cannot split on ".", it is interpreted as a wildcard, must escape it
-	        if(infopair == null || uri.split("\\.").length > 1 || KNOWN_API_PATH_SET.contains(infopair._1))
+	        // These conditions all DQ the request from probing for ellided extension
+	        if(!uriparser.isUserArea() || uriparser.requestHasExtension() || uriparser.isKnownApiCall())
 	        {
 		        chain.doFilter(_request, _response);
 				return;
 	        }
 
+	        var uri = request.getRequestURI();
 	        var suburi = uri.startsWith("/u") ? uri.substring("/u".length()) : uri;
 	        var realpath = request.getServletContext().getRealPath(suburi);
+	        var optext = probeForExtension(request);
 
-	        for(String ext : approvedExtensionList(infopair))
+	        // Okay, we found a hit on the extension, go ahead and use that
+	        if(optext.isPresent())
 	        {
-				var probefile = new File(realpath + ext);
-				if(probefile.exists())
-				{
-					var dispatcher = request.getRequestDispatcher(suburi + ext);
-					dispatcher.forward(request, _response);
-					return;
-				}
+				var dispatcher = request.getRequestDispatcher(suburi + optext.get());
+				dispatcher.forward(request, _response);
+				return;
 	        }
 
 	        chain.doFilter(_request, _response);
 	    }
 
-	    private static List<String> approvedExtensionList(Pair<String, String> infopair)
+	    // Try to find an extension of the request path that has a valid extension (basically JSP or WISP)
+	    // If you find it, return the EXTENSION
+	    private static Optional<String> probeForExtension(HttpServletRequest request)
 	    {
-			if(infopair == null)
+	    	var uriparser = UriParser.fromRequest(request);
+	    	if(!uriparser.isUserArea())
+	    		{ return Optional.empty(); }
+
+	    	var uri = request.getRequestURI();
+	    	// TODO: this should be a method of UriParser
+	        var suburi = uri.startsWith("/u") ? uri.substring("/u".length()) : uri;
+	        var realpath = request.getServletContext().getRealPath(suburi);
+
+	        for(String ext : approvedExtensionList(uriparser))
+	        {
+				var probefile = new File(realpath + ext);
+				if(probefile.exists())
+					{ return Optional.of(ext); }
+	        }
+
+	        return Optional.empty();
+	    }
+
+	    private static List<String> approvedExtensionList(UriParser uriparser)
+	    {
+	    	if(!uriparser.isUserArea())
 				{ return Collections.emptyList(); }
 
-			var optuser = WidgetUser.softLookup(infopair._1);
-			if(optuser.isPresent())
-				{ return Util.listify(".wisp", ".jsp"); }
-
-			// I am a bit scared about this, but I want to be able to skip the .jsp extensions
-			// things like AdminMain.jsp, LogIn.jsp, etc
-			return Util.listify(".jsp");
-		}
+			// I am a bit scared about using no-extension for the admin console pages,
+			// but I want to be able to ellide for requests like AdminMain.jsp, LogIn.jsp, etc
+			return uriparser.getOwner().isPresent() 
+						? Arrays.asList(".wisp", ".jsp") 
+						: Arrays.asList(".jsp");
+	    }
 	}
 
 	public static class UriParser
 	{
 
+		private static Set<String> KNOWN_API_PATH_SET = Util.setify("directload", "bulkupdate", "callback", "blobstore", "push2me", "pull2you", "extend");
+
 		private LinkedList<String> _subDirList;
 
 		private boolean _userArea = false;
+
+		private boolean _knownApiCall = false;
 
 		private Optional<WidgetUser> _optOwner = Optional.empty();
 
@@ -577,6 +534,14 @@ public class WebUtil
 			if(!_userArea || _subDirList.isEmpty())
 				{ return; }
 
+
+			// The request represents a call to a known API endpoint of the system
+			if(KNOWN_API_PATH_SET.contains(_subDirList.peekFirst()))
+			{
+				_knownApiCall = true;
+				return;
+			}
+
 			// The widget owner will be the next token
 			_optOwner = WidgetUser.softLookup(_subDirList.peek());
 			if(_optOwner.isPresent())
@@ -598,6 +563,8 @@ public class WebUtil
 				_subDirList.pollFirst();
 			}
 		}
+
+
 
 		public static UriParser fromRequest(HttpServletRequest request)
 		{
@@ -624,6 +591,18 @@ public class WebUtil
 		public boolean isUserArea()
 		{
 			return _userArea;
+		}
+
+		// True if the Leaf Segment of the request has an extension
+		public boolean requestHasExtension()
+		{
+			var leaf = getLeafSegment();
+			return leaf != null && leaf.split("\\.").length > 1;
+		}
+
+		public boolean isKnownApiCall()
+		{
+			return _knownApiCall;
 		}
 
 		public Optional<WidgetUser> getOwner()
