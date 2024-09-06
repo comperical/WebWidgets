@@ -2,7 +2,7 @@
 
 function getLastChoreCompletion(choreid)
 {
-    const hits = W.lookupFromIndex("chore_comp", {"chore_id" : choreid})
+    const hits = W.lookupFromOdIndex("chore_comp", { chore_id : choreid})
                         .map(item => item.getDayCode())
                         .sort().reverse();
 

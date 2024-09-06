@@ -29,8 +29,6 @@ Goal here is to work with laptop and tablet, but not phone
 
 <script>
 
-W.createIndexForTable("chore_comp", ["chore_id"]);
-
 // If true, show study/edit page
 var EDIT_STUDY_ITEM = -1;
 
