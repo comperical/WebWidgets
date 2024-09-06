@@ -431,6 +431,20 @@ lookupFromIndex : function(tablename, lookup)
     return hits;
 },
 
+// Same as lookupFromIndex, but create the index On-Demand (Od) if it is absent
+// The columns for the index are extracted from the query argument using Object.keys(...)
+// Since String keys are returned in the order they are added, there is no danger of creating
+// extra indexes when running the same line of code multiple times.
+// This is now the preferred way of using indexes; it creates cleaner code
+// with only a small amount of overhead.
+lookupFromOdIndex : function(tablename, lookup)
+{
+    W.createIndexIfAbsent(tablename, Object.keys(lookup));
+
+    return W.lookupFromIndex(tablename, lookup);
+},
+
+
 __composeInternalIndexName : function(fnamelist)
 {
     return fnamelist.join(W.__DUMB_INDEX_DELIM);
