@@ -64,6 +64,7 @@ public class WebUtil
 	// Special feature to help dev: if the user is in local mode, 
 	// Bounce the HTTP request to the corresponding local URL.
 	// TODO: remove this, it should be no longer used
+	@Deprecated
 	public static boolean shouldBounce2Local(HttpServletRequest request)
 	{
 		// If the user is not logged in at this point, there should be an 
@@ -78,7 +79,6 @@ public class WebUtil
 		return wuser.isAdmin() && !wuser.haveLocalDb();
 	}
 	
-
 	public static void bounce2LogInPage(HttpServletRequest request, HttpServletResponse response) throws IOException
 	{
 		String bounce2url = request.getRequestURL().toString();
