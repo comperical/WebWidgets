@@ -75,6 +75,7 @@ public class MailSystem {
         return Optional.empty();
     }
 
+    // TODO: this needs to go elsewhere
     private static boolean isVimsAdminAccount(WidgetUser user)
     {
         String userstr = user.toString();
