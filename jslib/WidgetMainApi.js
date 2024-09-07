@@ -445,6 +445,16 @@ lookupFromOdIndex : function(tablename, lookup)
 },
 
 
+// Return the number of outstanding/active sync requests
+// This method allows users to monitor the status of longer series of
+// updates, to show the user an indication of progress or a "updating..." indicator
+// If this function returns 0, the queue is "clean"; all the syncs have been fully processed.
+getActiveRequestCount: function()
+{
+    return W.__REQUEST_QUEUE.length + (W.__REQUEST_IN_FLIGHT ? 1 : 0);
+},
+
+
 __composeInternalIndexName : function(fnamelist)
 {
     return fnamelist.join(W.__DUMB_INDEX_DELIM);
