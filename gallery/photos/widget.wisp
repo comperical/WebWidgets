@@ -460,11 +460,14 @@ function redisplayMain()
     <table class="basic-table" width="70%">
     <tr>
     <th>FileName</th>
+    <th>Date</th>
     <th>Tags</th>    
     <th>...</th>
   `;
 
-  W.getItemList("photo_main").filter(searchHit).forEach(function(item) {
+  const itemlist = W.getItemList("photo_main").sort(proxySort(item => [item.getPhotoDate()])).reverse();
+
+  itemlist.filter(searchHit).forEach(function(item) {
 
     const startblob = item.getBase64BlobData().substring(0,10);
 
@@ -478,6 +481,7 @@ function redisplayMain()
     const rowinfo = `
       <tr>
       <td>${item.getBlobFileName()}</td>
+      <td>${item.getPhotoDate()}</td>
       <td>${getItemTagList(item).join(" ")}</td>
       <td>
 
