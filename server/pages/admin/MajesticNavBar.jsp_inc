@@ -14,70 +14,70 @@
           </li>          
           <% } %>
           <li class="nav-item">
-            <a class="nav-link" href="/u/admin/AdminMain.jsp">
+            <a class="nav-link" href="/u/admin/AdminMain">
               <i class="mdi mdi-crown menu-icon"></i>
               <span class="menu-title">Admin Main</span>
             </a>
           </li>          
           <li class="nav-item">
-            <a class="nav-link" href="/docs/JsFileDoc.jsp">
+            <a class="nav-link" href="/u/docs/JsFileDoc">
               <i class="mdi mdi-file-document menu-icon"></i>
               <span class="menu-title">Tech Docs</span>
             </a>
           </li>    
           <li class="nav-item">
-            <a class="nav-link" href="/u/admin/LogIn.jsp">
+            <a class="nav-link" href="/u/admin/LogIn">
               <i class="mdi mdi-shield-key menu-icon"></i>
               <span class="menu-title">Log-In/Out</span>
             </a>
           </li>
 
           <li class="nav-item">
-            <a class="nav-link" href="/u/admin/AccountSetting.jsp">
+            <a class="nav-link" href="/u/admin/AccountSetting">
               <i class="mdi mdi-cogs menu-icon"></i>
               <span class="menu-title">Account Settings</span>
             </a>
           </li>
 
           <li class="nav-item">
-            <a class="nav-link" href="/u/admin/ChangePass.jsp">
+            <a class="nav-link" href="/u/admin/ChangePass">
               <i class="mdi mdi-key-change menu-icon"></i>
               <span class="menu-title">Change Password</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/u/admin/TemplateGenerator.jsp">
+            <a class="nav-link" href="/u/admin/TemplateGenerator">
               <i class="mdi mdi-content-duplicate menu-icon"></i>
               <span class="menu-title">Template Generator</span>
             </a>
           </li>            
           <li class="nav-item">
-            <a class="nav-link" href="/u/admin/PermissionControl.jsp">
+            <a class="nav-link" href="/u/admin/PermissionControl">
               <i class="mdi mdi-lock menu-icon"></i>
               <span class="menu-title">Permission Control</span>
             </a>
           </li>       
 
           <li class="nav-item">
-            <a class="nav-link" href="/u/admin/ImportWidget.jsp">
+            <a class="nav-link" href="/u/admin/ImportWidget">
               <i class="mdi mdi-import menu-icon"></i>
               <span class="menu-title">Import Widget</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/u/admin/MailRunner.jsp">
+            <a class="nav-link" href="/u/admin/MailRunner">
               <i class="mdi mdi-email menu-icon"></i>
               <span class="menu-title">Email Manager</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/u/admin/GetConfig.jsp">
+            <a class="nav-link" href="/u/admin/GetConfig">
               <i class="mdi mdi-download menu-icon"></i>
               <span class="menu-title">Download Config</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/u/admin/SchemaViewer.jsp">
+            <a class="nav-link" href="/u/admin/SchemaViewer">
               <i class="mdi mdi-database menu-icon"></i>
               <span class="menu-title">Schema Viewer</span>
             </a>
