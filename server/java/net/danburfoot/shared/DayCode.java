@@ -203,6 +203,19 @@ public class DayCode implements Comparable<DayCode>
 		return TimeUtil.tstamp2Cal(_strForm, sdf);
 	}
 	
+	public static DayCode getEarliestDayCode()
+	{
+		var first = getCodeMap().firstKey();
+		return getCodeMap().get(first);
+	}
+
+	// end of days
+	public static DayCode getLastDayCode()
+	{
+		var last = getCodeMap().lastKey();
+		return getCodeMap().get(last);
+	}
+
 	// 
 	public static synchronized SortedMap<String, DayCode> getCodeMap()
 	{
@@ -223,7 +236,7 @@ public class DayCode implements Comparable<DayCode>
 			}
 			
 			
-			for(int i : Util.range(8000))
+			for(int i : Util.range(16_000))
 			{
 				cal.setTimeInMillis(milli);
 				

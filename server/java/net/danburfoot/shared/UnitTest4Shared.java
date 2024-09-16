@@ -13,7 +13,7 @@ import net.danburfoot.shared.CollUtil.*;
 import net.danburfoot.shared.RunnableTech.*;
 
 public class UnitTest4Shared 
-{	
+{
 
 	public static class TestTupleCorrect extends ArgMapRunnable
 	{
@@ -78,4 +78,57 @@ public class UnitTest4Shared
 				{ target.add(Pair.build(6, "danb")); }
 		}
 	}
-}	
+
+	public static class TestDayCodeBoundary extends ArgMapRunnable
+	{
+
+		public void runOp()
+		{
+			Util.pf("First day is %s, last is %s\n", 
+				DayCode.getEarliestDayCode(), DayCode.getLastDayCode());
+
+
+			for(var expectokay : Util.listify(true, false))
+			{
+				var datalist = expectokay ? getOkayList() : getBadList();
+				for(var probe : datalist)
+				{
+					var obsokay = loadOkay(probe);
+					Util.massert(obsokay == expectokay, 
+						"Observed load okay=%b, but expected %b, for input %s",
+						obsokay, expectokay, probe
+					);
+				}
+			}
+
+			Util.pf("Success, checked %d good and %d bad dates\n", getOkayList().size(), getBadList().size());
+		}
+
+		private static boolean loadOkay(String probe)
+		{
+			try { DayCode.lookup(probe); return true; }
+			catch (Exception ex) { return false; }
+		}
+
+		private List<String> getOkayList()
+		{
+			return Arrays.asList(
+				"2024-09-16",
+				"2028-09-16",
+				"2002-10-21", // Earlist good
+				"2046-08-10" // Last good
+			);
+		}
+
+		private List<String> getBadList()
+		{
+			return Arrays.asList(
+				"1995-01-01",
+				"2002-10-20", // last bad
+				"2046-08-11" // earliest bad
+			);
+		}
+
+
+	}
+}
