@@ -641,6 +641,91 @@ public class FastTest4Basic
 	}
 
 
+	public static class BlobDirSetupCheck extends DescRunnable
+	{
+
+		private List<File> _requiredList = Util.vector();
+
+		public String getDesc()
+		{
+			return
+				"Ensure/Require that all blob-store DB tables have an appropriate directory configured\n" +
+				"It is possible that this check is unnecessary and the blob storage logic should create the directory OD\n" +
+				"But as of Sept 2024, it seems harmless to do it this way";
+
+		}
+
+
+		public void runOp()
+		{
+			boolean modokay = _argMap.getBit("modokay", false);
+
+			setupRequiredList();
+
+			if(_requiredList.isEmpty())
+			{
+				Util.pf("All Blob-Configured DB tables have appropriate directories\n");
+				return;
+			}
+
+			Util.massert(modokay, "Found %d required directories, see above, run with modokay=true to fix", _requiredList.size());
+
+			Util.pf("Will create the following directories:\n");
+
+			for(File f : _requiredList)
+			{
+				Util.pf("\t%s\n", f.getAbsolutePath());
+			}
+
+			if(Util.checkOkay("Okay to create?"))
+			{
+				for(File f : _requiredList)
+				{
+					f.mkdirs();
+					Util.pf("Created directory %s\n", f.getAbsolutePath());
+				}
+			}
+		}
+
+		private void setupRequiredList()
+		{
+			int blobcount = 0;
+
+			for(var user : WidgetUser.values())
+			{
+				for(var dbitem : WidgetItem.getUserWidgetList(user))
+				{
+					for(String table : dbitem.getDbTableNameSet())
+					{
+						var LTI = new LiteTableInfo(dbitem, table);
+						LTI.runSetupQuery();
+
+						if(!LTI.isBlobStoreTable())
+							{ continue; }
+
+						blobcount++;
+
+						// Util.pf("Found blob-store DB table %s::%s\n", dbitem, table);
+
+						String probepath = BlobDataManager.getStandardBlobAddress(dbitem, table, 10_000);
+						File attachdir = BlobDataManager.getFullBlobLocalPath(probepath).getParentFile();
+
+						if(!attachdir.exists())
+						{
+							Util.pferr("**Blob attachment directory is missing: %s\n", attachdir);
+							_requiredList.add(attachdir);
+						} else {
+							Util.massert(attachdir.isDirectory(), "File is not a directory!!! %s", attachdir);
+						}
+					}
+				}
+			}
+
+			Util.massert(blobcount > 10, "Expected at least 10 blob-configured directories, found %d", blobcount);
+			Util.pf("Found %d blob-configured DB tables\n", blobcount);
+		}
+	}
+
 
 	public static class CheckMailBoxConfig extends DescRunnable
 	{
