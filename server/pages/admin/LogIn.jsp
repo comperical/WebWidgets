@@ -156,7 +156,7 @@ function updateGoogleLoginButton()
     <p>Login with Google</p>
 
     <div id="g_id_onload"
-         data-client_id="<%= optClientId.get() %>"
+         data-client_id="<%= optClientId.orElse("xxxxx") %>"
          data-context="signin"
          data-ux_mode="popup"
          data-login_uri="https://webwidgets.io/u/exadmin/OAuthHandler.jsp<%= bounceBackAppend %>"
