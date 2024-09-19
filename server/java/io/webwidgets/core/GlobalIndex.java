@@ -149,19 +149,33 @@ public class GlobalIndex
 
     static void updateSystemSetting(String setting, Optional<String> optval)
     {
-        if(!optval.isPresent())
-        {
-            CoreDb.deleteFromColMap(WidgetItem.getMasterWidget(), MasterTable.system_setting.toString(), CoreDb.getRecMap(
-                "key_str", setting
-            ));
+        // Sept 2024 bug fix: this table has an integer id PKey, like all the others in the system
+        // But code was previously treating it like the key_str was the PK
 
-            return;
+        WidgetItem master = WidgetItem.getMasterWidget();
+        var tabname = MasterTable.system_setting.toString();
+
+
+        // Always delete the old key
+        CoreDb.deleteFromColMap(master, tabname, CoreDb.getRecMap(
+            "key_str", setting
+        ));
+
+
+        // If value is present, re-insert the record
+        if(optval.isPresent())
+        {
+            int newid = CoreUtil.getNewDbId(master, tabname);
+
+            CoreDb.upsertFromRecMap(master, tabname, 1, CoreDb.getRecMap(
+                "id", newid,
+                "key_str", setting,
+                "val_str", optval.get()
+            ));
         }
 
-        CoreDb.upsertFromRecMap(WidgetItem.getMasterWidget(), MasterTable.system_setting.toString(), 1, CoreDb.getRecMap(
-            "key_str", setting, 
-            "val_str", optval.get()
-        ));
+        // TODO: why is this called "user" indexes?
+        GlobalIndex.clearUserIndexes();
     }
 
 
