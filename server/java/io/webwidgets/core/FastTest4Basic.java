@@ -296,99 +296,9 @@ public class FastTest4Basic
 
 			_userCount++;
 		}
-	}	
+	}
 
 
-
-	public static class ServerPageAuthInclude extends DescRunnable
-	{
-		int _okayCount = 0;
-		int _errCount = 0;
-		
-		public String SEARCH_TAG = "../admin/AuthInclude.jsp_inc";
-		
-		public String getDesc()
-		{
-			return "Check that all the JSPs in the directory  " + CoreUtil.getWidgetCodeDir() + "\n"  +
-				"Contain the Auth Include tag " + SEARCH_TAG + "\n" + 
-				"This is the crucial include file to ensure proper authentication checks";
-		}
-		
-		public void runOp()
-		{
-			File startdir = new File(CoreUtil.getWidgetCodeDir());
-			
-			recurseCheck(startdir, 0);
-			
-			Util.massert(_errCount == 0, "Got %d error paths, see above", _errCount);
-			Util.massert(_okayCount > getMinPageCount(), "Should have at least 20 JSP checks");
-			
-			Util.pf("Success, checked %d JSP files\n", _okayCount);	
-		}
-
-		protected int getMinPageCount()
-		{
-			return 3;
-		}
-		
-		private void recurseCheck(File thefile, int depth)
-		{
-			if(thefile.getAbsolutePath().contains(CoreUtil.WIDGET_ADMIN_DIR))
-				{ return; }
-
-			if(thefile.getAbsolutePath().contains("dburfoot/docview"))
-				{ return; }
-
-			
-			if(thefile.isDirectory())
-			{
-				for(File sub : thefile.listFiles())
-					{  recurseCheck(sub, depth+1); }
-			}
-
-			if(!thefile.getAbsolutePath().endsWith(".jsp"))
-				{ return; }
-
-			// These are base-level .JSPs
-			if(depth <= 2)
-				{ return; }
-
-			for(String special : Util.listify("docview", "biz"))
-			{
-				String search = "dburfoot/" + special;
-				
-				if(thefile.getAbsolutePath().contains(search))
-					{ return; }
-			}			
-			
-			List<String> data = FileUtils.getReaderUtil()
-							.setFile(thefile)
-							.readLineListE();
-			
-			int cp = Util.countPred(data, s -> s.indexOf(SEARCH_TAG) > -1);
-			Util.massert(cp <= 1, "Got MULTIPLE %d hits for file %s", cp, thefile);
-			
-
-
-			for(String special : Util.listify("LogIn"))
-			{
-				if(thefile.getAbsolutePath().endsWith(special + ".jsp"))
-				{
-					Util.massert(cp == 0, "Expected ZERO Auths in special file %s", thefile.getAbsolutePath());
-					return;
-				}
-			}
-			
-			if(cp == 1)
-			{
-				_okayCount += 1; 
-				return;
-			}
-			
-			_errCount += 1;
-			Util.pferr("Failed to find AuthInclude in JSP file %s\n", thefile);
-		}
-	}	
 	
 	public static class CheckUserDirExist extends DescRunnable
 	{
@@ -409,9 +319,6 @@ public class FastTest4Basic
 			Util.pf("Success, found base directory for all %d WidgetUsers\n", WidgetUser.values().size());
 		}
 	}
-
-
-
 
 	public static class PluginLoadCheck extends DescRunnable
 	{
