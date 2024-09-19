@@ -498,7 +498,7 @@ public class CoreCommand
 		{
 			if(_argMap.containsKey("directpass"))
 			{
-				Util.massert(CoreUtil.allowInsecureConnection(), "This command line option is only allowed in insecure mode");
+				Util.massert(AdvancedUtil.allowInsecureConnection(), "This command line option is only allowed in insecure mode");
 				Util.pf("**Warning**, setting password directly based on command line argument, this may be insecure\n");
 				return _argMap.getStr("directpass");
 			}
@@ -1017,7 +1017,7 @@ public class CoreCommand
 			Util.pf("Have CODE directory %s\n", CoreUtil.WIDGET_CODE_DIR);
 			Util.pf("Have JCLASS directory %s\n", CoreUtil.JCLASS_BASE_DIR);
 			Util.pf("MISC_DATA_DIR: %s\n", CoreUtil.WWIO_MISC_DATA_DIR);
-			Util.pf("Allow Insecure: %b\n", CoreUtil.allowInsecureConnection());
+			Util.pf("Allow Insecure: %b\n", AdvancedUtil.allowInsecureConnection());
 		}
 	}
 
@@ -1196,7 +1196,7 @@ public class CoreCommand
 
 		public void runOp()
 		{
-			boolean allowins = CoreUtil.allowInsecureConnection();
+			boolean allowins = AdvancedUtil.allowInsecureConnection();
 			if(allowins)
 			{
 				GlobalIndex.updateSystemSetting(CoreUtil.SystemPropEnum.INSECURE_ALLOW_MODE, Optional.empty());

@@ -87,7 +87,7 @@ public class AuthLogic
 	
 	public static void setAuthCookie(HttpServletRequest request, HttpServletResponse response, String accesshash)
 	{
-		Util.massert(request.isSecure() || CoreUtil.allowInsecureConnection(),
+		Util.massert(request.isSecure() || AdvancedUtil.allowInsecureConnection(),
 			"Attempt to set AUTH cookie over insecure connection, insecure connections disallowed");
 		
 		Cookie mycookie = new Cookie(CoreUtil.ACCESS_HASH_COOKIE, accesshash);

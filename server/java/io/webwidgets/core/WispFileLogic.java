@@ -39,7 +39,7 @@ public class WispFileLogic
         protected void doGet(HttpServletRequest request, HttpServletResponse response)  throws ServletException, IOException 
         {
             // Copied from AuthInclude
-            if(!request.isSecure() && !CoreUtil.allowInsecureConnection())
+            if(!request.isSecure() && !AdvancedUtil.allowInsecureConnection())
             {
                 String insecure = request.getRequestURL().toString();
                 String oksecure = "https://" + insecure.substring("http://".length());
