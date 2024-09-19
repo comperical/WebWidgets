@@ -332,7 +332,7 @@ public class FastTest4Basic
 		}
 		
 		private void recurseCheck(File thefile, int depth)
-		{			
+		{
 			if(thefile.getAbsolutePath().contains(CoreUtil.WIDGET_ADMIN_DIR))
 				{ return; }
 
@@ -343,7 +343,7 @@ public class FastTest4Basic
 			if(thefile.isDirectory())
 			{
 				for(File sub : thefile.listFiles())
-					{  recurseCheck(sub, depth+1); }				
+					{  recurseCheck(sub, depth+1); }
 			}
 
 			if(!thefile.getAbsolutePath().endsWith(".jsp"))
@@ -1073,8 +1073,14 @@ public class FastTest4Basic
 
 		private List<String> loadFixtureData(String codename, int idx)
 		{
-			// TODO: fix this path
-			String inputfile = Util.sprintf("/opt/userdata/wwiocore/server/testdata/%s%d.jsp", codename, idx);
+
+			List<String> tokens = Arrays.asList(
+				CoreUtil.REPO_BASE_DIRECTORY,
+				"server", "testdata",
+				Util.sprintf("%s%d.jsp", codename, idx)
+			);
+
+			String inputfile = Util.join(tokens, File.separator);
 			if(!(new File(inputfile)).exists())
 				{ return null; }
 
@@ -1250,7 +1256,13 @@ public class FastTest4Basic
 
 		private static List<String> loadFixtureData(String codename)
 		{
-			String inputfile = Util.sprintf("/opt/userdata/wwiocore/server/testdata/wisptag/%s.txt", codename);
+			List<String> tokens = Arrays.asList(
+				CoreUtil.REPO_BASE_DIRECTORY,
+				"server", "testdata", "wisptag",
+				Util.sprintf("%s.txt", codename)
+			);
+
+			String inputfile = Util.join(tokens, File.separator);
 			Util.massert((new File(inputfile)).exists(), "Could not find test fixture data %s", inputfile);
 
 			// Allow comments
