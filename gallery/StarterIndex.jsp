@@ -64,8 +64,8 @@ function firstTimeInfo()
 </center>
 
 <ul>
-<li><a href="./links/widget.jsp">Links</a></li>
-<li><a href="./questions/widget.jsp">Questions</a></li>
+<li><a href="./links/widget">Links</a></li>
+<li><a href="./questions/widget">Questions</a></li>
 
 </ul>
 
@@ -78,7 +78,7 @@ function firstTimeInfo()
 </center>
 
 <ul>
-<li><a href="./mroutine/widget.jsp">Morning Routine</a></li>
+<li><a href="./mroutine/widget">Morning Routine</a></li>
 </ul>
 
 
@@ -89,7 +89,7 @@ function firstTimeInfo()
 </center>
 
 <ul>
-<li><a href="./chores/widget.jsp">Chores</a></li>
+<li><a href="./chores/widget">Chores</a></li>
 </ul>
 
 </td>
@@ -101,7 +101,7 @@ function firstTimeInfo()
 <br/>
 
 <center>
-<a href="/u/admin/AdminMain.jsp"><button>Admin Section</button></a>
+<a href="/u/admin/AdminMain"><button>Admin Section</button></a>
 <center>
 
 <br/>
