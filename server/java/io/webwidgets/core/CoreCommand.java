@@ -1100,10 +1100,10 @@ public class CoreCommand
 
 		private static void copyStarterIndex(WidgetUser user) throws IOException
 		{
-			File srcpath = new File(CoreUtil.getSubDirectory(CoreUtil.GALLERY_CODE_DIR, "StarterIndex.jsp"));
+			File srcpath = new File(CoreUtil.getSubDirectory(CoreUtil.GALLERY_CODE_DIR, "StarterIndex.html"));
 			Util.massert(srcpath.exists(), "Starter Index file %s not found in repo gallery, expected at %s", srcpath);
 
-			File dstpath = new File(CoreUtil.getSubDirectory(user.getUserBaseDir().getAbsolutePath(), "index.jsp"));
+			File dstpath = new File(CoreUtil.getSubDirectory(user.getUserBaseDir().getAbsolutePath(), "index.html"));
 			Util.massert(!dstpath.exists(), "Already have index file for user %s", dstpath);
 
             java.nio.file.Files.copy(srcpath.toPath(), dstpath.toPath());
