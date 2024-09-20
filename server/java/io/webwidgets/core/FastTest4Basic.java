@@ -566,6 +566,7 @@ public class FastTest4Basic
 		public void runOp()
 		{
 			boolean modokay = _argMap.getBit("modokay", false);
+			boolean fastconfirm = _argMap.getBit("fastconfirm", false);
 
 			setupRequiredList();
 
@@ -584,7 +585,7 @@ public class FastTest4Basic
 				Util.pf("\t%s\n", f.getAbsolutePath());
 			}
 
-			if(Util.checkOkay("Okay to create?"))
+			if(fastconfirm || Util.checkOkay("Okay to create?"))
 			{
 				for(File f : _requiredList)
 				{
