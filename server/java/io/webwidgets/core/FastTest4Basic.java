@@ -628,7 +628,7 @@ public class FastTest4Basic
 				}
 			}
 
-			Util.massert(blobcount > 1, "Expected at least 1 blob-configured directories, found %d", blobcount);
+			Util.massert(blobcount >= 1, "Expected at least 1 blob-configured directories, found %d", blobcount);
 			Util.pf("Found %d blob-configured DB tables\n", blobcount);
 		}
 	}
