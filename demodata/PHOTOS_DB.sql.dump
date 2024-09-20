@@ -1,0 +1,1 @@
+CREATE TABLE IF NOT EXISTS "photo_main" (id int, tag_list varchar(30), photo_date varchar(10), base64_blob_data varchar(1000), blob_file_name varchar(100), full_desc varchar(300), rotation int default 0, primary key(id));
