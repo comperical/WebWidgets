@@ -1263,6 +1263,24 @@ public class CoreCommand
 				File admindir = new File(CoreUtil.composeSubDirectory(CoreUtil.REPO_BASE_DIRECTORY, 0, "server", "pages", "admin"));
 				shallowDirectoryCopy(admindir, new File(CoreUtil.WIDGET_ADMIN_DIR));
 			}
+
+
+			// Kind of annoying, this one has subdirectories, cannot use Shallow File Copy
+			{
+				File optjs = new File(CoreUtil.getSubDirectory(CoreUtil.WWIO_BASE_CONFIG_DIR, "optjs", 3));
+				for(File subsrc : optjs.listFiles())
+				{
+					if(!subsrc.isDirectory())
+					{
+						Util.pferr("**Warning**, found non-directory subfile %s in OPTJS directory, expect only directories", subsrc);
+						continue;
+					}
+
+					File subdst = new File(AdvancedUtil.SHARED_OPTJS_ASSET_DIR + File.separator + subsrc.getName());
+					subdst.mkdirs();
+					shallowDirectoryCopy(subsrc, subdst);
+				}
+			}
 		}
 
 		private static void shallowDirectoryCopy(File srcdir, File dstdir) throws IOException

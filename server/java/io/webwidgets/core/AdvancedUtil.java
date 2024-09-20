@@ -30,6 +30,8 @@ public class AdvancedUtil
     public static final File SHARED_CSS_ASSET_DIR = (new WidgetItem(WidgetUser.buildBackDoorSharedUser(), "css")).getWidgetBaseDir();
     public static final File SHARED_JSLIB_ASSET_DIR = (new WidgetItem(WidgetUser.buildBackDoorSharedUser(), "jslib")).getWidgetBaseDir();
     public static final File SHARED_IMAGE_ASSET_DIR = (new WidgetItem(WidgetUser.buildBackDoorSharedUser(), "image")).getWidgetBaseDir();
+    public static final File SHARED_OPTJS_ASSET_DIR = (new WidgetItem(WidgetUser.buildBackDoorSharedUser(), "optjs")).getWidgetBaseDir();
+
 
 
     // If true, the server will allow insecure connections
