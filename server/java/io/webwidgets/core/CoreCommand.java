@@ -1155,15 +1155,18 @@ public class CoreCommand
 		{
 			WidgetUser user = WidgetUser.valueOf(_argMap.getStr("username"));
 			WidgetItem item = new WidgetItem(user, _argMap.getStr("widgetname"));
+			boolean onlyschema = _argMap.getBit("onlyschema", false);
+
 			Util.massert(item.getLocalDbFile().exists(), "Widget %s not found", item);
 
 			File outputdir = new File(_argMap.getStr("outputdir"));
-			Util.massert(outputdir.exists(), "Output directory %s  does not exist");
+			Util.massert(outputdir.exists(), "Output directory %s  does not exist", outputdir);
 
 			File outputfile = getOutputFile(outputdir, item.theName);
 			Util.massert(!outputfile.exists(), "Output file %s already exists, please delete before continuing", outputfile);
 
-			String dumpcall = Util.sprintf("sqlite3 %s .dump", item.getLocalDbFile().getAbsolutePath());
+			String argument = onlyschema ? ".schema" : ".dump";
+			String dumpcall = Util.sprintf("sqlite3 %s %s", item.getLocalDbFile().getAbsolutePath(), argument);
 			SyscallWrapper wrapper = SyscallWrapper
 											.build(dumpcall)
 											.execE();
