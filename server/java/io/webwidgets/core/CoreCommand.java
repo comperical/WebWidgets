@@ -1134,7 +1134,7 @@ public class CoreCommand
 		{
 			File dumpfile = CoreUtil.getDemoDataDumpFile(newitem.theName);
 			Util.massert(dumpfile.exists(),
-				"Could not find a DB dump file for widget named %d, expected at %s, note: not all Gallery widgets have DB dumps",
+				"Could not find a DB dump file for widget named %s, expected at %s, note: not all Gallery widgets have DB dumps",
 				newitem.theName, dumpfile
 			);
 
