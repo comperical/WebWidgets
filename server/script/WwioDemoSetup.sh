@@ -17,17 +17,26 @@ sudo mkdir /opt/userdata
 # Change ownership to ec2-user
 sudo chown ec2-user /opt/userdata
 
+# Create sub directory /opt/rawdata
+sudo mkdir /opt/rawdata
+
+# Change ownership to ec2-user
+sudo chown ec2-user /opt/rawdata
+
 # Java 11 install with YUM
-sudo yum install java-11-amazon-corretto -y
+sudo yum install java-11-amazon-corretto-devel -y
 
-#Install Python3
-sudo yum install python37 -y
+# Install IPTABLES
+sudo yum install iptables -y
 
-#Forward port trick, workaround for Unix permission issue, see http://serverfault.com/questions/112795/how-can-i-run-a-server-on-linux-on-port-80-as-a-normal-user
-sudo /sbin/iptables -t nat -I PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080
+# SQLite 3
+sudo yum install sqlite -y
 
 #Forward port trick, workaround for Unix permission issue, see http://serverfault.com/questions/112795/how-can-i-run-a-server-on-linux-on-port-80-as-a-normal-user
 sudo /sbin/iptables -t nat -I PREROUTING -p tcp --dport 443 -j REDIRECT --to-port 8443
+
+#Forward port trick, workaround for Unix permission issue, see http://serverfault.com/questions/112795/how-can-i-run-a-server-on-linux-on-port-80-as-a-normal-user
+sudo /sbin/iptables -t nat -I PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080
 
 #Install Unix Htop Utility
 sudo yum install htop -y
@@ -44,17 +53,17 @@ python3 /opt/userdata/WebWidgetDemo/server/script/download_jars.py  >> download_
 # Compile WWIO-core packages
 python3 /opt/userdata/WebWidgetDemo/server/script/compile_core.py  >> compile_core.txt 2>> compile_core.err
 
-# Configure the WWIO demo server
-python3 /opt/userdata/WebWidgetDemo/server/script/config_demo_server.py  >> config_demo_server.txt 2>> config_demo_server.err
-
-# Configure the installation to allow insecure connections. This is off by default. Demo only, do not use in prod!
-python3 /opt/userdata/WebWidgetDemo/server/script/widget_runner.py ToggleInsecureAllow fastconfirm=true >> widget_runner.txt 2>> widget_runner.err
-
 # Setup the MASTER DB. Must do this before creating users
 python3 /opt/userdata/WebWidgetDemo/server/script/widget_runner.py SetupMasterDb  >> widget_runner.txt 2>> widget_runner.err
 
 # Pull the shared JS/CSS/etc code from the repo into the serving area
 python3 /opt/userdata/WebWidgetDemo/server/script/widget_runner.py CopySharedCodeFromRepo  >> widget_runner.txt 2>> widget_runner.err
+
+# Configure the WWIO demo server
+python3 /opt/userdata/WebWidgetDemo/server/script/config_demo_server.py  >> config_demo_server.txt 2>> config_demo_server.err
+
+# Configure the installation to allow insecure connections. This is off by default. Demo only, do not use in prod! NB: must run after configure-server
+python3 /opt/userdata/WebWidgetDemo/server/script/widget_runner.py ToggleInsecureAllow fastconfirm=true >> widget_runner.txt 2>> widget_runner.err
 
 # Create a test user for demo
 python3 /opt/userdata/WebWidgetDemo/server/script/widget_runner.py AddUserMasterRecord username=testuser >> widget_runner.txt 2>> widget_runner.err
@@ -74,8 +83,17 @@ python3 /opt/userdata/WebWidgetDemo/server/script/widget_runner.py ImportWidgetF
 # Import core widget _questions_ from the gallery for test user
 python3 /opt/userdata/WebWidgetDemo/server/script/widget_runner.py ImportWidgetFromGallery username=testuser widgetname=questions >> widget_runner.txt 2>> widget_runner.err
 
+# Import core widget _photos_ from the gallery for test user
+python3 /opt/userdata/WebWidgetDemo/server/script/widget_runner.py ImportWidgetFromGallery username=testuser widgetname=photos >> widget_runner.txt 2>> widget_runner.err
+
 # Import core widget _base_ from the gallery for test user
 python3 /opt/userdata/WebWidgetDemo/server/script/widget_runner.py ImportWidgetFromGallery username=testuser widgetname=base >> widget_runner.txt 2>> widget_runner.err
+
+# Setup the blob store directory. This test creates the directories when modokay=true
+python3 /opt/userdata/WebWidgetDemo/server/script/widget_runner.py BlobDirSetupCheck modokay=true fastconfirm=true >> widget_runner.txt 2>> widget_runner.err
+
+# Run basic unit/config tests
+python3 /opt/userdata/WebWidgetDemo/server/script/widget_runner.py SuiteRunner >> widget_runner.txt 2>> widget_runner.err
 
 # Show config after all the setup options
 python3 /opt/userdata/WebWidgetDemo/server/script/widget_runner.py ShowBaseConfigInfo >> widget_runner.txt 2>> widget_runner.err
