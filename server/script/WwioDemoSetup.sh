@@ -7,7 +7,7 @@
 # Important: this script puts the server in non-secure mode to allow testing without configuring SSL
 # Obviously, you should put it into secure mode and turn on SSL for production use
 # The WWIO code is intended to be used with minimal configuration
-# After running this script, you should be able to access http://YOUR_HOST_NAME/u/testuser/index.jsp
+# After running this script, you should be able to access http://YOUR_HOST_NAME/u/testuser/index.html
 # And be able to view and edit some basic Widgets (chores, links, etc)
 
 
