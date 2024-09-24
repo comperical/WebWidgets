@@ -181,8 +181,13 @@ function getTemplateIdMap()
 }
 
 
+
+
+
 function redisplay()
 {
+	handleNavBar("Day Plan");
+
 	var activelist = getPlanDayItemList();
 					
 	var tablestr = `
@@ -273,7 +278,7 @@ function redisplay()
 	const timeminsel = buildOptSelector()
 							.configureFromHash(getHourTimeMap())
 							.setElementName("time_spent_min")
-							.getSelectString()
+							.getHtmlString()
 	
 	const tempsel = buildOptSelector()
 						.configureFromHash(getTemplateIdMap())
@@ -291,12 +296,12 @@ function redisplay()
 					.setSelectedKey(PLAN_DAY_CODE.getDateString())
 					.setOnChange("javascript:updatePlanDay()")
 					.setElementName("plan_day_sel")
-					.getSelectString();
+					.getHtmlString();
 
 
 	populateSpanData({
 		"dayplantable" : tablestr,
-		"template_sel_span" : tempsel.getSelectString(),
+		"template_sel_span" : tempsel.getHtmlString(),
 		"plan_day_name" : PLAN_DAY_CODE.getDayOfWeek(),
 		"time_spent_min_span" : timeminsel,
 		"plan_day_code" : PLAN_DAY_CODE.getDateString().substring(5),
@@ -315,6 +320,10 @@ function redisplay()
 
 
 <center>
+
+
+<div class="topnav"></div>
+
 
 <br/>
 

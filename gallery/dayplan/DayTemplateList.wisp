@@ -41,7 +41,7 @@ function deleteTemplateItem(killid)
 
 	if(confirm("Are you sure you want to delete this template?"))
 	{
-		lookupItem("day_template", killid).deleteItem();			
+		W.lookupItem("day_template", killid).deleteItem();			
 		redisplay();	
 	}
 }
@@ -71,7 +71,7 @@ function back2Main()
 
 function getSelectedTemplate()
 {
-	return lookupItem("day_template", EDIT_STUDY_ITEM);
+	return W.lookupItem("day_template", EDIT_STUDY_ITEM);
 }
 
 function plusDefaultWakeUp()
@@ -192,7 +192,7 @@ function deleteItem(killid)
 
 function getPlanDayItemList()
 {
-	var biglist = getItemList("template_sub").filter(item => item.getTempId() == EDIT_STUDY_ITEM);
+	var biglist = W.getItemList("template_sub").filter(item => item.getTempId() == EDIT_STUDY_ITEM);
 	return biglist.sort(proxySort(item => [item.getEndHour()]));
 }
 
@@ -221,6 +221,8 @@ function getPageComponent()
 
 function redisplay()
 {
+	handleNavBar("Plan Templates");
+
 	redisplayMainList();
 	redisplayStudyItem();
 
@@ -378,13 +380,13 @@ function redisplayStudyItem()
 	const endhourlist = [... Array(25).keys()];
 
 	const endsel = buildOptSelector()
-					.setKeyList(endhourlist)
+					.configureFromList(endhourlist)
 					.setElementName("end_hour")
 					.setSelectedKey(8)
 					.autoPopulate();
 
 	const timesel = buildOptSelector()
-						.setFromMap(getHourTimeMap())
+						.configureFromHash(getHourTimeMap())
 						.setElementName("time_spent_min")
 						.setSelectedKey(60)
 						.autoPopulate();
@@ -408,13 +410,12 @@ function redisplayStudyItem()
 
 <center>
 
+<div class="topnav"></div>
+
 <br/>
 
 
 <span class="page_component" id="main_list">
-
-<h3>Day Plan Templates</h3>
-
 
 Inactive? <input type="checkbox" name="show_inactive" onChange="javascript:redisplay()"/>
 <br/>

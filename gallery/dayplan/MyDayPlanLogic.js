@@ -53,3 +53,15 @@ function getDateDisplayMap()
     return displaymap;
 }
 
+
+function handleNavBar(curpage) {
+
+    const headerinfo = [
+        ["Day Plan", "widget"],
+        ["Plan Templates", "DayTemplateList"]
+    ];
+
+    populateTopNavBar(headerinfo, curpage);
+}
+
+
