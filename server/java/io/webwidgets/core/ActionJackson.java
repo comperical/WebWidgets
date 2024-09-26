@@ -35,6 +35,8 @@ public class ActionJackson extends HttpServlet
 
 	private static final Pattern DATA_FORMAT_PATTERN = Pattern.compile(DATA_FORMAT_REGEX);
 
+	private static final String MAC_OS_DSTORE = ".DS_Store";
+
 	// Nov 2023: these are not yet implemented, but adding them here for documentation
 	public enum LoadApiError
 	{
@@ -573,11 +575,13 @@ public class ActionJackson extends HttpServlet
 				
 				while(zipen.hasMoreElements()) {
 					ZipEntry zent = zipen.nextElement();
-					// logpf("Found entry %s\n", zent.getName());
 					
+					// Keep this DSTORE garbage off of my server
 					String zname = zent.getName();
+					if(zname.equals(MAC_OS_DSTORE))
+						{ continue; }
+
 					String kidpath = Util.sprintf("%s/%s", basedir.toString(), zname);
-					
 					if(zname.endsWith("/"))
 					{
 						File subdir = new File(kidpath);
@@ -588,9 +592,7 @@ public class ActionJackson extends HttpServlet
 					
 					File kidfile = new File(kidpath);
 					FileOutputStream fos = new FileOutputStream(kidfile);
-					
 					FileUtils.in2out(myfile.getInputStream(zent), fos);
-					
 					// logpf("Extracted file %s, size is %d\n", kidfile, kidfile.length());
 				}
 				
