@@ -203,6 +203,10 @@ class ZipUploader(AssetUploader):
 		assert os.path.exists(widgetdir), "Widget directory {} does not exist".format(widgetdir)
 		
 		zpath = self.get_zip_path()
+
+		# As of Sept 2024, the server excludes the Mac OS .DS_Store files,
+		# so it doesn't matter if we include them here
+		# This command is very handy, but it doesn't allow me to exclude anything
 		shutil.make_archive(zpath, 'zip', widgetdir)
 		
 class BaseUploader(AssetUploader):
