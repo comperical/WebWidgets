@@ -193,13 +193,14 @@ public class ActionJackson extends HttpServlet
 				if(!isCodeFormatExempt(wuser))
 					{ codex.checkCodeFormat(codeloc); }
 
+				// Snapshot of the directory before the code clean
+				codex.buildCheckSumMap(false);
+
 				codex.cleanOldCode();
 				codex.extractCode(codeloc);
-				codex.optAugmentAuthHeader();
 
-				// Gotcha, the CK maps must CONTAIN the tweaks from the auth header logic,
-				// so this statement must run AFTER previous one
-				codex.buildNewCkMap();
+				// Snapshot of the directory before the code clean
+				codex.buildCheckSumMap(true);
 				codex.generateDiffLog();
 				
 				for(String log : codex.getLogList())
@@ -235,6 +236,9 @@ public class ActionJackson extends HttpServlet
 						
 			response.getOutputStream().write(s.getBytes());
 			response.getOutputStream().close();
+
+			// Cleanup is only necessary if the code file is still present; in the case of DB upload, it's moved
+			codeloc.optCleanUp();
 		}
 
 
@@ -281,6 +285,16 @@ public class ActionJackson extends HttpServlet
 									: Optional.of(new WidgetItem(_theUser, _widgetName));
 		}
 
+		void optCleanUp()
+		{
+			if(!getCodeFile().exists())
+				{ return; }
+
+			try { getCodeFile().delete(); }
+			catch (Exception ex) { ex.printStackTrace(); }
+
+		}
+
 		File getCodeFile()
 		{
 			return new File(getCodePath());	
@@ -321,115 +335,113 @@ public class ActionJackson extends HttpServlet
 		{
 			_logList.add(Util.sprintf(formstr, vargs));	
 		}
-		
-		// Path to T/F recursive or not
-		abstract Map<String, Boolean> getCleanDirMap();
 
 		abstract File getBaseDirectory();
+
+		final boolean _allowSubDir;
 		
-		CodeExtractor()
+		CodeExtractor(boolean okaysub)
 		{
+			_allowSubDir = okaysub;
 		}
+
+
+
 		
 		// Delete previous files in this directory
 		int cleanOldCode()
 		{
 			int totalkill = 0;
-			Map<String, Boolean> cleanmap = getCleanDirMap();
+
+			File basedir = getBaseDirectory();
+			Util.massert(basedir.exists(), "Base Directory %s does not exist");
+			Util.massert(basedir.isDirectory(), "Not a directory: %s", basedir);
 			
-			for(String p : cleanmap.keySet())
+			LinkedList<String> pathlist = Util.linkedlist();
+			recPopPathList(pathlist, basedir);
+
+			// Collections.sort(pathlist);
+			totalkill += pathlist.size();
+
+			while(!pathlist.isEmpty())
 			{
-				File pdir = new File(p);
-				Util.massert(pdir.exists(), "Directory %s does not exist, leave it out of the map", pdir);
-				Util.massert(pdir.isDirectory(), "Not a directory: %s", pdir);
-				
-				boolean isrec = cleanmap.get(p);
-				LinkedList<String> pathlist = Util.linkedlist();
-				recPopPathList(pathlist, pdir, isrec);
-				
-				Collections.sort(pathlist);
-				totalkill += pathlist.size();
-				
-				while(!pathlist.isEmpty())
-				{
-					File killme = new File(pathlist.pollLast());
-					if(java.nio.file.Files.isSymbolicLink(killme.toPath()))
-					{
-						logpf("Skipping symbolic link file %s\n", killme);
-						continue;
-					}
-					
-					long cksum = killme.isDirectory() ? -1L : CoreUtil.getFileCkSum(killme);
-					_oldCkMap.put(killme.getAbsolutePath(), cksum);
+				File victim = new File(pathlist.pollLast());
 
-					// logpf("Deleted old file %s\n", killme);
+				// TODO: it's not clear if this is the right thing to do. Do we allow symlinks...?
+				// Maybe the key is to make widgets and/or users 100% symlinked or not symlinked at all
+				// if(java.nio.file.Files.isSymbolicLink(victim.toPath()))
 
-					killme.delete();
-				}
+				victim.delete();
 			}
 			
 			return totalkill;
 		}
-		
-		private void buildNewCkMap()
-		{
-			File basedir = getBaseDirectory();
 
-			for(File kid : basedir.listFiles())
+		private void recPopPathList(List<String> paths, File dir)
+		{
+			Util.massert(dir.isDirectory(), "Not a directory");
+
+			for(File kid : dir.listFiles())
 			{
-				if(kid.isDirectory())
-					{ continue; }
+				// Was previously worried about deleting WEB-INF, but if WEB-INF is in a upload-target directory,
+				// you've got other problems
+				// if(kid.getAbsolutePath().indexOf("WEB-INF") > -1)
 
-				long cksum = CoreUtil.getFileCkSum(kid);
-				_newCkMap.put(kid.getAbsolutePath(), cksum);
-			}
-		}
-
-		protected boolean prependAuthTag()
-		{
-			return false;
-		}
-		
-		// Scan all the JSP files in the output directory. 
-		// If they do not include the AuthHeader tag, swap it in as the FIRST line of the line.
-		void optAugmentAuthHeader()
-		{
-			if(!prependAuthTag())
-				{ return; }
-				
-			File basedir = getBaseDirectory();
-			Util.massert(basedir.exists() && basedir.isDirectory(),
-				"Problem with base directory %s", basedir);
-			
-			for(File kid : basedir.listFiles())
-			{
-				if(!kid.getName().endsWith(".jsp"))
-					{ continue; }
-				
-				boolean foundtag = false;
-				List<String> srclist = FileUtils.getReaderUtil().setTrim(false).setFile(kid).readLineListE();
-				
-				for(int i : Util.range(20))
+				if(!kid.isDirectory())
 				{
-					if(i >= srclist.size())
-						{ continue; }
-					
-					foundtag |= srclist.get(i).contains("AuthInclude.jsp_inc");
+					paths.add(kid.toString());
+					continue;
 				}
-				
-				if(!foundtag)
+
+				// Very important: if you're dealing with base, don't delete the sub-directories!!
+				if(kid.isDirectory() && _allowSubDir)
 				{
-					LinkedList<String> newlist = new LinkedList<>(srclist);
-					newlist.addFirst("<%@include file=\"../../admin/AuthInclude.jsp_inc\" %>");
-					FileUtils.getWriterUtil().setFile(kid).writeLineListE(newlist);
-					// _logList.add(Util.sprintf("Prepended AuthInclude tag to Widget file %s\n", kid.getName()));
-				} else {
-					String mssg = Util.sprintf("File %s contains AuthInclude tag; this is no longer necesary, you may remove\n", kid.getName());	
-					_logList.add(mssg);
+					paths.add(kid.toString());
+					recPopPathList(paths, kid);
 				}
 			}
 		}
+
+		// Register the target file in the checksum snapshot
+		private void registerCheckSum(File target, boolean isnew)
+		{
+			long cksum = target.isDirectory() ? -1L : CoreUtil.getFileCkSum(target);
+			(isnew ? _newCkMap : _oldCkMap).put(target.getAbsolutePath(), cksum);
+		}
+
+		// Build a checksum snapshot, either old or new, depending on argument
+		// We now support recursive directory structure for widget dirs,
+		// So we need to log that
+		private void buildCheckSumMap(boolean isnew)
+		{
+			buildCheckSumMap(getBaseDirectory(), isnew);
+		}
 		
+		private void buildCheckSumMap(File subdir, boolean isnew)
+		{
+			for(File kid : subdir.listFiles())
+			{
+				// in recursive mode, we want to log directories and files
+				// otherwise, just the files
+				if(!kid.isDirectory())
+				{
+					registerCheckSum(kid, isnew);
+					continue;
+				}
+
+				if(_allowSubDir)
+				{
+					registerCheckSum(kid, isnew);
+					buildCheckSumMap(kid, isnew);
+				}
+			}
+		}
+
+		private static String getFsType(long otherck)
+		{
+			return otherck == -1L ? "directory" : "file";
+		}
+
 		private void generateDiffLog()
 		{
 			int samecount = 0;
@@ -441,13 +453,13 @@ public class ActionJackson extends HttpServlet
 
 				if(oldck == null)
 				{
-					logpf("Created new file %s\n", pathkey);
+					logpf("Created new %s %s\n", getFsType(newck), pathkey);
 					continue;
 				}
 
 				if(newck == null)
 				{
-					logpf("Removed file %s\n", pathkey);
+					logpf("Removed %s %s\n", getFsType(oldck), pathkey);
 					continue;
 				}
 
@@ -461,42 +473,10 @@ public class ActionJackson extends HttpServlet
 				samecount++;
 			}
 
-			logpf("Uploaded %d files, %d previous, %d unchanged\n", _newCkMap.size(), _oldCkMap.size(), samecount);
-
+			logpf("Uploaded %d items, %d previous, %d unchanged\n", _newCkMap.size(), _oldCkMap.size(), samecount);
 		}
 		
-		private void recPopPathList(List<String> paths, File dir, boolean recursive)
-		{
-			Util.massert(dir.isDirectory(), "Not a directory");
-			
-			for(File kid : dir.listFiles())
-			{
-				if(kid.getAbsolutePath().indexOf("WEB-INF") > -1)
-				{
-					logpf("Skipping WEB-INF dir %s\n", kid);
-					continue;
-				}
-				
-				if(java.nio.file.Files.isSymbolicLink(kid.toPath()))
-				{
-					logpf("Skipping symbolic link file %s\n", kid);
-					continue;
-				}
-				
-				
-				if(!kid.isDirectory())
-				{
-					paths.add(kid.toString());
-					continue;
-				}
-				
-				if(kid.isDirectory() && recursive)
-				{  
-					paths.add(kid.toString());
-					recPopPathList(paths, kid, true); 
-				}
-			}
-		}
+
 		
 		List<String> getLogList()
 		{
@@ -576,21 +556,23 @@ public class ActionJackson extends HttpServlet
 				while(zipen.hasMoreElements()) {
 					ZipEntry zent = zipen.nextElement();
 					
+					// We will create parent directories only if they are needed by files
+					if(zent.isDirectory())
+						{ continue; }
+
 					// Keep this DSTORE garbage off of my server
 					String zname = zent.getName();
 					if(zname.equals(MAC_OS_DSTORE))
 						{ continue; }
 
-					String kidpath = Util.sprintf("%s/%s", basedir.toString(), zname);
-					if(zname.endsWith("/"))
-					{
-						File subdir = new File(kidpath);
-						logpf("Creating directory %s\n", subdir);
-						subdir.mkdir();
-						continue;
-					}
-					
-					File kidfile = new File(kidpath);
+					// ChatGPT says this works even on Windows
+					File kidfile = new File(basedir, zname);
+
+					// Create parent directory if required
+					if(!kidfile.getParentFile().exists())
+						{ kidfile.getParentFile().mkdirs(); }
+
+
 					FileOutputStream fos = new FileOutputStream(kidfile);
 					FileUtils.in2out(myfile.getInputStream(zent), fos);
 					// logpf("Extracted file %s, size is %d\n", kidfile, kidfile.length());
@@ -627,6 +609,8 @@ public class ActionJackson extends HttpServlet
 
 		WidgetExtractor(WidgetItem witem)
 		{
+			super(true); // recursive=true
+
 			_myItem = witem;
 					
 			if(!getBaseDirectory().exists())
@@ -647,15 +631,6 @@ public class ActionJackson extends HttpServlet
 				: _myItem.getWidgetBaseDir();
 		}
 		
-		@Override
-		protected boolean prependAuthTag()
-		{
-			if(!_myItem.theOwner.isAdmin())
-				{ return true; }
-		
-			return !getSpecialRemapDir().containsKey(_myItem.theName);
-		}
-		
 		// Special mappings from admin directories to other locations on site
 		// This allows admins to use uploader tech to send data directly to 
 		// given section of site.
@@ -665,15 +640,6 @@ public class ActionJackson extends HttpServlet
 				{ return null; }
 			
 			return getSpecialRemapDir().get(_myItem.theName);
-		}
-		
-		
-		Map<String, Boolean> getCleanDirMap()
-		{
-			Map<String, Boolean> cdmap = Util.treemap();
-			// recursive=true
-			cdmap.put(getBaseDirectory().toString(), true);
-			return cdmap;
 		}
 	}
 	
@@ -685,6 +651,8 @@ public class ActionJackson extends HttpServlet
 		
 		BaseExtractor(WidgetUser user)
 		{
+			super(false); // Non-recursive
+
 			Util.massert(user != null, "Null user!");
 			_theUser = user;
 		}
@@ -693,15 +661,6 @@ public class ActionJackson extends HttpServlet
 		File getBaseDirectory()
 		{
 			return _theUser.getUserBaseDir();
-		}
-		
-		Map<String, Boolean> getCleanDirMap()
-		{
-			// TODO: add the standard reserved keyword maps here.
-			Map<String, Boolean> cdmap = Util.treemap();
-			// recursive=false
-			cdmap.put(getBaseDirectory().toString(), false);
-			return cdmap;
 		}
 	}
 	
