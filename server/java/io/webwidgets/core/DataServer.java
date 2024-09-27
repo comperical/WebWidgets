@@ -409,6 +409,8 @@ public class DataServer
 					"Access denied, user %s lacks permissions to read data from widget %s", accessor, _theItem);
 			}
 
+
+			// TODO: Sept 2024, this now always returns true, delete the code below
 			if(sendToDirectLoad())
 				{ return composeDirectLoadTag(); }
 

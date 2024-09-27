@@ -415,7 +415,8 @@ public class WispFileLogic
         protected boolean sendToDirectLoad()
         {
             // August 2024, temporary testing approach, use only for me
-            return getPageAccessor().map(user -> user.toString()).orElse(".....").equals("dburfoot");
+            // return getPageAccessor().map(user -> user.toString()).orElse(".....").equals("dburfoot");
+            return true;
         }
     }
 }
