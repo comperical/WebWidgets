@@ -63,14 +63,7 @@ function downloadConfig()
 <body>
   <div class="container-scroller">
     <!-- partial:partials/_navbar.html -->
-    <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
-      <div class="navbar-brand-wrapper d-flex justify-content-center">
-        <div class="navbar-brand-inner-wrapper d-flex justify-content-between align-items-center w-100">  
-        </div>  
-      </div>
-      <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
-    </nav>
-    <!-- partial -->
+    <%@include file="AdminNavBar.jsp_inc" %>
 
     <div class="container-fluid page-body-wrapper">
       <!-- partial:partials/_sidebar.html -->
@@ -88,7 +81,7 @@ function downloadConfig()
                   This page will help you get started with Widget development.
                   The WebWidgets framework was designed to enable fast development, and easy setup.
                   After you download the configuration file,
-                    follow the instructions on the <a href="https://webwidgets.io/docs/WidgetSetup.jsp">Widget Setup</a> page.
+                    follow the instructions on the <a href="https://webwidgets.io/u/docs/WidgetSetup.jsp">Widget Setup</a> page.
                   </p>
                   
                   <center>

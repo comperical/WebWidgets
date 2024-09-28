@@ -8,7 +8,7 @@
 
     if(!currentUser.isPresent())
     {
-        response.sendRedirect("LogIn.jsp");
+        response.sendRedirect("LogIn");
         return;
     }
 
@@ -22,7 +22,7 @@
     if(!argMap.containsKey("widget"))
     {
       CollUtil.sortListByFunction(widgetList, item -> -item.getLocalDbFile().lastModified());
-      String bounce = Util.sprintf("TemplateGenerator.jsp?widget=" + widgetList.get(0).theName);
+      String bounce = Util.sprintf("TemplateGenerator?widget=" + widgetList.get(0).theName);
       response.sendRedirect(bounce);
       return;
     }
@@ -92,13 +92,8 @@ function redisplay()
 <body onload="javascript:redisplay()">
   <div class="container-scroller">
     <!-- partial:partials/_navbar.html -->
-    <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
-      <div class="navbar-brand-wrapper d-flex justify-content-center">
-        <div class="navbar-brand-inner-wrapper d-flex justify-content-between align-items-center w-100">  
-        </div>  
-      </div>
-      <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
-    </nav>
+    <%@include file="AdminNavBar.jsp_inc" %>
+
     <!-- partial -->
     <div class="container-fluid page-body-wrapper">
       <!-- partial:partials/_sidebar.html -->

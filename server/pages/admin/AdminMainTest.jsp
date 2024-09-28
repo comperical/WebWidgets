@@ -168,6 +168,7 @@ function deleteWidget(widgetname)
     <!-- partial:partials/_navbar.html -->
     <%@include file="AdminNavBar.jsp_inc" %>
 
+
     <!-- partial -->
     <div class="container-fluid page-body-wrapper">
       <!-- partial:partials/_sidebar.html -->
