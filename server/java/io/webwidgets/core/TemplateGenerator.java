@@ -4,6 +4,10 @@ package io.webwidgets.core;
 import java.io.*; 
 import java.util.*; 
 
+import javax.servlet.*;
+import javax.servlet.http.*;
+import javax.servlet.annotation.WebServlet;
+
 import net.danburfoot.shared.Util;
 import net.danburfoot.shared.ArgMap;
 import net.danburfoot.shared.CollUtil;
@@ -15,7 +19,6 @@ import io.webwidgets.core.AuthLogic.*;
 
 public class TemplateGenerator
 {
-
     private final LiteTableInfo _liteTable;
 
     List<String> _resultList = Util.vector();
@@ -51,13 +54,14 @@ public class TemplateGenerator
 
             "<html>",
             "<head>",
+            Util.sprintf("<title>%s</title>", _liteTable.getBasicName()),
             "",
             "<!-- standard wisp include tag -->",
             "<wisp/>",
             "",
             "<script>",
             "",
-            "var EDIT_STUDY_ITEM = -1;",
+            "let EDIT_STUDY_ITEM = -1;",
             ""
         );
 
@@ -345,12 +349,42 @@ public class TemplateGenerator
 
             for(String s : result)
                 { Util.pf("%s\n", s); }
+        }
+    }
 
-            //String outputpath = "/opt/userdata/external/WebWidgets/gallery/links/TemplateTest.jsp";
 
-            //FileUtils.getWriterUtil().setFile(outputpath).writeLineListE(result);
+    @WebServlet(urlPatterns = "/gentemplate") 
+    public static class TemplateServlet extends HttpServlet {
 
+        public TemplateServlet() {
+            super();
         }
 
+        protected void doGet(HttpServletRequest request, HttpServletResponse response)  throws ServletException, IOException 
+        {
+            Util.massert(request.isSecure(), "This servlet can only run on a secure connection");
+            Optional<WidgetUser> user = AuthLogic.getLoggedInUser(request);
+            Util.massert(user.isPresent(), "You must be logged in to use this service");
+
+
+            ArgMap argmap = WebUtil.getArgMap(request);
+            String widgetname = argmap.getStr("widgetname");
+            String tablename = argmap.getStr("tablename");
+
+            var dbitem = new WidgetItem(user.get(), widgetname);
+            Util.massert(dbitem.dbFileExists(), "This widget does not exist : " + dbitem);
+
+            Util.massert(dbitem.getDbTableNameSet().contains(tablename),
+                "No table named %s, options are %s", tablename, dbitem.getDbTableNameSet());
+
+            var litetable = new LiteTableInfo(dbitem, tablename);
+            var codegen = (new TemplateGenerator(litetable)).runGeneration();
+
+            for(String line : codegen) {
+                response.getWriter().write(line + "\n");
+            }
+
+            response.getWriter().close();
+        }
     }
 }
