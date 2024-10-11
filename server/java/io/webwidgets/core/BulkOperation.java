@@ -15,6 +15,7 @@ import org.json.simple.parser.*;
 import net.danburfoot.shared.Util;
 import net.danburfoot.shared.ArgMap;
 import net.danburfoot.shared.CoreDb;
+import net.danburfoot.shared.CoreDb.QueryCollector;
 
 
 import io.webwidgets.core.AuthLogic.*;
@@ -64,7 +65,8 @@ public class BulkOperation
                     int delcount = processDelete(tableInfo, delidstr);
                     outmap.put("user_message", Util.sprintf("Bulk delete of %d records successful", delcount));
                 } else {
-                    int upcount = processBulkUpdate(tableInfo, bulkupstr);
+                    boolean supplyid = innmap.getBit("supplyid", false);
+                    int upcount = processBulkUpdate(tableInfo, bulkupstr, supplyid);
                     outmap.put("user_message", Util.sprintf("Bulk update of %d records successful", upcount));
                 }
 
@@ -74,7 +76,7 @@ public class BulkOperation
             writeJsonResponse(response, outmap);
         }
 
-        public static int processBulkUpdate(LiteTableInfo table, String bulkupstr) throws IOException
+        public static int processBulkUpdate(LiteTableInfo table, String bulkupstr, boolean supplyid) throws IOException
         {
 
             List<LinkedHashMap<String, Object>> payloadList;
@@ -82,9 +84,14 @@ public class BulkOperation
             try { payloadList = loadPayloadList(table, bulkupstr); }
             catch (ParseException pex) { throw new IOException(pex); }
 
+            // supply=false, the default, this just checks that all the incoming records have IDs
+            maybeSupplyId(table, payloadList, supplyid);
+
             // Need to clear out old IDs first, because we are using INSERT below
             // Alternatively, we could find the IDs that are missing, and create skeleton records for those,
             // then do an UPDATE instead of an insert
+            // If we supplied them, we don't need to re-delete
+            if(!supplyid)
             {
                 List<Integer> delid = Util.map2list(payloadList, payload -> (Integer) payload.get("id"));
                 processDelete(table, Util.join(delid, ","));
@@ -107,7 +114,7 @@ public class BulkOperation
 
 
                 try (
-                    Connection conn = table.dbTabPair._1.createConnection(); 
+                    Connection conn = table.dbTabPair._1.createConnection();
                     PreparedStatement pstmt = conn.prepareStatement(prepstr);
                 ) {
 
@@ -143,6 +150,35 @@ public class BulkOperation
                 return payloadList.size();
             }
         }
+
+        private static void maybeSupplyId(LiteTableInfo table, List<LinkedHashMap<String, Object>> loadlist, boolean supply)
+        {
+            // Okay, the id is supplied by the loadPayloadMap, so checking load.containsKey("id") doesn't work
+            int misscount = Util.countPred(loadlist, load -> load.get("id") == null);
+
+            if(!supply)
+            {
+                Util.massert(misscount == 0, "Some records have no id field; call with supplyid=true to request supply");
+                return;
+            }
+
+            Util.massert(misscount == loadlist.size(),
+                "Attempt to supply IDs, but there are some records that already have IDs; you cannot use in mixed mode, supply all or none"
+            );
+
+            // IDs already present
+            Set<Integer> present = Util.map2set(
+                QueryCollector.buildAndRun("SELECT id FROM " + table.dbTabPair._2, table.dbTabPair._1).recList(),
+                amap -> amap.getSingleInt()
+            );
+
+            TreeSet<Integer> newset = CoreUtil.canonicalRandomIdCreate(
+                newid -> !present.contains(newid), new Random(), loadlist.size());
+
+            for(var payload : loadlist)
+                { payload.put("id", newset.pollFirst()); }
+        }
+
 
         private static List<LinkedHashMap<String, Object>> loadPayloadList(LiteTableInfo table, String bulkupstr) throws ParseException
         {

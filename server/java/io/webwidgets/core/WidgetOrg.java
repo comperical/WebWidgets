@@ -244,6 +244,7 @@ public class WidgetOrg
 			Util.massert(getDbTableNameSet().contains(tabname),
 				"Table Name %s not present for widget %s", tabname, this);
 
+			// TODO: replace this with a call to canonicalRandomIdCreate
 			Random r = new Random();
 
 			for(int attempt : Util.range(10))

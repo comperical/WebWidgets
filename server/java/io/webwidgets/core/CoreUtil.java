@@ -229,6 +229,44 @@ public class CoreUtil
 	}	
 		
 	
+	// Canonical Random ID creation process. Create N new random IDs
+	// Check them against the given predicate, and throw out those that fall in the "magic" window -1000 <= x <= 0
+	// Error if the random generator fails more than 1K times to create new IDs
+	// This *could* be dangerous for very large tables, if you are generating a lot...?
+	// E.g. you filled up 1% of the table, and you're trying to create a million new IDs?
+	// This ID creation scheme should agree with the JS one
+	public static TreeSet<Integer> canonicalRandomIdCreate(Predicate<Integer> isvalid, Random r, int num2supply)
+	{
+		TreeSet<Integer> newset = Util.treeset();
+		int numcheck = 0;
+
+		while(true)
+		{
+			int probe = r.nextInt();
+			numcheck++;
+
+	        // Reserve this small range for "magic" ID numbers like -1
+			if(-1000 <= probe && probe <= 0)
+				{ continue; }
+
+			// Okay, this one is not valid, try again
+			if(!isvalid.test(probe))
+				{ continue; }
+
+			newset.add(probe);
+
+			if(newset.size() >= num2supply)
+				{ break; }
+
+			Util.massert(numcheck <= num2supply + 1_000,
+				"ID creation failed too many times, num2supply=%d, but numcheck=%d",
+				num2supply, numcheck
+			);
+		}
+
+		return newset;
+	}
+
 	public static QueryCollector tableQuery(ConnectionSource csrc, String sql)
 	{
 		return (new QueryCollector(sql)).doQuery(csrc);
