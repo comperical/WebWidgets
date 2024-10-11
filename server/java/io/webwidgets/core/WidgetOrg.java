@@ -244,23 +244,12 @@ public class WidgetOrg
 			Util.massert(getDbTableNameSet().contains(tabname),
 				"Table Name %s not present for widget %s", tabname, this);
 
-			// TODO: replace this with a call to canonicalRandomIdCreate
-			Random r = new Random();
 
-			for(int attempt : Util.range(10))
-			{
-				int probe = r.nextInt();
+			Set<Integer> newid = CoreUtil.canonicalRandomIdCreate(
+				probe -> !this.haveRecordWithId(tabname, probe), new Random(), 1
+			);
 
-		        // Reserve this small range for "magic" ID numbers like -1
-				if(-1000 <= probe && probe <= 0)
-					{ continue; }
-
-				if(!this.haveRecordWithId(tabname, probe))
-					{ return probe; }
-			}
-
-			Util.massert(false, "Failed to find new ID after 10 tries, this table is too big!!!");
-			return -1;
+			return newid.iterator().next();
 		}
 
 
