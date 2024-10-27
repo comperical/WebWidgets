@@ -35,6 +35,9 @@ public class CoreUtil
 
 	public static final String BASE_WIDGET_NAME = "base";
 
+	// All Widget DB tables must have a single integer primary key with this name
+	public static final String STANDARD_ID_COLUMN_NAME = "id";
+
 	// This is used by the system to represent nulls. Sorry, you cannot have values that equal this literal string.
 	// This much match the JS code.
 	public static final String MAGIC_NULL_STRING = "_x_NULL_y_";
@@ -184,7 +187,7 @@ public class CoreUtil
 
 	public static int getNewDbId(ConnectionSource witem, String tabname)
 	{
-		return getNewDbId(witem, tabname, "id");
+		return getNewDbId(witem, tabname, STANDARD_ID_COLUMN_NAME);
 	}
 
 	public static int getNewDbId(ConnectionSource witem, String tabname, String idcolname)

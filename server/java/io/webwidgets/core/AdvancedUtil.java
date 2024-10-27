@@ -123,4 +123,38 @@ public class AdvancedUtil
     }
 
 
+    // Delete the given records with the ID set from the underlying DB
+    // Use the standard ID column name
+    // This operation uses edit control if it is run from the same JVM
+    public static int genericDeleteItemSet(WidgetItem db, String tablename, Collection<Integer> idset)
+    {
+        return genericDeleteItemSet(db, tablename, idset, true);
+    }
+
+    public static int genericDeleteItem(WidgetItem db, String tablename, int id)
+    {
+        // If we're just deleting a single item, don't bother to check names, we'll just get a SQLite error instead
+        return genericDeleteItemSet(db, tablename, Util.listify(id), false);
+    }
+
+    private static int genericDeleteItemSet(WidgetItem db, String tablename, Collection<Integer> idset, boolean checkname)
+    {
+        if(checkname)
+        {
+            Util.massert(CoreDb.getLiteTableNameSet(db).contains(tablename),
+                "Attempt to delete items from DB %s, but table %s does not exist", db, tablename);
+        }
+
+        LinkedHashMap<String, Object> colmap = Util.linkedhashmap();
+
+        for(Integer id : idset)
+            { colmap.put(CoreUtil.STANDARD_ID_COLUMN_NAME, id); }
+
+        var editcontrol = LiteTableInfo.getEditController(db);
+
+        synchronized(editcontrol)
+        {
+            return CoreDb.deleteFromColMap(db, tablename, colmap);
+        }
+    }
 }
