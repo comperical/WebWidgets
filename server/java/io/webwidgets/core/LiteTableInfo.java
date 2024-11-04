@@ -88,6 +88,38 @@ public class LiteTableInfo
 		{
 			return this == ExchangeType.real || this == ExchangeType.m_double;
 		}
+
+
+		private Object convertFromJson(JSONObject jsonob, String colname)
+		{
+			if(isJsInteger())
+			{
+				var ob = jsonob.get(colname);
+				return ob == null ? null : ((Long) ob).intValue();
+			}
+
+			if(isJsFloat())
+			{
+				var ob = jsonob.get(colname);
+				return ob == null ? null : ((Number) ob).doubleValue();
+
+			}
+
+			var ob = jsonob.get(colname);
+			Util.massert(ob instanceof String, "Expected String for column %s but got %s", colname, ob);
+			return ob;
+		}
+
+		private Object convertFromArgMap(ArgMap recmap, String colname)
+		{
+			if(isJsInteger())
+				{ return recmap.getInt(colname); }
+
+			if(isJsFloat())
+				{ return recmap.getDbl(colname); }
+
+			return recmap.getStr(colname);
+		}
 	}
 	
 	public final Pair<WidgetItem, String> dbTabPair;
@@ -95,6 +127,9 @@ public class LiteTableInfo
 	// Note: the order of these keys are very important
 	private LinkedHashMap<String, String> _colTypeMap = Util.linkedhashmap();
 	
+	// Nov 2024: this is the new format for the _colTypeMap, we can get the ExchangeTypes from JDBC metadata
+	private LinkedHashMap<String, ExchangeType> _exTypeMap = Util.linkedhashmap();
+
 	private Pair<String, Object> _colFilterTarget = null;
 
 	private Boolean _isBlobStore = null;
@@ -174,16 +209,23 @@ public class LiteTableInfo
 			ExchangeType etype = ExchangeType.lookupFromSql(classname);
 			
 			_colTypeMap.put(colname, classname);
+
+			_exTypeMap.put(colname, etype);
 		}
 	}
 	
+	@Deprecated // Use getExchangeType
 	ExchangeType getColumnExType(String colname)
 	{
+		/*
 		String classname = _colTypeMap.get(colname);
 		Util.massert(classname != null, 
 			"Unknown column %s, options are %s", colname, _colTypeMap.keySet());
 		
 		return ExchangeType.lookupFromSql(classname);
+		*/
+
+		return getExchangeType(colname);
 	}
 	
 	public WidgetItem getWidget()
@@ -203,7 +245,7 @@ public class LiteTableInfo
 	
 	public String getBasicName()
 	{
-		return CoreUtil.snake2CamelCase(dbTabPair._2);	
+		return CoreUtil.snake2CamelCase(dbTabPair._2);
 	}
 	
 	public String getSimpleTableName()
@@ -424,7 +466,7 @@ public class LiteTableInfo
 		Util.massert(argmap.getStr("tablename").equals(dbTabPair._2),
 			"Wrong table name: %s vs %s", argmap.getStr("tablename"), dbTabPair._2);
 		
-		LinkedHashMap<String, Object> paymap = getPayLoadMap(argmap, _colTypeMap.keySet());
+		LinkedHashMap<String, Object> paymap = getPayLoadMap(argmap);
 
 		// If the payload has blob data, this operation swaps out the blob data and writes the file to disk and S3
 		// What gets entered into the SQLite table is the blob coords, not the blob data itself
@@ -451,38 +493,40 @@ public class LiteTableInfo
 	}
 	
 	
-	private LinkedHashMap<String, Object> getPayLoadMap(ArgMap argmap, Collection<String> arglist)
+	// Convert the ArgMap representation of a record payload to the LHM version
+	// Follow ordering of given collection
+	// Use the appropriate getXYZ methods on ArgMap to convert
+	private LinkedHashMap<String, Object> getPayLoadMap(ArgMap argmap)
+	{
+		return convertPayLoadSub(argmap, null);
+	}
+
+	// Convert a list of JSONObjects, from JSON.parse(...), into LHM form for insert
+	List<LinkedHashMap<String, Object>> bulkConvert(List<?> jsonlist)
+	{
+        Util.massert(!_colTypeMap.isEmpty(), "You must setup the LiteTable before calling!!");
+        return Util.map2list(jsonlist, ob -> convertPayLoadSub(null, ((JSONObject) ob)));
+	}
+
+	// Convert from either ArgMap or JSON to LHM
+	// 
+	private LinkedHashMap<String, Object> convertPayLoadSub(ArgMap argmap, JSONObject jsonob)
 	{
 		LinkedHashMap<String, Object> paymap = Util.linkedhashmap();
 		
-		for(String onecol : arglist)
+		for(var colname : _exTypeMap.keySet())
 		{
-			String onetype = _colTypeMap.get(onecol);
-			
-			Object payload = getPayLoad(onecol, onetype, argmap);
-			
-			paymap.put(onecol, payload);
+			var ob = argmap != null ? exchangeConvert(argmap, colname) : exchangeConvert(jsonob, colname);
+			paymap.put(colname, exchangeConvert(jsonob, colname));
 		}
 		
+		// TODO: this can be checked at setup time
+		Util.massert(paymap.keySet().iterator().next().toLowerCase().equals(CoreUtil.STANDARD_ID_COLUMN_NAME),
+			"Expect first column to be ID, but got %s", paymap.keySet());
+
 		return paymap;
 	}
 
-
-	LinkedHashMap<String, Object> getPayLoadMap(JSONObject jsonob)
-	{
-
-		// Blah my map2map collection operation doesn't work here because it uses TreeMap
-		// and doesn't let me control the backing map type
-
-
-		LinkedHashMap<String, Object> paymap = Util.linkedhashmap();
-		for(var coltype : _colTypeMap.entrySet())
-		{
-			Object payload = getJsonPayLoad(coltype.getKey(), coltype.getValue(), jsonob);
-			paymap.put(coltype.getKey(), payload);
-		}
-		return paymap;
-	}
 	
 	static Object getPayLoad(String onecol, String onetype, ArgMap recmap)
 	{
@@ -513,6 +557,41 @@ public class LiteTableInfo
 			String input = recmap.get(onecol);
 			throw new ArgMapNumberException(onecol, onetype, input);
 		}
+	}
+
+	private Object exchangeConvert(ArgMap recmap, String onecol)
+	{
+		String probe = recmap.get(onecol);
+		if(CoreUtil.MAGIC_NULL_STRING.equals(probe))
+			{ return null; }
+
+		ExchangeType coltype = getExchangeType(onecol);
+
+		try {
+			return coltype.convertFromArgMap(recmap, onecol);
+		} catch (NumberFormatException nfex) {
+
+			String input = recmap.get(onecol);
+			throw new ArgMapNumberException(onecol, coltype, input);
+		}
+	}
+
+	private Object exchangeConvert(JSONObject jsonob, String onecol)
+	{
+		Object probe = jsonob.get(onecol);
+		if(CoreUtil.MAGIC_NULL_STRING.equals(probe))
+			{ return null; }
+
+		ExchangeType coltype = getExchangeType(onecol);
+		return coltype.convertFromJson(jsonob, onecol);
+	}
+
+
+	ExchangeType getExchangeType(String colname)
+	{
+		var litedef = _exTypeMap.get(colname);
+		Util.massert(litedef != null, "Attempt to lookup Exchange Type for non-existent column %s", colname);
+		return litedef;
 	}
 
 
@@ -894,7 +973,12 @@ public class LiteTableInfo
 			super(getMessage(colname, coltype, inputstr));
 		}
 
-		private static String getMessage(String colname, String coltype, String inputstr)
+		ArgMapNumberException(String colname, ExchangeType coltype, String inputstr)
+		{
+			super(getMessage(colname, coltype, inputstr));
+		}
+
+		private static String getMessage(String colname, Object coltype, String inputstr)
 		{
 			return String.format("The input string %s could not be converted into a %s, for column %s", inputstr, coltype, colname);
 		}

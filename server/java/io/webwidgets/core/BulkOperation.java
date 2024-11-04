@@ -182,11 +182,11 @@ public class BulkOperation
 
         private static List<LinkedHashMap<String, Object>> loadPayloadList(LiteTableInfo table, String bulkupstr) throws ParseException
         {
-            Util.massert(!table.getColTypeMap().isEmpty(), "You must setup the LiteTable before calling!!");
             JSONArray array = Util.cast(new JSONParser().parse(bulkupstr));
             List<?> array2 = Util.cast(array);
 
-            return Util.map2list(array2, ob -> table.getPayLoadMap((JSONObject) ob));
+            // Have some weird superstition about converting to List<?> here
+            return table.bulkConvert(array2);
         }
 
         private static List<Integer> loadDeleteIdList(String delidstr)

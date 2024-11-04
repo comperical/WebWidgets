@@ -143,7 +143,7 @@ public class CodeGenerator
 		
 		for(String onecol : _liteTable.getColTypeMap().keySet())
 		{
-			ExchangeType extype = _liteTable.getColumnExType(onecol);
+			ExchangeType extype = _liteTable.getExchangeType(onecol);
 			
 			// Update Feb 2024, these now call a utility method that returns null if the input is null,
 			// otherwise requires the input to be a valid integer or float 
