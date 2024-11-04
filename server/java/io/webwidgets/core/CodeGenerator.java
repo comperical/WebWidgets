@@ -74,7 +74,7 @@ public class CodeGenerator
 		add("\ttableName : \"" + _liteTable.getSimpleTableName() + "\",");
 		
 		{
-			String fnamestr = Util.join(_liteTable.getColTypeMap().keySet(), "', '");
+			String fnamestr = Util.join(_liteTable.getColumnNameSet(), "', '");
 			add("");
 			add("\t// List of object field/column names");
 			add("\tfieldList : ['%s'],", fnamestr);
@@ -136,12 +136,12 @@ public class CodeGenerator
 	{
 		_srcList.add("// Standard constructor");
 		
-		String signature = Util.join(_liteTable.getColTypeMap().keySet(), ", ");
+		String signature = Util.join(_liteTable.getColumnNameSet(), ", ");
 		add(String.format("function %s(%s)", _liteTable.getRecordName(), signature));
 		add("{");
 		add("");
 		
-		for(String onecol : _liteTable.getColTypeMap().keySet())
+		for(String onecol : _liteTable.getColumnNameSet())
 		{
 			ExchangeType extype = _liteTable.getExchangeType(onecol);
 			
@@ -176,7 +176,7 @@ public class CodeGenerator
 		
 		add("{");
 		
-		String signature = Util.join(_liteTable.getColTypeMap().keySet(), "', '");
+		String signature = Util.join(_liteTable.getColumnNameSet(), "', '");
 		add("\tconst fieldlist = ['%s'];", signature);
 		add("\tconst tableob = W.__tableNameIndex.get('%s');", _liteTable.getSimpleTableName());
 
@@ -203,7 +203,7 @@ public class CodeGenerator
 		add("\t}");
 		
 		
-		List<String> reclook = Util.map2list(_liteTable.getColTypeMap().keySet(), col -> "record." + col);
+		List<String> reclook = Util.map2list(_liteTable.getColumnNameSet(), col -> "record." + col);
 		String recordLookupStr = Util.join(reclook, ", ");
 		
 		add("");
@@ -225,7 +225,7 @@ public class CodeGenerator
 
 	private void genObjectMethods()
 	{
-		String signature = Util.join(_liteTable.getColTypeMap().keySet(), "', '");
+		String signature = Util.join(_liteTable.getColumnNameSet(), "', '");
 
 		add("// Sync Item to Lite DB");
 		add("%s.prototype.syncItem = function()", _liteTable.getRecordName());
@@ -271,7 +271,7 @@ public class CodeGenerator
 	{
 		add("");
 		add("// Get/Set Methods");
-		for(String onecol : _liteTable.getColTypeMap().keySet())
+		for(String onecol : _liteTable.getColumnNameSet())
 		{
 			if(onecol.startsWith("_"))
 				{ continue; }

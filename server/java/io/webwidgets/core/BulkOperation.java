@@ -102,7 +102,7 @@ public class BulkOperation
             synchronized(editcontrol)
             {
 
-                List<String> clist = new ArrayList<>(table.getColTypeMap().keySet());
+                List<String> clist = new ArrayList<>(table.getColumnNameSet());
                 Util.massert(clist.get(0).equals("id"), "Expect the first column of all tables to be 'id', got '%s'", clist.get(0));
 
                 String prepstr = String.format(

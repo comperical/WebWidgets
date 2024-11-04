@@ -146,6 +146,10 @@ public class CallBack2Me extends HttpServlet
 
 	private void placeException(ArgMap outmap, FailureCode fcode, Exception ex)
 	{
+		// Should do something smarter in terms of logging, but we definitely want to know
+		// when users are seeing errors
+		ex.printStackTrace();
+
 		outmap.put("status_code", "fail");
 		outmap.put("failure_code", fcode.toString());
 		outmap.put("user_message", ex.getMessage().trim());

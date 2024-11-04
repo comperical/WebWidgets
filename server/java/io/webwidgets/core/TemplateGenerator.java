@@ -16,6 +16,7 @@ import net.danburfoot.shared.RunnableTech.*;
 import io.webwidgets.core.CoreUtil.*;
 import io.webwidgets.core.WidgetOrg.*;
 import io.webwidgets.core.AuthLogic.*;
+import io.webwidgets.core.LiteTableInfo.*;
 
 public class TemplateGenerator
 {
@@ -99,20 +100,15 @@ public class TemplateGenerator
 
     }
 
-    private static String jsonAssign(String colname, String coltype)
+    private static String jsonAssign(String colname, ExchangeType coltype)
     {
-        ArgMap mymap = new ArgMap();
-        mymap.put(colname, "454534");
-
-        Object lookup = LiteTableInfo.getPayLoad(colname, coltype, mymap);
-
-        String result = lookup instanceof String ? "''" : 
-                            (lookup instanceof Integer ? "0" : "0.0");
+        String result = coltype.isJsInteger() ? "0" :
+                            (coltype.isJsFloat() ? "0.0" : "''");
 
         return String.format("\t\t'%s' : %s", colname, result);
     }
 
-    private static String jsonAssign(Map.Entry<String, String> entry)
+    private static String jsonAssign(Map.Entry<String, ExchangeType> entry)
     {
         return jsonAssign(entry.getKey(), entry.getValue());
 
@@ -129,7 +125,7 @@ public class TemplateGenerator
 
         add("\tconst newrec = {");
 
-        List<String> assignlist = _liteTable.getColTypeMap()
+        List<String> assignlist = _liteTable.getColumnExTypeMap()
                                             .entrySet()
                                             .stream()
                                             .filter(entry -> !entry.getKey().toLowerCase().equals("id"))
@@ -232,9 +228,9 @@ public class TemplateGenerator
             "\t</tr>"
         );
 
-        for(String col : _liteTable.getColTypeMap().keySet()) {
+        for(String col : _liteTable.getColumnNameSet()) {
 
-            Class colclass = LiteTableInfo.getJavaTypeFromLite(_liteTable.getColTypeMap().get(col));
+            Class colclass = _liteTable.getExchangeType(col).getJavaType();
             String genericfunc = getGenericEditFunc(colclass);
 
             add("\t<tr><td>%s</td>", CoreUtil.snake2CamelCase(col));
@@ -275,7 +271,7 @@ public class TemplateGenerator
             "\t\t<tr>"
         );
 
-        for(String col : _liteTable.getColTypeMap().keySet()) {
+        for(String col : _liteTable.getColumnNameSet()) {
 
             add("\t\t<th>%s</th>", col);
         }
@@ -290,7 +286,7 @@ public class TemplateGenerator
             "\t\t\t<tr>"
         );
 
-        for(String col : _liteTable.getColTypeMap().keySet()) {
+        for(String col : _liteTable.getColumnNameSet()) {
 
             add("\t\t\t<td>${shorten4Display(item.get%s())}</td>", CoreUtil.snake2CamelCase(col));
         }

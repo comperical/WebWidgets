@@ -89,6 +89,15 @@ public class LiteTableInfo
 			return this == ExchangeType.real || this == ExchangeType.m_double;
 		}
 
+		public boolean isJsString()
+		{
+			return this == ExchangeType.text || this == ExchangeType.varchar;
+		}
+
+		public Class getJavaType()
+		{
+			return isJsFloat() ? Double.class : (isJsInteger() ? Integer.class : String.class);
+		}
 
 		private Object convertFromJson(JSONObject jsonob, String colname)
 		{
@@ -125,8 +134,6 @@ public class LiteTableInfo
 	public final Pair<WidgetItem, String> dbTabPair;
 
 	// Note: the order of these keys are very important
-	private LinkedHashMap<String, String> _colTypeMap = Util.linkedhashmap();
-	
 	// Nov 2024: this is the new format for the _colTypeMap, we can get the ExchangeTypes from JDBC metadata
 	private LinkedHashMap<String, ExchangeType> _exTypeMap = Util.linkedhashmap();
 
@@ -173,7 +180,7 @@ public class LiteTableInfo
 						
 			conn.close();
 
-			_isBlobStore = BlobDataManager.isBlobStorageTable(_colTypeMap.keySet());
+			_isBlobStore = BlobDataManager.isBlobStorageTable(_exTypeMap.keySet());
 			
 		} catch (Exception ex) {
 			
@@ -190,9 +197,9 @@ public class LiteTableInfo
 
 	public LiteTableInfo withColumnTarget(String colname, Object value)
 	{
-		Util.massert(_colTypeMap != null, "You must run the setup query first");
-		Util.massert(_colTypeMap.containsKey(colname), 
-			"Attempt to filter on missing column %s, options are %s", colname, _colTypeMap.keySet());
+		Util.massert(_exTypeMap != null, "You must run the setup query first");
+		Util.massert(_exTypeMap.containsKey(colname), 
+			"Attempt to filter on missing column %s, options are %s", colname, _exTypeMap.keySet());
 
 		_colFilterTarget = Pair.build(colname, value);
 		return this;
@@ -207,25 +214,14 @@ public class LiteTableInfo
 			String classname = rsmd.getColumnTypeName(ci+1);
 			
 			ExchangeType etype = ExchangeType.lookupFromSql(classname);
-			
-			_colTypeMap.put(colname, classname);
 
 			_exTypeMap.put(colname, etype);
 		}
-	}
-	
-	@Deprecated // Use getExchangeType
-	ExchangeType getColumnExType(String colname)
-	{
-		/*
-		String classname = _colTypeMap.get(colname);
-		Util.massert(classname != null, 
-			"Unknown column %s, options are %s", colname, _colTypeMap.keySet());
-		
-		return ExchangeType.lookupFromSql(classname);
-		*/
 
-		return getExchangeType(colname);
+		// TODO: reintroduce this assertion, my old DB tables are not configured properly
+		boolean isdcb = dbTabPair._1.theOwner.toString().equals("dburfoot");
+		Util.massert(isdcb || _exTypeMap.keySet().iterator().next().toLowerCase().equals(CoreUtil.STANDARD_ID_COLUMN_NAME),
+				"Expect first column to be ID, but got %s, for %s", _exTypeMap.keySet(), dbTabPair);
 	}
 	
 	public WidgetItem getWidget()
@@ -275,12 +271,18 @@ public class LiteTableInfo
 		return dbTabPair._1;
 	}
 	
-	public Map<String, String> getColTypeMap()
+	public Set<String> getColumnNameSet()
 	{
-		return Collections.unmodifiableMap(_colTypeMap);	
-		
+		return _exTypeMap.keySet();
+
 	}
 	
+	public Map<String, ExchangeType> getColumnExTypeMap()
+	{
+		return Collections.unmodifiableMap(_exTypeMap);
+	}
+
+
 	// Okay, this method can't be offloaded to JS creator, it needs to run every time.
 	public List<String> composeDataRecSpool()
 	{
@@ -289,7 +291,7 @@ public class LiteTableInfo
 	
 	List<String> composeDataRecSpool(String querytarget)
 	{
-		Util.massert(!_colTypeMap.isEmpty(), 
+		Util.massert(!_exTypeMap.isEmpty(),
 			"You must call runQuery before creating the data, sorry bad naming");
 		
 		List<String> reclist = Util.vector();
@@ -305,7 +307,7 @@ public class LiteTableInfo
 	
 	private List<String> composeJsonRepList(String querytarget)
 	{
-		Util.massert(!_colTypeMap.isEmpty(), 
+		Util.massert(!_exTypeMap.isEmpty(),
 			"You must call runQuery before creating the data, sorry bad naming");
 		
 		
@@ -331,7 +333,7 @@ public class LiteTableInfo
 		
 		for(ArgMap onemap : recordList)
 		{
-			List<String> arglist = _colTypeMap.keySet()
+			List<String> arglist = _exTypeMap.keySet()
 							.stream()
 							.map(onekey -> getArrayRep(onemap, onekey))
 							.collect(CollUtil.toList());
@@ -351,20 +353,20 @@ public class LiteTableInfo
 		String converter = Util.sprintf("__arr2Dict%s", getBasicName());
 		
 		{
-			List<String> cols = Util.vector(_colTypeMap.keySet());
+			List<String> cols = Util.vector(_exTypeMap.keySet());
 			
 			reclist.add(Util.sprintf("function %s(arr) {", converter));
 			reclist.add("\tconst d = {};");
 			
 			int idx = 0;
 			
-			for(String col : _colTypeMap.keySet())
+			for(var colexpair : _exTypeMap.entrySet())
 			{
 				String assign = Util.sprintf("arr[%d]", idx);
-				if(SQLITE_STR_TYPE.contains(_colTypeMap.get(col).toLowerCase()))
+				if(colexpair.getValue().isJsString())
 					{ assign = Util.sprintf("decodeURIComponent(%s)", assign); }
 				
-				reclist.add(Util.sprintf("\td['%s'] = %s;", col, assign));
+				reclist.add(Util.sprintf("\td['%s'] = %s;", colexpair.getKey(), assign));
 				idx++;
 			}
 			
@@ -406,7 +408,7 @@ public class LiteTableInfo
 			{ return null + ""; }
 
 		// Need to put quotes around string types
-		if(!SQLITE_STR_TYPE.contains(_colTypeMap.get(onecol).toLowerCase()))
+		if(!_exTypeMap.get(onecol).isJsString())
 			{ return s; }
 
 		StringBuilder sb = new StringBuilder();
@@ -504,7 +506,7 @@ public class LiteTableInfo
 	// Convert a list of JSONObjects, from JSON.parse(...), into LHM form for insert
 	List<LinkedHashMap<String, Object>> bulkConvert(List<?> jsonlist)
 	{
-        Util.massert(!_colTypeMap.isEmpty(), "You must setup the LiteTable before calling!!");
+        Util.massert(!_exTypeMap.isEmpty(), "You must setup the LiteTable before calling!!");
         return Util.map2list(jsonlist, ob -> convertPayLoadSub(null, ((JSONObject) ob)));
 	}
 
@@ -517,12 +519,8 @@ public class LiteTableInfo
 		for(var colname : _exTypeMap.keySet())
 		{
 			var ob = argmap != null ? exchangeConvert(argmap, colname) : exchangeConvert(jsonob, colname);
-			paymap.put(colname, exchangeConvert(jsonob, colname));
+			paymap.put(colname, ob);
 		}
-		
-		// TODO: this can be checked at setup time
-		Util.massert(paymap.keySet().iterator().next().toLowerCase().equals(CoreUtil.STANDARD_ID_COLUMN_NAME),
-			"Expect first column to be ID, but got %s", paymap.keySet());
 
 		return paymap;
 	}
@@ -752,18 +750,7 @@ public class LiteTableInfo
         }
 
         return Optional.empty();
-
     }
-
-
-	static Class getJavaTypeFromLite(String litetype)
-	{
-        ArgMap mymap = new ArgMap();
-        mymap.put("dummy", "454534");
-
-        Object lookup = LiteTableInfo.getPayLoad("dummy", litetype, mymap);
-        return lookup.getClass();
-	}
 
 	public String getWebAutoGenJsPath()
 	{
