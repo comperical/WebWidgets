@@ -20,15 +20,15 @@ function createNew()
 	
 	if(shortname)
 	{
-		const todaycode = getTodayCode().getDateString();
+		const todaycode = getTodayCode().dayBefore().getDateString();
 		
 		// created_on, active_on, completed_on, dead_line
 		const newrec = {
 			"short_name" : shortname,
 			"category": 'misc',
 			"full_desc": "NotYetSet",
-			"day_code" : todaycode		
-		};		
+			"day_code" : todaycode
+		};
 		
 		const newitem = W.buildItem("rage_log", newrec);
 		newitem.syncItem();

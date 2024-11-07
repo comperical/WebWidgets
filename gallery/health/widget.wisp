@@ -14,7 +14,7 @@ function newGood()
 
 function newFromBump()
 {
-    const itemlist = getItemList("health_log").sort(proxySort(a => [a.getDayCode()])).reverse();
+    const itemlist = W.getItemList("health_log").sort(proxySort(a => [a.getDayCode()])).reverse();
 
     const lastitem = itemlist[0];
 
@@ -29,17 +29,17 @@ function copyFromId(copyid)
 }
 
 function createNewSub(rating, notestr)
-{    
-    const todaycode = getTodayCode().getDateString();
+{
+    const todaycode = getTodayCode().dayBefore().getDateString();
     
     // created_on, active_on, completed_on, dead_line
     const newrec = {
         "rating" : rating,
         "notes" : notestr,
-        "day_code" : todaycode      
+        "day_code" : todaycode
     };
     
-    const newitem = buildItem("health_log", newrec);
+    const newitem = W.buildItem("health_log", newrec);
     newitem.syncItem();
     redisplay();
 }
@@ -72,7 +72,7 @@ function redisplay()
 function redisplayMainTable()
 {
 
-    const itemlist = getItemList("health_log");
+    const itemlist = W.getItemList("health_log");
     itemlist.sort(proxySort(a => [a.getDayCode()])).reverse();
 
     var tablestr = `
