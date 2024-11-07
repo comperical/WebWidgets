@@ -1,0 +1,60 @@
+
+
+// Simple approach to handling tags
+// Tags are compiled into a simple string via basic string join operation
+
+TAG = {
+
+    TAG_SEPARATOR : ";;;",
+
+    // If you are not using this name for the tag column, you must set this field in your code before using this library
+    // TAG.TAG_FIELD_NAME = YOUR_TAG_NAME;
+    TAG_FIELD_NAME : "tag_sxx",
+
+    getCompleteTagSet : function(itemlist)
+    {
+        const tagset = new Set([]);
+
+        itemlist.forEach(function(item) {
+            item.getTagSet().split(TAG_SEPARATOR).filter(tkn => tkn.trim().length > 0).forEach(tag => tagset.add(tag));
+        });
+
+        return tagset;
+    },
+
+    setItemTagSet : function(item, tagset)
+    {
+        const tagstr = [... tagset].join(TAG.TAG_SEPARATOR);
+        item.setField(TAG.TAG_FIELD_NAME, tagstr);
+    },
+
+    addNewTag2Item : function(item, newtag)
+    {
+        const tagset = TAG.getItemTagSet(item);
+        tagset.add(newtag);
+        TAG.setItemTagSet(item, tagset);
+    },
+
+    getItemTagSet : function(item)
+    {
+        const tagstr = item.getField(TAG.TAG_FIELD_NAME);
+        const tags = tagstr.split(TAG_SEPARATOR).filter(tkn => tkn.trim().length > 0);
+        return new Set(tags);
+    },
+
+    removeTagFromItem : function(item, killtag)
+    {
+        const prevtags = TAG.getItemTagSet(item);
+        prevtags.delete(killtag);
+        TAG.setItemTagSet(item, prevtags);
+    },
+
+    // Get the tag set and join it using the given delimeter, something like " / "
+    getTagSetDisplay : function(item, delim)
+    {
+        const tagset = TAG.getItemTagSet(item);
+        return [... tagset].join(delim);
+    }
+
+};
+
