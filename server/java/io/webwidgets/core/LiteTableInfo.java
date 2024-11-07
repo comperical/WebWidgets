@@ -273,7 +273,7 @@ public class LiteTableInfo
 	
 	public Set<String> getColumnNameSet()
 	{
-		return _exTypeMap.keySet();
+		return Collections.unmodifiableSet(_exTypeMap.keySet());
 
 	}
 	
