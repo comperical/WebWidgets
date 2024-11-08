@@ -89,7 +89,9 @@ public class MailSystem {
         // then they probably don't want it to be listed as from WebWidgets.io
         String controlpage = PluginCentral.getMailPlugin().getEmailControlUrl(email, sender);
         String s = String.format("<p>This message was sent from WebWidgets.IO on behalf of user %s. ", sender);
-        s += String.format("To unsubscribe, click <a href=\"%s\">here</a></p>", controlpage);
+        s += String.format("To unsubscribe, click <a href=\"%s\">here</a>.</p>", controlpage);
+        s += "<p>This email address is not monitored; please do not reply</p>";
+
         return s;
 
     }

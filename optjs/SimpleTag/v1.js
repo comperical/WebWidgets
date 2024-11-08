@@ -9,14 +9,15 @@ TAG = {
 
     // If you are not using this name for the tag column, you must set this field in your code before using this library
     // TAG.TAG_FIELD_NAME = YOUR_TAG_NAME;
-    TAG_FIELD_NAME : "tag_sxx",
+    TAG_FIELD_NAME : "tag_set",
 
     getCompleteTagSet : function(itemlist)
     {
         const tagset = new Set([]);
 
         itemlist.forEach(function(item) {
-            item.getTagSet().split(TAG_SEPARATOR).filter(tkn => tkn.trim().length > 0).forEach(tag => tagset.add(tag));
+            const tagstr = item.getField(TAG.TAG_FIELD_NAME);
+            tagstr.split(TAG_SEPARATOR).filter(tkn => tkn.trim().length > 0).forEach(tag => tagset.add(tag));
         });
 
         return tagset;
