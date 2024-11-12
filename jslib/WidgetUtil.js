@@ -1,5 +1,85 @@
 
 
+// November 2024: moving forward, general Widget Utility code will go in the U namespace.
+const U = {
+
+    // Get a simple string representation of the schema for the given table
+    // Or for all tables if the argument is left out
+    // This is typically used in development when the programmer wants a quick reminder
+    // Of how the underlying tables are designed
+    getSchema : function(tablename)
+    {
+        const protoitem = function(tbl, fieldname)
+        {
+            const itemlist = W.getItemList(tbl);
+            if(itemlist.length > 0)
+            {
+                return itemlist[0].getField(fieldname);
+            }
+
+            const masterob = W.__tableNameIndex.get(tbl);
+            return masterob._defaultInfo[fieldname];
+        }
+
+
+        const typestr = function(tbl, fieldname)
+        {
+            if(fieldname == 'id')
+                { return 'int'; }
+
+            const masterob = W.__tableNameIndex.get(tbl);
+            const defaultob = protoitem(tbl, fieldname);
+
+            if(defaultob == null)
+            {
+                return "???";
+            }
+
+            if(typeof(defaultob) == typeof("danb"))
+            {
+                return "string";
+            }
+
+            if(typeof(defaultob) == typeof(42))
+            {
+                if(Number.isInteger(defaultob))
+                    { return "int"; }
+
+                return "float";
+            }
+
+            massert(false, `Unable to determine type of default object ${defaultob}`);
+        }
+
+        const tablelist = (tablename == null ? W.getWidgetTableList() : [tablename]).sort();
+
+        let s = "";
+
+        tablelist.forEach(function(tbl) {
+
+            s += `------\n${tbl}\n`;
+
+            W.getFieldList(tbl).forEach(function(fieldname) {
+                const ftype = typestr(tbl, fieldname);
+                s += `\t${fieldname} :: ${ftype}\n`;
+            });
+        });
+
+        return s;
+    },
+
+
+    // Build the schema using the above command and print it to the console
+    // Quick helper function for the developer to serve as a reminder for
+    // what the table names and types are
+    printSchema : function(tablename)
+    {
+        const myschema = U.getSchema(tablename);
+        console.log(myschema);
+    }
+}
+
+
 var MY_TIME_ZONE = "AST";
 
 // Delete Item from given table. 
@@ -11,7 +91,7 @@ function genericDeleteItem(tablename, itemid)
         "Could not find item " + itemid + " in table " + tablename);
     
     W.lookupItem(tablename, itemid).deleteItem();
-    redisplay();    
+    redisplay();
 }
 
 // Toggles the is_active field of the given item in the given table.
@@ -101,7 +181,7 @@ function genericEditIntField(tablename, fieldname, itemid)
 // returns the item in the collection that has the minimum
 // value according to the given function.
 function minWithProxy(items, minfunc)
-{   
+{
     var minitem = null;
     var minrslt = null;
     
@@ -145,7 +225,7 @@ function proxySort(proxyfun)
     }
 }
 
-function dictFromExtractor(itemlist, extractor) 
+function dictFromExtractor(itemlist, extractor)
 {
 
     const table = {};
