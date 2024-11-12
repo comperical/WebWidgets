@@ -28,13 +28,16 @@ public class WebUtil
 
 	public static String FAVICON_FILE_NAME = "MyFavIcon";
 	
-	public static List<String> AUTO_INCLUDE_SUFFIX = Util.listify(".js", ".css");
+	public static List<String> AUTO_INCLUDE_SUFFIX = Util.listify(".js", ".css", ".html");
 	
 	public static String WWIO_DOMAIN = "webwidgets.io";
 
 	public static String LOCALHOST = "localhost:8080";
 
 	public static String AWS_HOST = "compute.amazonaws.com";
+
+	// This is an extra string that must be included in .html files for auto-inclusion
+	public static String HTML_HEADER_TAG = "Header";
 		
 	public static String LOGIN_RELATIVE_URL = "/u/admin/LogIn.jsp";
 		
@@ -178,31 +181,36 @@ public class WebUtil
 		
 		for(File f : basedir.listFiles())
 		{
-			String name = f.getName();
-			
 			if(f.isDirectory())
 				{ continue; }
 
+			String name = f.getName();
 
 			// Special handling for fav-icons
-			if(f.getName().startsWith(FAVICON_FILE_NAME))
+			if(name.startsWith(FAVICON_FILE_NAME))
 			{
 				inclist.add(f);
 				continue;
 			}
-
 			
 			if(!name.startsWith(AUTO_INCLUDE_PREFIX))
 				{ continue; }
 			
-			boolean havesuffix = AUTO_INCLUDE_SUFFIX
-						.stream()
-						.filter(suff -> name.endsWith(suff))
-						.findAny()
-						.isPresent();
-			
-			if(havesuffix) 
-				{ inclist.add(f); }
+
+			Optional<String> suffix = AUTO_INCLUDE_SUFFIX
+											.stream()
+											.filter(suff -> name.endsWith(suff))
+											.findAny();
+
+
+			if(!suffix.isPresent())
+				{ continue; }
+
+			// HTML files require extra tag to include
+			if(suffix.get().equals(".html") && !name.contains(HTML_HEADER_TAG))
+				{ continue; }
+
+			inclist.add(f);
 		}
 		
 		return inclist;
@@ -233,11 +241,26 @@ public class WebUtil
 	private static List<String> includeTargetFileList(List<File> filelist, WidgetUser owner, Optional<String> optname)
 	{
 
-		// TODO: need to integrate this code with the other autoinclude tech, that does exactly the same thing
 		List<String> statelist = Util.arraylist();
 
 		for(File f : filelist)
 		{
+			// For HTML include files, we just insert the HTML directly into the page
+			if(f.getName().endsWith(".html"))
+			{
+				statelist.add("");
+				String incname = optname.isPresent() ? optname.get() : "base";
+				statelist.add(Util.sprintf("<!-- Auto File Include of HTML snippet (%s):%s -->", incname, f.getName()));
+
+				// For HTML files, we simply slurp the file and include it directly
+				List<String> srclist = FileUtils.getReaderUtil().setFile(f).setTrim(false).readLineListE();
+				statelist.addAll(srclist);
+				statelist.add("<!-- End File Include -->");
+				statelist.add("");
+				continue;
+			}
+
+
 			long modtime = f.lastModified();
 			String relpath = Util.sprintf("/u/%s%s/%s", 
 				owner, optname.isPresent() ? "/" + optname.get() : "", f.getName());
