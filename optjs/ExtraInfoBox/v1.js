@@ -81,6 +81,15 @@ ExtraInfoBox.prototype.withTextInput = function(text)
     return withProvider(provider);
 }
 
+// This is required if you want to use multiple EI boxes on the same page
+ExtraInfoBox.prototype.withTextAreaName = function(areaname)
+{
+    massert(typeof(areaname) == 'string', "Expected string argument for withTextAreaName(...)");
+    this.textAreaName = areaname;
+    return this;
+}
+
+
 
 ExtraInfoBox.prototype.withStandardConfig = function(tablename, itemid, fieldname)
 {
