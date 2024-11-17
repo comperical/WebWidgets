@@ -25,9 +25,28 @@ Goal here is to work with laptop and tablet, but not phone
 
 var TODAY_CODE = getTodayCode();
 
-var EDIT_STUDY_ITEM = 3763;
+var EDIT_STUDY_ITEM = -1;
+
+
+function createNewTop()
+{
+	createNewTaskSub(40);
+}
+
+
+function createNewHigh()
+{
+	createNewTaskSub(20);
+}
+
 
 function createNewTask()
+{
+	createNewTaskSub(5);
+}
+
+
+function createNewTaskSub(priority)
 {
 	const showtypelist = getShowTypeList();
 	if(showtypelist.length > 1)
@@ -39,14 +58,14 @@ function createNewTask()
 	var itemname = prompt("New Item Desc: ");
 	
 	if(itemname)
-	{	
+	{
 		const newrec = {
 			"task_type" : showtypelist[0],
 			"short_desc" : itemname,
 			"extra_info" : "",
 			"alpha_date" : getTodayCode().getDateString(),
 			"omega_date" : "",
-			"priority" : 5,
+			"priority" : priority,
 			"is_backlog" : 0
 		};
 	
@@ -57,6 +76,7 @@ function createNewTask()
 		redisplay();
 	}
 }
+
 
 
 function archiveItem(itemid)
@@ -441,7 +461,6 @@ function reDispEditItem()
 						.getHtmlString();
 	
 	populateSpanData({
-		"taskid" : studyitem.getId(),
 		"shortdesc" : studyitem.getShortDesc(),
 		"task_type_sel_span" : ttypesel,
 		"alphadate" : studyitem.getAlphaDate(),
@@ -478,9 +497,37 @@ function redisplay()
 
 </script>
 
+<style>
+
+.button-green {
+    background: -webkit-gradient(linear, left top, left bottom, from(#3d8), to(#1b6));
+}
+
+.button-teal {
+    background: -webkit-gradient(linear, left top, left bottom, from(#30d5c8), to(#208a7c));
+}
+
+
+
+/* Yellow Button */
+.button-yellow {
+    background: -webkit-gradient(linear, left top, left bottom, from(#ffd700), to(#ffcc00));
+    color: black; /* Better contrast for yellow */
+}
+
+/* Orange Button */
+.button-orange {
+    background: -webkit-gradient(linear, left top, left bottom, from(#ffa500), to(#ff7f00));
+}
+
+
+
+</style>
+
 </head>
 
 <body onLoad="javascript:setDefaultShow()">
+
 
 <center>
 
@@ -493,7 +540,22 @@ function redisplay()
 
 <br/>
 
-<a name="truebutton" class="css3button" onclick="javascript:createNewTask()">new</a>
+<a class="css3button button-green" onclick="javascript:createNewTop()">top</a>
+
+&nbsp;
+&nbsp;
+&nbsp;
+
+<a class="css3button button-teal" onclick="javascript:createNewHigh()">high</a>
+
+
+&nbsp;
+&nbsp;
+&nbsp;
+
+
+<a class="css3button" onclick="javascript:createNewTask()">new</a>
+
 
 <br/>
 <br/>
@@ -565,12 +627,9 @@ function redisplay()
 <td>Back</td>
 <td><a href="javascript:return2Main()"><img src="/u/shared/image/leftarrow.png" height="18"/></a></td>
 </tr>
+
 <tr>
-<td>ID</td>
-<td><span id="taskid"></span></td>
-</tr>
-<tr>
-<td>ShortDesc</td>
+<td>Description</td>
 <td><b><span id="shortdesc"></span></b>
 
 &nbsp;
