@@ -20,7 +20,7 @@ function deleteItem(killid)
 	if(confirm("DON'T BE LAZY - are you sure you want to delete this item??"))
 	{
 		W.lookupItem("ex_week_goal", killid).deleteItem();
-		redisplay();		
+		redisplay();
 	}
 }
 
@@ -38,6 +38,25 @@ function editMiniNote(editid)
 	}
 }
 
+
+function updateGoalTarget(goalid)
+{
+	const goalitem = W.lookupItem("ex_week_goal", goalid);
+	const newgoal = prompt("Enter a new goal target: ", goalitem.getWeeklyGoal());
+
+	if(newgoal)
+	{
+		if(!okayInt(newgoal))
+		{
+			alert("Please enter an integer");
+			return;
+		}
+
+		goalitem.setWeeklyGoal(newgoal);
+		goalitem.syncItem();
+		redisplay();
+	}
+}
 
 
 function getPlanItem(shortcode)
@@ -100,7 +119,8 @@ function redisplay()
 			<table class="basic-table" width="60%">
 			<tr>
 			<th>Code</th>
-			<th>Week Goal</th>
+			<th colspan="2">Week Goal</th>
+
 			<th>Notes</th>
 			<th>...</th>
 			</tr>
@@ -114,6 +134,11 @@ function redisplay()
 				<tr>
 				<td>${woitem.getShortCode()}</td>
 				<td>${woitem.getWeeklyGoal()}  ${planitem.getUnitCode()}</td>
+
+				<td>
+				<a href="javascript:updateGoalTarget(${woitem.getId()})")">
+				<img src="/u/shared/image/edit.png" height="18"/></a>
+				</td>
 				<td>${woitem.getMiniNote()}</td>
 				<td>
 				<a href="javascript:editMiniNote(${woitem.getId()})">

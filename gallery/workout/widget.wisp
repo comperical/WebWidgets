@@ -197,7 +197,7 @@ function buildInitial()
 	buildOptSelector()
 		.setElementName("wo_type")
 		.setOnChange("javascript:redisplay()")
-		.setKeyList(actlist)
+		.configureFromList(actlist)
 		.autoPopulate();
 	
 	redisplay();
@@ -286,7 +286,7 @@ function getLinearMondayMap()
 function redispControls()
 {
 	buildOptSelector()
-		.setKeyList([... Array(15).keys()])
+		.configureFromList([... Array(15).keys()])
 		.setSelectedKey(getDistanceDefaultPrompt())
 		.setElementName("wo_units_sel")
 		.autoPopulate()
@@ -294,7 +294,7 @@ function redispControls()
 	const displaymap = getNiceDateDisplayMap(14);
 
 	buildOptSelector()
-		.setFromMap(displaymap)
+		.configureFromHash(displaymap)
 		.setSelectedKey(getTodayCode().dayBefore().getDateString())
 		.setElementName("day_code_sel")
 		.autoPopulate();
