@@ -2,6 +2,8 @@
 
 function getLastChoreCompletion(choreid)
 {
+    
+    
     const hits = W.lookupFromOdIndex("chore_comp", { chore_id : choreid})
                         .map(item => item.getDayCode())
                         .sort().reverse();
@@ -28,6 +30,14 @@ function getChoreAge(choreitem)
     return lastcompdc.daysUntil(todaydc);
 }
 
+// The number of days the chore is overdue
+// Negative means => it's not overdue
+function getChoreOverDue(chore)
+{
+    const ndaysago = getChoreAge(chore);
+    return ndaysago - chore.getDayFreq();
+}
+
 
 function isPromoValid(chore, lastcomplete)
 {
@@ -35,6 +45,14 @@ function isPromoValid(chore, lastcomplete)
         { return false; }
 
     return lastcomplete == null ? true : chore.getPromotedOn() > lastcomplete;
+}
+
+function isChorePromoted(chore)
+{
+    const lastcomplete = getLastChoreCompletion(chore);
+
+    return isPromoValid(chore, lastcomplete);
+
 }
 
 
