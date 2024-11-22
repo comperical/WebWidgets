@@ -3,6 +3,7 @@
 import os 
 import sys
 import shutil
+from pathlib import Path
 
 import ArgMap
 
@@ -33,6 +34,29 @@ def get_domain_prefix(local=False):
 		return f"https://{host}"
 
 	return  "https://webwidgets.io"
+
+
+
+# Attempt to infer the widgetname from the current directory
+# If found, set the widgetname= argument in argmap, if it is not already set
+def check_update_widget_cd(configmap, argmap):
+
+	if argmap.containsKey("widgetname"):
+		return
+
+	currentdir = Path(os.getcwd())
+
+	for cdidx in range(1, 5):
+		cdstr = f"codedir{cdidx}"
+		if cdstr in configmap:
+			cdpath = Path(configmap[cdstr])
+
+			if cdpath == currentdir.parent:
+				infname = currentdir.name.lower()
+				argmap.put("widgetname", infname)
+				print(f"Inferred widgetname _{infname}_ from current directory")
+
+
 
 def get_config_directory():
 	from os.path import expanduser
@@ -92,7 +116,7 @@ def get_config_map(username):
 	assert os.path.exists(configpath), "Could not find config path for user {}, you must put your config file at path {}".format(username, configpath)
 	
 	def genconf():
-		for line in open(configpath):			
+		for line in open(configpath):
 			if line.strip().startswith("#") or not "=" in line:
 				continue
 				
@@ -267,6 +291,9 @@ if __name__ == "__main__":
 	check_update_username(argmap)
 
 	configmap = get_config_map(argmap.getStr('username'))
+
+	# Attempt to infer widgetname= argument from current directory, if it is not provided
+	check_update_widget_cd(configmap, argmap)
 
 	widget = argmap.getStr("widgetname")
 	uploader = BaseUploader(argmap) if widget == "base" else ZipUploader(argmap)
