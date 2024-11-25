@@ -280,7 +280,6 @@ class BaseUploader(AssetUploader):
 				if os.path.isdir(fullpath):
 					continue
 					
-				#print("Full path is {}".format(fullpath))
 				# Need the arcname= argument to give the files the right location in the archive.
 				myzip.write(fullpath, arcname=myfile)
 
@@ -303,8 +302,6 @@ if __name__ == "__main__":
 	uploader.ensure_okay()
 	uploader.do_prep()
 	uploader.ensure_okay(postprep=True)
-
-	# print("Going to run upload for type {}".format(uploader.__class__.__name__))
 	
 	uploader.do_upload(configmap)
 	uploader.do_cleanup()

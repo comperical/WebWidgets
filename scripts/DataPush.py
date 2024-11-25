@@ -26,11 +26,10 @@ class DataPush(CodePush.AssetUploader):
 		self.basedir = configmap["dbdir"]
 
 	def get_payload_path(self):
-		return self.get_db_path()		
+		return self.get_db_path()
 		
 	def is_okay(self):
-		#print("DB path is {}".format(self.get_db_path()))
-		return os.path.exists(self.get_db_path())	
+		return os.path.exists(self.get_db_path())
 	
 	def do_prep(self):
 		pass
