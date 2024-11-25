@@ -26,7 +26,7 @@ function deleteBlobItem(itemid)
   {
     const newitem = W.lookupItem("photo_main", itemid);
     newitem.deleteItem();
-    redisplay();    
+    redisplay();
   }
 }
 
@@ -279,12 +279,12 @@ function redisplayEdit()
   });
 
   const tagsel = buildOptSelector()
-                    .setKeyList([... getFullTagSet()])
+                    .configureFromList([... getFullTagSet()])
                     .sortByDisplay()
                     .insertStartingPair("---", "---")
                     .setElementName("tag_selector")
                     .setOnChange("javascript:addTagFromSel()")
-                    .getSelectString();
+                    .getHtmlString();
 
 
   var pageinfo = `
@@ -374,6 +374,8 @@ function redisplayEdit()
 
   const breakem = item.getRotation() == 1 || item.getRotation() == 3 ? "<br/><br/><br/>" : "";
 
+  console.log(blobstore);
+
   pageinfo += `
 
     ${breakem}
@@ -424,12 +426,12 @@ function redisplayMain()
   `;
 
   const tagsel = buildOptSelector()
-                    .setKeyList([... getFullTagSet()])
+                    .configureFromList([... getFullTagSet()])
                     .sortByDisplay()
                     .insertStartingPair("---", "---")
                     .setElementName("search_tag")
                     .setOnChange("javascript:addSearchTag()")
-                    .getSelectString();
+                    .getHtmlString();
 
 
   var pageinfo = `
