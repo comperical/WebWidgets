@@ -35,10 +35,13 @@ __GLOBAL_INDEX_MAP : new Map(),
 __DUMB_INDEX_DELIM : "/x/",
 
 // Find the item with the given ID for the given table and return it.
-// Error if the item does not exist, if you are uncertain whether the ID exists or not,
-// call haveItem(tabname, itemid)
+// Error if the tablename does not exist, or if the item ID is not an integer
+// Return null if the itemid does not exist
 lookupItem : function(tabname, itemid)
 {
+    if(!Number.isInteger(itemid))
+        { massert(false, `Attempt to lookup item for table ${tabname} with non-integer ID ${itemid}`); }
+
     W.checkTableName(tabname);
     return W.__tableNameIndex.get(tabname)._dataMap.get(itemid);
 },
