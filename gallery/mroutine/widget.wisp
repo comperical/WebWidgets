@@ -5,6 +5,25 @@
 
 <wisp view_prefixes="recent"/>
 
+<style>
+
+
+
+  .flat-button-small {
+    background-color: SlateBlue; /* Dark blue */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease, transform 0.2s ease;
+  }
+
+</style>
+
+
 <script>
 
 function deleteItem(killid)
@@ -116,7 +135,7 @@ function redisplay()
     if(activephase != null)
     {
         activetext = activephase.getShortName();
-        activelink = `<a href="${activephase.getWebLink()}">LINK</a>`
+        activelink = `<a href="${activephase.getWebLink()}"><button class="flat-button-small">LINK</button></a>`
     }
 
     var mtstr = `

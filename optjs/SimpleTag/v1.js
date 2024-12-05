@@ -36,6 +36,22 @@ TAG = {
         TAG.setItemTagSet(item, tagset);
     },
 
+
+    promptAddTag2Item : function(tablename, itemid)
+    {
+        massert(W.haveItem(tablename, itemid), `No item found for ${tablename}::${itemid}`);
+        const item = W.lookupItem(tablename, itemid);
+
+        const novtag = prompt("Please enter a new tag:");
+
+        if(novtag)
+        {
+            TAG.addNewTag2Item(item, novtag);
+            item.syncItem();
+            redisplay();
+        }
+    },
+
     getItemTagSet : function(item)
     {
         const tagstr = item.getField(TAG.TAG_FIELD_NAME);

@@ -22,6 +22,7 @@ function createNew()
 
     const dbitem = W.buildItem("tag_rule", item);
     dbitem.syncItem();
+    EDIT_STUDY_ITEM = dbitem.getId();
     redisplay();
 
 }
@@ -86,6 +87,7 @@ function getEditPageInfo()
 
     const optsel = buildOptSelector()
                         .setKeyList(getExpenseCategoryList())
+                        .sortByDisplay()
                         .setSelectedKey(studyitem.getCategory())
                         .setOnChange("javascript:updateCategory()")
                         .setElementName("category_sel")
@@ -157,7 +159,10 @@ function getMainPageInfo()
         <h3>Auto Tag Rules</h3>
 
 
+        <a href="javascript:createNew()"><button>+rule</button></a>
         <br/>
+        <br/>
+
         <table class="basic-table" width="60%">
         <tr>
         <th>Category</th>
@@ -167,13 +172,19 @@ function getMainPageInfo()
         </tr>
     `;
 
-    W.getItemList("tag_rule").forEach(function(item) {
+    const itemlist = W.getItemList("tag_rule").sort(proxySort(item => [item.getCategory(), item.getAndTags()]));
+
+    itemlist.forEach(function(item) {
+
+
+        const minmax = (item.getMinDollar() == -1 && item.getMaxDollar() == -1) ? "---" :
+                            `${item.getMinDollar()} / ${item.getMaxDollar()}`;
 
         const rowinfo = `
             <tr>
             <td>${item.getCategory()}</td>
             <td>${item.getAndTags()}</td>
-            <td>${item.getMinDollar()} / ${item.getMaxDollar()}</td>
+            <td>${minmax}</td>
             <td>
 
             <a href="javascript:studyItem(${item.getId()})"><img src="/u/shared/image/inspect.png" height="18"/></a>
@@ -198,7 +209,6 @@ function getMainPageInfo()
 
         <br/>
 
-        <a href="javascript:createNew()"><button>+rule</button></a>
 
     `;
 
