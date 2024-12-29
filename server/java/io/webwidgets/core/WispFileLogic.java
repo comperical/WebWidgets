@@ -70,7 +70,7 @@ public class WispFileLogic
             wff.sendResultToStream(request, response.getOutputStream(), accessor);
             response.getOutputStream().close();
 
-            WebUtil.logPageLoad(request);
+            WebUtil.logPageLoad(request, accessor);
         }
     }
 

@@ -344,7 +344,7 @@ public class WebUtil
 	}
 
 
-	public static void logPageLoad(HttpServletRequest request) 
+	public static void logPageLoad(HttpServletRequest request, Optional<WidgetUser> accessor)
 	{
 		String timestamp = ExactMoment.build().asLongBasicTs(TimeZoneEnum.PST);
 
@@ -359,13 +359,13 @@ public class WebUtil
 			CoreDb.upsertFromRecMap(syslog, "page_load", 1, CoreDb.getRecMap(
 				"id", randid,
 				"url", request.getRequestURI().toString(),
+				"accessor", accessor.map(acc -> acc.toString()).orElse(""),
 				"time_pst", timestamp
 			));
 
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
-
 	}
 
 
