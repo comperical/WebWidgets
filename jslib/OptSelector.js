@@ -22,7 +22,7 @@ function OptSelector()
 // Use this in preference to new keyword, for fluent coding style.
 function buildOptSelector() 
 {
-    return new OptSelector();   
+    return new OptSelector();
 }
 
 
@@ -69,6 +69,23 @@ OptSelector.prototype.configureFromList = function(thelist)
 
     return this;
 }
+
+// Same as configureFromList(...), but use list indexes as the keys
+// and list elements for the values, instead of using elements for both
+OptSelector.prototype.configureFromIdxList = function(thelist)
+{
+    this.resetData();
+
+    for(let idx = 0; idx < thelist.length; idx++)
+    {
+        this._keyList.push(idx);
+        this._dspList.push(thelist[idx]);
+    }
+
+    return this;
+}
+
+
 
 
 // Configure the key/values in this selector from a JavaScript hash/dict
