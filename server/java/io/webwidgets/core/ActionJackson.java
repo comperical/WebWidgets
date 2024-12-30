@@ -485,7 +485,6 @@ public class ActionJackson extends HttpServlet
 
 		void checkCodeFormat(CodeLocator codeloc) throws LoaderException, IOException
 		{
-
 			ZipFile myfile = new ZipFile(codeloc.getCodeFile());
 			Enumeration<? extends ZipEntry> zipen = myfile.entries();
 			
@@ -494,44 +493,26 @@ public class ActionJackson extends HttpServlet
 				String zname = zent.getName();
 
 				// TODO: as of late 2023, only dburfoot/admin should be uploading .jsp files
-
-				if(zname.endsWith(".jsp") || zname.endsWith(".wisp"))
+				// Formerly checked .jsp files here, but now only dburfoot/admin should be using .jsp files
+				if(zname.endsWith(".wisp"))
 				{
-
 					List<String> srclist = FileUtils.getReaderUtil()
 													.setStream(myfile.getInputStream(zent))
 													.readLineListE();
 
-
-					if(zname.endsWith(".wisp"))
+					Optional<WidgetItem> optitem = codeloc.getCodeTarget();
+					if(!optitem.isPresent())
 					{
-						Optional<WidgetItem> optitem = codeloc.getCodeTarget();
-						if(!optitem.isPresent())
-						{
-							String wrapmssg = ".wisp files cannot be included in base directories, use .html instead";
-							throw new LoaderException(LoadApiError.CodeFormatError, wrapmssg);
-						}
+						String wrapmssg = ".wisp files cannot be included in base directories, use .html instead";
+						throw new LoaderException(LoadApiError.CodeFormatError, wrapmssg);
+					}
 
-						WispFileFormat wff = new WispFileFormat(srclist, optitem.get());
-						try {
-							wff.checkCodeFormat();
-						} catch (Exception ex) {
-							String wrapmssg = Util.sprintf("Found error in WISP file format: %s", ex.getMessage());
-							throw new LoaderException(LoadApiError.CodeFormatError, wrapmssg);
-						}
-
-
-					} else {
-
-						// TODO: this is used only very rarely now (july 2024), perhaps remove it
-						// The idea here is to fast-detect problems with the DataServer include line
-						// But only admins are uploading JSP files, so it's not really that important
-						CodeFormatChecker cfchecker = new CodeFormatChecker(srclist);
-						if(cfchecker.codeFormatMessage.isPresent())
-						{
-							String wrapmssg = Util.sprintf("Found error in file %s :: %s", zname, cfchecker.codeFormatMessage.get());
-							throw new LoaderException(LoadApiError.CodeFormatError, wrapmssg);
-						}
+					WispFileFormat wff = new WispFileFormat(srclist, optitem.get());
+					try {
+						wff.checkCodeFormat();
+					} catch (Exception ex) {
+						String wrapmssg = Util.sprintf("Found error in WISP file format: %s", ex.getMessage());
+						throw new LoaderException(LoadApiError.CodeFormatError, wrapmssg);
 					}
 				}
 			}
@@ -814,103 +795,5 @@ public class ActionJackson extends HttpServlet
 
 
 	}
-
-	public static class CodeFormatChecker
-	{
-		private final List<String> _srcList;
-
-		Optional<String> codeFormatMessage = Optional.empty();
-
-		CodeFormatChecker(List<String> src)
-		{
-			_srcList = src;
-			check4Issue();
-		}
-
-		private void check4Issue()
-		{
-			for(int idx : Util.range(_srcList))
-			{
-				// Stop at the first issue we encounter.
-				if(codeFormatMessage.isPresent())
-					{ break; }
-
-				String line = _srcList.get(idx).strip();
-
-				if(line.startsWith("<%=") && line.contains(DataServer.class.getSimpleName()))
-				{
-					if(!checkDataIncludeLine(line))
-					{
-						String mssg = Util.sprintf("Found badly formatted DataServer.include(...) call on line %d. Please review formatting rules for these statements", idx+1);
-						codeFormatMessage = Optional.of(mssg);
-
-					} else {
-
-						String dataissue = getDataServerIssue(line);
-
-						if(dataissue != null)
-						{
-							String mssg = Util.sprintf("Badly formatted data-include argument on line %d :: %s. Please review rules for formatting data arguments", idx+1, dataissue);
-							codeFormatMessage = Optional.of(mssg);
-						}
-					}
-
-
-					continue;
-				}
-
-				if(line.contains("<%") || line.contains("%>"))
-				{
-					String mssg = Util.sprintf("Found open or close JSP tags in line %d. This tags are allowed only in DataInclude lines", idx+1);
-					codeFormatMessage = Optional.of(mssg);
-				}
-			}
-		}
-
-		private static Optional<String> getDataServerArg(String line)
-		{
-			Util.massert(line.startsWith("<%=") && line.endsWith("%>"), "Expected line with start/end tags <%= ... %>, got %s", line);
-
-			// peel off start/end tags
-			String internal = line.substring(3, line.length()-2).strip();
-
-			// remove white space 
-			internal = internal.replaceAll(" ", "");
-
-			if(internal.equals(DATA_INCLUDE_PLAIN))
-				{ return Optional.of(""); }
-
-	        Matcher matcher = DATA_FORMAT_PATTERN.matcher(internal);
-
-	        if(!matcher.find())
-	        	{ return Optional.empty(); }
-        
-        	return Optional.of(matcher.group(1));
-		}
-
-		private boolean checkDataIncludeLine(String line)
-		{
-			if(!line.endsWith("%>"))
-				{ return false; }
-
-			return getDataServerArg(line).isPresent();
-		}
-
-		private String getDataServerIssue(String line)
-		{
-			Util.massert(line.startsWith("<%=") && line.endsWith("%>"), "The line should be pre-checked as a JSP tag at this point");
-			Optional<String> dataformat = getDataServerArg(line);
-			Util.massert(dataformat.isPresent(), "Expect a line with a dataformat at this point");
-
-			try {
-				Map<DataIncludeArg, String> mymap = DataServer.buildIncludeMap(dataformat.get());
-				return null;
-			} catch (Exception ex) {
-				return ex.getMessage();
-			}
-		}
-	}
-
-
 }
 
