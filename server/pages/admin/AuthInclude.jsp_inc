@@ -26,8 +26,6 @@
     }
 
 
-
-
-    WebUtil.logPageLoad(request);
+    WebUtil.logPageLoad(request, AuthLogic.getLoggedInUser(request));
     
 %>

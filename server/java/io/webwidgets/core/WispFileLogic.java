@@ -316,7 +316,8 @@ public class WispFileLogic
 
                 // For cross-loading, the owner of the uploaded page must have read perms for other widget
                 boolean canread = AuthChecker.build().directSetAccessor(pageItem.theOwner).directDbWidget(dbitem).allowRead();
-                Util.massert(canread, "User %s does not have read permission for %s", owner, dbitem);
+                Util.massert(canread,
+                    "Attempt to cross-load Widget data, but page owner %s lacks read permissions for %s", pageItem.theOwner, dbitem);
             }
 
             // Check table names

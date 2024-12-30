@@ -40,7 +40,6 @@ public class ActionJackson extends HttpServlet
 	// Nov 2023: these are not yet implemented, but adding them here for documentation
 	public enum LoadApiError
 	{
-
 		CodeFormatError,
 		IncludeArgError,
 		MailboxError,
