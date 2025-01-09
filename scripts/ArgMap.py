@@ -3,18 +3,15 @@ import re, os, sys, fileinput, random
 
 MAGIC_BAD_CODE = -912837465
 
-class ArgMap:
-
-    def __init__(self):
-        self._dataMap = {}
+class ArgMap(dict):
 
 
     # This is obviously non-Pythonic, but I found it more intuitive in some cases
     def containsKey(self, onekey):
-        return onekey in self._dataMap
+        return onekey in self
 
     def put(self, mykey, myval):
-        self._dataMap[mykey] = myval
+        self[mykey] = myval
 
 
     # First, check that either the key or the default value is present
@@ -25,7 +22,7 @@ class ArgMap:
     def __sub_check_arg(self, onekey, defval, targtype, errfunc):
 
         if defval == MAGIC_BAD_CODE:
-            assert onekey in self._dataMap, f"Required key {onekey} not found in ArgMap"
+            assert onekey in self, f"Required key {onekey} not found in ArgMap"
             return
 
         if defval == None:
@@ -41,7 +38,7 @@ class ArgMap:
     def __sub_check_lookup(self, onekey, defval, targtype, errfunc):
 
         self.__sub_check_arg(onekey, defval, targtype, errfunc)
-        rawval = self._dataMap.get(onekey, defval)
+        rawval = self.get(onekey, defval)
         return None if rawval == None else targtype(rawval)
 
 
@@ -62,8 +59,8 @@ class ArgMap:
 
         self.__sub_check_arg(onekey, defval, bool, lambda dv: f"Attempt to pass a non-bool default value {dv} to getBit(...) method")
 
-        if onekey in self._dataMap:
-            oneval = self._dataMap[onekey].lower()
+        if onekey in self:
+            oneval = self[onekey].lower()
             assert oneval == 'true' or oneval == 'false', "Expected true or false value, got {}".format(oneval)
             return oneval == 'true'
 
@@ -71,16 +68,13 @@ class ArgMap:
 
 
     def size(self):
-        return len(self._dataMap)
+        return len(self)
 
-    def hasKey(self, onekey):
-        return onekey in self._dataMap
-
-    def hasKeyAssert(self, onekey):
-        assert self.hasKey(onekey), "Key {} not found in datamap".format(onekey)
 
     def __str__(self):
-        return "%s" % self._dataMap
+        return f"ArgMap::{super().__str__()}"
+
+
 
 def getFromArgv(argv):
 
