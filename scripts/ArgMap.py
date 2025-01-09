@@ -8,53 +8,59 @@ class ArgMap:
     def __init__(self):
         self._dataMap = {}
 
-    # Play nice with Java programmers
+
+    # This is obviously non-Pythonic, but I found it more intuitive in some cases
     def containsKey(self, onekey):
         return onekey in self._dataMap
 
     def put(self, mykey, myval):
         self._dataMap[mykey] = myval
 
-    def getStr(self, onekey, defval=MAGIC_BAD_CODE):
+
+    # First, check that either the key or the default value is present
+    # Second, check that the type of the default value is either None, or equal to the target type
+    # If it does not match, compose an error message from a provided function
+    # This is a vague gesture in the direction of performance; if you are calling these methods many times,
+    # You ideally do not want the string formatting logic to run every time
+    def __sub_check_arg(self, onekey, defval, targtype, errfunc):
 
         if defval == MAGIC_BAD_CODE:
-          assert onekey in self._dataMap, "Required key {} not found in ArgMap".format(onekey)
-        else:
-          assert defval == None or type(defval) == str, f"Attempt to pass a non-string default value {defval} to getStr(...) method"
+            assert onekey in self._dataMap, f"Required key {onekey} not found in ArgMap"
+            return
+
+        if defval == None:
+            return
+
+        if type(defval) != targtype:
+            errmssg = errfunc(defval)
+            assert False, errmssg
 
 
-        if onekey in self._dataMap:
-            return self._dataMap[onekey]
-        return defval
+    # Check the arguments and default values
+    # Then lookup the result or the default value, and cast to the target type
+    def __sub_check_lookup(self, onekey, defval, targtype, errfunc):
+
+        self.__sub_check_arg(onekey, defval, targtype, errfunc)
+        rawval = self._dataMap.get(onekey, defval)
+        return None if rawval == None else targtype(rawval)
+
+
+    def getStr(self, onekey, defval=MAGIC_BAD_CODE):
+        return self.__sub_check_lookup(onekey, defval, str, lambda dv: f"Attempt to pass a non-string default value {dv} to getStr(...) method")
 
 
     def getDbl(self, onekey, defval=MAGIC_BAD_CODE):
-
-        if defval == MAGIC_BAD_CODE:
-          assert onekey in self._dataMap, "Required key {} not found in ArgMap".format(onekey)
-        else:
-          assert defval == None or type(defval) == float, "Attempt to pass a non-float default value to getDbl(...) method"
-
-        subdef = None if defval == None else str(defval)
-        mystr = self.getStr(onekey, defval=str(defval))
-        return None if mystr == None else float(mystr)
+        return self.__sub_check_lookup(onekey, defval, float, lambda dv: f"Attempt to pass a non-float default value {dv} to getDbl(...) method")
 
 
     def getInt(self, onekey, defval=MAGIC_BAD_CODE):
-        if defval == MAGIC_BAD_CODE:
-          assert onekey in self._dataMap, "Required key {} not found in ArgMap".format(onekey)
-        else:
-          assert defval == None or type(defval) == int, "Attempt to pass a non-int default value to getInt(...) method"
+        return self.__sub_check_lookup(onekey, defval, int, lambda dv: f"Attempt to pass a non-int default value {dv} to getInt(...) method")
 
-        subdef = None if defval == None else str(defval)
-        mystr = self.getStr(onekey, defval=subdef)
-        return None if mystr == None else int(mystr)
+
 
     def getBit(self, onekey, defval=MAGIC_BAD_CODE):
-        if defval == MAGIC_BAD_CODE:
-          assert onekey in self._dataMap, "Required key {} not found".format(onekey)
-        else:
-          assert type(defval) == bool, "Attempt to pass a non-bool default value to getBit(...) method"
+
+        self.__sub_check_arg(onekey, defval, bool, lambda dv: f"Attempt to pass a non-bool default value {dv} to getBit(...) method")
 
         if onekey in self._dataMap:
             oneval = self._dataMap[onekey].lower()
