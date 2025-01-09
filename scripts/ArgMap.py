@@ -5,9 +5,8 @@ MAGIC_BAD_CODE = -912837465
 
 class ArgMap:
 
-    _dataMap = {}
     def __init__(self):
-        pass
+        self._dataMap = {}
 
     # Play nice with Java programmers
     def containsKey(self, onekey):
@@ -21,20 +20,34 @@ class ArgMap:
         if defval == MAGIC_BAD_CODE:
           assert onekey in self._dataMap, "Required key {} not found in ArgMap".format(onekey)
         else:
-          assert type(defval) == str, "Attempt to pass a non-string default value to getStr(...) method"
+          assert defval == None or type(defval) == str, f"Attempt to pass a non-string default value {defval} to getStr(...) method"
 
 
         if onekey in self._dataMap:
             return self._dataMap[onekey]
         return defval
 
+
+    def getDbl(self, onekey, defval=MAGIC_BAD_CODE):
+
+        if defval == MAGIC_BAD_CODE:
+          assert onekey in self._dataMap, "Required key {} not found in ArgMap".format(onekey)
+        else:
+          assert defval == None or type(defval) == float, "Attempt to pass a non-float default value to getDbl(...) method"
+
+        subdef = None if defval == None else str(defval)
+        mystr = self.getStr(onekey, defval=str(defval))
+        return None if mystr == None else float(mystr)
+
+
     def getInt(self, onekey, defval=MAGIC_BAD_CODE):
         if defval == MAGIC_BAD_CODE:
           assert onekey in self._dataMap, "Required key {} not found in ArgMap".format(onekey)
         else:
-          assert type(defval) == int, "Attempt to pass a non-int default value to getInt(...) method"
+          assert defval == None or type(defval) == int, "Attempt to pass a non-int default value to getInt(...) method"
 
-        mystr = self.getStr(onekey, defval)
+        subdef = None if defval == None else str(defval)
+        mystr = self.getStr(onekey, defval=subdef)
         return None if mystr == None else int(mystr)
 
     def getBit(self, onekey, defval=MAGIC_BAD_CODE):
@@ -50,6 +63,9 @@ class ArgMap:
 
         return defval
 
+
+    def size(self):
+        return len(self._dataMap)
 
     def hasKey(self, onekey):
         return onekey in self._dataMap
