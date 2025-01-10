@@ -62,6 +62,8 @@ public class TemplateGenerator
             "",
             "<script>",
             "",
+            String.format("const MAIN_TABLE = '%s';", _liteTable.getSimpleTableName()),
+            "",
             "let EDIT_STUDY_ITEM = -1;",
             ""
         );
@@ -69,7 +71,7 @@ public class TemplateGenerator
 
         add("function deleteItem(itemid) {");
 
-        add("\tconst item = W.lookupItem('%s', itemid)", _liteTable.getSimpleTableName());
+        add("\tconst item = W.lookupItem(MAIN_TABLE, itemid);");
         add("\titem.deleteItem();");
         add("\tredisplay();");
         add("}");
@@ -137,7 +139,7 @@ public class TemplateGenerator
 
         add("\t};");
 
-        add("\tconst newitem = W.buildItem('%s', newrec);", _liteTable.getSimpleTableName());
+        add("\tconst newitem = W.buildItem(MAIN_TABLE, newrec);");
         // newitem.syncItem();
         // redisplay();
 
@@ -214,7 +216,7 @@ public class TemplateGenerator
             "// Auto-generated getEditPageInfo function",
             "function getEditPageInfo() {",
             "",
-            String.format("\tconst item = W.lookupItem('%s', EDIT_STUDY_ITEM);", _liteTable.getSimpleTableName()),
+            String.format("\tconst item = W.lookupItem(MAIN_TABLE, EDIT_STUDY_ITEM);"),
             "\tvar pageinfo = `",
             "\t<h4>Edit Item</h4>",
             "\t<table class=\"basic-table\" width=\"50%\">"
@@ -228,7 +230,12 @@ public class TemplateGenerator
             "\t</tr>"
         );
 
-        for(String col : _liteTable.getColumnNameSet()) {
+        // Jan 2025: by default, don't show the ID column
+        var columnlist = Util.filter2list(_liteTable.getColumnNameSet(), 
+            c -> !c.equals(CoreUtil.STANDARD_ID_COLUMN_NAME));
+
+
+        for(String col : columnlist) {
 
             Class colclass = _liteTable.getExchangeType(col).getJavaType();
             String genericfunc = getGenericEditFunc(colclass);
@@ -236,15 +243,10 @@ public class TemplateGenerator
             add("\t<tr><td>%s</td>", CoreUtil.snake2CamelCase(col));
             add("\t<td>${item.get%s()}</td>", CoreUtil.snake2CamelCase(col));
 
-            String tdcell = "\t<td></td>";
-
-            if(!col.equals("id"))
-            {
-                tdcell = String.format(
-                    "\t<td><a href=\"javascript:%s('%s', '%s', EDIT_STUDY_ITEM)\"><img src=\"/u/shared/image/edit.png\" height=\"18\"></a></td>", 
-                    genericfunc, _liteTable.getSimpleTableName(), col
-                );
-            }
+            String tdcell = String.format(
+                "\t<td><a href=\"javascript:%s(MAIN_TABLE, '%s', EDIT_STUDY_ITEM)\"><img src=\"/u/shared/image/edit.png\" height=\"18\"></a></td>", 
+                genericfunc, col
+            );
 
             add(tdcell);
             add("\t</tr>");
@@ -271,22 +273,23 @@ public class TemplateGenerator
             "\t\t<tr>"
         );
 
-        for(String col : _liteTable.getColumnNameSet()) {
 
+
+        for(String col : columnlist) {
             add("\t\t<th>%s</th>", col);
         }
 
         additems(
             "\t\t<th>..</th></tr>",
             "\t`;",
-            String.format("\n\tconst itemlist = W.getItemList('%s');", _liteTable.getSimpleTableName()),
+            String.format("\n\tconst itemlist = W.getItemList(MAIN_TABLE);"),
             "",
             "\titemlist.forEach(function(item) {",
             "\t\tconst rowstr = `",
             "\t\t\t<tr>"
         );
 
-        for(String col : _liteTable.getColumnNameSet()) {
+        for(String col : columnlist) {
 
             add("\t\t\t<td>${shorten4Display(item.get%s())}</td>", CoreUtil.snake2CamelCase(col));
         }
@@ -300,7 +303,7 @@ public class TemplateGenerator
             "\t\t\t<a href=\"javascript:deleteItem(${item.getId()})\"><img src=\"/u/shared/image/remove.png\" height=\"16\"/></a>", 
             "\t\t\t</td>", 
             "\t\t\t</tr>", 
-            "\t\t`;",           
+            "\t\t`;",
             "\t\tpageinfo += rowstr;"
         );
 
