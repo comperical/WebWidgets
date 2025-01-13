@@ -1230,6 +1230,14 @@ public class FastTest4Basic
 
 				Util.massert(slip.isPresent(), "Failed to detect malicious entry in Zip File");
 			}
+
+			for(var good : Util.listify("GoodZip1.zip"))
+			{
+				var goodfile = loadFixtureFile(good);
+				var slip = CoreUtil.findZipSlipEntry(goodfile);
+
+				Util.massert(!slip.isPresent(), "Found Zip Slip entry in GOOD file!!");
+			}
 		}
 
 		private static ZipFile loadFixtureFile(String codename) throws IOException
