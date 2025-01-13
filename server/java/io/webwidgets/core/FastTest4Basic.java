@@ -5,6 +5,7 @@ import java.io.*;
 import java.util.*; 
 import java.sql.*; 
 import java.net.*; 
+import java.util.zip.*;
 import java.util.function.BiFunction;
 
 import org.json.simple.*;
@@ -1213,6 +1214,34 @@ public class FastTest4Basic
 
 				Util.pf("Success, found preferred file %s for gallery %s\n", prefer.get().getName(), subdir.getName());
 			}
+		}
+	}
+
+	public static class CheckZipSlipGuard extends ArgMapRunnable
+	{
+		public void runOp() throws Exception
+		{
+			List<String> badlist = Util.listify("ZipSlip1.zip", "ZipSlip2.zip", "ZipSlip3.zip");
+
+			for(var bad : badlist)
+			{
+				var badfile = loadFixtureFile(bad);
+				var slip = CoreUtil.findZipSlipEntry(badfile);
+
+				Util.massert(slip.isPresent(), "Failed to detect malicious entry in Zip File");
+			}
+		}
+
+		private static ZipFile loadFixtureFile(String codename) throws IOException
+		{
+			List<String> tokens = Arrays.asList(
+				CoreUtil.REPO_BASE_DIRECTORY,
+				"server", "testdata", "zipslip", codename
+			);
+
+			File inputfile = new File(Util.join(tokens, File.separator));
+			Util.massert(inputfile.exists(), "Could not find test fixture data %s", inputfile);
+			return new ZipFile(inputfile);
 		}
 	}
 }

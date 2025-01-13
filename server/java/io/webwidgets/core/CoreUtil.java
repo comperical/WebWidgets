@@ -552,4 +552,30 @@ public class CoreUtil
 		return Optional.empty();
 	}
 
+
+	public static Optional<ZipEntry> findZipSlipEntry(ZipFile probefile) throws IOException
+	{
+		// We're not actually expanding anything into this
+		File basedir = new File("/this/is/not/a/real/path");
+		Enumeration<? extends ZipEntry> zipen = probefile.entries();
+
+		while(zipen.hasMoreElements()) {
+			ZipEntry zent = zipen.nextElement();
+
+			// Here we are being more strict than is truly required; paranoia is good
+			if(zent.getName().contains(".."))
+				{ return Optional.of(zent); }
+
+			File kidfile = new File(basedir, zent.getName());
+			String basepath = basedir.getCanonicalPath();
+			String filepath = (new File(basedir, zent.getName())).getCanonicalPath();
+
+			if(!filepath.startsWith(basepath + File.separator))
+				{ return Optional.of(zent); }
+		}
+
+		return Optional.empty();
+
+	}
+
 } 
