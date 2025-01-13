@@ -540,6 +540,10 @@ public class ActionJackson extends HttpServlet
 					if(zent.isDirectory())
 						{ continue; }
 
+					// This will simply throw an exception if the issue is present
+					// This should really also send a message that the user should be banned
+					guardAgainstZipSlip(zent, basedir);
+
 					// Keep this DSTORE garbage off of my server
 					String zname = zent.getName();
 					if(zname.equals(MAC_OS_DSTORE))
@@ -563,10 +567,21 @@ public class ActionJackson extends HttpServlet
 				throw new RuntimeException(ex);
 			}
 		}
-		
-
 	}
-	
+
+	// Zip Slip attack: compose a .Zip file that contains Path traversal data,
+	// to overwrite files that are outside of the target directory
+	// This method just throws an exception if such a file is present
+	private static void guardAgainstZipSlip(ZipEntry zent, File basedir) throws IOException
+	{
+		String basepath = basedir.getCanonicalPath();
+		String filepath = (new File(basedir, zent.getName())).getCanonicalPath();
+
+		Util.massert(filepath.startsWith(basepath + File.separator),
+			"Invalid path traversal lookup in Zip Entry %s", zent.getName());
+	}
+
+
 	// TODO: we need a better approach to this that will work for open-core users also
 	public static Map<String, String> getSpecialRemapDir()
 	{
