@@ -536,7 +536,7 @@ public class ActionJackson extends HttpServlet
 				{
 					Optional<ZipEntry> badentry = CoreUtil.findZipSlipEntry(myfile);
 					Util.massert(!badentry.isPresent(),
-						"Zip Entry %s looks malicious, please obey rules of Zip Entry composition!!", badentry.get());
+						"Zip Entry %s looks malicious, please obey rules of Zip Entry composition!!", badentry);
 				}
 
 				Enumeration<? extends ZipEntry> zipen = myfile.entries();
