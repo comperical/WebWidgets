@@ -123,12 +123,12 @@ function genericEditTextField(tablename, fieldname, itemid)
     const theitem = W.lookupItem(tablename, itemid);
     const newval = prompt("Please enter a new value for field " + fieldname + ": ", theitem[fieldname]);
     
-    if(newval)
-    {
-        theitem[fieldname] = newval;
-        theitem.syncItem();
-        redisplay();
-    }
+    if(newval == null)
+        { return; }
+
+    theitem[fieldname] = newval;
+    theitem.syncItem();
+    redisplay();
 }
 
 // Same as genericEditIntField, but can be a float/real, instead of just an int
