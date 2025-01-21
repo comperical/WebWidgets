@@ -210,10 +210,13 @@ function clearSearch()
 
 function updateCategory()
 {
-	const edititem = getEditRecord();
-	edititem.setCatId(parseInt(getDocFormValue("item_category_sel")));
-	edititem.syncItem();
-	redisplay();
+	const updater = function(item)
+	{
+		const catid = parseInt(getDocFormValue("item_category_sel"));
+		item.setCatId(catid);
+	}
+
+	U.genericItemUpdate("link_main", EDIT_STUDY_ITEM, updater);
 }
 
 function redisplay()

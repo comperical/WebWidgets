@@ -76,11 +76,23 @@ const U = {
     {
         const myschema = U.getSchema(tablename);
         console.log(myschema);
+    },
+
+    // Perform an action on the record designated with the given table and item ID
+    // the action is specified by the updater function
+    // This action does not support delete, use genericDeleteItem for that functionality
+    // In addition to running the update, also call syncItem on the record and then redisplay()
+    genericItemUpdate : function(tablename, itemid, updater)
+    {
+        massert(W.haveItem(tablename, itemid),
+            "Could not find item " + itemid + " in table " + tablename);
+
+        const item = W.lookupItem(tablename, itemid);
+        updater(item);
+        item.syncItem();
+        redisplay();
     }
 }
-
-
-var MY_TIME_ZONE = "AST";
 
 // Delete Item from given table. 
 // Error if the item with the given ID does not exist.
