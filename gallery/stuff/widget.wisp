@@ -205,7 +205,9 @@ function toggleContainer()
 
 function runSearch()
 {
-    SEARCH_TERM = prompt("Search for ", SEARCH_TERM);
+    const prior = SEARCH_TERM == null ? "" : SEARCH_TERM;
+
+    SEARCH_TERM = prompt("Search for ", prior);
     if(SEARCH_TERM) 
         { SEARCH_TERM = SEARCH_TERM.toLowerCase(); }
     redisplay();
