@@ -46,6 +46,8 @@ public class CoreUtil
 
 	public static final String ACCESS_HASH_COOKIE = "accesshash";
 
+	// If this column is present, the table is considered to have fine grained permissions
+	// The platform blocks users from setting this to any value other than their actual user name
 	public static final String AUTH_OWNER_COLUMN = "auth_owner";
 
 	// TODO: probably want to expand this to include other things like "include"

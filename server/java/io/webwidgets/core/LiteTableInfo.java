@@ -437,6 +437,16 @@ public class LiteTableInfo
 		return _exTypeMap.containsKey(CoreUtil.AUTH_OWNER_COLUMN);
 	}
 
+	Optional<ArgMap> lookupRecordById(int recordid)
+	{
+		String where = String.format(" %s = %d ", CoreUtil.STANDARD_ID_COLUMN_NAME, recordid);
+
+		// This is fast; all WWIO tables have single PKey
+		QueryCollector query = CoreUtil.tableQuery(dbTabPair._1, dbTabPair._2, Util.listify(where));
+
+		return query.getNumRec() > 0 ? Optional.of(query.getSingleArgMap()) : Optional.empty();
+	}
+
 	static boolean isUpsertAjaxOp(ArgMap argmap)
 	{
 		String ajaxop = argmap.getStr("ajaxop");

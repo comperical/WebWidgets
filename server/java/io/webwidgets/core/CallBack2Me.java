@@ -121,7 +121,7 @@ public class CallBack2Me extends HttpServlet
 		}
 
 
-		Optional<String> granprob = checkGranularPermIssue(tableInfo, innmap);
+		Optional<String> granprob = checkGranularPermIssue(tableInfo, optuser, innmap);
 		if(granprob.isPresent())
 		{
 			placeFailCode(outmap, FailureCode.MaintenanceMode, granprob.get());
@@ -150,13 +150,47 @@ public class CallBack2Me extends HttpServlet
 		outmap.put("user_message", "ajax sync op successful");
 	}
 
-	private Optional<String> checkGranularPermIssue(LiteTableInfo table, ArgMap innmap)
+	private static Optional<String> checkGranularPermIssue(LiteTableInfo table, Optional<WidgetUser> user, ArgMap innmap)
 	{
+		if(!user.isPresent())
+		{
+			return Optional.of("This table has granular permissions; user must be logged in to update");
+		}
+
 		if(table.hasGranularPerm())
 		{
+			// For upserts, the logged-in user must match the value of the auth-own
+			if(LiteTableInfo.isUpsertAjaxOp(innmap))
+			{
+				// Core contract: framework guarantees that the owner is whoever is logged in
+				// The owner is the last person who updated the record
+				// TODO: need to decide how I feel about this policy, it seems kind of weird
+				innmap.put(CoreUtil.AUTH_OWNER_COLUMN, user.get().toString());
+			}
 
+			// For both upsert and delete, we need to check that the logged-in-user has update rights for the record
+			// As of v1, this just means "is this the owner?"
+			int recordid = innmap.getInt(CoreUtil.STANDARD_ID_COLUMN_NAME);
 
+			// This is a fast lookup, but this does imply that fine-grained permission tables have
+			// worse performance than normal tables
+			// Note that if the current is not present, it's a create, so we're okay
+			Optional<ArgMap> current = table.lookupRecordById(recordid);
 
+			if(current.isPresent())
+			{
+				String authstr = current.get().getStr(CoreUtil.AUTH_OWNER_COLUMN);
+
+				// TODO: do I really need to do the lookup here? Or can I just compare strings directly?
+				Optional<WidgetUser> authowner = WidgetUser.softLookup(authstr);
+
+				// This check will expand when we implement the permission equivalence table
+				if(!user.equals(authowner))
+				{
+					var e = String.format("Widget User %s is not authorized to make updates to record ID %d", user.get(), recordid);
+					return Optional.of(e);
+				}
+			}
 		}
 
 		return Optional.empty();
