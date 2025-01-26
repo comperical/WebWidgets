@@ -24,7 +24,6 @@ public class IncludeInternal
 
     // Internal data serve
     // This is a way of pulling in the JSON data for a tag using a separate <script src="...."> tag
-    // This can be 
     @WebServlet(urlPatterns = "/directload") 
     public static class DirectJsonLoader extends HttpServlet {
 

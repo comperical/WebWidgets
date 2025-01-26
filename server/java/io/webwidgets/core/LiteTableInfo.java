@@ -142,6 +142,8 @@ public class LiteTableInfo
 
 	private Boolean _isBlobStore = null;
 
+	private List<WidgetUser> _checkAuthOwner = null;
+
 	private boolean _noDataMode;
 
 	public LiteTableInfo(WidgetItem widget, String table)
@@ -311,6 +313,8 @@ public class LiteTableInfo
 		Util.massert(!_exTypeMap.isEmpty(),
 			"You must call runQuery before creating the data, sorry bad naming");
 		
+		Util.massert(_checkAuthOwner == null || hasGranularPerm(),
+			"Attempt to check granular permissions, but this table is not configured for granular perms");
 		
 		List<ArgMap> recordList = Collections.emptyList();
 
@@ -319,13 +323,24 @@ public class LiteTableInfo
 			String query = "SELECT * FROM " + querytarget;
 			QueryCollector bigcol;
 
-			if(_colFilterTarget == null)
+			Util.massert(_colFilterTarget == null || _checkAuthOwner == null,
+				"As of Jan 2025, cannot use filter column targets with auth owner targets");
+
+			if(_colFilterTarget != null)
 			{
-				bigcol = QueryCollector.buildAndRun(query, dbTabPair._1);
-			} else { 
 				query += String.format(" WHERE %s = ? ", _colFilterTarget._1);
 				bigcol = QueryCollector.buildRunPrepared(query, dbTabPair._1, _colFilterTarget._2);
+
+			} else if (_checkAuthOwner != null) {
+
+				query += String.format(" WHERE %s IN (%s) ", CoreUtil.AUTH_OWNER_COLUMN, CoreDb.nQuestionMarkStr(_checkAuthOwner.size()));
+				bigcol = QueryCollector.buildRunPrepared(query, dbTabPair._1, _checkAuthOwner.toArray());
+
+			} else {
+
+				bigcol = QueryCollector.buildAndRun(query, dbTabPair._1);
 			}
+
 
 			recordList = bigcol.getArgMapList();
 		}
