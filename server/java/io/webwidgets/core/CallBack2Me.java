@@ -28,6 +28,7 @@ public class CallBack2Me extends HttpServlet
 		MaintenanceMode("The server is in maintenance mode"),
 		SyncError("The widget data has been changed by another user"),
 		WidgetNotFound("The widget could not be found"),
+		GranularPermission("This user does not have granular permission to modify or create this record"),
 		AccessDenied("You do not have permission to modify this widget's data"),
 		EmailProblem("There is a problem with this email"),
 		NumberConversionError("There was a problem converting data into numeric types"),
@@ -93,7 +94,7 @@ public class CallBack2Me extends HttpServlet
 
 	private void processGetSub(HttpServletRequest request, ArgMap outmap)
 	{
-		ArgMap innmap = WebUtil.getArgMap(request);	
+		ArgMap innmap = WebUtil.getArgMap(request);
 
 		// TODO: this section implies that every Sync or delete operation requires a full LTI setup,
 		// which potentially involves a significant amount of overhead (?)
@@ -118,6 +119,15 @@ public class CallBack2Me extends HttpServlet
 			placeFailCode(outmap, FailureCode.AccessDenied);
 			return;
 		}
+
+
+		Optional<String> granprob = checkGranularPermIssue(tableInfo, innmap);
+		if(granprob.isPresent())
+		{
+			placeFailCode(outmap, FailureCode.MaintenanceMode, granprob.get());
+			return;
+		}
+
 		
 		Optional<String> maintmode = AdvancedUtil.maintenanceModeInfo();
 		if(maintmode.isPresent())
@@ -132,12 +142,26 @@ public class CallBack2Me extends HttpServlet
 			placeFailCode(outmap, FailureCode.EmailProblem, emailissue.get());
 			return;
 		}
-		
+
+
 		tableInfo.processAjaxOp(innmap);
 		
 		outmap.put("status_code", "okay");
 		outmap.put("user_message", "ajax sync op successful");
 	}
+
+	private Optional<String> checkGranularPermIssue(LiteTableInfo table, ArgMap innmap)
+	{
+		if(table.hasGranularPerm())
+		{
+
+
+
+		}
+
+		return Optional.empty();
+	}
+
 
 	private void placeException(ArgMap outmap, Exception ex)
 	{

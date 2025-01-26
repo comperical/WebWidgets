@@ -73,10 +73,8 @@ public class CoreDb
 
 			} catch(Exception ex) {
 
-				throw new RuntimeException(ex); 
-
+				throw new RuntimeException(ex);
 			}
-
 		}
 		
 		public static QueryCollector buildAndRun(String sql, ConnectionSource csource)

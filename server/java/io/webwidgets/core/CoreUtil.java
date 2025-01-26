@@ -46,6 +46,8 @@ public class CoreUtil
 
 	public static final String ACCESS_HASH_COOKIE = "accesshash";
 
+	public static final String AUTH_OWNER_COLUMN = "auth_owner";
+
 	// TODO: probably want to expand this to include other things like "include"
 	public static final Set<String> AUX_CODE_OKAY = Collections.unmodifiableSet(
 		Util.setify(BASE_WIDGET_NAME)

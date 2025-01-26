@@ -6,6 +6,7 @@ import java.sql.*;
 
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.function.Consumer;
 
 import javax.servlet.http.HttpServletRequest;
 import org.json.simple.JSONObject;
@@ -429,30 +430,36 @@ public class LiteTableInfo
 	}
 
 
+	// True if the table has "granular" permissions
+	public boolean hasGranularPerm()
+	{
+		Util.massert(_exTypeMap != null, "You must run the setup query first");
+		return _exTypeMap.containsKey(CoreUtil.AUTH_OWNER_COLUMN);
+	}
+
+	static boolean isUpsertAjaxOp(ArgMap argmap)
+	{
+		String ajaxop = argmap.getStr("ajaxop");
+		boolean isups = ajaxop.equals("upsert");
+		boolean isdel = ajaxop.equals("delete");
+
+		Util.massert(isups || isdel, "Bad Ajax Operation code %s", ajaxop);
+		return isups;
+	}
+
 	
 	void processAjaxOp(ArgMap argmap)
 	{
+		// Modestly better performance to do this here, rather than within sync block
+		Consumer<ArgMap> myfunc = isUpsertAjaxOp(argmap) ? this::doUpsert : this::doDelete;
+
 		// TODO: this is going to probably cause some scalability issues
 		// when we get to 100000's of tables
 		SyncController editcontrol = getEditController(dbTabPair._1);
 		
 		synchronized(editcontrol)
 		{
-			String ajaxop = argmap.getStr("ajaxop");
-			
-			if(ajaxop.equals("upsert"))
-			{
-				doUpsert(argmap);
-				return;
-			}
-			
-			if(ajaxop.equals("delete"))
-			{
-				doDelete(argmap);
-				return;
-			}
-			
-			Util.massert(false, "Unknown AjaxOp %s", ajaxop);
+			myfunc.accept(argmap);
 		}
 	}
 	
