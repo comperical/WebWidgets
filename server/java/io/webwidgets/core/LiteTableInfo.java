@@ -39,11 +39,7 @@ public class LiteTableInfo
 
     public static final Pattern DEFAULT_PATTERN = Pattern.compile("DEFAULT\\s+(?:(?:'([^']*)')|(\\d+(?:\\.\\d+)?)(?=\\s|,|$)|(\\w+))", Pattern.CASE_INSENSITIVE);
 
-    public static final Pattern SIMPLE_STRING_OKAY = Pattern.compile("^[A-Za-z0-9]+$");
-
 	public static final String LOAD_SUCCESS_TAG = LiteTableInfo.class.getSimpleName() + "__LOAD_SUCCESS";
-		
-	public static final Set<String> SQLITE_STR_TYPE = Util.setify("varchar", "text");
 	
 	public enum ExchangeType
 	{
@@ -269,11 +265,6 @@ public class LiteTableInfo
 	public String getCollectName()
 	{
 		return getBasicName() + "Table";
-	}
-	
-	public List<String> getPkeyList()
-	{
-		return Arrays.asList("id");
 	}
 	
 	public ConnectionSource getDbRef()
@@ -518,8 +509,8 @@ public class LiteTableInfo
 		// What gets entered into the SQLite table is the blob coords, not the blob data itself
 		BlobDataManager.optProcessBlobInput(this, paymap);
 		
-		// The getPkeyList().size() is a bit unnecessary, all WWIO tables have exactly 1 PK column "id"
-		CoreDb.upsertFromRecMap(dbTabPair._1, dbTabPair._2, getPkeyList().size(), paymap);
+		// All WWIO tables have 1 primary key
+		CoreDb.upsertFromRecMap(dbTabPair._1, dbTabPair._2, 1, paymap);
 	}
 	
 	private void doDelete(ArgMap argmap)
@@ -527,11 +518,10 @@ public class LiteTableInfo
 		Util.massert(argmap.getStr("tablename").equals(dbTabPair._2),
 			"Wrong table name: %s vs %s", argmap.getStr("tablename"), dbTabPair._2);
 		
-		// TODO: historical versions of WWIO allowed multi-column primary keys
-		// Current version (Oct 2023) allows only single-column primary key with Integer "id"
-		// So this command really just getRecMap("id", argmap.getInt("id"))); 
-		// LinkedHashMap<String, Object> paymap = getPayLoadMap(argmap, _pkeyList);
-		LinkedHashMap<String, Object> paymap = CoreDb.getRecMap("id", argmap.getInt("id"));
+		// Single record of "id" -> integer ID
+		LinkedHashMap<String, Object> paymap = CoreDb.getRecMap(
+			CoreUtil.STANDARD_ID_COLUMN_NAME, argmap.getInt(CoreUtil.STANDARD_ID_COLUMN_NAME)
+		);
 
 		BlobDataManager.optProcessDelete(this, paymap);
 		
@@ -765,7 +755,7 @@ public class LiteTableInfo
 		}
 		
 		int oldversion = prevfile.isPresent() ? this.getVersionFromPath(prevfile.get()) : 0;
-		String newjspath = this.getAutoGenProbePath(oldversion+1);					
+		String newjspath = this.getAutoGenProbePath(oldversion+1);
 		
 		FileUtils.getWriterUtil()
 				.setFile(newjspath)

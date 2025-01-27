@@ -674,50 +674,6 @@ public class FastTest4Basic
 		}
 	}
 
-	public static class CheckPrimaryKeyConfig extends DescRunnable
-	{
-		public String getDesc()
-		{
-			return "Check that every Widget table has a single primary Key 'id'";
-		}
-
-		public void runOp()
-		{
-			var expected = Arrays.asList("id");
-			var badcount = 0;
-			var okaycount = 0;
-
-			for(var user : WidgetUser.values())
-			{
-				for(var item : WidgetItem.getUserWidgetList(user))
-				{
-					if(user.toString().equals("dburfoot") && item.theName.equals("life"))
-						{ continue; }
-
-
-					for(var table : item.getDbTableNameSet())
-					{
-						var LTI = new LiteTableInfo(item, table);
-						LTI.runSetupQuery();
-						if(!LTI.getPkeyList().equals(expected))
-						{
-							Util.pferr("Have PK list %s for %s :: %s\n", LTI.getPkeyList(), item, table);
-							badcount += 1;
-						} else {
-							okaycount += 1;
-						}
-					}
-				}
-			}
-
-			Util.massert(badcount == 0, "Got %d errors, see above", badcount);
-			Util.pf("Checked %d tables okay\n", okaycount);
-		}
-	}
-
-
-
-	
 	public static class TestGuessMimeType extends DescRunnable
 	{
 
