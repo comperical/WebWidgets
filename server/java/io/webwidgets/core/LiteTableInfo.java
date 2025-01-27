@@ -142,7 +142,7 @@ public class LiteTableInfo
 
 	private Boolean _isBlobStore = null;
 
-	private List<WidgetUser> _checkAuthOwner = null;
+	private Set<WidgetUser> _checkAuthOwner = null;
 
 	private boolean _noDataMode;
 
@@ -205,6 +205,13 @@ public class LiteTableInfo
 			"Attempt to filter on missing column %s, options are %s", colname, _exTypeMap.keySet());
 
 		_colFilterTarget = Pair.build(colname, value);
+		return this;
+	}
+
+	public LiteTableInfo withAuthOwnerSet(Set<WidgetUser> userset)
+	{
+		Util.massert(hasGranularPerm(), "Attempt to check auth owner set for table without granular permissions");
+		_checkAuthOwner = userset;
 		return this;
 	}
 	
@@ -308,7 +315,10 @@ public class LiteTableInfo
 		return reclist;
 	}
 	
-	private List<String> composeJsonRepList(String querytarget)
+
+	// TODO: all of the query-specific logic should be in another place, and another class
+	// The LiteTableInfo is metadata about a TABLE, not a QUERY
+	public List<ArgMap> loadRecordList(String querytarget)
 	{
 		Util.massert(!_exTypeMap.isEmpty(),
 			"You must call runQuery before creating the data, sorry bad naming");
@@ -316,34 +326,36 @@ public class LiteTableInfo
 		Util.massert(_checkAuthOwner == null || hasGranularPerm(),
 			"Attempt to check granular permissions, but this table is not configured for granular perms");
 		
-		List<ArgMap> recordList = Collections.emptyList();
+		if(_noDataMode)
+			{ return Collections.emptyList(); }
 
-		if(!_noDataMode) 
+		String query = "SELECT * FROM " + querytarget;
+		QueryCollector bigcol;
+
+		Util.massert(_colFilterTarget == null || _checkAuthOwner == null,
+			"As of Jan 2025, cannot use filter column targets with auth owner targets");
+
+		if(_colFilterTarget != null)
 		{
-			String query = "SELECT * FROM " + querytarget;
-			QueryCollector bigcol;
+			query += String.format(" WHERE %s = ? ", _colFilterTarget._1);
+			bigcol = QueryCollector.buildRunPrepared(query, dbTabPair._1, _colFilterTarget._2);
 
-			Util.massert(_colFilterTarget == null || _checkAuthOwner == null,
-				"As of Jan 2025, cannot use filter column targets with auth owner targets");
+		} else if (_checkAuthOwner != null) {
 
-			if(_colFilterTarget != null)
-			{
-				query += String.format(" WHERE %s = ? ", _colFilterTarget._1);
-				bigcol = QueryCollector.buildRunPrepared(query, dbTabPair._1, _colFilterTarget._2);
+			query += String.format(" WHERE %s IN (%s) ", CoreUtil.AUTH_OWNER_COLUMN, CoreDb.nQuestionMarkStr(_checkAuthOwner.size()));
+			bigcol = QueryCollector.buildRunPrepared(query, dbTabPair._1, _checkAuthOwner.toArray());
 
-			} else if (_checkAuthOwner != null) {
-
-				query += String.format(" WHERE %s IN (%s) ", CoreUtil.AUTH_OWNER_COLUMN, CoreDb.nQuestionMarkStr(_checkAuthOwner.size()));
-				bigcol = QueryCollector.buildRunPrepared(query, dbTabPair._1, _checkAuthOwner.toArray());
-
-			} else {
-
-				bigcol = QueryCollector.buildAndRun(query, dbTabPair._1);
-			}
-
-
-			recordList = bigcol.getArgMapList();
+		} else {
+			bigcol = QueryCollector.buildAndRun(query, dbTabPair._1);
 		}
+
+		return bigcol.getArgMapList();
+	}
+
+	private List<String> composeJsonRepList(String querytarget)
+	{
+		
+		List<ArgMap> recordList = loadRecordList(querytarget);
 
 		List<String> jsonitems = Util.vector();
 		
@@ -448,7 +460,7 @@ public class LiteTableInfo
 	// True if the table has "granular" permissions
 	public boolean hasGranularPerm()
 	{
-		Util.massert(_exTypeMap != null, "You must run the setup query first");
+		Util.massert(_exTypeMap != null && !_exTypeMap.isEmpty(), "You must run the setup query first");
 		return _exTypeMap.containsKey(CoreUtil.AUTH_OWNER_COLUMN);
 	}
 
@@ -495,7 +507,7 @@ public class LiteTableInfo
 		return _isBlobStore;
 	}
 
-	public void doUpsert(ArgMap argmap)
+	private void doUpsert(ArgMap argmap)
 	{
 		Util.massert(argmap.getStr("tablename").equals(dbTabPair._2),
 			"Wrong table name: %s vs %s", argmap.getStr("tablename"), dbTabPair._2);
@@ -510,7 +522,7 @@ public class LiteTableInfo
 		CoreDb.upsertFromRecMap(dbTabPair._1, dbTabPair._2, getPkeyList().size(), paymap);
 	}
 	
-	public void doDelete(ArgMap argmap)
+	private void doDelete(ArgMap argmap)
 	{
 		Util.massert(argmap.getStr("tablename").equals(dbTabPair._2),
 			"Wrong table name: %s vs %s", argmap.getStr("tablename"), dbTabPair._2);
@@ -557,38 +569,6 @@ public class LiteTableInfo
 		return paymap;
 	}
 
-	
-	static Object getPayLoad(String onecol, String onetype, ArgMap recmap)
-	{
-		String probe = recmap.get(onecol);
-		if(CoreUtil.MAGIC_NULL_STRING.equals(probe))
-			{ return null; }
-
-		try
-		{
-			switch(onetype)
-			{
-				case "INT":
-				case "TINYINT":
-				case "SMALLINT":
-				case "INTEGER" : return recmap.getInt(onecol);
-
-				case "REAL":
-				case "DOUBLE": return recmap.getDbl(onecol);
-
-				case "TEXT":
-				case "VARCHAR":
-				case "STRING": return recmap.getStr(onecol);
-
-				default: throw new RuntimeException("Unknown Type: " + onetype);
-			}
-		} catch (NumberFormatException nfex) {
-
-			String input = recmap.get(onecol);
-			throw new ArgMapNumberException(onecol, onetype, input);
-		}
-	}
-
 	private Object exchangeConvert(ArgMap recmap, String onecol)
 	{
 		String probe = recmap.get(onecol);
@@ -625,6 +605,7 @@ public class LiteTableInfo
 	}
 
 
+	// TODO: this is unused except for a unit test, refactor the unit test
 	static Object getJsonPayLoad(String onecol, String onetype, JSONObject jsonob)
 	{
 		Object probe = jsonob.get(onecol);
@@ -828,7 +809,7 @@ public class LiteTableInfo
 			loglist.add(Util.sprintf("Deleted old file %s\n", prevfile.get()));	
 		}
 		
-		return loglist;		
+		return loglist;
 	}
 
 	
@@ -855,7 +836,7 @@ public class LiteTableInfo
 	// TODO: need to get rid of this hacky way of upgrading the versions
 	// Just put the file modtime in there, Jesus
 	int getVersionFromPath(File thefile)
-	{	
+	{
 		String fname = thefile.getName();
 		String[] toks = fname.split("__");
 		String justnum = CoreUtil.peelSuffix(toks[1], ".js");
@@ -867,7 +848,7 @@ public class LiteTableInfo
 		String fname = thefile.getName();
 		String[] toks = fname.split("__");
 		return getBasicName().equals(toks[0]);
-	}	
+	}
 	
 	public Optional<File> findAutoGenFile()
 	{
