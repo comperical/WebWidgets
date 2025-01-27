@@ -1059,7 +1059,7 @@ public class FastTest4Basic
 
 	}
 
-	public static class TestJsonTypeConvert extends ArgMapRunnable
+	public static class TestExchangeTypeConvert extends ArgMapRunnable
 	{
 
 		public void runOp() throws Exception
@@ -1072,7 +1072,7 @@ public class FastTest4Basic
 					boolean okay = true;
 					try {
 						JSONObject jsonob = Util.cast((new JSONParser()).parse(s));
-						Integer info = Util.cast(LiteTableInfo.getJsonPayLoad("info", "INT", jsonob));
+						Integer info = Util.cast(LiteTableInfo.ExchangeType.m_int.convertFromJson(jsonob, "info"));
 						Util.pf("Got int %s\n", info);
 					} catch (Exception ex) {
 						okay = false;
@@ -1088,7 +1088,7 @@ public class FastTest4Basic
 					boolean okay = true;
 					try {
 						JSONObject jsonob = Util.cast((new JSONParser()).parse(s));
-						Double info = Util.cast(LiteTableInfo.getJsonPayLoad("info", "REAL", jsonob));
+						Double info = Util.cast(LiteTableInfo.ExchangeType.m_double.convertFromJson(jsonob, "info"));
 						Util.pf("Got double %s\n", info);
 					} catch (Exception ex) {
 						okay = false;

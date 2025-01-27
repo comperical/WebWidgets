@@ -605,35 +605,6 @@ public class LiteTableInfo
 	}
 
 
-	// TODO: this is unused except for a unit test, refactor the unit test
-	static Object getJsonPayLoad(String onecol, String onetype, JSONObject jsonob)
-	{
-		Object probe = jsonob.get(onecol);
-		if(CoreUtil.MAGIC_NULL_STRING.equals(probe))
-			{ return null; }
-
-		java.util.function.Function<Object, Integer> convertlong = ob -> (ob == null ? null : ((Long) ob).intValue());
-		java.util.function.Function<Object, Double> convertreal = ob -> (ob == null ? null : ((Number) ob).doubleValue());
-
-		switch(onetype)
-		{
-			case "INT":
-			case "TINYINT":
-			case "SMALLINT":
-			case "INTEGER" : return convertlong.apply(probe);
-
-
-			case "REAL":
-			case "DOUBLE": return convertreal.apply(probe);
-
-			case "VARCHAR":
-			case "TEXT": 
-			case "STRING": return (String) probe;
-
-			default: throw new RuntimeException("Unknown Type: " + onetype);
-		}
-	}
-
 	// Load the SQLite create table statement, parse in the column name :: definition pairs
 	// This code is replicated in DataDesigner in extension package
 	// Eventually need a complete class that represents everything about a SQLite table definition
