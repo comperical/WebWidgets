@@ -100,7 +100,7 @@ public class LiteTableInfo
 			return isJsFloat() ? Double.class : (isJsInteger() ? Integer.class : String.class);
 		}
 
-		private Object convertFromJson(JSONObject jsonob, String colname)
+		Object convertFromJson(JSONObject jsonob, String colname)
 		{
 			if(isJsInteger())
 			{
@@ -120,7 +120,7 @@ public class LiteTableInfo
 			return ob;
 		}
 
-		private Object convertFromArgMap(ArgMap recmap, String colname)
+		Object convertFromArgMap(ArgMap recmap, String colname)
 		{
 			if(isJsInteger())
 				{ return recmap.getInt(colname); }
