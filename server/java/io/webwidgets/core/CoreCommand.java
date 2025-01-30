@@ -6,6 +6,8 @@ import java.sql.*;
 import java.util.*;
 import java.nio.file.*;
 
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
 import net.danburfoot.shared.Util;
 import net.danburfoot.shared.ArgMap;
@@ -1306,6 +1308,24 @@ public class CoreCommand
 	            Files.copy(srcfile.toPath(), dstfile.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 	            Util.pf("Copied file %s -> %s\n", srcfile.getAbsolutePath(), dstfile.getAbsolutePath());
 			}
+		}
+	}
+
+
+	public static class RebuildAuxGroupTable extends ArgMapRunnable
+	{
+		public void runOp() throws Exception
+		{
+			String username = _argMap.getStr("username", "dburfoot");
+			WidgetUser user = WidgetUser.lookup(username);
+			Util.massert(user != null, "User name not found %s", username);
+
+			String widgetname = _argMap.getStr("widgetname", "systest");
+			WidgetItem dbitem = new WidgetItem(user, widgetname);
+			Util.massert(dbitem.dbFileExists(), "Cannot find DB file %s", dbitem);
+
+			String maintable = _argMap.getStr("maintable", "gran_test3");
+			GranularPerm.rebuildAuxGroupTable(dbitem, maintable);
 		}
 	}
 }

@@ -50,6 +50,8 @@ public class CoreUtil
 	// The platform blocks users from setting this to any value other than their actual user name
 	public static final String AUTH_OWNER_COLUMN = "auth_owner";
 
+	public static final String GROUP_ALLOW_COLUMN = "group_allow";
+
 	// TODO: probably want to expand this to include other things like "include"
 	public static final Set<String> AUX_CODE_OKAY = Collections.unmodifiableSet(
 		Util.setify(BASE_WIDGET_NAME)

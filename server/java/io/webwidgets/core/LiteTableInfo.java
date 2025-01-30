@@ -449,10 +449,19 @@ public class LiteTableInfo
 
 
 	// True if the table has "granular" permissions
+	// TODO: I think I am going to remove this in preference for just the GROUP_ALLOW column
 	public boolean hasGranularPerm()
 	{
 		Util.massert(_exTypeMap != null && !_exTypeMap.isEmpty(), "You must run the setup query first");
 		return _exTypeMap.containsKey(CoreUtil.AUTH_OWNER_COLUMN);
+	}
+
+	public boolean hasGroupAllow()
+	{
+		boolean hasowner = hasGranularPerm();
+		boolean hasgroup = _exTypeMap.containsKey(CoreUtil.GROUP_ALLOW_COLUMN);
+		Util.massert(!(hasgroup && !hasowner), "Permission misconfiguration: group allow is present, but not owner");
+		return hasgroup;
 	}
 
 	Optional<ArgMap> lookupRecordById(int recordid)
@@ -511,6 +520,13 @@ public class LiteTableInfo
 		
 		// All WWIO tables have 1 primary key
 		CoreDb.upsertFromRecMap(dbTabPair._1, dbTabPair._2, 1, paymap);
+
+		// TODO: 
+		boolean granupdate = GranularPerm.testModeTransferGroupAllow(dbTabPair._1, dbTabPair._2, argmap);
+		if(granupdate)
+		{
+			Util.pf("Ran Group Allow transfer for %s::%s\n", dbTabPair._1, dbTabPair._2);
+		}
 	}
 	
 	private void doDelete(ArgMap argmap)
