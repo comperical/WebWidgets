@@ -46,10 +46,7 @@ public class CoreUtil
 
 	public static final String ACCESS_HASH_COOKIE = "accesshash";
 
-	// If this column is present, the table is considered to have fine grained permissions
-	// The platform blocks users from setting this to any value other than their actual user name
-	public static final String AUTH_OWNER_COLUMN = "auth_owner";
-
+	// A table with this column is considered to have granular permissions
 	public static final String GROUP_ALLOW_COLUMN = "group_allow";
 
 	// TODO: probably want to expand this to include other things like "include"
@@ -581,6 +578,13 @@ public class CoreUtil
 		}
 
 		return Optional.empty();
+
+	}
+
+	public static <S, T> T wrapOperation(S input, java.util.function.Function<S, T> myfunc)
+	{
+		try { return myfunc.apply(input); }
+		catch (Exception ex) { throw new RuntimeException(ex); }
 
 	}
 

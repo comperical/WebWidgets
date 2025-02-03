@@ -123,7 +123,7 @@ public class CallBack2Me extends HttpServlet
 			return;
 		}
 
-		Optional<String> granprob = checkGranularPermIssue(tableInfo, optuser, innmap);
+		Optional<String> granprob = GranularPerm.checkGranularWritePerm(tableInfo, optuser, innmap);
 		if(granprob.isPresent())
 		{
 			placeFailCode(outmap, FailureCode.GranularPermission, granprob.get());
@@ -152,70 +152,7 @@ public class CallBack2Me extends HttpServlet
 		outmap.put("user_message", "ajax sync op successful");
 	}
 
-	private static Optional<String> checkGranularPermIssue(LiteTableInfo table, Optional<WidgetUser> user, ArgMap innmap)
-	{
-		if(!user.isPresent())
-		{
-			return Optional.of("This table has granular permissions; user must be logged in to update");
-		}
 
-		if(table.hasGranularPerm())
-		{
-			// For both upsert and delete, we need to check that the logged-in-user has update rights for the record
-			// As of v1, this just means "is this the owner?"
-			int recordid = innmap.getInt(CoreUtil.STANDARD_ID_COLUMN_NAME);
-
-
-			// This is a fast lookup, but this does imply that fine-grained permission tables have
-			// worse performance than normal tables
-			// Note that if the current is not present, it's a create, so we're okay
-			Optional<ArgMap> current = table.lookupRecordById(recordid);
-
-
-			// For upserts, the logged-in user must match the value of the auth-own
-			if(LiteTableInfo.isUpsertAjaxOp(innmap))
-			{
-				// Core contract: framework guarantees that the auth_owner column is legitimate
-
-				// This is the user that is claimed in the payload
-				String claimed = innmap.getStr(CoreUtil.AUTH_OWNER_COLUMN);
-
-				// This is the user currently in the record
-				var optcurrent = current.map(am -> am.getStr(CoreUtil.AUTH_OWNER_COLUMN));
-
-				// There's two acceptable situations: the payload matches the logged-in user,
-				// or it matches the current value in the record
-				boolean matchlog = user.get().toString().equals(claimed);
-				boolean matchcur = optcurrent.equals(Optional.of(claimed));
-
-				if(!(matchcur || matchlog))
-				{
-					var e = String.format("Attempt to mis-represent auth-owner, user is %s but payload claimed %s", user.get(), claimed);
-					return Optional.of(e);
-				}
-			}
-
-			// Note: if it's a delete, and there's no current, there's nothing else to do, since a delete is a no-op
-
-
-			if(current.isPresent())
-			{
-				String authstr = current.get().getStr(CoreUtil.AUTH_OWNER_COLUMN);
-
-				// TODO: do I really need to do the lookup here? Or can I just compare strings directly?
-				Optional<WidgetUser> authowner = WidgetUser.softLookup(authstr);
-
-				// This check will expand when we implement the permission equivalence table
-				if(!user.equals(authowner))
-				{
-					var e = String.format("Widget User %s is not authorized to make updates to record ID %d", user.get(), recordid);
-					return Optional.of(e);
-				}
-			}
-		}
-
-		return Optional.empty();
-	}
 
 
 	private void placeException(ArgMap outmap, Exception ex)

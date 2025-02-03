@@ -138,7 +138,9 @@ public class LiteTableInfo
 
 	private Boolean _isBlobStore = null;
 
-	private Set<WidgetUser> _checkAuthOwner = null;
+	// Set of groups that the accessing user is a member of,
+	// in this DB's account space
+	private Set<String> _checkAccessorGroupSet = null;
 
 	private boolean _noDataMode;
 
@@ -204,10 +206,10 @@ public class LiteTableInfo
 		return this;
 	}
 
-	public LiteTableInfo withAuthOwnerSet(Set<WidgetUser> userset)
+	public LiteTableInfo withAccessorGroupSet(Set<String> groupset)
 	{
-		Util.massert(hasGranularPerm(), "Attempt to check auth owner set for table without granular permissions");
-		_checkAuthOwner = userset;
+		Util.massert(hasGranularPerm(), "Attempt to check group set, but this LTI is not configured for granular permissions");
+		_checkAccessorGroupSet = groupset;
 		return this;
 	}
 	
@@ -314,7 +316,7 @@ public class LiteTableInfo
 		Util.massert(!_exTypeMap.isEmpty(),
 			"You must call runQuery before creating the data, sorry bad naming");
 		
-		Util.massert(_checkAuthOwner == null || hasGranularPerm(),
+		Util.massert(_checkAccessorGroupSet == null || hasGranularPerm(),
 			"Attempt to check granular permissions, but this table is not configured for granular perms");
 		
 		if(_noDataMode)
@@ -323,7 +325,7 @@ public class LiteTableInfo
 		String query = "SELECT * FROM " + querytarget;
 		QueryCollector bigcol;
 
-		Util.massert(_colFilterTarget == null || _checkAuthOwner == null,
+		Util.massert(_colFilterTarget == null || _checkAccessorGroupSet == null,
 			"As of Jan 2025, cannot use filter column targets with auth owner targets");
 
 		if(_colFilterTarget != null)
@@ -331,10 +333,18 @@ public class LiteTableInfo
 			query += String.format(" WHERE %s = ? ", _colFilterTarget._1);
 			bigcol = QueryCollector.buildRunPrepared(query, dbTabPair._1, _colFilterTarget._2);
 
-		} else if (_checkAuthOwner != null) {
+		} else if (_checkAccessorGroupSet != null) {
 
-			query += String.format(" WHERE %s IN (%s) ", CoreUtil.AUTH_OWNER_COLUMN, CoreDb.nQuestionMarkStr(_checkAuthOwner.size()));
-			bigcol = QueryCollector.buildRunPrepared(query, dbTabPair._1, _checkAuthOwner.toArray());
+			// Note: the querytarget is usually, but not ALWAYS, the same as the table name - sometimes
+			// it's a view that is built from the underlying table
+			String auxtable = GranularPerm.getAuxGroupTable(dbTabPair._2);
+			query += String.format(
+				" WHERE id IN (SELECT record_id FROM %s WHERE group_name IN (%s) )",
+				auxtable, CoreDb.nQuestionMarkStr(_checkAccessorGroupSet.size())
+			);
+
+			// query += String.format(" WHERE %s IN (%s) ", CoreUtil.AUTH_OWNER_COLUMN, CoreDb.nQuestionMarkStr(_checkAccessorGroupSet.size()));
+			bigcol = QueryCollector.buildRunPrepared(query, dbTabPair._1, _checkAccessorGroupSet.toArray());
 
 		} else {
 			bigcol = QueryCollector.buildAndRun(query, dbTabPair._1);
@@ -449,19 +459,10 @@ public class LiteTableInfo
 
 
 	// True if the table has "granular" permissions
-	// TODO: I think I am going to remove this in preference for just the GROUP_ALLOW column
 	public boolean hasGranularPerm()
 	{
 		Util.massert(_exTypeMap != null && !_exTypeMap.isEmpty(), "You must run the setup query first");
-		return _exTypeMap.containsKey(CoreUtil.AUTH_OWNER_COLUMN);
-	}
-
-	public boolean hasGroupAllow()
-	{
-		boolean hasowner = hasGranularPerm();
-		boolean hasgroup = _exTypeMap.containsKey(CoreUtil.GROUP_ALLOW_COLUMN);
-		Util.massert(!(hasgroup && !hasowner), "Permission misconfiguration: group allow is present, but not owner");
-		return hasgroup;
+		return _exTypeMap.containsKey(CoreUtil.GROUP_ALLOW_COLUMN);
 	}
 
 	Optional<ArgMap> lookupRecordById(int recordid)

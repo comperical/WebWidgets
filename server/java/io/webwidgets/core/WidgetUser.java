@@ -112,6 +112,39 @@ public class WidgetUser implements Comparable<WidgetUser>
         
     }
 
+
+    // Get the group memberships for this user when accessing the given widget target
+    // The groups are contained in the target DB owner's "account::group_data" table
+    // We will likely need to have a caching system here
+    // See docs for granular permissions
+    // TODO: actual implementation
+    public Set<String> lookupGroupSet4Db(WidgetItem accesstarget)
+    {
+        if(this.toString().equals("dburfoot"))
+        {
+            return Util.setify("I::dburfoot", "smartgroup", "hackergroup", "tmgroup");
+        }
+
+        if(this.toString().equals("heather"))
+        {
+            return Util.setify("I::heather", "fungroup", "smartgroup");
+        }
+
+        if(this.toString().equals("bettworld"))
+        {
+            return Util.setify("I::bettworld", "fungroup", "smartgroup", "tmgroup");
+        }
+
+        if(this.toString().equals("d101tm"))
+        {
+            return Util.setify("I::d101tm", "tmgroup");
+        }
+
+        // All users are considered members of their own group
+        return Util.setify("I::" + this.toString());
+    }
+
+
     Integer getMasterId()
     {
         ArgMap entry = getUserEntry();

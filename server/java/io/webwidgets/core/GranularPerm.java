@@ -97,6 +97,8 @@ public class GranularPerm
     }
 
 
+    // Full insert of all group allow data into the aux group table
+    // This is called after we blow away or rebuild the aux group
     static int fullInsertGroupAllow(WidgetItem dbitem, String maintable)
     {
         QueryCollector qcol = CoreUtil.fullTableQuery(dbitem, maintable);
@@ -176,6 +178,86 @@ public class GranularPerm
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
+    }
+
+    static Optional<String> checkGranularWritePerm(LiteTableInfo table, Optional<WidgetUser> user, ArgMap innmap)
+    {
+        if(!table.hasGranularPerm())
+        {
+            return Optional.empty();
+        }
+
+        if(!user.isPresent())
+        {
+            return Optional.of("This table has granular permissions; user must be logged in to update");
+        }
+
+        // TODO: implementing this for testing, not sure if this is how I actually want to do it
+        if(user.get().isAdmin())
+        {
+            return Optional.empty();
+        }
+
+        // These are the groups the user is a member of IN THIS SPACE
+        Set<String> usergroup = user.get().lookupGroupSet4Db(table.dbTabPair._1);
+
+        // For both upsert and delete, we need to check that the logged-in-user has update rights for the record
+        // As of v1, this just means "is this the owner?"
+        int recordid = innmap.getInt(CoreUtil.STANDARD_ID_COLUMN_NAME);
+
+        // This is a fast lookup, but this does imply that fine-grained permission tables have
+        // worse performance than normal tables
+        // Note that if the current is not present, it's a create, so we're okay
+        Optional<ArgMap> current = table.lookupRecordById(recordid);
+
+        // Note: if it's a delete, and there's no current, there's nothing else to do, since a delete is a no-op
+        if(current.isPresent())
+        {
+            boolean okaywrite = recordHasWriteGroup(usergroup, current.get());
+
+            Util.pf("For usergroup %s, found okaywrite=%b, for record %s\n", usergroup, okaywrite, current.get());
+
+            if(!okaywrite)
+            {
+                String mssg = String.format("User %s does not have access to record, groups are %s", user.get(), usergroup);
+                return Optional.of(mssg);
+            }
+        }
+
+        // This is a more nit-picky check: the write perms in the PAYLOAD must also allow the user to write
+        // In other words, a user cannot voluntarily give up their own write permissions, to avoid "orphaning"
+        if(LiteTableInfo.isUpsertAjaxOp(innmap))
+        {
+            boolean okaywrite = recordHasWriteGroup(usergroup, innmap);
+
+            if(!okaywrite)
+            {
+                String groupallow = innmap.getStr(CoreUtil.GROUP_ALLOW_COLUMN);
+                String mssg = String.format("User %s does not have write permissions in groups defined by in %s", user.get(), groupallow);
+                return Optional.of(mssg);
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    private static boolean recordHasWriteGroup(Set<String> usergroup, ArgMap item)
+    {
+        String allowstr = item.getStr(CoreUtil.GROUP_ALLOW_COLUMN);
+        var perminfo = convert2GroupMap(parse2Object(allowstr));
+
+
+        // Number of groups that grant access
+        int okaygroup = Util.countPred(usergroup, grp -> perminfo.getOrDefault(grp, false));
+
+        return okaygroup > 0;
+    }
+
+    private static JSONObject parse2Object(String input)
+    {
+        try { return Util.cast(new JSONParser().parse(input)); }
+        catch (ParseException pex) { throw new RuntimeException(pex); }
+
     }
 
 }
