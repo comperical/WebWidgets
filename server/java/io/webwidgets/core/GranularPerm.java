@@ -215,8 +215,6 @@ public class GranularPerm
         {
             boolean okaywrite = recordHasWriteGroup(usergroup, current.get());
 
-            Util.pf("For usergroup %s, found okaywrite=%b, for record %s\n", usergroup, okaywrite, current.get());
-
             if(!okaywrite)
             {
                 String mssg = String.format("User %s does not have access to record, groups are %s", user.get(), usergroup);
@@ -233,13 +231,71 @@ public class GranularPerm
             if(!okaywrite)
             {
                 String groupallow = innmap.getStr(CoreUtil.GROUP_ALLOW_COLUMN);
-                String mssg = String.format("User %s does not have write permissions in groups defined by in %s", user.get(), groupallow);
+                String mssg = String.format(
+                    "Orphan record error: this record would be unwriteable by the user %s after creation. Group allow data is %s",
+                    user.get(), groupallow
+                );
                 return Optional.of(mssg);
             }
         }
 
         return Optional.empty();
     }
+
+    // Checks for errors in parsing the JSON data for the GROUP ALLOW column
+    static Optional<String> checkGroupAllowJsonError(LiteTableInfo table, ArgMap innmap)
+    {
+        if(table.hasGranularPerm() && LiteTableInfo.isUpsertAjaxOp(innmap))
+        {
+            if(!innmap.containsKey(CoreUtil.GROUP_ALLOW_COLUMN))
+            {
+                String mssg = String.format(
+                    "Attempting to update a table with Granular Permissions, but missing the %s column", CoreUtil.GROUP_ALLOW_COLUMN);
+
+                return Optional.of(mssg);
+            }
+
+
+            String groupstr = innmap.getStr(CoreUtil.GROUP_ALLOW_COLUMN);
+            if(groupstr == null || groupstr.isEmpty())
+            {
+                return Optional.empty();
+            }
+
+            JSONObject jsonob;
+
+            try {
+
+                jsonob = Util.cast(new JSONParser().parse(groupstr));
+            } catch (ParseException pex) {
+
+                String mssg = String.format(
+                    "Error parsing JSON data for %s column. This column must be valid JSON, you entered %s",
+                    CoreUtil.GROUP_ALLOW_COLUMN, groupstr);
+
+                return Optional.of(mssg);
+            }
+
+            try {
+                var perminfo = convert2GroupMap(jsonob);
+
+            } catch (Exception ex) {
+
+                String mssg = String.format(
+                    "Error converting JSON data to group permission map for %s column. " + 
+                    " Groups (keys) must be alphanumeric strings, values must be 'read' or 'write', you entered %s, " + 
+                    " Exception message is %s",
+                    CoreUtil.GROUP_ALLOW_COLUMN, jsonob, ex.getMessage());
+
+                return Optional.of(mssg);
+            }
+        }
+
+        return Optional.empty();
+
+    }
+
+
 
     private static boolean recordHasWriteGroup(Set<String> usergroup, ArgMap item)
     {
@@ -259,5 +315,6 @@ public class GranularPerm
         catch (ParseException pex) { throw new RuntimeException(pex); }
 
     }
+
 
 }

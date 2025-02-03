@@ -1208,5 +1208,67 @@ public class FastTest4Basic
 			return new ZipFile(inputfile);
 		}
 	}
+
+	public static class CheckAuxRoleTable extends DescRunnable
+	{
+
+		public String getDesc()
+		{
+			return "Checks that all tables with Granular Permissions have the aux-role table";
+
+
+		}
+
+		public void runOp()
+		{
+			int auxcount = 0;
+			int errcount = 0;
+			int tablecount = 0;
+
+			for(WidgetUser user : WidgetUser.values())
+			{
+				for(var db : WidgetItem.getUserWidgetList(user))
+				{
+					// true - get tables with __ prefixes
+					var tableset = CoreUtil.getLiteTableNameSet(db, true);
+
+
+					for(String table : tableset)
+					{
+						if(table.startsWith("__"))
+							{ continue; }
+
+						var LTI = new LiteTableInfo(db, table);
+						LTI.runSetupQuery();
+						var auxtable = GranularPerm.getAuxGroupTable(table);
+
+						boolean granular = LTI.hasGranularPerm();
+						boolean auxrole = tableset.contains(auxtable);
+
+						if(granular && !auxrole)
+						{
+							Util.pferr("***Error***, table %s::%s has granular permissions, but no aux-role table %s\n", db, table, auxtable);
+							errcount += 1;
+						}
+
+						if(!granular && auxrole)
+						{
+							Util.pferr("***Error***, table %s::%s has NO granular permissions, an aux-role table exists, please clean up!!\n", db, table);
+							errcount += 1;
+						}
+
+						if(granular)
+							{ auxcount++; }
+
+						tablecount += 1;
+					}
+				}
+			}
+
+			Util.massert(errcount == 0, "Found %d errors, see above, run %s to rebuild aux role tables",
+					errcount, CoreCommand.RebuildAuxGroupTable.class.getSimpleName());
+			Util.pf("Success, no errors found on %d tables checked, observed %d with granular perm\n", tablecount, auxcount);
+		}
+	}
 }
 

@@ -29,6 +29,7 @@ public class CallBack2Me extends HttpServlet
 		SyncError("The widget data has been changed by another user"),
 		WidgetNotFound("The widget could not be found"),
 		GranularPermission("This user does not have granular permission to modify or create this record"),
+		GroupAllowJsonError("The JSON data in the Group Allow column is misformatted"),
 		AccessDenied("You do not have permission to modify this widget's data"),
 		EmailProblem("There is a problem with this email"),
 		NumberConversionError("There was a problem converting data into numeric types"),
@@ -122,6 +123,15 @@ public class CallBack2Me extends HttpServlet
 			placeFailCode(outmap, FailureCode.AccessDenied);
 			return;
 		}
+
+		Optional<String> allowjson = GranularPerm.checkGroupAllowJsonError(tableInfo, innmap);
+		if(allowjson.isPresent())
+		{
+			placeFailCode(outmap, FailureCode.GroupAllowJsonError, allowjson.get());
+			return;
+		}
+
+
 
 		Optional<String> granprob = GranularPerm.checkGranularWritePerm(tableInfo, optuser, innmap);
 		if(granprob.isPresent())
