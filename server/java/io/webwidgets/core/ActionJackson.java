@@ -226,6 +226,13 @@ public class ActionJackson extends HttpServlet
 					src.renameTo(dst);
 					s += Util.sprintf("Copied upload file to location %s, size is %d\n", dst.toString(), dst.length());
 				}
+
+				// Rectify the Aux-Role table(s)
+				{
+					String message = GranularPerm.rectifyAuxRoleSetup(witem);
+					s += message;
+				}
+
 				
 				// Now rebuild the JS code.
 				List<String> result = createCode4Widget(witem);
@@ -726,66 +733,7 @@ public class ActionJackson extends HttpServlet
 		}
 	}
 
-	// TODO: move to extension package
-	public static class ConvertGrabExcel extends HttpServlet implements WidgetServlet
-	{
-		
-		protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-			ArgMap innmap = WebUtil.getArgMap(request);
-			
-			if(!checkSecureRespond(request, response))
-				{ return; }
-
-			// Okay, currently you can only download XL for your own widgets
-			Optional<WidgetUser> optuser = AuthLogic.getLoggedInUser(request);
-			if(!optuser.isPresent())
-			{
-				String mssg = "Access denied!\n";
-				response.getOutputStream().write(mssg.getBytes());
-				response.getOutputStream().close();
-				return;
-			}
-		
-			WidgetUser wuser = optuser.get();
-			String widgetname = innmap.getStr("widgetname");
-
-			WidgetItem witem = new WidgetItem(wuser, widgetname);
-			File result = convert2Excel(witem);
-
-			FileUtils.in2out(new FileInputStream(result), response.getOutputStream());
-		}
-
-		public static File convert2Excel(WidgetItem witem) 
-		{
-			throw new RuntimeException("Must re-implement");
-
-
-			/*
-			Util.massert(witem.getLocalDbFile().exists(), "Widget Item DB not found at %s", witem.getLocalDbFile());
-
-			String xlpath = String.format("%s/%s__%s.xlsx", CoreUtil.TEMP_EXCEL_DIR, witem.theOwner, witem.theName);
-
-			String pycall = String.format("python3 /opt/userdata/lifecode/script/utility/Lite2Excel.py litepath=%s xlpath=%s",
-										witem.getLocalDbPath(), xlpath);
-
-			SyscallWrapper syswrap = SyscallWrapper.build(pycall).execE();
-
-			for(String err : syswrap.getErrList())
-				{ Util.pferr("** %s\n", err); }
-
-			for(String out : syswrap.getOutList())
-				{ Util.pf("%s\n", out); }						
-
-			File result = new File(xlpath);
-			Util.massert(result.exists(), "Failed to convert DB to excel");
-			return result;
-			
-			throw new RuntimeException("Must re-implement");
-			*/
-		}
-
-	}
 
 
 	public static class LoaderException extends Exception

@@ -27,11 +27,12 @@ import io.webwidgets.core.WidgetOrg.*;
 // Groups are just strings; the system is not going to be persnickety about checking the group names
 public class GranularPerm
 {
+    public static final String AUX_GROUP_PREFIX = "__aux_group";
 
     // Name of the aux group table, derived from the main table.
     public static String getAuxGroupTable(String maintable)
     {
-        return String.format("__aux_group_%s", maintable);
+        return String.format("%s_%s", AUX_GROUP_PREFIX, maintable);
     }
 
 
@@ -105,6 +106,8 @@ public class GranularPerm
         Map<Integer, Map<String, Boolean>> groupallow;
 
 
+        // TODO: there is a big issue here, which is: what do you do on a full insert if the JSON
+        // is improperly formatted?
         try {
             groupallow = parseGroupAllowData(qcol.recList());
         } catch (ParseException pex) {
@@ -266,6 +269,8 @@ public class GranularPerm
 
             try {
 
+                // This parser is NOT thread-safe. So there's not much we can do that's better than
+                // just creating a new one here.
                 jsonob = Util.cast(new JSONParser().parse(groupstr));
             } catch (ParseException pex) {
 
@@ -314,6 +319,54 @@ public class GranularPerm
         try { return Util.cast(new JSONParser().parse(input)); }
         catch (ParseException pex) { throw new RuntimeException(pex); }
 
+    }
+
+
+    // Ensure that every table with a GROUP_ALLOW has a corresponding aux role table
+    // if a table with granular permissions is present, ensure that an aux-role table is created
+    // if an auxrole table is present with no corresponding maintable, drop it
+    static String rectifyAuxRoleSetup(WidgetItem dbitem)
+    {
+        String logmessage = "";
+
+        Set<String> foundaux = Util.treeset();
+
+        // true = get all tables
+        Set<String> alltable = CoreUtil.getLiteTableNameSet(dbitem, true);
+
+        for(var main : dbitem.getDbTableNameSet())
+        {
+            var LTI = new LiteTableInfo(dbitem, main);
+            LTI.runSetupQuery();
+
+            if(LTI.hasGranularPerm())
+            {
+                var auxname = getAuxGroupTable(main);
+                if(alltable.contains(auxname))
+                {
+                    foundaux.add(auxname);
+                    continue;
+                }
+
+                rebuildAuxGroupTable(dbitem, main);
+                logmessage += String.format("Created aux role table %s for main table %s\n", auxname, main);
+            }
+        }
+
+        // Now we drop aux tables that are no longer necessary
+        {
+            List<String> badaux = Util.filter2list(alltable,
+                probe -> probe.startsWith(AUX_GROUP_PREFIX) && !foundaux.contains(probe));
+
+            for(var bad : badaux)
+            {
+                String dropper = String.format("DROP TABLE %s", bad);
+                CoreDb.execSqlUpdate(dropper, dbitem);
+                logmessage += String.format("Dropped unnecessary AUX GROUP table %s\n", bad);
+            }
+        }
+
+        return logmessage;
     }
 
 
