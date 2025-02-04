@@ -139,7 +139,7 @@ public class WispFileLogic
 
         WispFileFormat(File src, WidgetItem item)
         {
-            this(FileUtils.getReaderUtil().setFile(src).readLineListE(), item);
+            this(FileUtils.getReaderUtil().setFile(src).setTrim(false).readLineListE(), item);
         }
 
 
