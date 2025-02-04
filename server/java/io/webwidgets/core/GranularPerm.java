@@ -143,6 +143,10 @@ public class GranularPerm
     }
 
 
+
+
+    // This method shunts the GROUP_ALLOW data, specified in JSON in the given payload,
+    // into the aux table
     private static void transferGroupAllowData(WidgetItem dbitem, String coretable, ArgMap payload) throws ParseException
     {
         var groupmap = parseGroupAllowData(Util.listify(payload));
@@ -183,6 +187,72 @@ public class GranularPerm
         }
     }
 
+
+
+    // Checks for errors in parsing the JSON data for the GROUP ALLOW column
+    static Optional<String> checkGroupAllowJsonError(LiteTableInfo table, ArgMap innmap)
+    {
+        if(table.hasGranularPerm() && LiteTableInfo.isUpsertAjaxOp(innmap))
+        {
+            if(!innmap.containsKey(CoreUtil.GROUP_ALLOW_COLUMN))
+            {
+                String mssg = String.format(
+                    "Attempting to update a table with Granular Permissions, but missing the %s column", CoreUtil.GROUP_ALLOW_COLUMN);
+
+                return Optional.of(mssg);
+            }
+
+
+            String groupstr = innmap.getStr(CoreUtil.GROUP_ALLOW_COLUMN);
+            if(groupstr == null || groupstr.isEmpty())
+            {
+                return Optional.empty();
+            }
+
+            JSONObject jsonob;
+
+            try {
+
+                // This parser is NOT thread-safe. So there's not much we can do that's better than
+                // just creating a new one here.
+                jsonob = Util.cast(new JSONParser().parse(groupstr));
+            } catch (ParseException pex) {
+
+                String mssg = String.format(
+                    "Error parsing JSON data for %s column. This column must be valid JSON, you entered %s",
+                    CoreUtil.GROUP_ALLOW_COLUMN, groupstr);
+
+                return Optional.of(mssg);
+            }
+
+            try {
+                var perminfo = convert2GroupMap(jsonob);
+
+            } catch (Exception ex) {
+
+                String mssg = String.format(
+                    "Error converting JSON data to group permission map for %s column. " + 
+                    " Groups (keys) must be alphanumeric strings, values must be 'read' or 'write', you entered %s, " + 
+                    " Exception message is %s",
+                    CoreUtil.GROUP_ALLOW_COLUMN, jsonob, ex.getMessage());
+
+                return Optional.of(mssg);
+            }
+        }
+
+        return Optional.empty();
+
+    }
+
+
+    // Check that the given user has granular write permissions to the record designated by the payload,
+    // for the given LTI
+    // If NO ERROR, respond with a empty
+    // Otherwise, respond with an error code that can be shown to the user;
+    // calling code should block the update
+    // The main thing is to check that the user has write permissions as specified in the GROUP ALLOW
+    // Note that here we don't need to use the aux table
+    // The above method about checking JSON should be called before this; here we assume that the JSON is kosher
     static Optional<String> checkGranularWritePerm(LiteTableInfo table, Optional<WidgetUser> user, ArgMap innmap)
     {
         if(!table.hasGranularPerm())
@@ -243,61 +313,6 @@ public class GranularPerm
         }
 
         return Optional.empty();
-    }
-
-    // Checks for errors in parsing the JSON data for the GROUP ALLOW column
-    static Optional<String> checkGroupAllowJsonError(LiteTableInfo table, ArgMap innmap)
-    {
-        if(table.hasGranularPerm() && LiteTableInfo.isUpsertAjaxOp(innmap))
-        {
-            if(!innmap.containsKey(CoreUtil.GROUP_ALLOW_COLUMN))
-            {
-                String mssg = String.format(
-                    "Attempting to update a table with Granular Permissions, but missing the %s column", CoreUtil.GROUP_ALLOW_COLUMN);
-
-                return Optional.of(mssg);
-            }
-
-
-            String groupstr = innmap.getStr(CoreUtil.GROUP_ALLOW_COLUMN);
-            if(groupstr == null || groupstr.isEmpty())
-            {
-                return Optional.empty();
-            }
-
-            JSONObject jsonob;
-
-            try {
-
-                // This parser is NOT thread-safe. So there's not much we can do that's better than
-                // just creating a new one here.
-                jsonob = Util.cast(new JSONParser().parse(groupstr));
-            } catch (ParseException pex) {
-
-                String mssg = String.format(
-                    "Error parsing JSON data for %s column. This column must be valid JSON, you entered %s",
-                    CoreUtil.GROUP_ALLOW_COLUMN, groupstr);
-
-                return Optional.of(mssg);
-            }
-
-            try {
-                var perminfo = convert2GroupMap(jsonob);
-
-            } catch (Exception ex) {
-
-                String mssg = String.format(
-                    "Error converting JSON data to group permission map for %s column. " + 
-                    " Groups (keys) must be alphanumeric strings, values must be 'read' or 'write', you entered %s, " + 
-                    " Exception message is %s",
-                    CoreUtil.GROUP_ALLOW_COLUMN, jsonob, ex.getMessage());
-
-                return Optional.of(mssg);
-            }
-        }
-
-        return Optional.empty();
-
     }
 
 
@@ -370,4 +385,50 @@ public class GranularPerm
     }
 
 
+    // This method and the one below do the same thing, just from different data sources
+    // These are public for testing
+    public static Map<Integer, Map<String, Boolean>> slowReadAuxRoleData(WidgetItem dbitem, String maintable)
+    {
+        String auxtable = getAuxGroupTable(maintable);
+        Util.massert(CoreUtil.getLiteTableNameSet(dbitem, true).contains(auxtable),
+            "DB %s is missing aux table %s for main table %s",
+            dbitem, auxtable, maintable
+        );
+
+
+        QueryCollector qcol = QueryCollector.buildAndRun("SELECT * FROM " + auxtable, dbitem);
+        Map<Integer, Map<String, Boolean>> result = Util.treemap();
+
+        for(var amap : qcol.recList())
+        {
+            String groupname = amap.getStr("group_name");
+            int recordid = amap.getInt("record_id");
+            int canwrite = amap.getInt("can_write");
+
+            Util.setdefault(result, recordid, Util.treemap());
+            result.get(recordid).put(groupname, canwrite == 1);
+        }
+
+        return result;
+    }
+
+
+    // Public for testing
+    public static Map<Integer, Map<String, Boolean>> slowReadGroupAllowData(WidgetItem dbitem, String maintable)
+    {
+        QueryCollector qcol = QueryCollector.buildAndRun("SELECT * FROM " + maintable, dbitem);
+        Map<Integer, Map<String, Boolean>> result = Util.treemap();
+
+        for(var amap : qcol.recList())
+        {
+            int recordid = amap.getInt(CoreUtil.STANDARD_ID_COLUMN_NAME);
+            JSONObject obdata = parse2Object(amap.getStr(CoreUtil.GROUP_ALLOW_COLUMN));
+            var perminfo = convert2GroupMap(obdata);
+
+            Util.setdefault(result, recordid, Util.treemap());
+            Util.foreach(perminfo.entrySet(), pr -> result.get(recordid).put(pr.getKey(), pr.getValue()));
+        }
+
+        return result;
+    }
 }
