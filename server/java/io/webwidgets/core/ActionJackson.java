@@ -65,8 +65,8 @@ public class ActionJackson extends HttpServlet
 	{
 		default boolean checkAccess(ArgMap innmap)
 		{
-			String username = innmap.getStr("username", "");
-			String acchash = innmap.getStr("accesshash", "");
+			String username = innmap.getStr(CoreUtil.USER_NAME_COOKIE, "");
+			String acchash = innmap.getStr(CoreUtil.ACCESS_HASH_COOKIE, "");
 			return AuthLogic.checkCredential(username, acchash);
 		}
 	
@@ -154,7 +154,8 @@ public class ActionJackson extends HttpServlet
 				boolean auxokay = filetype.isZip() && CoreUtil.AUX_CODE_OKAY.contains(widgetname);
 
 				// Special directories that are loading as-if they are admin widgets
-				boolean special = wuser.isAdmin() && getSpecialRemapDir().containsKey(widgetname);
+				// boolean special = wuser.isAdmin() && getSpecialRemapDir().containsKey(widgetname);
+				boolean special = PluginCentral.getGeneralPlugin().getUserUploadRemap(wuser).containsKey(widgetname);
 
 				if(!(auxokay || special))
 				{
@@ -575,7 +576,6 @@ public class ActionJackson extends HttpServlet
 	}
 
 
-	// TODO: we need a better approach to this that will work for open-core users also
 	public static Map<String, String> getSpecialRemapDir()
 	{
 		Map<String, String> themap = Util.treemap();
@@ -612,22 +612,17 @@ public class ActionJackson extends HttpServlet
 
 		File getBaseDirectory()
 		{
-			String specdir = getSpecialDir();
-			
-			return specdir != null 
-				? new File(specdir) 
-				: _myItem.getWidgetBaseDir();
+			var optspecial = getSpecialDir();
+			return optspecial.map(s -> new File(s)).orElse(_myItem.getWidgetBaseDir());
 		}
 		
 		// Special mappings from admin directories to other locations on site
 		// This allows admins to use uploader tech to send data directly to 
 		// given section of site.
-		private String getSpecialDir()
+		private Optional<String> getSpecialDir()
 		{
-			if(!_myItem.theOwner.isAdmin())
-				{ return null; }
-			
-			return getSpecialRemapDir().get(_myItem.theName);
+			var remap = PluginCentral.getGeneralPlugin().getUserUploadRemap(_myItem.theOwner);
+			return Optional.ofNullable(remap.get(_myItem.theName));
 		}
 	}
 	

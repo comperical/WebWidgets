@@ -97,6 +97,11 @@ public class PluginCentral
 		{
 			return Optional.empty();
 		}
+
+		public Map<String, String> getUserUploadRemap(WidgetUser user)
+		{
+			return Collections.emptyMap();
+		}
 	}
 
 	public static IMailSender getMailPlugin()
