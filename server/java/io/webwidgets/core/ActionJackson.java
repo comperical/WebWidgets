@@ -154,7 +154,6 @@ public class ActionJackson extends HttpServlet
 				boolean auxokay = filetype.isZip() && CoreUtil.AUX_CODE_OKAY.contains(widgetname);
 
 				// Special directories that are loading as-if they are admin widgets
-				// boolean special = wuser.isAdmin() && getSpecialRemapDir().containsKey(widgetname);
 				boolean special = PluginCentral.getGeneralPlugin().getUserUploadRemap(wuser).containsKey(widgetname);
 
 				if(!(auxokay || special))

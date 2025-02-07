@@ -48,7 +48,7 @@ public class BulkOperation
             Optional<String> emailissue = MailSystem.checkForEmailError(tableInfo, innmap);
             if(emailissue.isPresent())
             {
-                placeFailCode(outmap, FailureCode.EmailProblem, emailissue.get());
+                CallBack2Me.placeFailCode(outmap, FailureCode.EmailProblem, emailissue.get());
                 haveissue = true;
             }
             
@@ -219,7 +219,7 @@ public class BulkOperation
         Optional<WidgetUser> optuser = AuthLogic.getLoggedInUser(request);
         if(!optuser.isPresent())
         {
-            placeFailCode(outmap, FailureCode.UserLoggedOut);
+            CallBack2Me.placeFailCode(outmap, FailureCode.UserLoggedOut);
             return true;
         }
         
@@ -227,14 +227,14 @@ public class BulkOperation
 
         if (!myChecker.allowWrite())
         {
-            placeFailCode(outmap, FailureCode.AccessDenied);
+            CallBack2Me.placeFailCode(outmap, FailureCode.AccessDenied);
             return true;
         }
         
         Optional<String> maintmode = AdvancedUtil.maintenanceModeInfo();
         if(maintmode.isPresent())
         {
-            placeFailCode(outmap, FailureCode.MaintenanceMode, maintmode.get());
+            CallBack2Me.placeFailCode(outmap, FailureCode.MaintenanceMode, maintmode.get());
             return true;
         }
 
@@ -248,29 +248,5 @@ public class BulkOperation
         out.print(jsonout.toString());
         out.print("\n");
         out.close();
-    }
-
-    // TODO: all of this code is copy+pasted from CallBack2Me, figure out how to share
-    private static void placeException(ArgMap outmap, Exception ex)
-    {
-        placeException(outmap, FailureCode.OtherError, ex);
-    }
-
-    private static void placeException(ArgMap outmap, FailureCode fcode, Exception ex)
-    {
-        placeFailCode(outmap, fcode, ex.getMessage());
-    }
-    
-    private static void placeFailCode(ArgMap outmap, FailureCode fcode)
-    {
-        placeFailCode(outmap, fcode, "");
-    }
-    
-    private static void placeFailCode(ArgMap outmap, FailureCode fcode, String extrainfo)
-    {
-        outmap.put("status_code", "fail");
-        outmap.put("failure_code", fcode.toString());
-        outmap.put("user_message", fcode.userErrorMessage);
-        outmap.put("extra_info", extrainfo);
     }
 }

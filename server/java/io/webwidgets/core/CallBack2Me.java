@@ -131,8 +131,6 @@ public class CallBack2Me extends HttpServlet
 			return;
 		}
 
-
-
 		Optional<String> granprob = GranularPerm.checkGranularWritePerm(tableInfo, optuser, innmap);
 		if(granprob.isPresent())
 		{
@@ -163,14 +161,12 @@ public class CallBack2Me extends HttpServlet
 	}
 
 
-
-
-	private void placeException(ArgMap outmap, Exception ex)
+	static void placeException(ArgMap outmap, Exception ex)
 	{
 		placeException(outmap, FailureCode.OtherError, ex);
 	}
 
-	private void placeException(ArgMap outmap, FailureCode fcode, Exception ex)
+	static void placeException(ArgMap outmap, FailureCode fcode, Exception ex)
 	{
 		// Should do something smarter in terms of logging, but we definitely want to know
 		// when users are seeing errors
@@ -182,13 +178,12 @@ public class CallBack2Me extends HttpServlet
 		outmap.put("extra_info", "");
 	}
 	
-	private void placeFailCode(ArgMap outmap, FailureCode fcode)
+	static void placeFailCode(ArgMap outmap, FailureCode fcode)
 	{
 		placeFailCode(outmap, fcode, "");
 	}
-		
-	
-	private void placeFailCode(ArgMap outmap, FailureCode fcode, String extrainfo)
+
+	static void placeFailCode(ArgMap outmap, FailureCode fcode, String extrainfo)
 	{
 		outmap.put("status_code", "fail");
 		outmap.put("failure_code", fcode.toString());
