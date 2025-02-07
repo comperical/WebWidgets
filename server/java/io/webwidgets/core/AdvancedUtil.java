@@ -32,11 +32,11 @@ public class AdvancedUtil
     public static final File SHARED_IMAGE_ASSET_DIR = (new WidgetItem(WidgetUser.buildBackDoorSharedUser(), "image")).getWidgetBaseDir();
     public static final File SHARED_OPTJS_ASSET_DIR = (new WidgetItem(WidgetUser.buildBackDoorSharedUser(), "optjs")).getWidgetBaseDir();
 
-
-
     // If true, the server will allow insecure connections
     // This config is read only once at system startup
     // The file contents must be the string "true" in order to return true
+    // TODO: it is not clear if we even want this, the original idea was to allow test-mode users
+    // to demo the code. But isn't it better to just require them to use a self-signed cert?
     public static boolean allowInsecureConnection()
     {
         return GlobalIndex.getSystemSetting()

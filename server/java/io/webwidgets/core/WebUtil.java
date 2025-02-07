@@ -108,26 +108,6 @@ public class WebUtil
 			{ return WidgetItem.userBaseWidget(owner.get()); }
 
 		return null;
-
-		// TODO: this technique makes it impossible to run tests against a server that does not have the webwidgets.io URL
-		/*
-		String subpath = getRelativeResource(pageurl);
-		Util.massert(subpath.startsWith("/u/"),
-			"Expected to start with /u/ patter, got %s", subpath);
-		
-		LinkedList<String> toklist = Util.linkedlistify(subpath.split("/"));
-
-		Util.massert(toklist.poll().equals(""));
-		Util.massert(toklist.poll().equals("u"));
-
-		String username = toklist.poll();
-		WidgetUser wuser = WidgetUser.valueOf(username);
-
-		String pageName = toklist.pollLast();
-		return toklist.isEmpty() ? WidgetItem.userBaseWidget(wuser) : new WidgetItem(wuser, toklist.peek());
-		*/
-
-
 	}
 
 	private static java.net.URI convert2Uri(String pageurl)

@@ -65,11 +65,11 @@ public class DataServer
 	
 	public static String include(HttpServletRequest request, String query)
 	{
-		Map<DataIncludeArg, String> argmap = buildIncludeMap(query);
+		Map<DataIncludeArg, String> argmap = parseQuery2DargMap(query);
 		return LegacyServerUtil.build(request, argmap).include();
 	}
 
-	static Map<DataIncludeArg, String> buildIncludeMap(String paramstr)
+	static Map<DataIncludeArg, String> parseQuery2DargMap(String paramstr)
 	{
 		if(paramstr.trim().isEmpty())
 			{ return Collections.emptyMap(); }
@@ -243,7 +243,6 @@ public class DataServer
 
 
 			{
-
 				Optional<String> noData = getArg(DataIncludeArg.no_data);
 
 				if(noData.isPresent())
@@ -365,13 +364,6 @@ public class DataServer
 			return sb.toString();
 		}
 
-		// If true, instead of generating the JSON data directly,
-		// Create a directload script include tag
-		protected boolean sendToDirectLoad()
-		{
-			return false;
-		}
-
 		public String include()
 		{
 			boolean okay2skip = (""+true).equals(_dargMap.get(DataIncludeArg.okay_if_absent));
@@ -409,66 +401,7 @@ public class DataServer
 					"Access denied, user %s lacks permissions to read data from widget %s", accessor, _theItem);
 			}
 
-
-			// TODO: Sept 2024, this now always returns true, delete the code below
-			if(sendToDirectLoad())
-				{ return composeDirectLoadTag(); }
-
-
-			List<String> reclist = Util.arraylist();
-			
-			for(String onetab : _base2Target.keySet())
-			{
-				var LTI = new LiteTableInfo(_theItem, onetab);
-				LTI.runSetupQuery();
-
-				LTI.withNoDataMode(_noDataMode);
-
-				if(_optFilterTarget.isPresent())
-				{
-					// If the column you're filtering on is not present in the table,
-					// you'll get a nasty error
-					LTI.withColumnTarget(_optFilterTarget.get()._1, _optFilterTarget.get()._2);
-				}
-				
-				// dogenerate=false
-				// This will only generate the code if it's not available.
-				LTI.maybeUpdateJsCode(false);
-				
-				Optional<File> jsfile = LTI.findAutoGenFile();
-				Util.massert(jsfile.isPresent(), 
-					"AutoGen JS file not present even after we asked to create it if necessary!!!");
-				
-				if(coreIncludeScriptTag())
-				{
-					reclist.add(Util.sprintf("<script src=\"%s\"></script>", LTI.getWebAutoGenJsPath()));
-					reclist.add("<script>");
-				} else {
-					var autogen = FileUtils.getReaderUtil().setFile(jsfile.get()).readLineListE();
-					reclist.addAll(autogen);
-				}
-
-				reclist.addAll(LTI.composeDataRecSpool(_base2Target.get(onetab)));
-				
-				// If the user has read-only access to the table, record that info
-				if(!checker.allowWrite())
-				{
-					reclist.add("");
-					reclist.add("// table is in read-only access mode");
-					reclist.add(String.format("W.__readOnlyAccess.push(\"%s\");", onetab));
-					reclist.add("");
-				}
-				
-				if(coreIncludeScriptTag())
-				{
-					reclist.add("</script>");
-				}
-			}
-
-			reclist.add("");
-			reclist.add("");
-			
-			return Util.join(reclist, "\n");
+			return composeDirectLoadTag();
 		}
 
 		private String composeDirectLoadTag()
@@ -552,7 +485,65 @@ public class DataServer
 	}
 
 
+    // This thing is a weird contraption that might not actually be necessary
+    // It seems to be required because of the way the old DataServer.include(...) statements
+    // "mark" that the inclusion of the core JS files is complete
+    public static class WispServerUtil extends DataServer.ServerUtilCore
+    {
+        final Optional<WidgetUser> pageAccessor;
 
+        final WidgetItem pageItem;
+
+        private boolean _doGlobalInclude = false;
+
+        private boolean _doUserInclude = false;
+        
+        public WispServerUtil(Optional<WidgetUser> accessor, WidgetItem pitem, Map<DataIncludeArg, String> dargmap)
+        {
+            super(dargmap);
+
+            pageAccessor = accessor;
+
+            pageItem = pitem;
+        }
+        
+        void setGlobalInclude()
+        {
+            _doGlobalInclude = true;
+        }
+
+        void setUserInclude()
+        {
+            _doUserInclude = true;
+        }
+        
+        @Override
+        protected Optional<WidgetUser> getPageAccessor()
+        {
+            return pageAccessor;
+        }
+
+
+        @Override
+        protected boolean shouldPerformInclude(boolean global)
+        {
+            // return _includeComplete;
+            return global ? _doGlobalInclude : _doUserInclude;
+        }
+
+        @Override
+        protected void markIncludeComplete(boolean global)
+        {
+            boolean relbit = global ? _doGlobalInclude : _doUserInclude;
+            Util.massert(relbit, "Marked include complete for global=%s, but this tag was not configured to include it!!");
+        }
+
+        @Override
+        protected Optional<WidgetItem> lookupPageWidget()
+        {
+            return Optional.of(pageItem);
+        }
+    }
 
 	private static Set<String> lookupBaseViewSwap(Map<String, String> base2view, Set<String> viewset, String prefix)
 	{
@@ -594,7 +585,7 @@ public class DataServer
 	{
 		public WidgetRequestException(String mssg)
 		{
-			super(mssg);	
+			super(mssg);
 		}
 		
 	}

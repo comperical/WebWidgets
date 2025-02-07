@@ -262,13 +262,6 @@ public class LiteTableInfo
 		return getBasicName() + "Item";
 	}
 	
-	// TODO: remove references to this in actual hand-written code,
-	// then rename to something like __XyzTable;
-	public String getCollectName()
-	{
-		return getBasicName() + "Table";
-	}
-	
 	public ConnectionSource getDbRef()
 	{
 		return dbTabPair._1;

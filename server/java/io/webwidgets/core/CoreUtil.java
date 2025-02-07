@@ -174,16 +174,6 @@ public class CoreUtil
 
 	}
 
-	// If true, the server will allow insecure connections
-	// This config is read only once at system startup
-	// The file contents must be the string "true" in order to return true
-	// TODO: ensure that this method is not being called in the JSP anymore, move references to AdvancedUtil
-	@Deprecated
-	public static boolean allowInsecureConnection()
-	{
-		return false;
-	}
-
 	public static int getNewDbId(ConnectionSource witem, String tabname)
 	{
 		return getNewDbId(witem, tabname, STANDARD_ID_COLUMN_NAME);

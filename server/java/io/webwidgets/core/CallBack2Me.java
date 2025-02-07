@@ -166,6 +166,11 @@ public class CallBack2Me extends HttpServlet
 		placeException(outmap, FailureCode.OtherError, ex);
 	}
 
+	static void placeFailCode(ArgMap outmap, FailureCode fcode)
+	{
+		placeFailCode(outmap, fcode, "");
+	}
+
 	static void placeException(ArgMap outmap, FailureCode fcode, Exception ex)
 	{
 		// Should do something smarter in terms of logging, but we definitely want to know
@@ -176,11 +181,6 @@ public class CallBack2Me extends HttpServlet
 		outmap.put("failure_code", fcode.toString());
 		outmap.put("user_message", ex.getMessage().trim());
 		outmap.put("extra_info", "");
-	}
-	
-	static void placeFailCode(ArgMap outmap, FailureCode fcode)
-	{
-		placeFailCode(outmap, fcode, "");
 	}
 
 	static void placeFailCode(ArgMap outmap, FailureCode fcode, String extrainfo)

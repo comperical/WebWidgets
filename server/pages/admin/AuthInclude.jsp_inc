@@ -7,7 +7,7 @@
     // BUT if the server is configured to allow insecure, you can allow it
     // This allow-insecure is required for demo mode
     // TODO: all of this logic can be moved in to a WebUtil method, so we know it will compile
-    if(!request.isSecure() && !CoreUtil.allowInsecureConnection())
+    if(!request.isSecure() && !AdvancedUtil.allowInsecureConnection())
     {
         String insecure = request.getRequestURL().toString();
         String oksecure = "https://" + insecure.substring("http://".length());

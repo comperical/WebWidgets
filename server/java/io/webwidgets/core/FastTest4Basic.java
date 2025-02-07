@@ -845,7 +845,7 @@ public class FastTest4Basic
 		{
 
 			try {
-				var amap = DataServer.buildIncludeMap(query);
+				var amap = DataServer.parseQuery2DargMap(query);
 				Util.massert(false, "Failed to throw exception as expected");
 
 			} catch (Exception ex) {
@@ -858,7 +858,7 @@ public class FastTest4Basic
 
 		private void checkResult(String query, DataIncludeArg... expect)
 		{
-			Map<DataIncludeArg, String> amap = DataServer.buildIncludeMap(query);
+			var amap = DataServer.parseQuery2DargMap(query);
 			Util.massert(amap.size() == expect.length);
 
 			for(DataIncludeArg darg : expect) {

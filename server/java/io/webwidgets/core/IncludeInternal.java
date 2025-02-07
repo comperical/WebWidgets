@@ -38,7 +38,7 @@ public class IncludeInternal
 
             Optional<WidgetUser> accessor = AuthLogic.getLoggedInUser(request);
 
-            Map<DataIncludeArg, String> dargmap = getDargMap(request.getQueryString());
+            Map<DataIncludeArg, String> dargmap = DataServer.parseQuery2DargMap(request.getQueryString());
 
             Util.massert(dargmap != null, "Failed to parse DARG map with query string %s", request.getQueryString());
 
@@ -126,21 +126,6 @@ public class IncludeInternal
         private static String composeETag(long modtime, long conhash)
         {
             return String.format("\"%d::%d\"", modtime, conhash);
-        }
-
-        // TODO: I must be doing this kind of operation somewhere else
-        private static Map<DataIncludeArg, String> getDargMap(String querystring)
-        {
-            ArgMap submap = ArgMap.buildFromQueryString("?" + querystring);
-            Map<DataIncludeArg, String> dargmap = Util.treemap();
-
-            for(String k : submap.keySet())
-            {
-                var kd = DataIncludeArg.valueOf(k);
-                dargmap.put(kd, submap.get(k));
-            }
-
-            return dargmap;
         }
     }
 
