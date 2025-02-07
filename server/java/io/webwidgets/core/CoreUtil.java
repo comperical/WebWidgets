@@ -46,6 +46,9 @@ public class CoreUtil
 
 	public static final String ACCESS_HASH_COOKIE = "accesshash";
 
+	// Widget DB for storing config-related info. This one is intended to be generally public or shareable
+	public static final String CONFIG_DB_NAME = "config";
+
 	// A table with this column is considered to have granular permissions
 	public static final String GROUP_ALLOW_COLUMN = "group_allow";
 

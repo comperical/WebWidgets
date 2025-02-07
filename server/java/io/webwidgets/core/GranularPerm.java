@@ -29,6 +29,18 @@ public class GranularPerm
 {
     public static final String AUX_GROUP_PREFIX = "__aux_group";
 
+    public static final String GROUP_INFO_TABLE = "group_info";
+
+
+    public static List<String> getGroupInfoCreate()
+    {
+        return Arrays.asList(
+            String.format("CREATE TABLE %s (id int, user_name varchar(100), group_name varchar(100), primary key(id))", GROUP_INFO_TABLE),
+            String.format("CREATE INDEX __user_group_lookup ON %s (user_name)", GROUP_INFO_TABLE)
+        );
+    }
+
+
     // Name of the aux group table, derived from the main table.
     public static String getAuxGroupTable(String maintable)
     {

@@ -1328,6 +1328,49 @@ public class CoreCommand
 			GranularPerm.rebuildAuxGroupTable(dbitem, maintable);
 		}
 	}
+
+	public static class CreateGroupInfoTable extends ArgMapRunnable
+	{
+
+		public void runOp()
+		{
+			String username = _argMap.getStr("username", "dburfoot");
+			WidgetUser user = WidgetUser.lookup(username);
+
+			WidgetItem config = new WidgetItem(user, CoreUtil.CONFIG_DB_NAME);
+
+			if(!config.dbFileExists())
+			{
+				config.createEmptyLocalDb();
+				Util.pf("Created Widget DB %s\n", config);
+			}
+
+			boolean hastable = config.getDbTableNameSet().contains(GranularPerm.GROUP_INFO_TABLE);
+			boolean rebuild = _argMap.getBit("rebuild", false);
+
+			if(hastable && !rebuild)
+			{
+				Util.pf("Account DB already has group info table, run with rebuild=true to rebuild\n");
+				return;
+			}
+
+			if(hastable)
+			{
+				String dropper = String.format("DROP TABLE %s", GranularPerm.GROUP_INFO_TABLE);
+				Util.pf("SQL command: %s\n", dropper);
+				CoreDb.execSqlUpdate(dropper, config);
+			}
+
+
+			for(String comm : GranularPerm.getGroupInfoCreate())
+			{
+				Util.pf("SQL command: %s\n", comm);
+				CoreDb.execSqlUpdate(comm, config);
+			}
+
+			ActionJackson.createCode4Widget(config);
+		}
+	}
 }
 
 

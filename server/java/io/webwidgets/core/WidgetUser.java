@@ -14,6 +14,7 @@ import net.danburfoot.shared.ArgMap;
 import net.danburfoot.shared.CollUtil;
 import net.danburfoot.shared.FileUtils;
 import net.danburfoot.shared.CollUtil.*;
+import net.danburfoot.shared.CoreDb.QueryCollector;
 
 
 import io.webwidgets.core.WidgetOrg.*;
@@ -114,34 +115,29 @@ public class WidgetUser implements Comparable<WidgetUser>
 
 
     // Get the group memberships for this user when accessing the given widget target
-    // The groups are contained in the target DB owner's "account::group_data" table
+    // The groups are contained in the target DB owner's "config::group_info" table
     // We will likely need to have a caching system here
     // See docs for granular permissions
-    // TODO: actual implementation
     public Set<String> lookupGroupSet4Db(WidgetItem accesstarget)
     {
-        if(this.toString().equals("dburfoot"))
+        return lookupGroupSet4OwnerSpace(accesstarget.theOwner);
+    }
+
+    public Set<String> lookupGroupSet4OwnerSpace(WidgetUser owner)
+    {
+        var configdb = new WidgetItem(owner, CoreUtil.CONFIG_DB_NAME);
+
+        // users are always members of their own group
+        Set<String> groupset = Util.setify(String.format("I::%s", this.toString()));
+
+        if(configdb.dbFileExists())
         {
-            return Util.setify("I::dburfoot", "smartgroup", "hackergroup", "tmgroup");
+            String paramquery = String.format("SELECT group_name FROM %s WHERE user_name = ?", GranularPerm.GROUP_INFO_TABLE);
+            QueryCollector qcol = QueryCollector.buildRunPrepared(paramquery, configdb, this);
+            groupset.addAll(Util.map2list(qcol.recList(), amap -> amap.getSingleStr()));
         }
 
-        if(this.toString().equals("heather"))
-        {
-            return Util.setify("I::heather", "fungroup", "smartgroup");
-        }
-
-        if(this.toString().equals("bettworld"))
-        {
-            return Util.setify("I::bettworld", "fungroup", "smartgroup", "tmgroup");
-        }
-
-        if(this.toString().equals("d101tm"))
-        {
-            return Util.setify("I::d101tm", "tmgroup");
-        }
-
-        // All users are considered members of their own group
-        return Util.setify("I::" + this.toString());
+        return groupset;
     }
 
 
