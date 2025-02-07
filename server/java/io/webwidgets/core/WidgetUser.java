@@ -179,7 +179,7 @@ public class WidgetUser implements Comparable<WidgetUser>
     public File getUserBaseDir()
     {
         // TODO: make this OS-friendly
-        String basedir = Util.sprintf("%s/%s", CoreUtil.getWidgetCodeDir(), toString());
+        String basedir = Util.sprintf("%s/%s", CoreUtil.WIDGET_CODE_DIR, this.toString());
         return new File(basedir);
     }
 

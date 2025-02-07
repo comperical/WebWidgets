@@ -331,7 +331,7 @@ public class WebUtil
 	{
 		Util.massert(relpath.startsWith("/u/shared"), "Expected a relative path to start with /u/shared, got " + relpath);
 
-		String prefix = Util.sprintf("%s/%s", CoreUtil.getWidgetCodeDir(), WidgetUser.getSharedUser());
+		String prefix = Util.sprintf("%s/%s", CoreUtil.WIDGET_CODE_DIR, WidgetUser.getSharedUser());
 
 		File mainfile = new File(relpath.replace("/u/shared", prefix));
 

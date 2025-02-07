@@ -29,15 +29,9 @@ public class ActionJackson extends HttpServlet
 	// TODO: need to make this location config-dependent!
 	public static final String SERVLET_PART_SAVE_DIR = "/opt/rawdata/servlet";
 
-	public static final String DATA_INCLUDE_PLAIN = "DataServer.include(request)";
-
-	public static final String DATA_FORMAT_REGEX = "DataServer\\.include\\(request,\\s*\"([A-Za-z0-9_=&,]+)\"\\s*\\)";
-
-	private static final Pattern DATA_FORMAT_PATTERN = Pattern.compile(DATA_FORMAT_REGEX);
-
 	private static final String MAC_OS_DSTORE = ".DS_Store";
 
-	// Nov 2023: these are not yet implemented, but adding them here for documentation
+	// These are the varieties of Errors that the user can see when up/down-loading data from the server
 	public enum LoadApiError
 	{
 		CodeFormatError,
@@ -50,7 +44,7 @@ public class ActionJackson extends HttpServlet
 		UploadSizeError;
 	}
 
-	public enum UploadFileType 
+	public enum UploadFileType
 	{
 		basezip,
 		widgetzip,
@@ -58,7 +52,7 @@ public class ActionJackson extends HttpServlet
 		
 		public boolean isZip()
 		{
-			return this.toString().endsWith("zip");	
+			return this.toString().endsWith("zip");
 		}
 		
 		public String getExtension()

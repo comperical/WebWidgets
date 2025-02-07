@@ -29,9 +29,7 @@ import net.danburfoot.shared.CoreDb.ConnectionSource;
 // it cannot refer to any other classes in WWIO 
 public class CoreUtil
 { 
-	// This string is spliced into the code by the Python script when it is compiled
-	// The compile script detects it's install directory
-	public static final String WWIO_BASE_CONFIG_DIR = "WWIO_CONFIG_DIR_GOES_HERE";
+
 
 	public static final String BASE_WIDGET_NAME = "base";
 
@@ -87,6 +85,11 @@ public class CoreUtil
 
 		return Util.join(tokens, charsep);
 	}
+
+
+	// This string is spliced into the code by the Python script when it is compiled
+	// The compile script detects it's install directory
+	public static final String WWIO_BASE_CONFIG_DIR = "WWIO_CONFIG_DIR_GOES_HERE";
 
 
 	public static final String REPO_BASE_DIRECTORY = composeSubDirectory(WWIO_BASE_CONFIG_DIR, 3);
@@ -145,16 +148,6 @@ public class CoreUtil
 		} catch (Exception ex )  {
 			throw new RuntimeException(ex);
 		}
-	}
-
-	public static synchronized String getWidgetCodeDir()
-	{
-		return WIDGET_CODE_DIR;
-	}
-
-	public static synchronized String getWidgetDbDir()
-	{
-		return WIDGET_DB_DIR;
 	}
 
 
