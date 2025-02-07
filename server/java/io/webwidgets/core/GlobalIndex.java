@@ -95,7 +95,7 @@ public class GlobalIndex
                 _MASTER_DATA = Util.map2map(qcol.recList(), amap -> amap.getStr("username"), amap -> amap);
                 
                 // This is the only place where we call new WidgetUser()!!!!
-                _LOOKUP_MAP = Util.map2map(_MASTER_DATA.keySet(), uname -> uname, uname -> new WidgetUser(uname));
+                _LOOKUP_MAP = Util.map2map(_MASTER_DATA.keySet(), uname -> uname, WidgetUser::__globalIndexBuildOnly);
                 Util.massert(!_LOOKUP_MAP.isEmpty(), "There must be at least 1 user to run this code");
             }
 
@@ -137,8 +137,7 @@ public class GlobalIndex
     // But WidgetUser objects are generally only created by the GlobalIndex code
     private static WidgetItem getLoadOnlyMaster()
     { 
-        // TODO: this can used the back-door shared user method
-        WidgetUser admin = new WidgetUser(WidgetUser.SHARED_USER_NAME);
+        WidgetUser admin = WidgetUser.buildBackDoorSharedUser();
         return new WidgetItem(admin, CoreUtil.MASTER_WIDGET_NAME);
     }
 

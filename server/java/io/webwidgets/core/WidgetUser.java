@@ -26,7 +26,7 @@ public class WidgetUser implements Comparable<WidgetUser>
 {
     private final String _userName;
 
-    WidgetUser(String uname)
+    private WidgetUser(String uname)
     {
         _userName = uname;
     }
@@ -242,15 +242,26 @@ public class WidgetUser implements Comparable<WidgetUser>
 
     public static String SHARED_USER_NAME = "shared";
     
+    // Special technique, only allowed for building shared user, to allow lookups
     static WidgetUser buildBackDoorSharedUser()
     {
     	return new WidgetUser(SHARED_USER_NAME);
     }
-    
+
+    // Important: this is just a wrapper around valueOf(...)
     public static WidgetUser getSharedUser()
     {
         return valueOf(SHARED_USER_NAME);
     }
+
+
+    // Very important: this is only called from the Global Index build location
+    static WidgetUser __globalIndexBuildOnly(String uname)
+    {
+        return new WidgetUser(uname);
+    }
+    
+
 
     private static String __DUMMY_HASH = null;
 

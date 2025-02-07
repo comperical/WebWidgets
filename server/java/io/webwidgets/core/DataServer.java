@@ -191,8 +191,7 @@ public class DataServer
 				}
 			}
 
-			// TODO: need to put something like this in here
-			// Util.massert(_theItem.dbFileExists());
+			Util.massert(_theItem.dbFileExists(), "Widget DB %s not found", _theItem);
 
 			// By default, you are going to get all the tables  in a widget
 			Set<String> tableset = _theItem.getDbTableNameSet();
@@ -289,7 +288,7 @@ public class DataServer
 		{
 			if(shouldPerformInclude(global))
 			{
-				sb.append(global ? getGlobalInclude() : getUserAutoInclude(_theItem));
+				sb.append(global ? getGlobalInclude() : AutoInclude.getUserAutoInclude(_theItem));
 				markIncludeComplete(global);
 			}
 		}
@@ -344,25 +343,7 @@ public class DataServer
 			return sb.toString();
 		}
 
-		static String getUserAutoInclude(WidgetItem dbitem)
-		{
-			StringBuilder sb = new StringBuilder();
 
-			// Gotcha - need to request JS auto-include from the Widget - owner, not the logged-in user
-			// This feature is tricky, think more about it
-			List<String> includeList = WebUtil.getAutoIncludeStatement(dbitem);
-			
-			sb.append("\n\n<!-- Custom JS code for user -->\n");
-			
-			for(String include : includeList) 
-			{ 
-				sb.append(include);
-				sb.append("\n");
-			}
-			
-			sb.append("<!-- End custom JS code for user -->\n\n");
-			return sb.toString();
-		}
 
 		public String include()
 		{
@@ -587,8 +568,169 @@ public class DataServer
 		{
 			super(mssg);
 		}
-		
 	}
+
+
+	public static class AutoInclude
+	{
+		public static final String AUTO_INCLUDE_PREFIX = "My";
+
+		public static final String FAVICON_FILE_NAME = "MyFavIcon";
+		
+		public static final List<String> AUTO_INCLUDE_SUFFIX = Util.listify(".js", ".css", ".html");
+
+
+		// This is an extra string that must be included in .html files for auto-inclusion
+		public static final String HTML_HEADER_TAG = "Header";
+
+		// Send the auto-include JS and CSS statements for the given dbitem
+		// This includes BOTH the material local to the item, as well as the base files
+		// Inclusion runs for the OWNER, not the accessor
+		// Auto-inclusion does not work for cross-loads, if you need those assets,
+		// you should include them directly via script include
+		static String getUserAutoInclude(WidgetItem dbitem)
+		{
+			StringBuilder sb = new StringBuilder();
+
+			// Gotcha - need to request JS auto-include from the Widget - owner, not the logged-in user
+			// This feature is tricky, think more about it
+			List<String> includeList = AutoInclude.getAutoIncludeStatement(dbitem);
+			
+			sb.append("\n\n<!-- Custom JS code for user -->\n");
+			
+			for(String include : includeList) 
+			{ 
+				sb.append(include);
+				sb.append("\n");
+			}
+			
+			sb.append("<!-- End custom JS code for user -->\n\n");
+			return sb.toString();
+		}
+
+		public static List<String> getAutoIncludeStatement(WidgetItem item)
+		{
+			List<String> result = Util.arraylist();
+
+			for(boolean isbase : Util.listify(true, false))
+			{
+				Optional<String> wdgname = isbase ? Optional.empty() : Optional.of(item.theName);
+				List<File> srclist = getAutoIncludeList(item.theOwner, wdgname);
+				result.addAll(includeTargetFileList(srclist, item.theOwner, wdgname));
+			}
+
+			return result;
+		}
+
+		// List of files in the user base dir that start with My
+		// and end in either .css or .js extensions
+		public static List<File> getAutoIncludeList(WidgetUser user, Optional<String> optwdg)
+		{
+			File basedir = optwdg.isPresent()
+							? (new WidgetItem(user, optwdg.get())).getWidgetBaseDir()
+							: user.getUserBaseDir();
+			
+			if(!basedir.exists())
+				{ return Collections.emptyList(); }
+			
+			List<File> inclist = Util.listify();
+			
+			for(File f : basedir.listFiles())
+			{
+				if(f.isDirectory())
+					{ continue; }
+
+				String name = f.getName();
+
+				// Special handling for fav-icons
+				if(name.startsWith(FAVICON_FILE_NAME))
+				{
+					inclist.add(f);
+					continue;
+				}
+				
+				if(!name.startsWith(AUTO_INCLUDE_PREFIX))
+					{ continue; }
+				
+
+				Optional<String> suffix = AUTO_INCLUDE_SUFFIX
+												.stream()
+												.filter(suff -> name.endsWith(suff))
+												.findAny();
+
+
+				if(!suffix.isPresent())
+					{ continue; }
+
+				// HTML files require extra tag to include
+				if(suffix.get().equals(".html") && !name.contains(HTML_HEADER_TAG))
+					{ continue; }
+
+				inclist.add(f);
+			}
+			
+			return inclist;
+		}
+
+
+		private static List<String> includeTargetFileList(List<File> filelist, WidgetUser owner, Optional<String> optname)
+		{
+
+			List<String> statelist = Util.arraylist();
+
+			for(File f : filelist)
+			{
+				// For HTML include files, we just insert the HTML directly into the page
+				if(f.getName().endsWith(".html"))
+				{
+					statelist.add("");
+					String incname = optname.isPresent() ? optname.get() : "base";
+					statelist.add(Util.sprintf("<!-- Auto File Include of HTML snippet (%s):%s -->", incname, f.getName()));
+
+					// For HTML files, we simply slurp the file and include it directly
+					List<String> srclist = FileUtils.getReaderUtil().setFile(f).setTrim(false).readLineListE();
+					statelist.addAll(srclist);
+					statelist.add("<!-- End File Include -->");
+					statelist.add("");
+					continue;
+				}
+
+
+				long modtime = f.lastModified();
+				String relpath = Util.sprintf("/u/%s%s/%s", 
+					owner, optname.isPresent() ? "/" + optname.get() : "", f.getName());
+
+				if(f.getName().startsWith(FAVICON_FILE_NAME))
+				{
+					// <link rel="icon" type="image/x-icon" href="/u/d57tm/vimsicon.png">
+					String state = Util.sprintf("<link rel=\"icon\" type=\"image/x-icon\" href=\"%s?modtime=%d\"></link>", relpath, modtime);
+					statelist.add(state);
+					continue;
+				}
+
+
+				if(f.getName().endsWith(".js"))
+				{
+					// <script type="text/javascript" src="SecretShared.js"></script>
+					String state = Util.sprintf("<script type=\"text/javascript\" src=\"%s?modtime=%d\"></script>", relpath, modtime);
+					statelist.add(state);
+					continue;
+				} 
+				
+				if(f.getName().endsWith(".css"))
+				{
+					// <link rel="stylesheet" href="/life/asset/cascade/TableStyle.css"></link>
+					String state = Util.sprintf("<link rel=\"stylesheet\" href=\"%s?modtime=%d\"></link>", relpath, modtime);
+					statelist.add(state);
+					continue;
+				}
+				
+			}
+			
+			return statelist;
+		}
+	}
+
 } 
 
 

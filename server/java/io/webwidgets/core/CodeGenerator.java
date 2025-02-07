@@ -9,6 +9,7 @@ import org.json.simple.JSONObject;
 
 import net.danburfoot.shared.Util;
 import net.danburfoot.shared.CollUtil.*;
+import net.danburfoot.shared.FileUtils;
 
 import io.webwidgets.core.CoreUtil.*;
 import io.webwidgets.core.WidgetOrg.*;
@@ -341,6 +342,82 @@ public class CodeGenerator
 		}
 	}
 
+
+	public static List<String> maybeUpdateCode4Table(LiteTableInfo LTI, boolean dogenerate)
+	{
+		Optional<File> prevfile = LTI.findAutoGenFile();
+		// Normal situation - file exists and we aren't asked to generate it.
+		if(prevfile.isPresent() && !dogenerate)
+			{ return Util.listify(); }
+		
+		
+		CodeGenerator ncgen = new CodeGenerator(LTI);
+		List<String> newsrc = ncgen.getCodeLineList();
+		
+		if(oldVersionOkay(prevfile, newsrc))
+		{
+			String mssg = Util.sprintf("New version of AutoGen code identical to previous for DB %s\n", LTI.dbTabPair._2);
+			return Util.listify(mssg);
+		}
+		
+		int oldversion = prevfile.isPresent() ? getVersionFromPath(prevfile.get()) : 0;
+		String newjspath = getAutoGenProbePath(LTI, oldversion+1);
+		
+		FileUtils.getWriterUtil()
+				.setFile(newjspath)
+				.writeLineListE(newsrc);
+		
+		List<String> loglist = Util.vector();
+		loglist.add(Util.sprintf("Wrote autogen code to path %s\n", newjspath));
+		
+		if(prevfile.isPresent())
+		{
+			prevfile.get().delete();
+			loglist.add(Util.sprintf("Deleted old file %s\n", prevfile.get()));	
+		}
+		
+		return loglist;
+
+	}
+
+	static boolean oldVersionOkay(Optional<File> prevfile, List<String> newsrc)
+	{
+		if(!prevfile.isPresent())
+			{ return false; }
+		
+		List<String> oldsrc = FileUtils.getReaderUtil()
+							.setFile(prevfile.get())
+							.setTrim(false)
+							.readLineListE();
+
+		return oldsrc.equals(newsrc);
+	}
+
+	// TODO: need to get rid of this hacky way of upgrading the versions
+	// This is all just a roundabout way to ensure that the browser doesn't cache
+	// old versions of the autogen code
+	// The better way is to use modtime=... argument, like with the other assets
+	static int getVersionFromPath(File thefile)
+	{
+		String fname = thefile.getName();
+		String[] toks = fname.split("__");
+		String justnum = CoreUtil.peelSuffix(toks[1], ".js");
+		return Integer.valueOf(justnum);
+	}
+		
+	private static String getAutoGenProbePath(LiteTableInfo LTI, int version)
+	{
+		File wdir = LTI.dbTabPair._1.getAutoGenJsDir();
+		return Util.sprintf("%s/%s__%03d.js", wdir.toString(), LTI.getBasicName(), version);
+	}
+	
+
+	static boolean matchesFileName(LiteTableInfo LTI, File thefile)
+	{
+		String fname = thefile.getName();
+		String[] toks = fname.split("__");
+		return LTI.getBasicName().equals(toks[0]);
+	}
 } 
 
 

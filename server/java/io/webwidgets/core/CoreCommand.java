@@ -337,7 +337,7 @@ public class CoreCommand
 				for(WidgetItem witem : itemlist)
 				{
 					Util.pf("Attempting to create code for %s\n", witem);
-					List<String> loglist = ActionJackson.createCode4Widget(witem);
+					List<String> loglist = witem.createJsCode();
 					for(String log : loglist)
 						{ Util.pf("%s", log); }
 				}
@@ -739,7 +739,7 @@ public class CoreCommand
 			WidgetUser user = WidgetUser.lookup(_argMap.getStr("username"));
 			WidgetItem item = new WidgetItem(user, _argMap.getStr("widgetname"));
 			
-			for(String s : WebUtil.getAutoIncludeStatement(item))
+			for(String s : DataServer.AutoInclude.getAutoIncludeStatement(item))
 			{
 				Util.pf("Statement is \n\t%s\n", s);
 			}
@@ -1090,9 +1090,9 @@ public class CoreCommand
 
 			// Create the new JS code for the DB
 			{
-					List<String> loglist = ActionJackson.createCode4Widget(item);
-					for(String log : loglist)
-						{ Util.pf("%s", log); }
+				List<String> loglist = item.createJsCode();
+				for(String log : loglist)
+					{ Util.pf("%s", log); }
 			}
 
 			// Import the code from the Gallery
@@ -1368,7 +1368,7 @@ public class CoreCommand
 				CoreDb.execSqlUpdate(comm, config);
 			}
 
-			ActionJackson.createCode4Widget(config);
+			config.createJsCode();
 		}
 	}
 }

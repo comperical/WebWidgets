@@ -265,7 +265,6 @@ public class CoreUtil
 	}
 
 	// This is going to fail if the connection is not actually a Sqlite connector
-	// TODO: this is in CoreDb
 	public static Set<String> getLiteTableNameSet(ConnectionSource litedb)
 	{
 		return getLiteTableNameSet(litedb, true);
@@ -295,13 +294,6 @@ public class CoreUtil
 		List<ArgMap> reclist = Util.filter2list(QueryCollector.buildAndRun(sql, litedb).recList(), mypred);
 		
 		return Util.map2map(reclist, amap -> amap.getStr("name"), amap -> amap.getStr("sql"));
-	}
-
-	// TODO: this should no longer be necessary/used
-	public static DayCode getTodayTzAware() 
-	{
-		String tsaware = ExactMoment.build().asBasicTs(TimeZoneEnum.PST);
-		return DayCode.lookup(tsaware);
 	}
 	
 	public static String getCreateTableSql(ConnectionSource witem, String tablename)
@@ -573,5 +565,90 @@ public class CoreUtil
 		catch (Exception ex) { throw new RuntimeException(ex); }
 
 	}
+
+
+	// http://stackoverflow.com/questions/607176/java-equivalent-to-javascripts-encodeuricomponent-that-produces-identical-outpu		
+	// NB: this method may have performance implications when used excessively.
+	static String myEncodeURIComponent(String s)
+	{
+		try
+		{
+			// Okay, Java's URL Encoder is different from the JS encodeURIComponent
+			// in that a couple of things aren't escaped: !
+			
+			String encoded = java.net.URLEncoder.encode(s, "UTF-8");
+			/*
+			result = encoded
+							.replaceAll("\\+", "%20")
+							.replaceAll("\\%21", "!")
+							.replaceAll("\\%27", "'")
+							.replaceAll("\\%28", "(")
+							.replaceAll("\\%29", ")")
+							.replaceAll("\\%7E", "~");
+							
+			result = java.net.URLEncoder.encode(s, "UTF-8")
+							.replace("+", "%20")
+							.replace("%21", "!")
+							.replace("%27", "'")
+							.replace("%28", "(")
+							.replace("%29", ")")
+							.replace("%7E", "~");
+							
+			*/
+			
+			return fastReplace(encoded);
+		}
+		
+		// This exception should never occur.
+		catch (UnsupportedEncodingException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+	
+	private static Map<String, Character> _REPLACE_MAP = Util.treemap();
+	
+	static {
+		_REPLACE_MAP.put("21", '!');
+		_REPLACE_MAP.put("27", '\'');
+		_REPLACE_MAP.put("28", '(');
+		_REPLACE_MAP.put("29", ')');
+		_REPLACE_MAP.put("7E", '~');
+	}
+	
+	private static String fastReplace(String s)
+	{
+		StringBuilder sb = new StringBuilder();
+		
+		for(int i = 0; i < s.length(); i++)
+		{
+			char c = s.charAt(i);
+			
+			if(c == '+')
+			{
+				sb.append("%20");
+				continue;
+			}
+			
+			
+			if(c == '%' && i < s.length()-2)
+			{
+				String probe = s.substring(i+1,i+3);
+				if(_REPLACE_MAP.containsKey(probe))
+				{
+					sb.append(_REPLACE_MAP.get(probe));	
+					i += 2;
+					continue;
+				}
+			}
+			
+			
+			sb.append(c);
+		}
+		
+		return sb.toString();
+	}
+
+
 
 } 

@@ -56,8 +56,10 @@ public class WispFileLogic
             Optional<WidgetUser> accessor = AuthLogic.getLoggedInUser(request);
             Optional<WidgetItem> pageitem = WebUtil.lookupWidgetFromPageUrl(request);
 
-            // TODO: This is not a great error message
-            Util.massert(pageitem.isPresent(), "Somehow failed to find the widget in the request URL");
+            // The code uploader should block the positioning of .wisp files in places that would produce
+            // this condition. IE you shouldn't be able to put a .wisp file in such a location
+            Util.massert(pageitem.isPresent(),
+                "Failed to parse Widget ID from non-standard request URL %s", request.getRequestURL());
 
             if(!AuthChecker.build().directSetAccessor(accessor).directDbWidget(pageitem.get()).allowRead())
             {
@@ -156,12 +158,11 @@ public class WispFileLogic
                 if(s.trim().startsWith("<wisp"))
                 {
                     try {
-                        // TODO: this needs to be integrated with the CodeFormatChecker,
-                        // this should never happen here
+                        // This is a double check of the Darg parsing
+                        // If this returns null, it means the Wisp tag parsing failed
+                        // Usually, but not always, this should be detected by the uploader
                         Map<DataIncludeArg, String> dargmap = WispTagParser.parse2DataMap(s);
 
-                        // This means the Wisp tag parsing failed
-                        // Usually, but not always, this should be detected by the uploader
                         if(dargmap == null)
                         { 
                             String mssg =
@@ -207,7 +208,7 @@ public class WispFileLogic
                     // If the Home widget is present, pull in user-defined auto-includes AFTER the last tag
                     if(idx == tagmap.lastKey() && optItem.isPresent())
                     { 
-                        sb.append(ServerUtilCore.getUserAutoInclude(optItem.get())); 
+                        sb.append(DataServer.AutoInclude.getUserAutoInclude(optItem.get())); 
                         sb.append(Util.sprintf("<!-- WISP_TAG_PROCESS_COMPLETE, took %.03f seconds -->\n", (Util.curtime()-alphatime)/1000));
                     }
 

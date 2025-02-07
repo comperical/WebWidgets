@@ -493,7 +493,6 @@ public class ActionJackson extends HttpServlet
 				ZipEntry zent = zipen.nextElement();
 				String zname = zent.getName();
 
-				// TODO: as of late 2023, only dburfoot/admin should be uploading .jsp files
 				// Formerly checked .jsp files here, but now only dburfoot/admin should be using .jsp files
 				if(zname.endsWith(".wisp"))
 				{
@@ -647,28 +646,10 @@ public class ActionJackson extends HttpServlet
 	}
 	
 	
-	// TODO: this doesn't really belong here, does it...?
+	@Deprecated
 	public static List<String> createCode4Widget(WidgetItem witem)
 	{
-		List<String> loglist = Util.vector();
-		File autogendir = witem.getAutoGenJsDir();
-		
-		if(!autogendir.exists())
-		{
-			autogendir.mkdirs();
-			loglist.add(Util.sprintf("Created directory %s\n", autogendir));
-		}
-		
-		for(String dbname : witem.getDbTableNameSet())
-		{
-			LiteTableInfo tinfo = new LiteTableInfo(witem, dbname);
-			tinfo.runSetupQuery();
-			
-			// dogenerate = true
-			loglist.addAll(tinfo.maybeUpdateJsCode(true));
-		}
-		
-		return loglist;
+		return witem.createJsCode();
 	}
 	
 

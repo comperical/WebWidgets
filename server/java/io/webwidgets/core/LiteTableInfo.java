@@ -439,7 +439,7 @@ public class LiteTableInfo
 		// May 2024 note: could not detect any performance improvements by using the library version of the escape operation
 		// sb.append(_useJsonQuote ? org.json.simple.JSONValue.escape(s) : myEncodeURIComponent(s));
 
-		sb.append(myEncodeURIComponent(s));
+		sb.append(CoreUtil.myEncodeURIComponent(s));
 		sb.append("\"");
 		return sb.toString();
 	}
@@ -484,8 +484,6 @@ public class LiteTableInfo
 		// Modestly better performance to do this here, rather than within sync block
 		Consumer<ArgMap> myfunc = isUpsertAjaxOp(argmap) ? this::doUpsert : this::doDelete;
 
-		// TODO: this is going to probably cause some scalability issues
-		// when we get to 100000's of tables
 		SyncController editcontrol = getEditController(dbTabPair._1);
 		
 		synchronized(editcontrol)
@@ -609,6 +607,7 @@ public class LiteTableInfo
 	// This code is replicated in DataDesigner in extension package
 	// Eventually need a complete class that represents everything about a SQLite table definition
 	// TODO: this code will break if the user uploads a table with an INDEX or UNIQUE definition in it
+	// This section needs a lot of work, this is probably not the right way to discover default data
     public static LinkedHashMap<String, String> loadColumnDefinition(WidgetItem item, String table)
     {
         String tablesql = CoreUtil.getCreateTableSql(item, table).strip().replaceAll("\n", " ");
@@ -651,6 +650,15 @@ public class LiteTableInfo
 
         return result;
     }
+
+	private static String getCreateTableSql(ConnectionSource witem, String tablename)
+	{
+		String query = Util.sprintf("SELECT sql FROM sqlite_master WHERE type = 'table' AND tbl_name = '%s'", tablename);
+		QueryCollector qcol = QueryCollector.buildAndRun(query, witem);
+		return qcol.getSingleArgMap().getSingleStr();
+	}
+
+
 
     private static String basicStringReduce(String mystr)
     {
@@ -747,195 +755,52 @@ public class LiteTableInfo
 		return Util.sprintf("%s/autogenjs/%s/%s", pref, dbTabPair._1.theName, jsfile.get().getName());
 	}
 	
-	List<String> maybeUpdateJsCode(boolean dogenerate)
-	{
-		Optional<File> prevfile = findAutoGenFile();
-		// Normal situation - file exists and we aren't asked to generate it.
-		if(prevfile.isPresent() && !dogenerate)
-			{ return Util.listify(); }
-		
-		
-		CodeGenerator ncgen = new CodeGenerator(this);
-		List<String> newsrc = ncgen.getCodeLineList();
-		
-		if(oldVersionOkay(prevfile, newsrc))
-		{
-			String mssg = Util.sprintf("New version of AutoGen code identical to previous for DB %s\n", dbTabPair._2);
-			return Util.listify(mssg);
-		}
-		
-		int oldversion = prevfile.isPresent() ? this.getVersionFromPath(prevfile.get()) : 0;
-		String newjspath = this.getAutoGenProbePath(oldversion+1);
-		
-		FileUtils.getWriterUtil()
-				.setFile(newjspath)
-				.writeLineListE(newsrc);
-		
-		List<String> loglist = Util.vector();
-		loglist.add(Util.sprintf("Wrote autogen code to path %s\n", newjspath));
-		
-		if(prevfile.isPresent())
-		{
-			prevfile.get().delete();
-			loglist.add(Util.sprintf("Deleted old file %s\n", prevfile.get()));	
-		}
-		
-		return loglist;
-	}
-
-	
-	// TODO: this does not go here
-	static boolean oldVersionOkay(Optional<File> prevfile, List<String> newsrc)
-	{
-		if(!prevfile.isPresent())
-			{ return false; }
-		
-		List<String> oldsrc = FileUtils.getReaderUtil()
-							.setFile(prevfile.get())
-							.setTrim(false)
-							.readLineListE();
-
-		return oldsrc.equals(newsrc);
-	}
-		
-	String getAutoGenProbePath(int version)
-	{
-		File wdir = dbTabPair._1.getAutoGenJsDir();
-		return Util.sprintf("%s/%s__%03d.js", wdir.toString(), getBasicName(), version);
-	}
-	
-	// TODO: need to get rid of this hacky way of upgrading the versions
-	// Just put the file modtime in there, Jesus
-	int getVersionFromPath(File thefile)
-	{
-		String fname = thefile.getName();
-		String[] toks = fname.split("__");
-		String justnum = CoreUtil.peelSuffix(toks[1], ".js");
-		return Integer.valueOf(justnum);
-	}
-
-	private boolean matchesFileName(File thefile)
-	{
-		String fname = thefile.getName();
-		String[] toks = fname.split("__");
-		return getBasicName().equals(toks[0]);
-	}
-	
 	public Optional<File> findAutoGenFile()
 	{
 		File wdir = dbTabPair._1.getAutoGenJsDir();
 		Util.massert(wdir.exists() && wdir.isDirectory(),
 			"AutoGen JS Directory does not exist or is not directory %s", wdir);
 		
-		List<File> hits = Util.filter2list(wdir.listFiles(), f -> matchesFileName(f));
+		List<File> hits = Util.filter2list(wdir.listFiles(), f -> CodeGenerator.matchesFileName(this, f));
 		Util.massert(hits.size() <= 1, "Found multiple versions of AutoGen JS file : %s", hits);
 		
 		return hits.isEmpty() ? Optional.empty() : Optional.of(hits.get(0));
 	}
 
 
-
-	private static Map<String, SyncController> __SYNC_MAP = Util.treemap();
+	private static Map<WidgetItem, SyncController> __SYNC_MAP = Util.treemap();
 	
 	static synchronized SyncController getEditController(WidgetItem witem) 
 	{
-		String pathkey = witem.getLocalDbPath();
-		
-		__SYNC_MAP.putIfAbsent(pathkey, new SyncController());
+		__maybeDismissOldController();
 
-		return __SYNC_MAP.get(pathkey);
-	}
-	
-	static class SyncController {}
-	
-	
-	// http://stackoverflow.com/questions/607176/java-equivalent-to-javascripts-encodeuricomponent-that-produces-identical-outpu		
-	// NB: this method may have performance implications when used excessively.
-	private static String myEncodeURIComponent(String s)
-	{
-		try
-		{
-			// Okay, Java's URL Encoder is different from the JS encodeURIComponent
-			// in that a couple of things aren't escaped: !
-			
-			String encoded = java.net.URLEncoder.encode(s, "UTF-8");
-			/*
-			result = encoded
-							.replaceAll("\\+", "%20")
-							.replaceAll("\\%21", "!")
-							.replaceAll("\\%27", "'")
-							.replaceAll("\\%28", "(")
-							.replaceAll("\\%29", ")")
-							.replaceAll("\\%7E", "~");
-							
-			result = java.net.URLEncoder.encode(s, "UTF-8")
-							.replace("+", "%20")
-							.replace("%21", "!")
-							.replace("%27", "'")
-							.replace("%28", "(")
-							.replace("%29", ")")
-							.replace("%7E", "~");	
-							
-			*/
-			
-			return fastReplace(encoded);
-						
-			// String other = CoreUtil.encodeURIComponent(s);
-			
-			// Util.massert(result.equals(other),
-			//	"Got result/other: \n\t%s\n\t%s", result, other);
-		}
-		
-		// This exception should never occur.
-		catch (UnsupportedEncodingException e)
-		{
-			throw new RuntimeException(e);
-		}
-	} 	
-	
-	private static Map<String, Character> _REPLACE_MAP = Util.treemap();
-	
-	static {
-		_REPLACE_MAP.put("21", '!');
-		_REPLACE_MAP.put("27", '\'');
-		_REPLACE_MAP.put("28", '(');
-		_REPLACE_MAP.put("29", ')');
-		_REPLACE_MAP.put("7E", '~');
-	}
-	
-	private static String fastReplace(String s)
-	{
-		StringBuilder sb = new StringBuilder();
-		
-		for(int i = 0; i < s.length(); i++)
-		{
-			char c = s.charAt(i);
-			
-			if(c == '+')
-			{
-				sb.append("%20");
-				continue;
-			}
-			
-			
-			if(c == '%' && i < s.length()-2)
-			{
-				String probe = s.substring(i+1,i+3);
-				if(_REPLACE_MAP.containsKey(probe))
-				{
-					sb.append(_REPLACE_MAP.get(probe));	
-					i += 2;
-					continue;
-				}
-			}
-			
-			
-			sb.append(c);
-		}
-		
-		return sb.toString();
+		__SYNC_MAP.putIfAbsent(witem, new SyncController());
+
+		return __SYNC_MAP.get(witem).registerLoad();
 	}
 
+	// TODO: need to implement this at some point.
+	// As of Feb 2025, I don't think I have enough tables to really test the behavior here
+	private static synchronized void __maybeDismissOldController()
+	{
+
+
+	} 
+	
+	static class SyncController 
+	{
+		private int _numLoad = 0;
+
+		private double _lastLoad = Util.curtime();
+
+		SyncController registerLoad() 
+		{
+			_numLoad++;
+			_lastLoad = Util.curtime();
+			return this; // Just so we don't need an extra line above
+		}
+	}
+	
 	static class ArgMapNumberException extends RuntimeException
 	{
 

@@ -203,6 +203,31 @@ public class WidgetOrg
 			return Util.sprintf("%s::%s", theOwner.toString(), theName);
 		}
 
+		public List<String> createJsCode()
+		{
+			List<String> loglist = Util.vector();
+			File autogendir = getAutoGenJsDir();
+			
+			if(!autogendir.exists())
+			{
+				autogendir.mkdirs();
+				loglist.add(Util.sprintf("Created directory %s\n", autogendir));
+			}
+			
+			for(String dbname : getDbTableNameSet())
+			{
+				LiteTableInfo tinfo = new LiteTableInfo(this, dbname);
+				tinfo.runSetupQuery();
+				
+				// dogenerate = true
+				loglist.addAll(CodeGenerator.maybeUpdateCode4Table(tinfo, true));
+			}
+			
+			return loglist;
+		}
+
+
+
 	    public static List<WidgetItem> getUserWidgetList(WidgetUser user)
 	    {
 	        File dbdir = new File(user.getDbDirPath());

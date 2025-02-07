@@ -23,21 +23,12 @@ import io.webwidgets.core.AuthLogic.AuthChecker;
 
 
 public class WebUtil
-{ 
-	public static String AUTO_INCLUDE_PREFIX = "My";
-
-	public static String FAVICON_FILE_NAME = "MyFavIcon";
-	
-	public static List<String> AUTO_INCLUDE_SUFFIX = Util.listify(".js", ".css", ".html");
-	
+{
 	public static String WWIO_DOMAIN = "webwidgets.io";
 
 	public static String LOCALHOST = "localhost:8080";
 
 	public static String AWS_HOST = "compute.amazonaws.com";
-
-	// This is an extra string that must be included in .html files for auto-inclusion
-	public static String HTML_HEADER_TAG = "Header";
 		
 	public static String LOGIN_RELATIVE_URL = "/u/admin/LogIn.jsp";
 		
@@ -62,24 +53,6 @@ public class WebUtil
 			return Optional.empty();
 		}
 
-	}
-
-	// Special feature to help dev: if the user is in local mode, 
-	// Bounce the HTTP request to the corresponding local URL.
-	// TODO: remove this, it should be no longer used
-	@Deprecated
-	public static boolean shouldBounce2Local(HttpServletRequest request)
-	{
-		// If the user is not logged in at this point, there should be an 
-		// error message that gets presented. But it's not responsibility of 
-		// this method.
-		Optional<WidgetUser> optuser = AuthLogic.getLoggedInUser(request);
-		if(!optuser.isPresent())
-			{ return false; }
-		
-		// This feature is only for admins.
-		WidgetUser wuser = optuser.get();
-		return wuser.isAdmin() && !wuser.haveLocalDb();
 	}
 	
 	public static void bounce2LogInPage(HttpServletRequest request, HttpServletResponse response) throws IOException
@@ -146,134 +119,10 @@ public class WebUtil
 		);
 	}
 	
-	// List of files in the user base dir that start with My
-	// and end in either .css or .js extensions
-	public static List<File> getAutoIncludeList(WidgetUser user, Optional<String> optwdg)
-	{
-		File basedir = optwdg.isPresent()
-						? (new WidgetItem(user, optwdg.get())).getWidgetBaseDir()
-						: user.getUserBaseDir();
-		
-		if(!basedir.exists())
-			{ return Collections.emptyList(); }
-		
-		List<File> inclist = Util.listify();
-		
-		for(File f : basedir.listFiles())
-		{
-			if(f.isDirectory())
-				{ continue; }
-
-			String name = f.getName();
-
-			// Special handling for fav-icons
-			if(name.startsWith(FAVICON_FILE_NAME))
-			{
-				inclist.add(f);
-				continue;
-			}
-			
-			if(!name.startsWith(AUTO_INCLUDE_PREFIX))
-				{ continue; }
-			
-
-			Optional<String> suffix = AUTO_INCLUDE_SUFFIX
-											.stream()
-											.filter(suff -> name.endsWith(suff))
-											.findAny();
 
 
-			if(!suffix.isPresent())
-				{ continue; }
-
-			// HTML files require extra tag to include
-			if(suffix.get().equals(".html") && !name.contains(HTML_HEADER_TAG))
-				{ continue; }
-
-			inclist.add(f);
-		}
-		
-		return inclist;
-	}
-
-	// We need this for base-level includes
-	// TODO: this stuff really isn't clear yet
-	public static List<String> getAutoIncludeStatement(WidgetUser owner)
-	{
-		List<File> srclist = getAutoIncludeList(owner, Optional.empty());
-		return includeTargetFileList(srclist, owner, Optional.empty());
-	}
 	
-	public static List<String> getAutoIncludeStatement(WidgetItem item)
-	{
-		List<String> result = Util.arraylist();
 
-		for(boolean isbase : Util.listify(true, false))
-		{
-			Optional<String> wdgname = isbase ? Optional.empty() : Optional.of(item.theName);
-			List<File> srclist = getAutoIncludeList(item.theOwner, wdgname);
-			result.addAll(includeTargetFileList(srclist, item.theOwner, wdgname));
-		}
-
-		return result;
-	}
-
-	private static List<String> includeTargetFileList(List<File> filelist, WidgetUser owner, Optional<String> optname)
-	{
-
-		List<String> statelist = Util.arraylist();
-
-		for(File f : filelist)
-		{
-			// For HTML include files, we just insert the HTML directly into the page
-			if(f.getName().endsWith(".html"))
-			{
-				statelist.add("");
-				String incname = optname.isPresent() ? optname.get() : "base";
-				statelist.add(Util.sprintf("<!-- Auto File Include of HTML snippet (%s):%s -->", incname, f.getName()));
-
-				// For HTML files, we simply slurp the file and include it directly
-				List<String> srclist = FileUtils.getReaderUtil().setFile(f).setTrim(false).readLineListE();
-				statelist.addAll(srclist);
-				statelist.add("<!-- End File Include -->");
-				statelist.add("");
-				continue;
-			}
-
-
-			long modtime = f.lastModified();
-			String relpath = Util.sprintf("/u/%s%s/%s", 
-				owner, optname.isPresent() ? "/" + optname.get() : "", f.getName());
-
-			if(f.getName().startsWith(FAVICON_FILE_NAME))
-			{
-				// <link rel="icon" type="image/x-icon" href="/u/d57tm/vimsicon.png">
-				String state = Util.sprintf("<link rel=\"icon\" type=\"image/x-icon\" href=\"%s?modtime=%d\"></link>", relpath, modtime);
-				statelist.add(state);
-				continue;
-			}
-
-
-			if(f.getName().endsWith(".js"))
-			{
-				// <script type="text/javascript" src="SecretShared.js"></script>
-				String state = Util.sprintf("<script type=\"text/javascript\" src=\"%s?modtime=%d\"></script>", relpath, modtime);
-				statelist.add(state);
-				continue;
-			} 
-			
-			if(f.getName().endsWith(".css"))
-			{
-				// <link rel="stylesheet" href="/life/asset/cascade/TableStyle.css"></link>
-				String state = Util.sprintf("<link rel=\"stylesheet\" href=\"%s?modtime=%d\"></link>", relpath, modtime);
-				statelist.add(state);
-				continue;
-			}
-			
-		}
-		
-		return statelist;
-	}
 
 	public static ArgMap getCookieArgMap(HttpServletRequest req)
 	{

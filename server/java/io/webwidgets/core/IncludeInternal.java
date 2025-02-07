@@ -33,8 +33,8 @@ public class IncludeInternal
 
         protected void doGet(HttpServletRequest request, HttpServletResponse response)  throws ServletException, IOException
         {
-            // TODO: maybe do something smarter here...?
-            Util.massert(request.isSecure(), "This can only be served on a secure connection");
+            Util.massert(request.isSecure() || AdvancedUtil.allowInsecureConnection(),
+                "This can only be served on a secure connection");
 
             Optional<WidgetUser> accessor = AuthLogic.getLoggedInUser(request);
 
@@ -52,8 +52,12 @@ public class IncludeInternal
 
             if(!AuthChecker.build().directSetAccessor(accessor).directDbWidget(directinc.sourceItem).allowRead())
             {
-                // TODO: need to figure out clean-ish way to do error checking / notification here
-                Util.massert(false, "User %s is not permitted to read DB %s", accessor, directinc.sourceItem);
+                // This error could be caused if a Widget developer wrote a page with a cross-load,
+                // but didn't give the accessor read permissions for the page
+                Util.massert(false,
+                    "User %s attempted to load widget %s, but does not have read permissions, this can be caused by cross-loading",
+                    accessor, directinc.sourceItem
+                );
             }
 
             Pair<Long, Long> nmpair = parseNoneMatch(request.getHeader("If-None-Match"));
@@ -131,6 +135,7 @@ public class IncludeInternal
 
 
 
+    // This ServerUtil implementation just serves a DirectLoad request
     static class DirectLoadInclude extends ServerUtilCore
     {
         public final WidgetItem sourceItem;
@@ -140,8 +145,6 @@ public class IncludeInternal
         private DirectLoadInclude(Map<DataIncludeArg, String> amap, Optional<WidgetUser> pageacc)
         {
             super(amap);
-
-            // TODO: reject some DARG params that are not valid in this 
 
             Util.massert(
                 amap.containsKey(DataIncludeArg.username) && amap.containsKey(DataIncludeArg.widgetname),

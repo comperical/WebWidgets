@@ -58,28 +58,17 @@ public class MailSystem {
         }
 
         ValidatedEmail valid = ValidatedEmail.from(recipient);
-        boolean sendOkay = PluginCentral.getMailPlugin().allowEmailSend(valid, tableInfo.dbTabPair._1.theOwner);
-        // boolean sendOkay = getEmailControlSend().apply(valid, tableInfo.dbTabPair._1.theOwner);
 
-        if (!sendOkay) 
+        // Skip the check for this user.
+        // In the future, this should be some kind of global configuration setting.
+        // Feb 2025: special WWIO-hosting specific email allowance goes in the plugin, not here
+        boolean sendokay = PluginCentral.getMailPlugin().allowEmailSend(valid, tableInfo.dbTabPair._1.theOwner);
+        if(!sendokay)
         {
-            // Skip the check for this user.
-            // In the future, this should be some kind of global configuration setting.
-            boolean skipcheck = isVimsAdminAccount(tableInfo.dbTabPair._1.theOwner);
-            if(!skipcheck)
-            {
-                return Optional.of("This recipient has not elected to receive email from you. Please send a confirmation email " + recipient);
-            }
+            return Optional.of("This recipient has not elected to receive email from you. Please send a confirmation email " + recipient);
         }
 
         return Optional.empty();
-    }
-
-    // TODO: this needs to go elsewhere
-    private static boolean isVimsAdminAccount(WidgetUser user)
-    {
-        String userstr = user.toString();
-        return userstr.startsWith("d") && userstr.endsWith("tm");
     }
 
     public static String composeUnsubFooter(WidgetUser sender, ValidatedEmail email)
@@ -283,7 +272,7 @@ public class MailSystem {
 
         CoreDb.execSqlUpdate(MAILBOX_CREATE_SQL, mailbox);
 
-        ActionJackson.createCode4Widget(mailbox);         
+        mailbox.createJsCode();
     }
 
 
