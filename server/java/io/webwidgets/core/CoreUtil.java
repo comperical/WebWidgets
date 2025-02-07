@@ -87,6 +87,7 @@ public class CoreUtil
 	}
 
 
+	// TODO: for all these hacky path manipulation stuff: use Java Path and related methods
 	// This string is spliced into the code by the Python script when it is compiled
 	// The compile script detects it's install directory
 	public static final String WWIO_BASE_CONFIG_DIR = "WWIO_CONFIG_DIR_GOES_HERE";

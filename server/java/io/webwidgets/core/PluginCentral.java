@@ -62,14 +62,17 @@ public class PluginCentral
 			uploadLocalToTarget(localpath, localpath);
 		}
 
-		// TODO: it seems like we should rationally want to have a downloadToLocal that
-		// has a separate argument
+		// Here, you transform the remote into a Blob storage location, then upload local to it
 		public void uploadLocalToTarget(File localpath, File remotepath) throws IOException;
 
 		public boolean blobPathExists(File localpath) throws IOException;
 
+		// Plausibly it seems like we should rationally want to have a downloadToLocal that
+		// has a separate argument
+		// Transform local to remote, download remote to local
 		public void downloadToLocalPath(File localpath) throws IOException;
 
+		// Transform localpath to remote path, and delete remote
 		public void deleteFromLocalPath(File localpath) throws IOException;
 	}
 
