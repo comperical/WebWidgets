@@ -11,6 +11,7 @@ import javax.servlet.annotation.WebServlet;
 
 import net.danburfoot.shared.Util;
 import net.danburfoot.shared.ArgMap;
+import net.danburfoot.shared.FileUtils;
 import net.danburfoot.shared.CollUtil.Pair;
 
 import io.webwidgets.core.AuthLogic.*;
@@ -186,6 +187,69 @@ public class IncludeInternal
         {
             return false;
         }
+
+        @Override
+        String composeScriptInfo()
+        {
+            // This should be redundant at this point, I have already checked it
+            // But paranoia is good
+            AuthChecker checker;
+            {
+                var accessor = getPageAccessor();
+                checker = AuthChecker.build().directDbWidget(_theItem).directSetAccessor(accessor);
+                Util.massert(checker.allowRead(),
+                    "Access denied, user %s lacks permissions to read data from widget %s", accessor, _theItem);
+            }
+
+            List<String> reclist = Util.arraylist();
+
+            for(String onetab : _base2Target.keySet())
+            {
+                var LTI = new LiteTableInfo(_theItem, onetab);
+                LTI.runSetupQuery();
+
+                LTI.withNoDataMode(_noDataMode);
+
+                if(_optFilterTarget.isPresent())
+                {
+                    // If the column you're filtering on is not present in the table,
+                    // you'll get a nasty error
+                    LTI.withColumnTarget(_optFilterTarget.get()._1, _optFilterTarget.get()._2);
+                }
+
+                // dogenerate=false
+                CodeGenerator.maybeUpdateCode4Table(LTI, false);
+
+                Optional<File> jsfile = LTI.findAutoGenFile();
+                Util.massert(jsfile.isPresent(),
+                    "AutoGen JS file not present even after we asked to create it if necessary!!!");
+
+                var autogen = FileUtils.getReaderUtil().setFile(jsfile.get()).setTrim(false).readLineListE();
+                reclist.addAll(autogen);
+
+                reclist.addAll(LTI.composeDataRecSpool(_base2Target.get(onetab)));
+
+                // If the user has read-only access to the table, record that info
+                if(!checker.allowWrite())
+                {
+                    reclist.add("");
+                    reclist.add("// table is in read-only access mode");
+                    reclist.add(String.format("W.__readOnlyAccess.push(\"%s\");", onetab));
+                    reclist.add("");
+                }
+
+                if(coreIncludeScriptTag())
+                {
+                    reclist.add("</script>");
+                }
+            }
+
+            reclist.add("");
+            reclist.add("");
+
+            return Util.join(reclist, "\n");
+        }
+
     }
 
 

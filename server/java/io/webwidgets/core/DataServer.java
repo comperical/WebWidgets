@@ -107,13 +107,13 @@ public class DataServer
 		
 		// Base table name -> query target
 		// query target is either just the base, or an overlay view
-		private Map<String, String> _base2Target;
+		protected Map<String, String> _base2Target;
 
-		private boolean _noDataMode = false;
+		protected boolean _noDataMode = false;
 
-		private Optional<String> _fullViewName = Optional.empty();
+		protected Optional<String> _fullViewName = Optional.empty();
 
-		private Optional<Pair<String, Object>> _optFilterTarget = Optional.empty();
+		protected Optional<Pair<String, Object>> _optFilterTarget = Optional.empty();
 
 
 		protected ServerUtilCore(Map<DataIncludeArg, String> amap)
@@ -370,7 +370,7 @@ public class DataServer
 		}
 
 
-		private String composeScriptInfo()
+		String composeScriptInfo()
 		{
 			// This should be redundant at this point, I have already checked it
 			// But paranoia is good
