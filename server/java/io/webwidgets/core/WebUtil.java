@@ -317,14 +317,16 @@ public class WebUtil
 	    // If you find it, return the EXTENSION
 	    private static Optional<String> probeForExtension(HttpServletRequest request)
 	    {
+			// As of Feb 2025, this isUserArea() check is always true;
+			// only the /u URIs are picked up by the main webapp
 	    	var uriparser = UriParser.fromRequest(request);
 	    	if(!uriparser.isUserArea())
 	    		{ return Optional.empty(); }
 
-	    	var uri = request.getRequestURI();
-	    	// TODO: this should be a method of UriParser
-	        var suburi = uri.startsWith("/u") ? uri.substring("/u".length()) : uri;
-	        var realpath = request.getServletContext().getRealPath(suburi);
+			// Since the web-app prefix of the user area is /u, we need to peel that off
+			// to get the real path on the local filesystem
+			String suburi = request.getRequestURI().substring("/u".length());
+			String realpath = request.getServletContext().getRealPath(suburi);
 
 	        for(String ext : approvedExtensionList(uriparser))
 	        {
