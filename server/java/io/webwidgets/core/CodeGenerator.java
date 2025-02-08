@@ -299,12 +299,26 @@ public class CodeGenerator
 				add("");
 			}
 		}
+
+
+		add("");
+		add("// Check generic field name lookup correctness");
+		add("%s.prototype.checkFieldName = function(fieldname)", _liteTable.getRecordName());
+		add("{");
+		add("\tif(!this.hasOwnProperty(fieldname))");
+		add("\t{");
+		add("\t\tmassert(false, `Unknown field ${fieldname}, options are ${W.getFieldList('%s')}, use W.getFieldList(..) to check if unsure`);",
+					_liteTable.dbTabPair._2);
+
+		add("\t}");
+		add("}");
+
 		
-		// TODO: want an assert here that tells me if I got the field name wrong
 		add("");
 		add("// Generic getField");
 		add("%s.prototype.getField = function(fieldname)", _liteTable.getRecordName());
 		add("{");
+		add("\tthis.checkFieldName(fieldname);");
 		add("\treturn this[fieldname];");
 		add("}");
 		
@@ -313,6 +327,7 @@ public class CodeGenerator
 		add("// Remove the item from indexes and then re-add");
 		add("%s.prototype.setField = function(fieldname, x)", _liteTable.getRecordName());
 		add("{");
+		add("\tthis.checkFieldName(fieldname);");
 		add("\tW.__indexUpdateProcess(this, fieldname, true);"); 
 		add("\tthis[fieldname] = x;");
 		add("\tW.__indexUpdateProcess(this, fieldname, false);"); 
