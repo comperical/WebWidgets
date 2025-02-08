@@ -24,7 +24,6 @@ import net.danburfoot.shared.CoreDb.QueryCollector;
 
 import io.webwidgets.core.CoreUtil.*;
 import io.webwidgets.core.AuthLogic.*;
-import io.webwidgets.core.WidgetOrg.*;
 import io.webwidgets.core.MailSystem.*;
 import io.webwidgets.core.PluginCentral.*;
 import io.webwidgets.core.ActionJackson.*;

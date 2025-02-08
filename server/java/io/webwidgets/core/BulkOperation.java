@@ -19,7 +19,6 @@ import net.danburfoot.shared.CoreDb.QueryCollector;
 
 
 import io.webwidgets.core.AuthLogic.*;
-import io.webwidgets.core.WidgetOrg.*;
 import io.webwidgets.core.CallBack2Me.*;
 import io.webwidgets.core.LiteTableInfo.*;
 

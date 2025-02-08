@@ -14,7 +14,6 @@ import net.danburfoot.shared.ArgMap;
 
 import net.danburfoot.shared.CoreDb.QueryCollector;
 
-import io.webwidgets.core.WidgetOrg.*;
 import io.webwidgets.core.CoreUtil.MasterTable;
 import io.webwidgets.core.CoreUtil.SystemPropEnum;
 import io.webwidgets.core.AuthLogic.PermInfoPack;

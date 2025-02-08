@@ -18,7 +18,6 @@ import net.danburfoot.shared.FileUtils;
 import net.danburfoot.shared.StringUtil;
 
 import io.webwidgets.core.AuthLogic.*;
-import io.webwidgets.core.WidgetOrg.*;
 import io.webwidgets.core.DataServer.*;
 
 

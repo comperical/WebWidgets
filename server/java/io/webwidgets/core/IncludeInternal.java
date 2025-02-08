@@ -15,7 +15,6 @@ import net.danburfoot.shared.FileUtils;
 import net.danburfoot.shared.CollUtil.Pair;
 
 import io.webwidgets.core.AuthLogic.*;
-import io.webwidgets.core.WidgetOrg.*;
 import io.webwidgets.core.DataServer.*;
 import io.webwidgets.core.WispFileLogic.*;
 

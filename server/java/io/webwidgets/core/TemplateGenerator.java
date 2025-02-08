@@ -14,7 +14,6 @@ import net.danburfoot.shared.CollUtil;
 import net.danburfoot.shared.RunnableTech.*;
 
 import io.webwidgets.core.CoreUtil.*;
-import io.webwidgets.core.WidgetOrg.*;
 import io.webwidgets.core.AuthLogic.*;
 import io.webwidgets.core.LiteTableInfo.*;
 

@@ -24,7 +24,6 @@ import net.danburfoot.shared.CoreDb.ConnectionSource;
 
 
 import io.webwidgets.core.CoreUtil.*;
-import io.webwidgets.core.WidgetOrg.*;
 
 /**
  * Metadata about an underlying SQLite table
