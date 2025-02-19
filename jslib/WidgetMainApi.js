@@ -66,6 +66,7 @@ getItemList : function(tabname)
 buildItem : function(tabname, record)
 {
     W.checkTableName(tabname);
+    W.__checkForBadField(tabname, record);
     const buildfunc = W.__buildItemFuncMap[tabname];
 
     // Jan 2021: you no longer need to call newBasicId(...) yourself and put it in the record
@@ -206,6 +207,7 @@ checkTableName : function(tabname)
     const tlist = [... W.__tableNameIndex.keys()];
     massert(false, "Could not find table name " + tabname + ", options are " + tlist);
 },
+
 
 // Bulk update of records to the given table.
 // You must supply the list of IDs that are to be updated; all such IDs much correspond to real records
@@ -357,7 +359,23 @@ __augmentWithCheckSum : function(opurl)
 },
 
 
+// Identify keys in the given input record that are not actually field names for the given table
+// This is called within the buildItem(...) function to ensure there are no typos in the record fields
+__checkForBadField : function(tablename, record)
+{
+    const fieldset = new Set(W.getFieldList(tablename));
+    const badfield = [... Object.keys(record)].filter(probe => !fieldset.has(probe));
 
+    if(badfield.length > 0)
+    {
+        const mssg = `Attempt to create record for tablename ${tablename} with bad field(s) ${badfield.join(',')}`;
+        massert(false, mssg);
+    }
+},
+
+
+
+// TODO: there should be a public way to get this information
 __getTableCoords : function(tablemaster)
 {
     return {
