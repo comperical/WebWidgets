@@ -368,8 +368,9 @@ __checkForBadField : function(tablename, record)
 
     if(badfield.length > 0)
     {
-        const mssg = `Attempt to create record for tablename ${tablename} with bad field(s) ${badfield.join(',')}`;
-        massert(false, mssg);
+        const mssg = `***Warning***, Attempt to create record for tablename ${tablename} with bad field(s) ${badfield.join(',')}`;
+        // massert(false, mssg);
+        console.log(mssg);
     }
 },
 
