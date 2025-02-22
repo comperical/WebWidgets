@@ -21,6 +21,10 @@ __REQUEST_QUEUE : [],
 
 __REQUEST_IN_FLIGHT : false,
 
+// As of Feb 2025, some WWIO clients may have issues in their code that would cause these checks to fail
+// For new clients, we should set this to true in global auto-include shared code
+__STRICT_BAD_FIELD_CHECK : false,
+
 __RAW_DEP_WARNING_COUNT : 0,
 
 // WWIO converts nulls to this string. This must match CoreUtil.MAGIC_NULL_STRING
@@ -358,9 +362,15 @@ __augmentWithCheckSum : function(opurl)
 
 },
 
+// Configure the system to be strict about bad passing bad fields to the buildItem(...) function
+setStrictBadFieldCheck : function(strict)
+{
+    W.__STRICT_BAD_FIELD_CHECK = strict;
+},
 
 // Identify keys in the given input record that are not actually field names for the given table
 // This is called within the buildItem(...) function to ensure there are no typos in the record fields
+// If the strict bad-field flag is not set, this is just a console warning
 __checkForBadField : function(tablename, record)
 {
     const fieldset = new Set(W.getFieldList(tablename));
@@ -368,9 +378,9 @@ __checkForBadField : function(tablename, record)
 
     if(badfield.length > 0)
     {
-        const mssg = `***Warning***, Attempt to create record for tablename ${tablename} with bad field(s) ${badfield.join(',')}`;
-        // massert(false, mssg);
-        console.log(mssg);
+        const mssg = `Attempt to create record for tablename ${tablename} with bad field(s) ${badfield.join(',')}`;
+        massert(!W.__STRICT_BAD_FIELD_CHECK, mssg);
+        console.log("*** Warning *** " + mssg);
     }
 },
 
