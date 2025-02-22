@@ -106,7 +106,7 @@ public class TemplateGenerator
         String result = coltype.isJsInteger() ? "0" :
                             (coltype.isJsFloat() ? "0.0" : "''");
 
-        return String.format("\t\t'%s' : %s", colname, result);
+        return String.format("\t\t%s : %s", colname, result);
     }
 
     private static String jsonAssign(Map.Entry<String, ExchangeType> entry)

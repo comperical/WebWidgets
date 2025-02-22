@@ -15,7 +15,6 @@ import io.webwidgets.core.CoreUtil.*;
 import io.webwidgets.core.LiteTableInfo.*;
 
 
-// This is a replacement for the old JsCodeGenerator.jsp page
 public class CodeGenerator
 {
 	
