@@ -51,9 +51,28 @@ function createNewSub(payer) {
 }
 
 
+function createNewHonda()
+{
+	if(confirm("Create a Honda CRV payment?"))
+	{
+		const newrec = {
+			'dollar_amount' : 551,
+			'payer' : 'D',
+			'day_code' : getTodayCode().getDateString(),
+			'web_link' : '',
+			'notes' : 'honda CRV payment'
+		};
+		const newitem = W.buildItem('shared_expense', newrec);
+		newitem.syncItem();
+		EDIT_STUDY_ITEM = newitem.getId();
+		redisplay();
+	}
+}
+
+
 function createNewFlexCar()
 {
-	if(confirm("Craete a new FlexCar record?"))
+	if(confirm("Create a new FlexCar record?"))
 	{
 		const newrec = {
 			'dollar_amount' : 558,
@@ -250,7 +269,7 @@ function getMainPageInfo() {
 		&nbsp;
 		&nbsp;
 
-		<a href="javascript:createNewFlexCar()"><button>+FlexCar</button></a>
+		<a href="javascript:createNewHonda()"><button>+CarPay</button></a>
 
 		<br/>
 		<br/>
