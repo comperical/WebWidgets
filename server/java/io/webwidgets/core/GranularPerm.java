@@ -67,6 +67,7 @@ public class GranularPerm
 
         var droppor = "DROP TABLE IF EXISTS " + auxtable;
 
+        // TODO: expose these as a separate method, for documentation purposes
         var creator = "CREATE TABLE " + auxtable +
                     "(record_id int, group_name varchar(20), can_write int, PRIMARY KEY(record_id, group_name))";
 
@@ -212,7 +213,9 @@ public class GranularPerm
                 return Optional.of(mssg);
             }
 
-
+            // TODO: what should I do here...?
+            // It seems likely that this condition will be caught by either the
+            // write-permission check or the orphan-write check, but do I want to enforce it here?
             String groupstr = innmap.getStr(CoreUtil.GROUP_ALLOW_COLUMN);
             if(groupstr == null || groupstr.isEmpty())
             {
