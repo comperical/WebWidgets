@@ -218,51 +218,46 @@ function convertToCentAmount(debit, credt)
     return centamount * (credempty ? -1 : 1);
 }
 
+// Feb 2025: replace old hacky CSV parsing tool with Papa-based approach
 function parseCreditData(csvtext)
 {
 
-    const records = [];
+    const converter = function(ppitem)
+    {
+        // console.log(ppitem);
 
-    csvtext.trim().split("\n").forEach(function(line) {
+        // These are nice ISO time stamps
+        const transact = lookupDayCode(ppitem['Transaction Date']);
 
-        // header
-        if(line.startsWith("Transaction")) 
-            { return; }
+        const debitinfo = ppitem["Debit"].trim();
+        const credtinfo = ppitem["Credit"].trim();
 
-        const tokens = line.trim().split(",");
+        const havedebit = debitinfo.length > 0;
+        const havecredt = credtinfo.length > 0;
 
-        massert(tokens.length == 7, 
-            `Got ${tokens.length} tokens, but expected 7 for line\n${line}`);
+        massert(havedebit == !havecredt,
+            `Must have debit XOR credit, debit=${debitinfo}, credit=${credtinfo}`);
 
-        const creditrecord = new Object();
-        creditrecord.transact = lookupDayCode(tokens[0]);
+        const dollaramount = parseFloat(havedebit ? debitinfo : credtinfo);
+        // debits are entered as negative, credits as positive
+        const centamount = (havedebit ? -1 : +1) * Math.round(100 * dollaramount);
 
-        const posted = lookupDayCode(tokens[1]);
-        const cardfour = tokens[2];
-        massert(cardfour.length == 4 && okayInt(cardfour), `Bad card four-digit ${cardfour}`);
+        return {
+            transact : lookupDayCode(ppitem['Transaction Date']),
+            desc : ppitem['Description'],
+            cap1_category : ppitem['Category'],
+            centamount : centamount,
+            logsource : 'cred'
+        }
+    }
 
-        creditrecord.desc = tokens[3];
-
-        // This is the category assigned by Capital One, not my category system
-        creditrecord.cap1_category = tokens[4];
-        creditrecord.logsource = 'cred';
-
-        const debit = tokens[5];
-        const credt = tokens[6];
-
-        creditrecord.centamount = convertToCentAmount(debit, credt);
-
-        records.push(creditrecord);
-
-    });
-
-    return records;
+    const ppfulldata =  Papa.parse(csvtext.trim(), { header : true } );
+    return ppfulldata.data.map(converter);
 }
+
 
 function parseBankData(csvtext)
 {
-    const records = [];
-
     // 8578,05/03/22,-100.00,Debit,ATM Withdrawal - CAPITAL ONE A5C8 BERKELEY  CA,8312.75
 
     // Changed, May 2024!!
@@ -299,44 +294,6 @@ function parseBankData(csvtext)
 
     const ppfulldata =  Papa.parse(csvtext.trim(), { header : true } );
     return ppfulldata.data.map(converter);
-
-
-    /*
-    csvtext.trim().split("\n").forEach(function(line) {
-
-        // header
-        if(line.startsWith("Account Number")) 
-            { return; }
-
-        console.log(line);
-
-        const tokens = line.trim().split(",");
-
-        massert(tokens.length == 6, 
-            `Got ${tokens.length} tokens, but expected 7 for line\n${line}`);
-
-        const bankrecord = new Object();
-        bankrecord.transact = handleAnnoyingDate(tokens[1]);
-
-        {
-            bankrecord.centamount = Math.round(100 * parseFloat(tokens[2]));
-
-            const cordstr = tokens[3];
-            massert(["Debit", "Credit"].includes(cordstr), `Unknown credit/debit string ${cordstr}`);
-            massert((bankrecord.centamount < 0) == (cordstr == "Debit"),
-                `Amount is ${bankrecord.centamount}, but credit/debit is ${cordstr}`);           
-        }
-
-        bankrecord.desc = tokens[4];
-        bankrecord.logsource = 'bank';
-
-
-
-        records.push(bankrecord);
-
-    });
-    */
-
 }
 
 function annoyingDateFormat(daycode)
