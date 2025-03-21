@@ -42,7 +42,7 @@ public class WidgetUser implements Comparable<WidgetUser>
 
     public static WidgetUser lookup(String s)
     {
-        return GlobalIndex.getUserLookup().get(s);
+        return s == null ? null : GlobalIndex.getUserLookup().get(s);
     }
 
     public int compareTo(WidgetUser other) 
