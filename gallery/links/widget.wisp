@@ -167,26 +167,12 @@ function getCategoryMap()
 
 function editShortDesc()
 {
-	editFieldName("short_desc");
+	genericEditTextField("link_main", "short_desc", EDIT_STUDY_ITEM);
 }
 
 function editLinkUrl()
 {
-	editFieldName("link_url");	
-}
-
-function editFieldName(fname)
-{
-	const edititem = getEditRecord();
-	
-	var newinfo = prompt("Please enter a new " + fname + " for this record:", edititem[fname]);
-	
-	if(newinfo)
-	{
-		edititem[fname] = newinfo;
-		edititem.syncItem();
-		redisplay();
-	}
+	genericEditTextField("link_main", "link_url", EDIT_STUDY_ITEM);
 }
 
 function reDoSearch()
@@ -223,7 +209,7 @@ function redisplay()
 {
 	handleNavBar();
 
-	redisplayMainTable();	
+	redisplayMainTable();
 	redisplayEditItem();
 	redisplayCategoryTable();
 	redisplaySearchTable();
@@ -285,7 +271,6 @@ function redisplayEditItem()
 
 	
 	populateSpanData({
-		"item_id" : edititem.getId(),
 		"short_desc" : edititem.getShortDesc(),
 		"link_url" : edititem.getLinkUrl(), 
 	});
@@ -551,11 +536,6 @@ Category:
 <td>Back</td>
 <td></td>
 <td><a name="back_url" href="javascript:return2Main()"><img src="/u/shared/image/leftarrow.png" height="18"/></a></td>
-</tr>
-<tr>
-<td>ID</td>
-<td><span id="item_id"></span></td>
-<td></td>
 </tr>
 <tr>
 <td>Desc</td>
