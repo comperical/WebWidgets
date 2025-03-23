@@ -169,7 +169,7 @@ function genericEditFloatField(tablename, fieldname, itemid)
         return;
     }
 
-    theitem[fieldname] = newval;
+    theitem[fieldname] = parseFloat(newval);
     theitem.syncItem();
     redisplay();
 }
@@ -197,7 +197,7 @@ function genericEditIntField(tablename, fieldname, itemid)
         return;
     }
 
-    theitem[fieldname] = newval;
+    theitem[fieldname] = parseInt(newval);
     theitem.syncItem();
     redisplay();
 }
