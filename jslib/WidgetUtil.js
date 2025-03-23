@@ -78,6 +78,13 @@ const U = {
         console.log(myschema);
     },
 
+    // Check if the given table has the given field
+    // As of March 2025, this is slowish, we'll keep it private for now until a faster version is available
+    __tableHasField : function(tablename, fieldname)
+    {
+        return W.getFieldList(tablename).includes(fieldname);
+    },
+
     // Perform an action on the record designated with the given table and item ID
     // the action is specified by the updater function
     // This action does not support delete, use genericDeleteItem for that functionality
@@ -119,6 +126,7 @@ function genericToggleActive(tablename, itemid)
 // Syncs and redisplays on success, if you don't want this behavior, do not use this method.
 function genericToggleField(tablename, fieldname, itemid)
 {
+    massert(U.__tableHasField(tablename, fieldname), `No field ${fieldname} present for table ${tablename}`);
     const theitem = W.lookupItem(tablename, itemid);
     const curstat = theitem.getField(fieldname);
     const newstat = curstat == 1 ? 0 : 1;
@@ -132,6 +140,7 @@ function genericToggleField(tablename, fieldname, itemid)
 // Syncs and redisplays on success, if you don't want this behavior, do not use this method.
 function genericEditTextField(tablename, fieldname, itemid)
 {
+    massert(U.__tableHasField(tablename, fieldname), `No field ${fieldname} present for table ${tablename}`);
     const theitem = W.lookupItem(tablename, itemid);
     const newval = prompt("Please enter a new value for field " + fieldname + ": ", theitem[fieldname]);
     
@@ -146,6 +155,7 @@ function genericEditTextField(tablename, fieldname, itemid)
 // Same as genericEditIntField, but can be a float/real, instead of just an int
 function genericEditFloatField(tablename, fieldname, itemid) 
 {
+    massert(U.__tableHasField(tablename, fieldname), `No field ${fieldname} present for table ${tablename}`);
     const theitem = W.lookupItem(tablename, itemid);
     const newval = prompt("Please enter a new value for field " + fieldname + ": ", theitem[fieldname]);
     
@@ -172,6 +182,8 @@ function genericEditFloatField(tablename, fieldname, itemid)
 // Syncs and redisplays on success, if you don't want this behavior, do not use this method.
 function genericEditIntField(tablename, fieldname, itemid) 
 {
+    massert(U.__tableHasField(tablename, fieldname), `No field ${fieldname} present for table ${tablename}`);
+
     const theitem = W.lookupItem(tablename, itemid);
     const newval = prompt("Please enter a new value for field " + fieldname + ": ", theitem[fieldname]);
     
