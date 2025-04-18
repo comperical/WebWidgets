@@ -14,7 +14,7 @@ SYSTEM_START_DATE = lookupDayCode("2021-07-01");
 YEARLY_CONSUMPTION_TARGET = 200;
 
 function addNew()
-{	
+{
 	const junkfact = getDocFormValue("junk_factor_sel");
 	const thenotes = getDocFormValue("notes");
 	addNewSub(junkfact, thenotes);
@@ -41,6 +41,14 @@ function addNewSub(junkfact, thenotes)
 	const newitem = buildItem("junk_food_log", newrec);
 	newitem.syncItem();
 	redisplay();	
+}
+
+function copyUp(junkid)
+{
+	const item = W.lookupItem("junk_food_log", junkid);
+	console.log(item);
+
+
 }
 
 
@@ -221,7 +229,7 @@ function redispFullTable()
 		const daycode = lookupDayCode(jkitem.getDayCode());
 						
 		if(jkitem.getDayCode() < cutoff.getDateString())
-			{ return; }			
+			{ return; }
 			
 		var rowstr = `
 			<tr>
@@ -230,6 +238,15 @@ function redispFullTable()
 			<td>${jkitem.getJunkfactor()}</td>
 			<td>${jkitem.getNotes()}</td>
 			<td>
+
+			<a href="javascript:copyUp(${jkitem.getId()})">
+			<img src="/u/shared/image/upicon.png" height="18"/></a>
+
+			&nbsp;
+			&nbsp;
+			&nbsp;
+
+
 			<a href="javascript:deleteItem(${jkitem.getId()})">
 			<img src="/u/shared/image/remove.png" height="18"/>
 			</a>

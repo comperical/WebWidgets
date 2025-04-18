@@ -4,7 +4,6 @@ MODAL = {
     build : function() {
         return new SimpleModal();
     }
-
 };
 
 function SimpleModal() 

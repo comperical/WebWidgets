@@ -90,6 +90,11 @@ public class LiteTableInfo
 			return this == ExchangeType.text || this == ExchangeType.varchar;
 		}
 
+		public String getJsType()
+		{
+			return isJsString() ? "string" : "number";
+		}
+
 		public Class getJavaType()
 		{
 			return isJsFloat() ? Double.class : (isJsInteger() ? Integer.class : String.class);
@@ -187,6 +192,14 @@ public class LiteTableInfo
 			throw new RuntimeException(ex);
 		}
 	}
+
+	private void odRunSetup()
+	{
+		if(_exTypeMap.isEmpty())
+			{ runSetupQuery(); }
+
+		Util.massert(!_exTypeMap.isEmpty(), "Table %s apparently has no columns", dbTabPair);
+	}
 	
 	
 	public LiteTableInfo withNoDataMode(boolean ndmode)
@@ -253,7 +266,7 @@ public class LiteTableInfo
 	
 	public String getSimpleTableName()
 	{
-		return dbTabPair._2;	
+		return dbTabPair._2;
 	}
 	
 	public String getRecordName()
@@ -268,12 +281,14 @@ public class LiteTableInfo
 	
 	public Set<String> getColumnNameSet()
 	{
+		odRunSetup();
 		return Collections.unmodifiableSet(_exTypeMap.keySet());
 
 	}
 	
 	public Map<String, ExchangeType> getColumnExTypeMap()
 	{
+		odRunSetup();
 		return Collections.unmodifiableMap(_exTypeMap);
 	}
 
@@ -594,7 +609,7 @@ public class LiteTableInfo
 	}
 
 
-	ExchangeType getExchangeType(String colname)
+	public ExchangeType getExchangeType(String colname)
 	{
 		var litedef = _exTypeMap.get(colname);
 		Util.massert(litedef != null, "Attempt to lookup Exchange Type for non-existent column %s", colname);
