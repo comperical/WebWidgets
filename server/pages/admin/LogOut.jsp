@@ -10,8 +10,6 @@
 
 <html>
 
-<link rel="shortcut icon" href="/crm/images/favicon.png" type="image/png">
-
 <head><title>Log Out</title>
 
 <%@include file="AssetInclude.jsp_inc" %>

@@ -66,7 +66,6 @@
   <!-- inject:css -->
   <link rel="stylesheet" href="/u/shared/majestic/css/style.css">
   <!-- endinject -->
-  <link rel="shortcut icon" href="/u/shared/majestic/images/favicon.png" />
 
 
 <!-- IMPORTANT : user may not be logged in on this page !!! -->

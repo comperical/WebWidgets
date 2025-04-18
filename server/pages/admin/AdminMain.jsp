@@ -86,7 +86,6 @@
   <!-- inject:css -->
   <link rel="stylesheet" href="/u/shared/majestic/css/style.css">
   <!-- endinject -->
-  <link rel="shortcut icon" href="/u/shared/majestic/images/favicon.png" />
 
 <%@include file="AssetInclude.jsp_inc" %>
 
