@@ -2,6 +2,8 @@
 
 <!-- Asset Include -->
 
+<link rel="icon" type="image/x-icon" href="/myimages/WWIO_B.png"></link>
+
 <link rel="stylesheet" href="<%= WebUtil.includeCheckRelativePath("/u/shared/css/BasicWidget.css") %>" />
 
 <script src="<%= WebUtil.includeCheckRelativePath("/u/shared/jslib/WidgetMainApi.js") %>"></script>
