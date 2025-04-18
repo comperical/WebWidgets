@@ -38,17 +38,23 @@ function addNewSub(junkfact, thenotes)
 	document.forms.mainform.notes.value = "";
 	document.forms.mainform.junk_factor_sel.value = "1";
 	
-	const newitem = buildItem("junk_food_log", newrec);
+	const newitem = W.buildItem("junk_food_log", newrec);
 	newitem.syncItem();
 	redisplay();	
 }
 
 function copyUp(junkid)
 {
-	const item = W.lookupItem("junk_food_log", junkid);
-	console.log(item);
+	const copyfrom = W.lookupItem("junk_food_log", junkid);
 
+	const record = {
+		junkfactor : copyfrom.getJunkfactor(),
+		day_code : getTodayCode().dayBefore().getDateString(),
+		notes : copyfrom.getNotes()
+	}
 
+	W.buildItem("junk_food_log", record).syncItem();
+	redisplay();
 }
 
 
@@ -57,7 +63,7 @@ function deleteItem(killid)
 {
 	if(confirm("Are you sure you want to remove this record?"))
 	{
-		lookupItem("junk_food_log", killid).deleteItem();
+		W.lookupItem("junk_food_log", killid).deleteItem();
 		redisplay();
 	}
 }
@@ -76,7 +82,7 @@ function redisplay()
 function junkWeightSince(daycode) 
 {
 	var jktotal = 0;
-	var itemlist = getItemList("junk_food_log");
+	var itemlist = W.getItemList("junk_food_log");
 	itemlist.sort(proxySort(a => [a.getDayCode()])).reverse();
 	
 	for(var ii in itemlist) {
@@ -95,19 +101,19 @@ function junkWeightSince(daycode)
 function redispControls()
 {
 	const junksel = buildOptSelector()
-						.setKeyList([... Array(10).keys()])
+						.configureFromList([... Array(10).keys()])
 						.setSelectedKey(1)
-						.setSelectOpener(`<select name="junk_factor_sel">`)
-						.getSelectString();
+						.setElementName("junk_factor_sel")
+						.getHtmlString();
 
 
 	const displaymap = getNiceDateDisplayMap(14);
 
 	const datesel = buildOptSelector()
-					.setFromMap(displaymap)
+					.configureFromHash(displaymap)
 					.setSelectedKey(getTodayCode().dayBefore().getDateString())
-					.setSelectOpener(`<select name="day_code_sel">`)
-					.getSelectString();
+					.setElementName("day_code_sel")
+					.getHtmlString();
 
 	populateSpanData({
 		"day_code_sel_span" : datesel,
@@ -118,7 +124,7 @@ function redispControls()
 
 function redispSummTable() 
 {
-	var itemlist = getItemList("junk_food_log");
+	var itemlist = W.getItemList("junk_food_log");
 	itemlist.sort(proxySort(a => [a.getDayCode()])).reverse();
 	
 	var tablestr = `
@@ -208,7 +214,7 @@ function redispStatTable()
 
 function redispFullTable()
 {
-	var itemlist = getItemList("junk_food_log");
+	var itemlist = W.getItemList("junk_food_log");
 	itemlist.sort(proxySort(a => [a.getDayCode()])).reverse();
 		
 	const cutoff = getTodayCode().nDaysBefore(90);
