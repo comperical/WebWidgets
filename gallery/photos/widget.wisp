@@ -162,11 +162,10 @@ function updateAttachmentContent(base64data, filename)
   ///CREATE TABLE photo_main (id int, short_name varchar(20), tag_list varchar(30), photo_date varchar(10), base64_blob_data varchar(1000), blob_file_name varchar(100), primary key(id));
 
     const newrec = {
-        "short_name" : "NotYetSet",
         "full_desc" : "...",
         "tag_list" : "",
         "photo_date" : getTodayCode().getDateString(),
-        "description" : "---",
+        "full_desc" : "---",
         "base64_blob_data" : base64data,
         "blob_file_name" : filename,
         "rotation" : 0

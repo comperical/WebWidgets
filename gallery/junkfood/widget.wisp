@@ -33,14 +33,14 @@ function addNewSub(junkfact, thenotes)
 		"junkfactor" : parseInt(junkfact),
 		"day_code" : daycode,
 		"notes": thenotes
-	};		
+	};
 	
 	document.forms.mainform.notes.value = "";
 	document.forms.mainform.junk_factor_sel.value = "1";
 	
 	const newitem = W.buildItem("junk_food_log", newrec);
 	newitem.syncItem();
-	redisplay();	
+	redisplay();
 }
 
 function copyUp(junkid)
