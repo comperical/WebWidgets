@@ -6,6 +6,14 @@
 <!-- standard wisp include tag -->
 <wisp/>
 
+<style>
+
+.editable:hover {
+	background-color: lightskyblue;
+}
+
+</style>
+
 <script>
 
 var EDIT_STUDY_ITEM = -1;
@@ -71,6 +79,11 @@ function editNoteInfo(itemid)
 
 }
 
+function editSleepScore(itemid)
+{
+	genericEditIntField("sleep_log", "sleep_score", itemid);
+}
+
 
 // Auto-generated redisplay function
 function editStudyItem(itemid) {
@@ -89,37 +102,10 @@ function shorten4Display(ob) {
 	return s.substring(0, 37) + '...';
 }
 
-// Auto-generated redisplay function
 function redisplay() {
-	const pageinfo = EDIT_STUDY_ITEM == -1 ? getMainPageInfo() : getEditPageInfo();
-	populateSpanData({"page_info" : pageinfo });
-}
-
-// Auto-generated getEditPageInfo function
-function getEditPageInfo() {
-
-	const item = W.lookupItem('sleep_log', EDIT_STUDY_ITEM);
-	var pageinfo = `
-	<h4>Edit Item</h4>
-	<table class="basic-table" width="50%">
-	<tr>
-	<td>Back</td>
-	<td></td>
-	<td><a href="javascript:back2Main()"><img src="/u/shared/image/leftarrow.png" height="18"/></a></td>
-	</tr>
-
-	<tr><td>SleepScore</td>
-	<td>${item.getSleepScore()}</td>
-	<td><a href="javascript:genericEditIntField('sleep_log', 'sleep_score', EDIT_STUDY_ITEM)"><img src="/u/shared/image/edit.png" height="18"></a></td>
-	</tr>
-	<tr><td>Notes</td>
-	<td>${item.getNotes()}</td>
-	<td><a href="javascript:genericEditTextField('sleep_log', 'notes', EDIT_STUDY_ITEM)"><img src="/u/shared/image/edit.png" height="18"></a></td>
-	</tr>
-	</table>
-	`;
-	return pageinfo;
-
+	// No longer any need for an EDIT page view - you just edit directly from the main view
+	// by clicking on the table cells
+	populateSpanData({"page_info" : getMainPageInfo() });
 }
 
 
@@ -155,23 +141,18 @@ function getMainPageInfo() {
 		const rowstr = `
 			<tr>
 			<td>${item.getDayCode()}</td>
-			<td>${item.getSleepScore()}</td>
-			<td>${item.getNotes()}</td>
-			<td>
+			<td class="editable" onClick="javascript:editSleepScore(${item.getId()})">
+			${item.getSleepScore()}</td>
 
+			<td class="editable" onClick="javascript:editNoteInfo(${item.getId()})">
+			${item.getNotes()}</td>
+
+			<td>
             <a href="javascript:copyToNewDay(${item.getId()})"><img src="/u/shared/image/upicon.png" height="18"/></a>
 
             &nbsp;
             &nbsp;
 
-
-			<a href="javascript:editNoteInfo(${item.getId()})"><img src="/u/shared/image/edit.png" height="16"/></a>
-			&nbsp;&nbsp;&nbsp;
-
-
-
-			<a href="javascript:editStudyItem(${item.getId()})"><img src="/u/shared/image/inspect.png" height="16"/></a>
-			&nbsp;&nbsp;&nbsp;
 			<a href="javascript:deleteItem(${item.getId()})"><img src="/u/shared/image/remove.png" height="16"/></a>
 			</td>
 			</tr>
