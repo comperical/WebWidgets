@@ -12,7 +12,7 @@ const SCHLEP_TYPE = ["car", "plane", "train", "bus", "badwalk"]
 const MAIN_TABLE = "schlep_log";
 
 function addNew()
-{   
+{
     const hours = getDocFormValue("hours_sel");
     const categ = getDocFormValue("category_sel");
     addNewSub(hours, categ);
@@ -29,16 +29,41 @@ function addNewSub(hours, category)
     
     const newrec = {
         "category" : category,
-        "hours" : parseInt(hours),
+        "hour" : parseFloat(hours),
         "day_code" : daycode,
         "notes": ""
-    };      
+    };
         
     const newitem = W.buildItem(MAIN_TABLE, newrec);
     newitem.syncItem();
     redisplay();    
 }
 
+function addGymRun()
+{
+    addStandardDrive(0.4, "standard gym drive");
+}
+
+function addDownTown()
+{
+    addStandardDrive(0.5, "downtown and back");
+}
+
+function addStandardDrive(drivehour, drivenote)
+{
+    const daycode = getDocFormValue("day_code_sel");
+    
+    const newrec = {
+        category : "car",
+        hour : drivehour,
+        day_code : daycode,
+        notes : drivenote
+    };
+        
+    const newitem = W.buildItem(MAIN_TABLE, newrec);
+    newitem.syncItem();
+    redisplay();
+}
 
 
 function deleteItem(killid)
@@ -65,7 +90,7 @@ function redisplay()
 function redispControls()
 {
     buildOptSelector()
-        .setKeyList([... Array(10).keys()])
+        .configureFromList([... Array(10).keys()])
         .setSelectedKey(1)
         .setElementName("hours_sel")
         .autoPopulate();
@@ -74,13 +99,13 @@ function redispControls()
     const displaymap = getNiceDateDisplayMap(14);
 
     buildOptSelector()
-        .setFromMap(displaymap)
+        .configureFromHash(displaymap)
         .setSelectedKey(getTodayCode().dayBefore().getDateString())
         .setElementName("day_code_sel")
         .autoPopulate();
 
     buildOptSelector()
-        .setKeyList(SCHLEP_TYPE)
+        .configureFromList(SCHLEP_TYPE)
         .setElementName("category_sel")
         .autoPopulate();
 
@@ -113,14 +138,14 @@ function redispFullTable()
         const daycode = lookupDayCode(item.getDayCode());
                         
         if(item.getDayCode() < cutoff.getDateString())
-            { return; }         
+            { return; }
             
-        var rowstr = `
+        const rowstr = `
             <tr>
             <td>${daycode.getShortDayOfWeek()}</td>
             <td>${item.getDayCode()}</td>
-            <td>${item.getHours()}</td> 
-            <td>${item.getCategory()}</td>                       
+            <td>${item.getHour()}</td>
+            <td>${item.getCategory()}</td>
             <td>${item.getNotes()}</td>
             <td>
             <a href="javascript:editItemNote(${item.getId()})">
@@ -187,7 +212,23 @@ Type:
 
 <a href="javascript:addClean()"><button>clean</button></a>
 
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+
+<a href="javascript:addGymRun()"><button>gym</button></a>
+
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+
+<a href="javascript:addDownTown()"><button>downtown</button></a>
+
 <br/>
+
+
 
 
 <h4>Full Log</h4>
