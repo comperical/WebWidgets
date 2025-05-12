@@ -1336,15 +1336,12 @@ public class CoreCommand
 			String username = _argMap.getStr("username", "dburfoot");
 			WidgetUser user = WidgetUser.lookup(username);
 
-			WidgetItem config = new WidgetItem(user, CoreUtil.CONFIG_DB_NAME);
+			// WidgetItem target = new WidgetItem(user, CoreUtil.CONFIG_DB_NAME);
+			WidgetItem target = new WidgetItem(user, _argMap.getStr("widgetname"));
 
-			if(!config.dbFileExists())
-			{
-				config.createEmptyLocalDb();
-				Util.pf("Created Widget DB %s\n", config);
-			}
+			Util.massert(target.dbFileExists(), "DB %s not found", target);
 
-			boolean hastable = config.getDbTableNameSet().contains(GranularPerm.GROUP_INFO_TABLE);
+			boolean hastable = target.getDbTableNameSet().contains(GranularPerm.GROUP_INFO_TABLE);
 			boolean rebuild = _argMap.getBit("rebuild", false);
 
 			if(hastable && !rebuild)
@@ -1357,17 +1354,17 @@ public class CoreCommand
 			{
 				String dropper = String.format("DROP TABLE %s", GranularPerm.GROUP_INFO_TABLE);
 				Util.pf("SQL command: %s\n", dropper);
-				CoreDb.execSqlUpdate(dropper, config);
+				CoreDb.execSqlUpdate(dropper, target);
 			}
 
 
 			for(String comm : GranularPerm.getGroupInfoCreate())
 			{
 				Util.pf("SQL command: %s\n", comm);
-				CoreDb.execSqlUpdate(comm, config);
+				CoreDb.execSqlUpdate(comm, target);
 			}
 
-			config.createJsCode();
+			target.createJsCode();
 		}
 	}
 }

@@ -117,26 +117,43 @@ public class WidgetUser implements Comparable<WidgetUser>
     // The groups are contained in the target DB owner's "config::group_info" table
     // We will likely need to have a caching system here
     // See docs for granular permissions
-    public Set<String> lookupGroupSet4Db(WidgetItem accesstarget)
+    public Set<String> lookupGroupSet4AccessTarget(WidgetItem accesstarget)
     {
-        return lookupGroupSet4OwnerSpace(accesstarget.theOwner);
+        var optdb = findRelevantGroupDb(accesstarget);
+        return lookupGroupSet4FromDb(optdb);
     }
 
-    public Set<String> lookupGroupSet4OwnerSpace(WidgetUser owner)
+    // May 2025: in previous thinking about this, I thought it was important to
+    // have another place to put the group definition table, in addition to the widget with the granular perm
+    // This is because granular perms usually should be public read
+    // I now want to ship a basic version of this feature, will review this issue later
+    // If we decide to do this, this is where to put the lookup of the group DB
+    private Optional<WidgetItem> findRelevantGroupDb(WidgetItem accesstarget)
     {
-        var configdb = new WidgetItem(owner, CoreUtil.CONFIG_DB_NAME);
+        if(accesstarget.getDbTableNameSet().contains(GranularPerm.GROUP_INFO_TABLE))
+        {
+            return Optional.of(accesstarget);
+        }
 
+        return Optional.empty();
+
+    }
+
+    private Set<String> lookupGroupSet4FromDb(Optional<WidgetItem> ginfodb)
+    {
         // users are always members of their own group
         Set<String> groupset = Util.setify(String.format("I::%s", this.toString()));
 
-        if(configdb.dbFileExists())
+        if(ginfodb.isPresent() && ginfodb.get().dbFileExists())
         {
             String paramquery = String.format("SELECT group_name FROM %s WHERE user_name = ?", GranularPerm.GROUP_INFO_TABLE);
-            QueryCollector qcol = QueryCollector.buildRunPrepared(paramquery, configdb, this);
+            QueryCollector qcol = QueryCollector.buildRunPrepared(paramquery, ginfodb.get(), this.toString());
             groupset.addAll(Util.map2list(qcol.recList(), amap -> amap.getSingleStr()));
         }
 
         return groupset;
+
+
     }
 
 

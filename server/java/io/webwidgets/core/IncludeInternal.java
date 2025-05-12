@@ -216,6 +216,16 @@ public class IncludeInternal
                     LTI.withColumnTarget(_optFilterTarget.get()._1, _optFilterTarget.get()._2);
                 }
 
+                if(LTI.hasGranularPerm())
+                {
+                    // Not sure if the empty group set here will ever work return any data,
+                    // does it make more sense to bail out?
+                    // I guess it is equivalent to NoDataMode
+                    var optgroup = pageAccessor.map(acc -> acc.lookupGroupSet4AccessTarget(_theItem));
+                    LTI.withAccessorGroupSet(optgroup.orElse(Collections.emptySet()));
+                }
+
+
                 // dogenerate=false
                 CodeGenerator.maybeUpdateCode4Table(LTI, false);
 
