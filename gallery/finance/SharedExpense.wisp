@@ -7,6 +7,8 @@
 
 var EDIT_STUDY_ITEM = -1;
 
+const MAIN_TABLE = "shared_expense";
+
 const CODE_TO_NAME_MAP = {
 	"D" : "Dan",
 	"H" : "Heather"
@@ -197,6 +199,36 @@ function redisplay() {
 	populateSpanData({"page_info" : pageinfo });
 }
 
+function copyItemUp(itemid)
+{
+	const copyitem = W.lookupItem(MAIN_TABLE, itemid);
+
+	const copyfuture = prompt("Please enter the number of DAYS to copy to the future");
+
+	if(copyfuture)
+	{
+		if(!okayInt(copyfuture))
+		{
+			alert("Please enter a valid number");
+			return;
+		}
+
+		const record = Object.fromEntries(
+							W.getFieldList(MAIN_TABLE)
+								.filter(fname => fname != "id")
+								.map(fname => [fname, copyitem.getField(fname)]));
+
+		record['day_code'] = lookupDayCode(copyitem.getDayCode())
+									.nDaysAfter(parseInt(copyfuture))
+									.getDateString();
+
+		W.buildItem(MAIN_TABLE, record).syncItem();
+		redisplay();
+	}
+
+
+}
+
 // Auto-generated getEditPageInfo function
 function getEditPageInfo() {
 
@@ -264,13 +296,6 @@ function getMainPageInfo() {
 		<a href="javascript:createNewHeather()"><button>+Heather</button></a>
 
 
-		&nbsp;
-		&nbsp;
-		&nbsp;
-		&nbsp;
-
-		<a href="javascript:createNewHonda()"><button>+CarPay</button></a>
-
 		<br/>
 		<br/>
 	`;
@@ -280,8 +305,8 @@ function getMainPageInfo() {
 		<tr>
 		<th>Date</th>
 		<th>Amount</th>
-		<th>payer</th>
-		<th>notes</th>
+		<th>Payer</th>
+		<th>Notes</th>
 		<th>..</th></tr>
 	`
 
@@ -293,8 +318,12 @@ function getMainPageInfo() {
 			<td>${shorten4Display(item.getDayCode())}</td>
 			<td>${shorten4Display(item.getDollarAmount())}</td>
 			<td>${CODE_TO_NAME_MAP[item.getPayer()]}</td>
-			<td>${shorten4Display(item.getNotes())}</td>
+			<td>${item.getNotes()}</td>
 			<td>
+
+			<a href="javascript:copyItemUp(${item.getId()})"><img src="/u/shared/image/upicon.png" height="16"/></a>
+
+			&nbsp;&nbsp;&nbsp;
 			<a href="javascript:editStudyItem(${item.getId()})"><img src="/u/shared/image/inspect.png" height="16"/></a>
 			&nbsp;&nbsp;&nbsp;
 			<a href="javascript:deleteItem(${item.getId()})"><img src="/u/shared/image/remove.png" height="16"/></a>
