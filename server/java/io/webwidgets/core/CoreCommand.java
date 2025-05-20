@@ -1367,6 +1367,33 @@ public class CoreCommand
 			target.createJsCode();
 		}
 	}
+
+	public static class TestTemplateGen extends ArgMapRunnable
+	{
+
+		public void runOp()
+		{
+			var username = _argMap.getStr("username");
+			var optuser = WidgetUser.softLookup(username);
+
+			var widgetname = _argMap.getStr("widgetname");
+			var tablename = _argMap.getStr("tablename");
+
+			var dbitem = new WidgetItem(optuser.get(), widgetname);
+			Util.massert(dbitem.dbFileExists(), "DB Item %s does not exist", dbitem);
+
+			var LTI = new LiteTableInfo(dbitem, tablename);
+			List<String> srclist = (new TemplateGenerator(LTI)).runGeneration();
+
+			for(String s : srclist)
+			{
+				Util.pf("%s\n", s);
+
+			}
+
+		}
+
+	}
 }
 
 

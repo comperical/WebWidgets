@@ -68,17 +68,31 @@ public class TemplateGenerator
         );
 
 
-        add("function deleteItem(itemid) {");
 
-        add("\tconst item = W.lookupItem(MAIN_TABLE, itemid);");
-        add("\titem.deleteItem();");
-        add("\tredisplay();");
-        add("}");
+
+
+        {
+            add("");
+            add("function getStudyItem() {");
+            add("\tmassert(EDIT_STUDY_ITEM != -1, \"No study item has been selected\");");
+            add("\treturn W.lookupItem(MAIN_TABLE, EDIT_STUDY_ITEM);");
+            add("}");
+            add("");
+        }
 
 
         addCreateNew();
 
         addEditCode();
+
+        {
+            add("function deleteItem(itemid) {");
+            add("\tconst item = W.lookupItem(MAIN_TABLE, itemid);");
+            add("\titem.deleteItem();");
+            add("\tredisplay();");
+            add("}");
+        }
+
 
 
         addReDisplay();
