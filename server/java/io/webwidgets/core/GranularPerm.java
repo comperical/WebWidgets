@@ -16,7 +16,6 @@ import net.danburfoot.shared.CoreDb.QueryCollector;
 
 
 // Logic for Granular permissions. Key concepts:
-// System-verified auth_owner column. Guaranteed to be the actual owner of the record
 // JSON data in group allow column, specified by user code, with help of nice utility methods
 // This is just a { group : read / write } data structure
 // Group Allow column gets transferred into an auxiliary table, for fast SQL queries
@@ -71,8 +70,11 @@ public class GranularPerm
         var creator = "CREATE TABLE " + auxtable +
                     "(record_id int, group_name varchar(20), can_write int, PRIMARY KEY(record_id, group_name))";
 
+        // NB: using the record_id here is a performance upgrade. We query on just the group_name,
+        // but including the record_id in the index means SQLite doesn't have to actually go to the table
+        // and read the record!
         var indexor = String.format(
-            "CREATE INDEX __aux_index_%s ON %s(group_name)", maintable, auxtable);
+            "CREATE INDEX __aux_index_%s ON %s(group_name, record_id)", maintable, auxtable);
 
         List<String> commlist = Util.listify(droppor, creator, indexor);
 
@@ -88,7 +90,7 @@ public class GranularPerm
 
 
     // Bulk version of method below. Keys of map are record IDs.
-    static Map<Integer, Map<String, Boolean>> parseGroupAllowData(Collection<ArgMap> itemlist) throws ParseException
+    static Map<Integer, Map<String, Boolean>> parseGroupAllowData(Collection<ArgMap> itemlist)
     {
         JSONParser parser = new JSONParser();
 
@@ -98,6 +100,7 @@ public class GranularPerm
             amap -> parseGroupAllowData(amap, parser)
         );
     }
+
 
     // Pull the group allow data out of the JSON in the given record
     // If you are running this multiple times, it's better to use the bulk operation above, reuse the parser
@@ -121,37 +124,14 @@ public class GranularPerm
 
         // TODO: there is a big issue here, which is: what do you do on a full insert if the JSON
         // is improperly formatted?
-        try {
-            groupallow = parseGroupAllowData(qcol.recList());
-        } catch (ParseException pex) {
-            throw new RuntimeException("Error in JSON parsing in Group Allow column", pex);
-        }
-
+        groupallow = parseGroupAllowData(qcol.recList());
 
         shuntGroupAllowSub(dbitem, maintable, groupallow);
 
         return qcol.getNumRec();
     }
 
-    static boolean testModeTransferGroupAllow(WidgetItem dbitem, String coretable, ArgMap payload)
-    {
-        if(!dbitem.theOwner.toString().equals("dburfoot"))
-            { return false; }
 
-        if(!dbitem.theName.equals("systest"))
-            { return false; }
-
-        if(!coretable.startsWith("gran_test"))
-            { return false; }
-
-        try {
-            shuntGroupAllowData(dbitem, coretable, payload);
-        } catch (ParseException pex) {
-            throw new RuntimeException(pex);
-        }
-
-        return true;
-    }
 
 
     // Boilerplate
@@ -164,12 +144,16 @@ public class GranularPerm
 
     // This method shunts the GROUP_ALLOW data, specified in JSON in the given payload,
     // into the aux table
-    static void shuntGroupAllowData(WidgetItem dbitem, String coretable, ArgMap payload) throws ParseException
+    static boolean shuntGroupAllowData(LiteTableInfo LTI, ArgMap payload)
     {
+        if(!LTI.hasGranularPerm())
+            { return false; }
+
         var groupmap = parseGroupAllowData(payload, new JSONParser());
         int recordid = payload.getInt(CoreUtil.STANDARD_ID_COLUMN_NAME);
 
-        shuntGroupAllowSub(dbitem, coretable, buildWrapMap(recordid, groupmap));
+        shuntGroupAllowSub(LTI.dbTabPair._1, LTI.dbTabPair._2, buildWrapMap(recordid, groupmap));
+        return true;
     }
 
 
@@ -219,9 +203,6 @@ public class GranularPerm
     {
         shuntGroupAllowSub(dbitem, coretable, buildWrapMap(recordid, Collections.emptyMap()));
     }
-
-
-
 
 
     // Checks for errors in parsing the JSON data for the GROUP ALLOW column

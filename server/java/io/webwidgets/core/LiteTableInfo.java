@@ -527,8 +527,9 @@ public class LiteTableInfo
 		// All WWIO tables have 1 primary key
 		CoreDb.upsertFromRecMap(dbTabPair._1, dbTabPair._2, 1, paymap);
 
-		// TODO: 
-		boolean granupdate = GranularPerm.testModeTransferGroupAllow(dbTabPair._1, dbTabPair._2, argmap);
+		// If there is granular permission data, shunt it into the aux role table
+		// NB: the JSON parsing in the group allow table is checked at a prior step in this process
+		boolean granupdate = GranularPerm.shuntGroupAllowData(this, argmap);
 		if(granupdate)
 		{
 			Util.pf("Ran Group Allow transfer for %s::%s\n", dbTabPair._1, dbTabPair._2);
