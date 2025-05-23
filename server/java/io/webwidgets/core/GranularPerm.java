@@ -46,11 +46,25 @@ public class GranularPerm
 
 
     // Convert perminfo data, from group_allow field, into standard form of Map<String, Boolean>
-    // Is this really necessary?
+    // this method is called as part of the update process in the main Callback,
+    // to ensure that the Group Allow JSON is properly formed
     @SuppressWarnings("unchecked")
     static Map<String, Boolean> convert2GroupMap(JSONObject perminfo)
     {
-        return Util.map2map(perminfo.keySet(), k -> k.toString(), k -> perminfo.get(k).equals("write"));
+        Map<String, Boolean> result = Util.treemap();
+
+        for(Object k : perminfo.keySet())
+        {
+            Object s = perminfo.get(k);
+
+            boolean isread = "read".equals(s);
+            boolean iswrite = "write".equals(s);
+
+            Util.massert(isread || iswrite, "Invalid value %s for group allow, attached to key %s", s, k);
+            result.put(k.toString(), iswrite);
+        }
+
+        return result;
     }
 
     // Full rebuild of the aux group table

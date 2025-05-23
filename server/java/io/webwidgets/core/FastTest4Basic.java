@@ -1269,5 +1269,66 @@ public class FastTest4Basic
 			Util.pf("Success, no errors found on %d tables checked, observed %d with granular perm\n", tablecount, auxcount);
 		}
 	}
+
+
+	public static class CheckGroupAllowInfo extends DescRunnable
+	{
+		private int _errCount = 0;
+		private int _okayCount = 0;
+
+		public String getDesc()
+		{
+			return
+				"Checks that the Group Allow JSON is valid for all FG-enabled tables\n" +
+				"This specifically means that the JSON strings are well-formatted\n" +
+				"And the values correspond to the literal strings read and write";
+
+		}
+
+		public void runOp()
+		{
+			for(WidgetUser user : WidgetUser.values())
+			{
+				for(WidgetItem dbitem : WidgetItem.getUserWidgetList(user))
+					{ checkForDbItem(dbitem); }
+			}
+
+			Util.massert(_errCount == 0, "Found %d errors, see above information", _errCount);
+			Util.massert(_okayCount > 0, "Expected at least 1 FG table, found 0");
+			Util.pf("Success, check FG-perm config for %d tables\n", _okayCount);
+		}
+
+		private void checkForDbItem(WidgetItem dbitem)
+		{
+
+			for(String tablename : dbitem.getDbTableNameSet())
+			{
+
+				// TODO: the LTI constructor should probably run the setup automatically
+				var LTI = new LiteTableInfo(dbitem, tablename);
+				LTI.runSetupQuery();
+
+				if(!LTI.hasGranularPerm())
+					{ continue; }
+
+
+				Util.pf("Running FG-config check for LTI %s\n", LTI.dbTabPair);
+
+				String query = Util.sprintf("SELECT %s, %s FROM %s",
+					CoreUtil.STANDARD_ID_COLUMN_NAME, CoreUtil.GROUP_ALLOW_COLUMN, LTI.dbTabPair._2);
+
+				List<ArgMap> datalist = QueryCollector.buildAndRun(query, LTI.dbTabPair._1).recList();
+
+				try {
+					var resultmap = GranularPerm.parseGroupAllowData(datalist);
+					_okayCount++;
+				} catch (Exception ex) {
+					Util.pferr("Found Group Allow issue with %s:\n", LTI.dbTabPair);
+					ex.printStackTrace();
+					_errCount++;
+				}
+			}
+		}
+	}
 }
 

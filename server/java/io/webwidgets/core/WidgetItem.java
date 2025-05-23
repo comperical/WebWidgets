@@ -225,6 +225,9 @@ public class WidgetItem implements ConnectionSource, Comparable<WidgetItem>
 
 
 
+	// This is a very weird place to put this. It's much more natural to put this
+	// on the WidgetUser object. At some point I wanted to ensure that the package could compile
+	// file-by-file, but I'm not sure it's really worth it
     public static List<WidgetItem> getUserWidgetList(WidgetUser user)
     {
         File dbdir = new File(user.getDbDirPath());
