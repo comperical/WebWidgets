@@ -98,6 +98,41 @@ const U = {
         updater(item);
         item.syncItem();
         redisplay();
+    },
+
+
+    // Wrapper around the standard browser prompt(...) primitive,
+    // that checks the result for being a valid integer
+    promptForInt : function(message, pdefault)
+    {
+        return U.__promptForTarget(false, message, pdefault);
+    },
+
+    // Wrapper around the standard browser prompt(...) primitive,
+    // that checks the result for being a valid float
+    promptForFloat : function(message, pdefault)
+    {
+        return U.__promptForTarget(true, message, pdefault);
+    },
+
+    __promptForTarget : function(isfloat, message, pdefault)
+    {
+        const presult = prompt(message, pdefault);
+
+        if(presult == null)
+            { return null; }
+
+        const checkfunc = isfloat ? okayFloat : okayInt;
+        const parsefunc = isfloat ? parseFloat : parseInt;
+        const numberstr = isfloat ? "number" : "integer";
+
+        if(!checkfunc(presult))
+        {
+            alert(`Please enter a valid ${numberstr}, or hit Cancel`);
+            return U.__promptForTarget(isfloat, message, pdefault);
+        }
+
+        return parsefunc(presult);
     }
 }
 
