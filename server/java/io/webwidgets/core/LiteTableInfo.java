@@ -541,14 +541,17 @@ public class LiteTableInfo
 		Util.massert(argmap.getStr("tablename").equals(dbTabPair._2),
 			"Wrong table name: %s vs %s", argmap.getStr("tablename"), dbTabPair._2);
 		
-		// Single record of "id" -> integer ID
-		LinkedHashMap<String, Object> paymap = CoreDb.getRecMap(
-			CoreUtil.STANDARD_ID_COLUMN_NAME, argmap.getInt(CoreUtil.STANDARD_ID_COLUMN_NAME)
-		);
+		int recordid = argmap.getInt(CoreUtil.STANDARD_ID_COLUMN_NAME);
 
-		BlobDataManager.optProcessDelete(this, paymap);
+		// Single record of "id" -> integer ID
+		var wrapmap = CoreDb.getRecMap(CoreUtil.STANDARD_ID_COLUMN_NAME, recordid);
+
+		BlobDataManager.optProcessDelete(this, wrapmap);
 		
-		CoreDb.deleteFromColMap(dbTabPair._1, dbTabPair._2, paymap);
+		CoreDb.deleteFromColMap(dbTabPair._1, dbTabPair._2, wrapmap);
+
+		// We do NOT need to delete Aux Role data here, it is handled by SQLite FKEY cascade delete
+		// boolean grandelete = GranularPerm.deleteGroupAllowData(this, recordid);
 	}
 	
 	

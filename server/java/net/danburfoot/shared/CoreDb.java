@@ -744,7 +744,7 @@ public class CoreDb
 		if(__SQLITE_CONFIG == null)
 		{
 			__SQLITE_CONFIG = new org.sqlite.SQLiteConfig();
-			__SQLITE_CONFIG.enforceForeignKeys(true);  
+			__SQLITE_CONFIG.enforceForeignKeys(true);
 		}
 		
 		return __SQLITE_CONFIG.toProperties();

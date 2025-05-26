@@ -67,6 +67,37 @@ public class GranularPerm
         return result;
     }
 
+    public static List<String> getAuxTableRebuildSql(String maintable)
+    {
+        String auxtable = getAuxGroupTable(maintable);
+
+        var droppor = "DROP TABLE IF EXISTS " + auxtable;
+
+        var creator = String.format(
+                "CREATE TABLE %s ( " +
+                "record_id  INTEGER NOT NULL, " +
+                "group_name TEXT    NOT NULL, " +
+                "can_write  INTEGER NOT NULL, " +
+                "PRIMARY KEY (record_id, group_name), " +
+                "FOREIGN KEY (record_id) REFERENCES %s(id) ON DELETE CASCADE" +
+                ")",
+                auxtable,               // first %s
+                maintable               // second %s
+        );
+
+        // NB: using the record_id here is a performance upgrade. We query on just the group_name,
+        // but including the record_id in the index means SQLite doesn't have to actually go to the table
+        // and read the record!
+        var indexor = String.format(
+                "CREATE INDEX __aux_index_%s ON %s (group_name, record_id)",
+                maintable,  // first %s
+                auxtable    // second %s
+        );
+
+        return Arrays.asList(droppor, creator, indexor);
+    }
+
+
     // Full rebuild of the aux group table
     // All data in the aux group is derived from the group allow column in the main table,
     // so doing this is guaranteed not to destroy any data
@@ -76,21 +107,7 @@ public class GranularPerm
         Util.massert(tableset.contains(maintable),
             "Main table %s not found in table list for %s, options are %s", maintable, dbitem, tableset);
 
-        String auxtable = getAuxGroupTable(maintable);
-
-        var droppor = "DROP TABLE IF EXISTS " + auxtable;
-
-        // TODO: expose these as a separate method, for documentation purposes
-        var creator = "CREATE TABLE " + auxtable +
-                    "(record_id int, group_name varchar(20), can_write int, PRIMARY KEY(record_id, group_name))";
-
-        // NB: using the record_id here is a performance upgrade. We query on just the group_name,
-        // but including the record_id in the index means SQLite doesn't have to actually go to the table
-        // and read the record!
-        var indexor = String.format(
-            "CREATE INDEX __aux_index_%s ON %s(group_name, record_id)", maintable, auxtable);
-
-        List<String> commlist = Util.listify(droppor, creator, indexor);
+        List<String> commlist = getAuxTableRebuildSql(maintable);
 
         for(var comm : commlist)
         {
@@ -99,7 +116,6 @@ public class GranularPerm
 
         int numrec = fullInsertGroupAllow(dbitem, maintable);
         Util.pf("Updated Aux Table for %d main-table records in %s::%s\n", numrec, dbitem, maintable);
-
     }
 
 
@@ -213,10 +229,6 @@ public class GranularPerm
 
     }
 
-    static void deleteGroupAllowData(WidgetItem dbitem, String coretable, int recordid)
-    {
-        shuntGroupAllowSub(dbitem, coretable, buildWrapMap(recordid, Collections.emptyMap()));
-    }
 
 
     // Checks for errors in parsing the JSON data for the GROUP ALLOW column

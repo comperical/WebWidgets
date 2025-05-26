@@ -9,14 +9,19 @@ import javax.servlet.http.*;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 
+import org.json.simple.*;
+import org.json.simple.parser.*;
+
 import net.danburfoot.shared.Util;
 import net.danburfoot.shared.ArgMap;
 import net.danburfoot.shared.FileUtils;
 import net.danburfoot.shared.CollUtil.Pair;
+import net.danburfoot.shared.CoreDb.QueryCollector;
 
 import io.webwidgets.core.AuthLogic.*;
 import io.webwidgets.core.DataServer.*;
 import io.webwidgets.core.WispFileLogic.*;
+import io.webwidgets.core.LiteTableInfo.*;
 
 
 public class IncludeInternal
@@ -262,4 +267,97 @@ public class IncludeInternal
     }
 
 
+    // Simple load of data in JSON format
+    // No extra stuff
+    @WebServlet(urlPatterns = "/simpleload") 
+    public static class SimpleJsonLoader extends HttpServlet {
+
+        public SimpleJsonLoader() {
+            super();
+        }
+
+        protected void doGet(HttpServletRequest request, HttpServletResponse response)  throws ServletException, IOException
+        {
+            Util.massert(request.isSecure() || AdvancedUtil.allowInsecureConnection(),
+                "This can only be served on a secure connection");
+
+            Optional<WidgetUser> accessor = AuthLogic.getLoggedInUser(request);
+
+            Map<DataIncludeArg, String> dargmap = DataServer.parseQuery2DargMap(request.getQueryString());
+
+            Util.massert(dargmap != null, "Failed to parse DARG map with query string %s", request.getQueryString());
+
+            var directinc = new DirectLoadInclude(dargmap, AuthLogic.getLoggedInUser(request));
+
+            if(!directinc.sourceItem.dbFileExists())
+            {
+                // Convey an error message of file not found
+                Util.massert(false, "The Widget DB %s was not found", directinc.sourceItem);
+            }
+
+            if(!AuthChecker.build().directSetAccessor(accessor).directDbWidget(directinc.sourceItem).allowRead())
+            {
+                // This error could be caused if a Widget developer wrote a page with a cross-load,
+                // but didn't give the accessor read permissions for the page
+                Util.massert(false,
+                    "User %s attempted to load widget %s, but does not have read permissions, this can be caused by cross-loading",
+                    accessor, directinc.sourceItem
+                );
+            }
+
+            {
+                WidgetItem dbitem = directinc.sourceItem;
+                Set<String> colnameset = dbitem.getDbTableNameSet();
+                byte[] content = getJsonContent(dbitem, colnameset).getBytes();
+
+                response.setCharacterEncoding("UTF-8");
+                response.getOutputStream().write(content);
+                response.getOutputStream().close();
+            }
+        }
+
+
+        @SuppressWarnings("unchecked")
+        private String getJsonContent(WidgetItem dbitem, Set<String> tableset)
+        {
+            JSONObject toplevel = new JSONObject();
+
+            for(var table : tableset)
+            {
+                var LTI = new LiteTableInfo(dbitem, table);
+                LTI.runSetupQuery();
+                toplevel.put(table, getSingleTable(LTI));
+            }
+
+            return toplevel.toJSONString();
+        }
+
+        @SuppressWarnings("unchecked")
+        private JSONArray getSingleTable(LiteTableInfo LTI)
+        {
+            Map<String, ExchangeType> extypemap = LTI.getColumnExTypeMap();
+
+            QueryCollector qcol = CoreUtil.fullTableQuery(LTI.dbTabPair._1, LTI.dbTabPair._2);
+
+            JSONArray table = new JSONArray();
+
+            for(ArgMap amap : qcol.recList())
+            {
+                JSONObject ob = new JSONObject();
+
+                // The point of jumping through all these hoops is to ensure
+                // that the resulting JSON has as much typing as JSON can have, i.e.
+                // if it's a number, you don't need to quote it
+                for(Map.Entry<String, ExchangeType> pr : extypemap.entrySet())
+                {
+                    Object typed = pr.getValue().convertFromArgMap(amap, pr.getKey());
+                    ob.put(pr.getKey(), typed);
+                }
+
+                table.add(ob);
+            }
+
+            return table;
+        }
+    }
 }
