@@ -131,6 +131,23 @@ function addStudyTag()
 	redisplay();
 }
 
+function newTagForStudyItem()
+{
+	const updater = function(myitem)
+	{
+		const newtag = prompt("Please enter a new tag:");
+		if(newtag)
+		{
+			const curtags = getTagList(myitem.getId());
+			curtags.push(newtag);
+			myitem.setCategory(curtags.join(";"));
+		}
+	}
+
+	U.genericItemUpdate("rage_log", EDIT_STUDY_ITEM, updater);
+}
+
+
 function removeStudyTag(tagidx) 
 {
 	const oldtags = getTagList(EDIT_STUDY_ITEM);
@@ -284,7 +301,16 @@ onclick="javascript:createNew()">NEW</a>
 <td><div id="category_list"></div></td>
 <td>
 <span id="add_tag_sel_span"></span>
+
+&nbsp;
+&nbsp;
+&nbsp;
+
+<a href="javascript:newTagForStudyItem()"><img src="/u/shared/image/add.png" height="16" /></a>
+
 </td>
+
+
 </tr>
 <tr>
 <td>Date</td>

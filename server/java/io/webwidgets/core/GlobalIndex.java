@@ -47,7 +47,7 @@ public class GlobalIndex
         return Collections.unmodifiableMap(_LOOKUP_MAP);
     }
     
-    public static Optional<String> getSystemSetting(SystemPropEnum spenum)
+    public static Optional<String> getSystemSetting(Enum spenum)
     {
         return Optional.ofNullable(getSystemSetting().get(spenum.toString()));
     }
