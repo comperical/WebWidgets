@@ -69,8 +69,9 @@ if __name__ == "__main__":
 		print("**Error** : DB path {} already exists, please delete or move first, or use deleteold=true".format(dbpath))
 		quit()
 	
-	domainpref = CodePush.get_domain_prefix()
-	url = "{}/u/pull2you?username={}&widget={}&accesshash={}".format(domainpref, username, widget, configmap['accesshash'])	
+
+	domainpref = CodePush.get_domain_prefix(argmap)
+	url = f"{domainpref}/u/pull2you?username={username}&widget={widget}&accesshash={configmap['accesshash']}"
 	
 	curlcall = "curl  \"{}\" --output {}".format(url, dbpath)
 	os.system(curlcall)

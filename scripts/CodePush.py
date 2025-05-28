@@ -3,6 +3,7 @@
 import os 
 import sys
 import shutil
+import subprocess
 from pathlib import Path
 
 import ArgMap
@@ -14,7 +15,9 @@ CONFIG_MAP_OKAY_KEYS = ["accesshash", "dbdir", "codedir1", "codedir2", "codedir3
 
 SUBFOLDER_NAME = ".ssh"
 
-WWIO_DOCS_URL = "https://webwidgets.io/u/docs/index.html"
+WWIO_MAIN_DOMAIN = "webwidgets.io"
+
+WWIO_DOCS_URL = f"https://{WWIO_MAIN_DOMAIN}/u/docs/index.html"
 
 WWIO_USER_ENV_VAR = "WWIO_USER_NAME"
 
@@ -25,15 +28,21 @@ WWIO_HOST_ENV_VAR = "WWIO_HOST_NAME"
 MAX_UPLOAD_SIZE_BYTES = 10_000_000
 
 
-def get_domain_prefix(local=False):
+def get_domain_prefix(argmap):
 
-	if WWIO_HOST_ENV_VAR in os.environ:
-		host = os.environ.get(WWIO_HOST_ENV_VAR)
+	probes = [argmap.getStr("host", None), os.environ.get(WWIO_HOST_ENV_VAR)]
+	probes = [p for p in probes if p != None]
+
+	if len(probes) > 1:
+		print(f"**Warning**, both host= and {WWIO_HOST_ENV_VAR} variable detected, host= has priority")
+
+	if len(probes) > 0:
+		host = probes[0]
 		assert not host.startswith("http"), f"By convention, host name does not start with http prefix"
 		print(f"Sending data to host {host}")
 		return f"https://{host}"
 
-	return  "https://webwidgets.io"
+	return  f"https://{WWIO_MAIN_DOMAIN}"
 
 
 
@@ -89,7 +98,8 @@ def find_username(argmap):
 		return username
 
 
-	# Okay we found the username from the config files, because there's only one proper config file.
+	# Okay we found the username from the config files, because there's only one proper config file
+	# For many developers, this will work fine
 	if len(candidates) == 1:
 		return candidates[0]
 
@@ -109,6 +119,8 @@ def get_username_configs():
 				yield onefile.split("__")[0]
 
 	return list(gencands())
+
+
 
 def get_config_map(username):
 	
@@ -137,11 +149,16 @@ class AssetUploader:
 	
 	def __init__(self, argmap):
 		
+		self.host = get_domain_prefix(argmap)
 		self.widget = argmap.getStr("widgetname")
 		self.username = argmap.getStr("username")
-		self.local = argmap.getBit("local", False)
 		self.securecurl = argmap.getBit("securecurl", True)
 		self.basedir = None
+
+
+		if self.securecurl and not WWIO_MAIN_DOMAIN in self.host:
+			print("**Warning**, non-standard host detected with securecurl, this will probably fail, use securecurl=False")
+
 
 	def ensure_okay(self, postprep=False):
 		assert self.basedir != None, "Failed to find a good base directory in config"
@@ -155,21 +172,34 @@ class AssetUploader:
 			assert filesize <= MAX_UPLOAD_SIZE_BYTES, f"Your upload file {paypath} is too big ({filesize}), the max upload size is {MAX_UPLOAD_SIZE_BYTES}"
 
 
-	def compose_curl_call(self, configmap):
-		# curl  --request POST --form name=@TabCompleter.py http://localhost:8080/life/push2me?hello=world
-		payload = self.get_payload_path()
-		extend = self.get_file_type()
-		acchash = configmap['accesshash']
-		domainpref = get_domain_prefix(local=self.local)
-		securestr = "" if self.securecurl else " --insecure "
+	def get_curl_command_list(self, configmap):
 
-		assert os.path.exists(payload), "Payload path {} does not exist".format(payload)
-		return "curl --request POST {} --form payload=@{}  --form filetype={} --form username={} --form widget={} --form accesshash={} {}/u/push2me".format(securestr, payload, extend, self.username, self.widget, acchash, domainpref)
-	
+	    payload = self.get_payload_path()
+	    extend = self.get_file_type()
+	    acchash = configmap['accesshash']
+	    securestr = [] if self.securecurl else ["--insecure"]
+
+	    assert os.path.exists(payload), f"Payload path {payload} does not exist"
+
+	    return [
+	        "curl", "--request", "POST",
+	        *securestr,
+	        "--form", f"payload=@{payload}",
+	        "--form", f"filetype={extend}",
+	        "--form", f"username={self.username}",
+	        "--form", f"widget={self.widget}",
+	        "--form", f"accesshash={acchash}",
+	        f"{self.host}/u/push2me"
+	    ]
+
+
+
 	def do_upload(self, configmap):
-		curlcall = self.compose_curl_call(configmap)
-		# print(curlcall)
-		os.system(curlcall)
+		cmdlist = self.get_curl_command_list(configmap)
+		result = subprocess.run(cmdlist, capture_output=True, text=True)
+		print(result.stdout)
+		#print(result.stderr)
+
 
 	def do_cleanup(self):
 		pass
