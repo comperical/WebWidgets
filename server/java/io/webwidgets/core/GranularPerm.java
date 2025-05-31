@@ -387,7 +387,10 @@ public class GranularPerm
     // Ensure that every table with a GROUP_ALLOW has a corresponding aux role table
     // if a table with granular permissions is present, ensure that an aux-role table is created
     // if an auxrole table is present with no corresponding maintable, drop it
-    static String rectifyAuxRoleSetup(WidgetItem dbitem)
+    // May 2025 - instead of doing this process, we will just block uploads of DBs with GROUP ALLOW for time being
+    // An alternate approach would be: check for table size, if they're too big, block;
+    // Otherwise, blow away all auxrole, and rebuild them all, fail DB upload if the JSON is misformatted
+    private static String rectifyAuxRoleSetupUnused(WidgetItem dbitem)
     {
         String logmessage = "";
 

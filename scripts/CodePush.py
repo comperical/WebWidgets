@@ -189,7 +189,7 @@ class AssetUploader:
 	        "--form", f"username={self.username}",
 	        "--form", f"widget={self.widget}",
 	        "--form", f"accesshash={acchash}",
-	        f"{self.host}/u/push2me"
+	        f"{self.host}/u/userpush"
 	    ]
 
 
@@ -314,9 +314,10 @@ class BaseUploader(AssetUploader):
 				myzip.write(fullpath, arcname=myfile)
 
 
-if __name__ == "__main__":
-	
-	argmap = ArgMap.getFromArgv(sys.argv)
+
+
+def run_from_args(argmap):
+
 	check_update_username(argmap)
 
 	configmap = get_config_map(argmap.getStr('username'))
@@ -335,4 +336,11 @@ if __name__ == "__main__":
 	
 	uploader.do_upload(configmap)
 	uploader.do_cleanup()
+
+
+
+if __name__ == "__main__":
+	
+	argmap = ArgMap.getFromArgv(sys.argv)
+	run_from_args(argmap)
 		

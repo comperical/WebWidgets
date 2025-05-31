@@ -736,7 +736,7 @@ public class CoreDb
 	{
 		String sql = "SELECT name FROM sqlite_master WHERE type='view'";		
 		return Util.map2set(QueryCollector.buildAndRun(sql, litedb).recList(), amap -> amap.getSingleStr());
-	}			
+	}
 	
 
 	public static synchronized Properties getSqliteConfigProps()

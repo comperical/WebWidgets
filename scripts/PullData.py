@@ -70,10 +70,18 @@ if __name__ == "__main__":
 		quit()
 	
 
+	# TODO: this code is all duplicated in the CodePush, need to combine them
 	domainpref = CodePush.get_domain_prefix(argmap)
-	url = f"{domainpref}/u/pull2you?username={username}&widget={widget}&accesshash={configmap['accesshash']}"
-	
-	curlcall = "curl  \"{}\" --output {}".format(url, dbpath)
+	securecurl = argmap.getBit("securecurl", True)
+	if securecurl and not CodePush.WWIO_MAIN_DOMAIN in domainpref:
+		print("**Warning**, non-standard host detected with securecurl, this will probably fail, use securecurl=False")
+
+
+	url = f"{domainpref}/u/userpull?username={username}&widget={widget}&accesshash={configmap['accesshash']}"
+
+	securestr = "" if securecurl else "--insecure"
+
+	curlcall = "curl  \"{}\" {} --output {}".format(url, securestr, dbpath)
 	os.system(curlcall)
 	
 	assert os.path.exists(dbpath), "Curl call failed to retrieve DB file to expected path {}".format(dbpath)

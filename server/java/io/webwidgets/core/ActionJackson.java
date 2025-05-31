@@ -7,6 +7,7 @@ import java.util.zip.*;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.annotation.MultipartConfig;
 
 import java.util.regex.Matcher;
@@ -17,8 +18,11 @@ import net.danburfoot.shared.Util;
 import net.danburfoot.shared.ArgMap;
 import net.danburfoot.shared.FileUtils;
 import net.danburfoot.shared.StringUtil;
+import net.danburfoot.shared.CoreDb.*;
+
 
 import io.webwidgets.core.DataServer.*;
+import io.webwidgets.core.LiteTableInfo.*;
 import io.webwidgets.core.WispFileLogic.*;
 
 
@@ -33,13 +37,16 @@ public class ActionJackson extends HttpServlet
 	// These are the varieties of Errors that the user can see when up/down-loading data from the server
 	public enum LoadApiError
 	{
+		AccessDenied,
 		CodeFormatError,
+		InsecureConnection,
 		IncludeArgError,
-		MailboxError,
+		MailboxUploadError,
 		BlobStoreError,
 		ReservedNameError,
 		MissingWidgetError,
 		NoSharedUserDataError,
+		GranularPermUploadError,
 		UploadSizeError;
 	}
 
@@ -60,50 +67,108 @@ public class ActionJackson extends HttpServlet
 		}
 	}
 	
-	interface WidgetServlet
+
+	// Gotcha : I was planning to make this a shared base class for both the pull and push Servlets,
+	// but HttpServlets are reused by app server!
+	// May 2025 security panic - I was reviewing this code, and realized it did not call the AuthLogic.getPermLevel
+	// method to confirm the user had required Admin level permissions!
+	// However, the point is that here there is no distinction between the owner and the accessor -
+	// These scripts always refer only to the owner's widgets.
+	// Admin users simply grab the token config of the respective users
+	private static class UserScriptInfo 
 	{
-		default boolean checkAccess(ArgMap innmap)
+		// ArgMap version of data in request
+		final ArgMap _inputMap;
+
+		final WidgetItem _dbItem;
+
+		UserScriptInfo(HttpServletRequest request, HttpServletResponse response) throws LoaderException
 		{
-			String username = innmap.getStr(CoreUtil.USER_NAME_COOKIE, "");
-			String acchash = innmap.getStr(CoreUtil.ACCESS_HASH_COOKIE, "");
-			return AuthLogic.checkCredential(username, acchash);
-		}
-	
-		default boolean okaySecure(HttpServletRequest req)
-		{
-			return req.isSecure();
-		}
-		
-		default boolean checkAccessRespond(HttpServletResponse resp, ArgMap innmap) throws IOException
-		{
-			if(checkAccess(innmap))
-				{ return true; }
-			
-			String mssg = "Access denied!\n";
-			resp.getOutputStream().write(mssg.getBytes());
-			resp.getOutputStream().close();
-			return false;
-		}
-		
-		default boolean checkSecureRespond(HttpServletRequest req, HttpServletResponse resp) throws IOException
-		{
-			if(okaySecure(req))
-				{ return true; }
-						
-			String mssg = "This operation must use a secure connection!!\n";
-			resp.getOutputStream().write(mssg.getBytes());
-			resp.getOutputStream().close();
-			return false;
+			if(!request.isSecure())
+			{
+				String mssg = "User Script operations must all use secure connections";
+				throw new LoaderException(LoadApiError.InsecureConnection, mssg);
+			}
+
+			_inputMap = WebUtil.getArgMap(request);
+
+			String username = _inputMap.getStr(CoreUtil.USER_NAME_COOKIE, "");
+			String acchash = _inputMap.getStr(CoreUtil.ACCESS_HASH_COOKIE, "");
+
+			// See note above - this is both accessor and widget owner
+			Optional<WidgetUser> owner = Optional.empty();
+
+			if(AuthLogic.checkCredential(username, acchash))
+			{ 
+				owner = WidgetUser.softLookup(username);
+			}
+
+			if(!owner.isPresent())
+			{
+				// We don't differentiate between "user not found" and "bad authentication" here
+				String mssg = "Access Denied";
+				throw new LoaderException(LoadApiError.AccessDenied, mssg);
+			}
+
+			// May 2025 - ban all User Script operations for shared user
+			// Use a different method for these use cases
+			if(owner.get() == WidgetUser.getSharedUser())
+			{
+				String mssg = "No user script operations are allowed for the shared user";
+				throw new LoaderException(LoadApiError.NoSharedUserDataError, mssg);
+			}
+
+			String widgetname = _inputMap.getStr("widget");
+
+			Util.massert(widgetname.strip().toLowerCase().equals(widgetname),
+				"Badly formatted widget name %s, should be no-whitespace, lowercase, uploader script should catch this...!", widgetname);
+
+			// Note that we do not check if this exists here
+			_dbItem = new WidgetItem(owner.get(), widgetname);
 		}
 	}
+
+
+	// This just downloads the SQLite file to the user
+    @WebServlet(urlPatterns = "/userpull")
+	public static class Pull2You extends HttpServlet {
+		
+
+		protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException 
+		{
+			try
+				{ doGetSub(request, response); }
+			catch (LoaderException loadex)
+				{ sendErrorResponse(response, loadex); }
+		}
+
+		private void doGetSub(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, LoaderException {
+						
+			var info = new UserScriptInfo(request, response);
+			
+			if(!info._dbItem.dbFileExists())
+			{
+				String extra = Util.sprintf("No Widget DB found for %s, you must create in Admin Console first", info._dbItem);
+				throw new LoaderException(LoadApiError.MissingWidgetError, extra);
+			}
+			
+			// This should send the file to browser
+			FileUtils.in2out(new FileInputStream(info._dbItem.getLocalDbFile()), response.getOutputStream());
+			response.getOutputStream().close();
+		}
+	}
+
 	
+
+	// This is a user push servlet
+	// It can be either a .Zip file (code) or a SQLite file
+    @WebServlet(urlPatterns = "/userpush")
 	@MultipartConfig(
 		fileSizeThreshold=10_000_000,
 		location=SERVLET_PART_SAVE_DIR,
 		maxFileSize=10_000_000,
-		maxRequestSize=10_000_000
-	)
-	public static class Push2Me extends HttpServlet implements WidgetServlet
+		maxRequestSize=10_000_000)
+	public static class Push2Me extends HttpServlet
 	{
 
 		protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException 
@@ -113,51 +178,27 @@ public class ActionJackson extends HttpServlet
 			catch (LoaderException loadex) 
 				{ sendErrorResponse(response, loadex); }
 		}
-
 		
 		protected void doPostSub(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, LoaderException 
 		{
 
-			ArgMap innmap = WebUtil.getArgMap(request);
+			var info = new UserScriptInfo(request, response);
 			
-			if(!checkSecureRespond(request, response))
-				{ return; }
-
-			if(!checkAccessRespond(response, innmap))
-				{ return; }
-			
-			
-			WidgetUser wuser = WidgetUser.valueOf(innmap.getStr("username"));
-			String widgetname = innmap.getStr("widget");
-			UploadFileType filetype = UploadFileType.valueOf(innmap.getStr("filetype"));
-
-			Util.massert(widgetname.strip().toLowerCase().equals(widgetname),
-				"Badly formatted widget name %s, should be no-whitespace, lowercase, uploader script should catch this...!", widgetname);
+			UploadFileType filetype = UploadFileType.valueOf(info._inputMap.getStr("filetype"));
+			WidgetItem dbitem = info._dbItem;
 
 
-			if(wuser == WidgetUser.getSharedUser() && filetype == UploadFileType.sqlite)
-			{
-				String extra = "We do not allow upload of SHARED user data, for safety reasons, please run scripts to update data on server";
-				throw new LoaderException(LoadApiError.NoSharedUserDataError, extra);
-			}
-
-			if(MailSystem.MAILBOX_WIDGET_NAME.equals(widgetname))
-			{
-				String extra = "You cannot upload the Widget mailbox DB, only download it. This is to prevent abuse of email system";
-				throw new LoaderException(LoadApiError.MailboxError, extra);
-			}
-
-			if(!(new WidgetItem(wuser, widgetname)).dbFileExists())
+			if(!dbitem.dbFileExists())
 			{
 				// Some code-only Widget directories can be uploaded without creating the widget, notably "base"
-				boolean auxokay = filetype.isZip() && CoreUtil.AUX_CODE_OKAY.contains(widgetname);
+				boolean auxokay = filetype.isZip() && CoreUtil.AUX_CODE_OKAY.contains(dbitem.theName);
 
 				// Special directories that are loading as-if they are admin widgets
-				boolean special = PluginCentral.getGeneralPlugin().getUserUploadRemap(wuser).containsKey(widgetname);
+				boolean special = PluginCentral.getGeneralPlugin().getUserUploadRemap(dbitem.theOwner).containsKey(dbitem.theName);
 
 				if(!(auxokay || special))
 				{
-					String extra = Util.sprintf("No widget %s found for user %s, you must create in Admin Console first", widgetname, wuser);
+					String extra = Util.sprintf("No widget DB found for %s, you must create in Admin Console first", dbitem);
 					throw new LoaderException(LoadApiError.MissingWidgetError, extra);
 				}
 			}
@@ -165,7 +206,7 @@ public class ActionJackson extends HttpServlet
 
 			int mc = 0;
 			String s = "";
-			CodeLocator codeloc = new CodeLocator(wuser, widgetname, filetype);
+			CodeLocator codeloc = new CodeLocator(dbitem.theOwner, dbitem.theName, filetype);
 			
 			{
 				List<Part> payload = Util.filter2list(request.getParts(), p -> p.getName().equals("payload"));
@@ -182,7 +223,7 @@ public class ActionJackson extends HttpServlet
 			if(filetype.isZip())
 			{
 				CodeExtractor codex = codeloc.getExtractor();
-				if(!isCodeFormatExempt(wuser))
+				if(!isCodeFormatExempt(dbitem.theOwner))
 					{ codex.checkCodeFormat(codeloc); }
 
 				// Snapshot of the directory before the code clean
@@ -200,37 +241,35 @@ public class ActionJackson extends HttpServlet
 			
 			} else if(filetype == UploadFileType.sqlite) {
 				
-				checkDbUploadOkay(widgetname);
 
-				WidgetItem witem = new WidgetItem(wuser, widgetname);
+				// This throws LoaderException if appropriate
+				(new DbUploadChecker(codeloc.getCodeFile(), dbitem)).detectUploadError();
+
+				s += "Saving DB file for widget " + dbitem + "\n";
 				
-				s += "Saving DB file for widget " + witem + "\n";
-				
-				if(witem.getLocalDbFile().exists())
+				if(dbitem.getLocalDbFile().exists())
 				{
-					witem.getLocalDbFile().delete();
-					s += Util.sprintf("Deleted old DB file %s\n", witem.getLocalDbFile());
+					dbitem.getLocalDbFile().delete();
+					s += Util.sprintf("Deleted old DB file %s\n", dbitem.getLocalDbFile());
 				}
 				
 				// Now move the file.
 				{
 					File src = codeloc.getCodeFile();
-					File dst = witem.getLocalDbFile();
+					File dst = dbitem.getLocalDbFile();
 					src.renameTo(dst);
 					s += Util.sprintf("Copied upload file to location %s, size is %d\n", dst.toString(), dst.length());
 				}
 
 				// Rectify the Aux-Role table(s)
-				{
-					String message = GranularPerm.rectifyAuxRoleSetup(witem);
-					s += message;
-				}
+				// May 2025 - this is just a bit too scary, let's block upload instead
+				// The right way to do this is to rectify before moving the DB into location
+				// String message = GranularPerm.rectifyAuxRoleSetup(witem);
+				// s += message;
 
 				
 				// Now rebuild the JS code.
-				List<String> result = createCode4Widget(witem);
-				for(String r : result)
-					{ s += r; }
+				List<String> result = dbitem.createJsCode();
 			}
 						
 			response.getOutputStream().write(s.getBytes());
@@ -254,6 +293,8 @@ public class ActionJackson extends HttpServlet
 		response.getOutputStream().close();
 	}
 	
+	// This is mis-named, it should be AssetLocator or something like that
+	// It can be a SQLite file!
 	static class CodeLocator
 	{
 		final WidgetUser _theUser;
@@ -275,7 +316,7 @@ public class ActionJackson extends HttpServlet
 				Util.massert(checkset.size() == 1,
 					"Have widget name %s but file type %s", wname, uftype);
 			}
-		} 
+		}
 		
 		Optional<WidgetItem> getCodeTarget()
 		{
@@ -296,7 +337,7 @@ public class ActionJackson extends HttpServlet
 
 		File getCodeFile()
 		{
-			return new File(getCodePath());	
+			return new File(getCodePath());
 		}
 		
 		String getCodePath()
@@ -652,54 +693,7 @@ public class ActionJackson extends HttpServlet
 	}
 	
 
-	static void checkDbUploadOkay(String widgetname)
-	{
-		String checkname = widgetname.toLowerCase().trim();
 
-		if(AdvancedUtil.RESERVED_WIDGET_NAMES.contains(widgetname))
-		{
-			String mssg = String.format("The Widget %s is a special system widget, it cannot be uploaded", widgetname);
-			throw new RuntimeException(mssg);
-		}
-	}
-
-	public static class Pull2You extends HttpServlet implements WidgetServlet {
-		
-
-		protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException 
-		{
-			try
-				{ doGetSub(request, response); }
-			catch (LoaderException loadex)
-				{ sendErrorResponse(response, loadex); }
-		}
-
-		private void doGetSub( HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, LoaderException {
-			
-			ArgMap innmap = WebUtil.getArgMap(request);
-			
-			if(!checkSecureRespond(request, response))
-				{ return; }
-
-			if(!checkAccessRespond(response, innmap))
-				{ return; }
-			
-			WidgetUser wuser = WidgetUser.valueOf(innmap.getStr("username"));
-			String widgetname = innmap.getStr("widget");
-			WidgetItem witem = new WidgetItem(wuser, widgetname);
-			
-			if(!witem.dbFileExists())
-			{
-				String extra = Util.sprintf("No widget %s found for user %s, you must create in Admin Console first", widgetname, wuser);
-				throw new LoaderException(LoadApiError.MissingWidgetError, extra);
-			}
-			
-			// This should send the file to browser
-			FileUtils.in2out(new FileInputStream(witem.getLocalDbFile()), response.getOutputStream());
-			response.getOutputStream().close();
-
-		}
-	}
 
 
 
@@ -715,8 +709,62 @@ public class ActionJackson extends HttpServlet
 			theError = error;
 			extraInfo = extra;
 		}
+	}
 
 
+	// Logic related to checking the DB that gets uploaded to the server
+	// In time this will need to become quite sophisticated, as misconfigured DBs could
+	// cause problems on the server
+	public static class DbUploadChecker
+	{
+
+		private File _dbFile;
+
+		private final WidgetItem _targetItem;
+
+		public DbUploadChecker(File dbfile, WidgetItem target)
+		{
+			_dbFile = dbfile;
+
+			_targetItem = target;
+		}
+
+		private ConnectionSource getConn()
+		{
+			return new ScrapDb(_dbFile);
+		}
+
+		public void detectUploadError() throws LoaderException
+		{
+			if(AdvancedUtil.RESERVED_WIDGET_NAMES.contains(_targetItem.theName))
+			{
+				String mssg = String.format("The Widget %s is a special system widget, it cannot be uploaded", _targetItem.theName);
+				throw new LoaderException(LoadApiError.ReservedNameError, mssg);
+			}
+
+			if(MailSystem.MAILBOX_WIDGET_NAME.equals(_targetItem.theName))
+			{
+				String extra = "You cannot upload the Widget mailbox DB, only download it. This is to prevent abuse of email system";
+				throw new LoaderException(LoadApiError.MailboxUploadError, extra);
+			}
+
+
+			Set<String> tableset = CoreUtil.getLiteTableNameSet(getConn());
+
+			for(String tablename : tableset)
+			{
+				Map<String, ExchangeType> extmap = LiteTableInfo.loadExchangeTypeMap(getConn(), tablename);
+
+				// May 2025 - users cannot upload DB's that contain Group Allow data
+				// I could just blow away the AUX GROUP tables and rebuild them
+				if(extmap.containsKey(CoreUtil.GROUP_ALLOW_COLUMN))
+				{
+					String mssg = "Users cannot upload DBs that contain GROUP ALLOW data. " +
+						" This is to preserve the integrity of the Group Allow indexes";
+					throw new LoaderException(LoadApiError.GranularPermUploadError, mssg);
+				}
+			}
+		}
 	}
 }
 

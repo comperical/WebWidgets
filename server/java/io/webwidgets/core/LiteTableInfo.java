@@ -168,29 +168,47 @@ public class LiteTableInfo
 		return new LiteTableInfo(new WidgetItem(owner, wname), table);
 	}
 
+	// TODO: this should really just be done in the constructor
+	// I like the general pattern of construct/configure/load, but in this case it's probably
+	// not necessary
 	public void runSetupQuery()
 	{
+		_exTypeMap = loadExchangeTypeMap(dbTabPair._1, dbTabPair._2);
+
+		_isBlobStore = BlobDataManager.isBlobStorageTable(_exTypeMap.keySet());
+
+		// TODO: reintroduce this assertion, my old DB tables are not configured properly
+		boolean isdcb = dbTabPair._1.theOwner.toString().equals("dburfoot");
+		Util.massert(isdcb || _exTypeMap.keySet().iterator().next().toLowerCase().equals(CoreUtil.STANDARD_ID_COLUMN_NAME),
+				"Expect first column to be ID, but got %s, for %s", _exTypeMap.keySet(), dbTabPair);
+	}
+
+	static LinkedHashMap<String, ExchangeType> loadExchangeTypeMap(ConnectionSource connsrc, String tablename)
+	{
+		var extmap = new LinkedHashMap<String, ExchangeType>();
+
 		try {
-			Connection conn = dbTabPair._1.createConnection();
-			
-			String prepsql = Util.sprintf("SELECT * FROM %s LIMIT 1", dbTabPair._2);
-			
+			Connection conn = connsrc.createConnection();
+			String prepsql = Util.sprintf("SELECT * FROM %s LIMIT 1", tablename);
 			PreparedStatement pstmt = conn.prepareStatement(prepsql);
-			
 			ResultSet rset = pstmt.executeQuery();
-			
 			ResultSetMetaData rsmd = rset.getMetaData();
-			
-			popColTypeMap(rsmd);
-						
+
+			for(int ci : Util.range(rsmd.getColumnCount()))
+			{
+				String colname = rsmd.getColumnName(ci+1);
+				String classname = rsmd.getColumnTypeName(ci+1);
+				ExchangeType etype = ExchangeType.lookupFromSql(classname);
+				extmap.put(colname, etype);
+			}
+
 			conn.close();
 
-			_isBlobStore = BlobDataManager.isBlobStorageTable(_exTypeMap.keySet());
-			
 		} catch (Exception ex) {
-			
 			throw new RuntimeException(ex);
 		}
+
+		return extmap;
 	}
 
 	private void odRunSetup()
@@ -225,24 +243,7 @@ public class LiteTableInfo
 		return this;
 	}
 	
-	private void popColTypeMap(ResultSetMetaData rsmd) throws SQLException
-	{
-		for(int ci : Util.range(rsmd.getColumnCount()))
-		{
-			String colname = rsmd.getColumnName(ci+1);
-			
-			String classname = rsmd.getColumnTypeName(ci+1);
-			
-			ExchangeType etype = ExchangeType.lookupFromSql(classname);
 
-			_exTypeMap.put(colname, etype);
-		}
-
-		// TODO: reintroduce this assertion, my old DB tables are not configured properly
-		boolean isdcb = dbTabPair._1.theOwner.toString().equals("dburfoot");
-		Util.massert(isdcb || _exTypeMap.keySet().iterator().next().toLowerCase().equals(CoreUtil.STANDARD_ID_COLUMN_NAME),
-				"Expect first column to be ID, but got %s, for %s", _exTypeMap.keySet(), dbTabPair);
-	}
 	
 	public WidgetItem getWidget()
 	{

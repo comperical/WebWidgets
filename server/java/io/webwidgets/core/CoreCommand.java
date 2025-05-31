@@ -620,8 +620,6 @@ public class CoreCommand
 		}
 	}
 
-
-
 	
 	public static class CheckUserPassword extends ArgMapRunnable
 	{
