@@ -11,14 +11,13 @@ import net.danburfoot.shared.Util.*;
 import net.danburfoot.shared.CollUtil.*;
 
 public class ArgMap extends TreeMap<String, String>
-{ 		
+{
 	// T/F if the object can be modified
 	private boolean _mutableMode = true;
 	
 	protected String subGetStr(String pname, List<? extends Object> deflist)
 	{
-		Util.massert(deflist.size() <= 1, "Too many optargs: %s", deflist);	
-		
+		Util.massert(deflist.size() <= 1, "Too many optargs: %s", deflist);
 		
 		if(!containsKey(pname))
 		{
@@ -32,10 +31,6 @@ public class ArgMap extends TreeMap<String, String>
 		}
 		
 		String mresult = get(pname);
-		
-		// This line doesn't work well because of intensive use of 
-		// ArgMap in DbUtil.QueryCollector
-		// Util.massert(mresult != null, "Null value found for key %s", pname);
 		
 		return mresult;
 	}
@@ -77,66 +72,62 @@ public class ArgMap extends TreeMap<String, String>
 	public double getSingleDbl()
 	{
 		return Double.valueOf(getSingleStr());	
-	}	
+	}
 	
 	public Integer getInt(String pname)
 	{
-		return Integer.valueOf(subGetStr(pname, Util.listify()));
+		return integerOrNull(subGetStr(pname, Util.listify()));
 	}
 	
 	public Optional<Integer> optGetInt(String pname)
 	{
-		return containsKey(pname) ? Optional.of(getInt(pname)) : Optional.empty();	
+		return containsKey(pname) ? Optional.of(getInt(pname)) : Optional.empty();
 	}
 	
 	public Integer getInt(String pname, Integer defval)
 	{
 		String sgs = subGetStr(pname, Util.listify(defval));
-		
-		return (sgs == null ? null : Integer.valueOf(sgs));
-	}	
+		return integerOrNull(sgs);
+	}
 	
 	public Long getLong(String pname)
 	{
-		return Long.valueOf(subGetStr(pname, Util.listify()));
-	}		
+		return longOrNull(subGetStr(pname, Util.listify()));
+	}
 	
 	public Long getLong(String pname, Long defval)
 	{
 		String sgs = subGetStr(pname, Util.listify(defval));
-		
-		return (sgs == null ? null : Long.valueOf(sgs));
-	}		
+		return longOrNull(sgs);
+	}
 	
 	public Double getDbl(String pname)
 	{
-		return Double.valueOf(subGetStr(pname, Util.listify()));
-	}		
+		return doubleOrNull(subGetStr(pname, Util.listify()));
+	}
 	
 	public Double getDbl(String pname, Double defval)
 	{
 		String sgs = subGetStr(pname, Util.listify(defval));
-		
-		return (sgs == null ? null : Double.valueOf(sgs));
-	}		
+		return doubleOrNull(sgs);
+	}
 	
 	public Boolean getBit(String pname)
 	{
-		return Boolean.valueOf(subGetStr(pname, Util.listify()));	
-	}	
+		return booleanOrNull(subGetStr(pname, Util.listify()));
+	}
 	
 	public Boolean getBit(String pname, Boolean defval)
 	{
-		String sgs = subGetStr(pname, Util.listify(defval));		
-		
-		return (sgs == null ? null : Boolean.valueOf(sgs));
-	}		
+		String sgs = subGetStr(pname, Util.listify(defval));
+		return booleanOrNull(sgs);
+	}
 	
 	// Required to be present, Assume string name is lowercase version of enum name
 	public <T> T getEnum(T[] options)
 	{
 		String ename = options[0].getClass().getSimpleName().toLowerCase();
-		return getEnum(ename, options);		
+		return getEnum(ename, options);
 	}
 	
 	// Assume string name is lowercase version of enum name
@@ -144,13 +135,13 @@ public class ArgMap extends TreeMap<String, String>
 	{
 		String ename = options[0].getClass().getSimpleName().toLowerCase();
 		return getEnum(ename, options, defval);	
-	}	
+	}
 	
 	// Required to be present.
 	public <T> T getEnum(String ename, T[] options)
 	{
 		return dumbEnumLookup(subGetStr(ename, Util.listify()), options);
-	}	
+	}
 	
 	// Error if we have a key present, but it doesn't match any of the 
 	public <T> T getEnum(String ename, T[] options, T defval)
@@ -343,8 +334,8 @@ public class ArgMap extends TreeMap<String, String>
 	{
 		Util.massert(_mutableMode, "This ArgMap is not mutable");
 		
-		put(pname, val);	
-	}	
+		put(pname, val);
+	}
 	
 	
 	public void setEnumDefault(Enum def)
@@ -364,14 +355,34 @@ public class ArgMap extends TreeMap<String, String>
 	public void setdefault(String key, Integer val)
 	{
 		setdefault(key, ""+val);
-	}	
+	}
 	
 	// Logging ArgMap overrides to return true.
 	public boolean isLogMode()
 	{
-		return false;	
+		return false;
 	}
 	
+
+	private static Boolean booleanOrNull(String s)
+	{ return parseOrNull(s, Boolean::valueOf); }
+
+	private static Integer integerOrNull(String s)
+	{ return parseOrNull(s, Integer::valueOf); }
+
+	private static Long longOrNull(String s)
+	{ return parseOrNull(s, Long::valueOf); }
+
+	private static Double doubleOrNull(String s)
+	{ return parseOrNull(s, Double::valueOf); }
+
+	private static <T> T parseOrNull(String s, java.util.function.Function<String, T> parser) 
+	{
+		return (s == null) ? null : parser.apply(s);
+	}
+
+
+
 	
 	public static class LoggingArgMap extends ArgMap
 	{
