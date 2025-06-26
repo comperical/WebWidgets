@@ -152,8 +152,7 @@ function redisplay()
 <td><b><%= table %></b></td>
 <td>
 
-<a href="/u/gentemplate?widgetname=<%= selectedItem.theName %>&tablename=<%= table %>" download="<%= table %>.wisp">
-<img src="/u/shared/image/downicon.png" style="height: 18px; width: 18px" /></a>
+<a href="/u/gentemplate?widgetname=<%= selectedItem.theName %>&tablename=<%= table %>" download="<%= table %>.wisp"><i class="fa-solid fa-down-long fa-lg"></i></a>
 
 
 </td>

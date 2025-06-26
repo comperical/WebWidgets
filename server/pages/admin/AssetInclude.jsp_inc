@@ -4,6 +4,9 @@
 
 <link rel="icon" type="image/x-icon" href="/myimages/WWIO_B.png"></link>
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"> </link>
+
+
 <link rel="stylesheet" href="<%= WebUtil.includeCheckRelativePath("/u/shared/css/BasicWidget.css") %>" />
 
 <script src="<%= WebUtil.includeCheckRelativePath("/u/shared/jslib/WidgetMainApi.js") %>"></script>
@@ -12,6 +15,12 @@
 <script src="<%= WebUtil.includeCheckRelativePath("/u/shared/jslib/OptSelector.js") %>"></script>
 <script src="<%= WebUtil.includeCheckRelativePath("/u/shared/jslib/LegacyApi.js") %>"></script>
 
+
+<style>
+.no-underline {
+    text-decoration: none;
+}
+</style>
 
 <%
     {

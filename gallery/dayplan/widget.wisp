@@ -195,8 +195,8 @@ function redisplay()
 		<tr>
 		<th>Desc</th>
 		<th>..</th>
-		<th>EndTime</th>
-		<th>TimeSpent</th>
+		<th>End</th>
+		<th>Time</th>
 		<th>---</th>
 		</tr>
 	`;

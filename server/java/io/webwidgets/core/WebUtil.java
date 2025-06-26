@@ -23,12 +23,6 @@ import io.webwidgets.core.AuthLogic.AuthChecker;
 
 public class WebUtil
 {
-	public static String WWIO_DOMAIN = "webwidgets.io";
-
-	public static String LOCALHOST = "localhost:8080";
-
-	public static String AWS_HOST = "compute.amazonaws.com";
-		
 	public static String LOGIN_RELATIVE_URL = "/u/admin/LogIn.jsp";
 		
 	public static String getUserHomeRelative(WidgetUser wuser)
@@ -89,22 +83,6 @@ public class WebUtil
 		} catch (Exception ex) {
 			throw new RuntimeException("Failed to convert URL " + pageurl + " to valid URI, please use valid URL syntax");
 		}
-	}
-
-	
-	static String getRelativeResource(String fullurl) 
-	{
-		for(String probe : Util.listify(LOCALHOST, AWS_HOST, WWIO_DOMAIN))
-		{
-			int domidx = fullurl.indexOf(probe);
-			if(domidx == -1)
-				{ continue; }
-	
-			return fullurl.substring(domidx + probe.length());
-		}
-		
-		Util.massert(false, "Failed to find domain name in page url %s", fullurl);
-		return null;
 	}
 	
 	public static List<String> getConfigTemplate(WidgetUser wuser)

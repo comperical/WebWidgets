@@ -26,6 +26,8 @@
 
 <script>
 
+const CLOCK_EMOJI = "&#128368;&#65039;";
+
 function deleteItem(killid)
 {
     W.lookupItem("mroutine_log", killid).deleteItem();
@@ -159,7 +161,7 @@ function redisplay()
         <table  class="basic-table" width="30%">
         <tr>
         <th>Name</th>
-        <th>LogTime</th>
+        <th>${CLOCK_EMOJI}</th>
         <th>...</th>
         </tr>
     `;

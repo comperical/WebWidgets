@@ -43,6 +43,14 @@ public class BulkOperation
 
             boolean haveissue = standardCheckForIssue(request, tableInfo, outmap);
 
+
+            // June 2025 - FG tables cannot use bulk operations
+            if(tableInfo.hasGranularPerm())
+            {
+                CallBack2Me.placeFailCode(outmap, FailureCode.NoBulkUpdateGranular);
+                haveissue = true;
+            }
+
             // This sequence of error checking is shared with CallBack2Me, figure out how to share
             Optional<String> emailissue = MailSystem.checkForEmailError(tableInfo, innmap);
             if(emailissue.isPresent())

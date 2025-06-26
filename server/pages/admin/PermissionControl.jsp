@@ -267,9 +267,7 @@ function promptAddPerm(permlevel)
 <td><%= level %></td>
 <td>
 
-<a href="javascript:removePerm('<%= grantee %>')">
-<img src="/u/shared/image/trashbin.png" style="height: 18px; width: 18px" /></a>
-
+<a href="javascript:removePerm('<%= grantee %>')"><i class="fa-solid fa-trash fa-lg"></i></a>
 
 </td>
 </tr>
@@ -282,8 +280,7 @@ function promptAddPerm(permlevel)
 <td><%= selectedPerm.isPublicRead() %></td>
 <td>
 
-<a href="javascript:togglePublicRead()">
-<img src="/u/shared/image/cycle.png" style="height: 18px; width: 18px" /></a>
+<a href="javascript:togglePublicRead()"><i class="fa-solid fa-arrows-spin fa-lg"></i></a>
 
 
 </td>

@@ -224,11 +224,6 @@ function parseCreditData(csvtext)
 
     const converter = function(ppitem)
     {
-        // console.log(ppitem);
-
-        // These are nice ISO time stamps
-        const transact = lookupDayCode(ppitem['Transaction Date']);
-
         const debitinfo = ppitem["Debit"].trim();
         const credtinfo = ppitem["Credit"].trim();
 
@@ -243,7 +238,8 @@ function parseCreditData(csvtext)
         const centamount = (havedebit ? -1 : +1) * Math.round(100 * dollaramount);
 
         return {
-            transact : lookupDayCode(ppitem['Transaction Date']),
+            // These are nice ISO time stamps
+            transact : lookupDayCode(ppitem['Transaction Date'].trim()),
             desc : ppitem['Description'],
             cap1_category : ppitem['Category'],
             centamount : centamount,

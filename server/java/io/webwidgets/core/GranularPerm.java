@@ -313,7 +313,8 @@ public class GranularPerm
             return Optional.of("This table has granular permissions; user must be logged in to update");
         }
 
-        // TODO: implementing this for testing, not sure if this is how I actually want to do it
+        // It is not clear if this is the right thing to do here, but it seems consistent with
+        // how the rest of the system works
         if(user.get().isAdmin())
         {
             return Optional.empty();

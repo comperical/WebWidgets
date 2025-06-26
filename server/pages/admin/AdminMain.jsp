@@ -204,10 +204,10 @@ function deleteWidget(widgetname)
                             <th>Name</th>
                             <th>#Tables</th>
                             <th>Size</th>
-                            <th>Ops</th>
+                            <th></th>
                         </tr>
                       </thead>
-                      <tbody>                 
+                      <tbody>
 <% 
 
     for(WidgetItem witem : widgetList)
@@ -231,7 +231,7 @@ function deleteWidget(widgetname)
 <td><b><%= witem.theName %></b></td>
 <td><%= tableset.size() %></td>
 <td><%= sizestr %></td>
-<td width="24%">
+<td width="15%">
 
 <!-- TODO: rebuild the InspectTable tool -->
 
@@ -242,8 +242,7 @@ function deleteWidget(widgetname)
 
 %>
 
-<a href="<%= widgetlink %>">
-<img src="/u/shared/image/chainlink.png" style="height: 18px; width: 18px" /></a>
+<a class="no-underline" href="<%= widgetlink %>"><i class="fa-solid fa-link"></i></a>
 
 <% } else { %>
 
@@ -256,9 +255,7 @@ function deleteWidget(widgetname)
 &nbsp;
 
 
-<a href="javascript:deleteWidget('<%= witem.theName %>')">
-<img src="/u/shared/image/remove.png" style="height: 18px; width: 18px"  /></a>
-
+<a href="javascript:deleteWidget('<%= witem.theName %>')"><i class="fa-solid fa-trash"></i></a>
 
 </td>
 </tr>

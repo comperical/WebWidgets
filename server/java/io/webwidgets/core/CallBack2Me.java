@@ -29,9 +29,11 @@ public class CallBack2Me extends HttpServlet
 		WidgetNotFound("The widget could not be found"),
 		GranularPermission("This user does not have granular permission to modify or create this record"),
 		GroupAllowJsonError("The JSON data in the Group Allow column is misformatted"),
+		NoBulkUpdateGranular("Bulk operations cannot be used on tables with granular permissions"),
 		AccessDenied("You do not have permission to modify this widget's data"),
 		EmailProblem("There is a problem with this email"),
 		NumberConversionError("There was a problem converting data into numeric types"),
+
 		// For this one, the exception stack trace should be shown, nothing else.
 		OtherError("-------"),
 		UserLoggedOut("You have been logged out, please refresh the page to log in again");
