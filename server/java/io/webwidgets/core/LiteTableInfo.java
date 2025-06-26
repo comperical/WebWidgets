@@ -120,7 +120,7 @@ public class LiteTableInfo
 			return ob;
 		}
 
-		Object convertFromArgMap(ArgMap recmap, String colname)
+		public Object convertFromArgMap(ArgMap recmap, String colname)
 		{
 			if(isJsInteger())
 				{ return recmap.getInt(colname); }

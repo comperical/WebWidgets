@@ -292,6 +292,9 @@ __bulkOpSub : function(tablename, idlist, isdelete, options)
     xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) { // Request is done
             if (xhr.status === 200) {
+
+                W.__checkAjaxResponse("bulk_op", idlist, xhr.responseText);
+
                 const result = JSON.parse(xhr.responseText);
                 const message = result['user_message'];
                 console.log(message);
@@ -770,9 +773,15 @@ __checkAjaxResponse : function(op, itemid, rtext)
     
     if(response.status_code == "okay")
     {
-        const logmssg = `AjaxOp for itemid ${itemid} worked`;
-        console.log(logmssg);
-        return;     
+        // For Bulk updates, this code gets called, but itemid is actually a list/object
+        // The console log happens in the Bulk update code, not here
+        if(typeof(itemid) == 'number')
+        {
+            const logmssg = `AjaxOp for itemid ${itemid} worked`;
+            console.log(logmssg);
+        }
+
+        return;
     }
     
     // Something went wrong, try to give user as informative a message as possible.
@@ -796,7 +805,7 @@ __checkAjaxResponse : function(op, itemid, rtext)
     var errmssg = `Problem with sync operation: ${fcode} \n ${umssg}`;
     
     if(einfo.length > 0) {
-        errmssg += `\nAdditional info:\n${einfo}`;      
+        errmssg += `\nAdditional info:\n${einfo}`;
     }
     
     massert(false, errmssg);
