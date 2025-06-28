@@ -3,13 +3,13 @@ package io.webwidgets.core;
 import java.io.*; 
 import java.util.*; 
 import java.sql.*; 
+import org.json.simple.*;
 
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.function.Consumer;
 
 import javax.servlet.http.HttpServletRequest;
-import org.json.simple.JSONObject;
 
 
 import net.danburfoot.shared.Util;
@@ -361,6 +361,8 @@ public class LiteTableInfo
 		return bigcol.getArgMapList();
 	}
 
+
+
 	private List<String> composeJsonRepList(String querytarget)
 	{
 		
@@ -430,6 +432,34 @@ public class LiteTableInfo
 		reclist.add("// " + LOAD_SUCCESS_TAG);
 		
 		return reclist;
+	}
+
+    @SuppressWarnings("unchecked")
+	JSONArray convertIntoArray(String querytarget)
+	{
+		JSONArray result = new JSONArray();
+		List<ArgMap> recordlist = loadRecordList(querytarget);
+		for(ArgMap amap : recordlist)
+			{ result.add(convertRecord2Json(amap)); }
+
+		return result;
+	}
+
+    @SuppressWarnings("unchecked")
+	private JSONObject convertRecord2Json(ArgMap amap)
+	{
+        JSONObject ob = new JSONObject();
+
+        // The point of jumping through all these hoops is to ensure
+        // that the resulting JSON has as much typing as JSON can have, i.e.
+        // if it's a number, you don't need to quote it
+        for(Map.Entry<String, ExchangeType> pr : _exTypeMap.entrySet())
+        {
+            Object typed = pr.getValue().convertFromArgMap(amap, pr.getKey());
+            ob.put(pr.getKey(), typed);
+        }
+
+        return ob;
 	}
 	
 	// Return the JSON-valid representation of the value in the given column

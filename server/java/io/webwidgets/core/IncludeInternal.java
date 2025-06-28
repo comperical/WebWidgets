@@ -27,14 +27,7 @@ import io.webwidgets.core.LiteTableInfo.*;
 public class IncludeInternal
 {
 
-    // Internal data serve
-    // This is a way of pulling in the JSON data for a tag using a separate <script src="...."> tag
-    @WebServlet(urlPatterns = "/directload") 
-    public static class DirectJsonLoader extends HttpServlet {
-
-        public DirectJsonLoader() {
-            super();
-        }
+    public static abstract class JsonLoaderBase extends HttpServlet {
 
         protected void doGet(HttpServletRequest request, HttpServletResponse response)  throws ServletException, IOException
         {
@@ -47,7 +40,7 @@ public class IncludeInternal
 
             Util.massert(dargmap != null, "Failed to parse DARG map with query string %s", request.getQueryString());
 
-            var directinc = new DirectLoadInclude(dargmap, AuthLogic.getLoggedInUser(request));
+            var directinc = new DirectLoadInclude(dargmap, AuthLogic.getLoggedInUser(request), simpleMode());
 
             if(!directinc.sourceItem.dbFileExists())
             {
@@ -125,6 +118,7 @@ public class IncludeInternal
             }
         }
 
+
         private static long generateContentHash(byte[] content)
         {
             var crc = new java.util.zip.CRC32();
@@ -136,7 +130,31 @@ public class IncludeInternal
         {
             return String.format("\"%d::%d\"", modtime, conhash);
         }
+
+        public abstract boolean simpleMode();
     }
+
+
+
+
+    // Internal data serve
+    // This is a way of pulling in the JSON data for a tag using a separate <script src="...."> tag
+    @WebServlet(urlPatterns = "/directload")
+    public static class DirectJsonLoader extends JsonLoaderBase {
+
+        @Override
+        public boolean simpleMode() { return false; }
+    }
+
+    // This servlet just responds with raw JSON data, nothing fancy
+    // Everything else is the same
+    @WebServlet(urlPatterns = "/simpleload")
+    public static class SimpleJsonLoader extends JsonLoaderBase {
+
+        @Override
+        public boolean simpleMode() { return true; }
+    }
+
 
 
 
@@ -147,7 +165,11 @@ public class IncludeInternal
 
         public final Optional<WidgetUser> pageAccessor;
 
-        private DirectLoadInclude(Map<DataIncludeArg, String> amap, Optional<WidgetUser> pageacc)
+        // If in simple mode, send the JSON into this container
+        // If this is null, we're in standard mode, otherwise, simple model
+        private final JSONObject _simpleModeOb;
+
+        private DirectLoadInclude(Map<DataIncludeArg, String> amap, Optional<WidgetUser> pageacc, boolean simple)
         {
             super(amap);
 
@@ -160,12 +182,19 @@ public class IncludeInternal
             sourceItem = new WidgetItem(srcuser, amap.get(DataIncludeArg.widgetname));
 
             pageAccessor = pageacc;
+
+            _simpleModeOb = simple ? new JSONObject() : null;
         }
 
         @Override
         protected boolean shouldPerformInclude(boolean global)
         {
             return false;
+        }
+
+        public boolean isStandardMode()
+        {
+            return _simpleModeOb == null;
         }
 
         @Override
@@ -193,6 +222,7 @@ public class IncludeInternal
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         String composeScriptInfo()
         {
             // This should be redundant at this point, I have already checked it
@@ -231,133 +261,47 @@ public class IncludeInternal
                 }
 
 
-                // dogenerate=false
-                CodeGenerator.maybeUpdateCode4Table(LTI, false);
-
-                Optional<File> jsfile = LTI.findAutoGenFile();
-                Util.massert(jsfile.isPresent(),
-                    "AutoGen JS file not present even after we asked to create it if necessary!!!");
-
-                var autogen = FileUtils.getReaderUtil().setFile(jsfile.get()).setTrim(false).readLineListE();
-                reclist.addAll(autogen);
-
-                reclist.addAll(LTI.composeDataRecSpool(_base2Target.get(onetab)));
-
-                // If the user has read-only access to the table, record that info
-                if(!checker.allowWrite())
+                if(isStandardMode())
                 {
+                    // dogenerate=false
+                    CodeGenerator.maybeUpdateCode4Table(LTI, false);
+
+                    Optional<File> jsfile = LTI.findAutoGenFile();
+                    Util.massert(jsfile.isPresent(),
+                        "AutoGen JS file not present even after we asked to create it if necessary!!!");
+
+                    var autogen = FileUtils.getReaderUtil().setFile(jsfile.get()).setTrim(false).readLineListE();
+                    reclist.addAll(autogen);
+
+                    reclist.addAll(LTI.composeDataRecSpool(_base2Target.get(onetab)));
+
+                    // If the user has read-only access to the table, record that info
+                    if(!checker.allowWrite())
+                    {
+                        reclist.add("");
+                        reclist.add("// table is in read-only access mode");
+                        reclist.add(String.format("W.__readOnlyAccess.push(\"%s\");", onetab));
+                        reclist.add("");
+                    }
+
+                    if(coreIncludeScriptTag())
+                    {
+                        reclist.add("</script>");
+                    }
+
                     reclist.add("");
-                    reclist.add("// table is in read-only access mode");
-                    reclist.add(String.format("W.__readOnlyAccess.push(\"%s\");", onetab));
                     reclist.add("");
+
+
+                } else {
+
+                    // This line is a mirror of LTI.composeDataRecSpool(....) above
+                    JSONArray result = LTI.convertIntoArray(_base2Target.get(onetab));
+                    _simpleModeOb.put(onetab, result);
                 }
-
-                if(coreIncludeScriptTag())
-                {
-                    reclist.add("</script>");
-                }
             }
 
-            reclist.add("");
-            reclist.add("");
-
-            return Util.join(reclist, "\n");
-        }
-
-    }
-
-
-    // Simple load of data in JSON format
-    // No extra stuff
-    @WebServlet(urlPatterns = "/simpleload") 
-    public static class SimpleJsonLoader extends HttpServlet {
-
-        public SimpleJsonLoader() {
-            super();
-        }
-
-        protected void doGet(HttpServletRequest request, HttpServletResponse response)  throws ServletException, IOException
-        {
-            Util.massert(request.isSecure() || AdvancedUtil.allowInsecureConnection(),
-                "This can only be served on a secure connection");
-
-            Optional<WidgetUser> accessor = AuthLogic.getLoggedInUser(request);
-
-            Map<DataIncludeArg, String> dargmap = DataServer.parseQuery2DargMap(request.getQueryString());
-
-            Util.massert(dargmap != null, "Failed to parse DARG map with query string %s", request.getQueryString());
-
-            var directinc = new DirectLoadInclude(dargmap, AuthLogic.getLoggedInUser(request));
-
-            if(!directinc.sourceItem.dbFileExists())
-            {
-                // Convey an error message of file not found
-                Util.massert(false, "The Widget DB %s was not found", directinc.sourceItem);
-            }
-
-            if(!AuthChecker.build().directSetAccessor(accessor).directDbWidget(directinc.sourceItem).allowRead())
-            {
-                // This error could be caused if a Widget developer wrote a page with a cross-load,
-                // but didn't give the accessor read permissions for the page
-                Util.massert(false,
-                    "User %s attempted to load widget %s, but does not have read permissions, this can be caused by cross-loading",
-                    accessor, directinc.sourceItem
-                );
-            }
-
-            {
-                WidgetItem dbitem = directinc.sourceItem;
-                Set<String> colnameset = dbitem.getDbTableNameSet();
-                byte[] content = getJsonContent(dbitem, colnameset).getBytes();
-
-                response.setCharacterEncoding("UTF-8");
-                response.getOutputStream().write(content);
-                response.getOutputStream().close();
-            }
-        }
-
-
-        @SuppressWarnings("unchecked")
-        private String getJsonContent(WidgetItem dbitem, Set<String> tableset)
-        {
-            JSONObject toplevel = new JSONObject();
-
-            for(var table : tableset)
-            {
-                var LTI = new LiteTableInfo(dbitem, table);
-                LTI.runSetupQuery();
-                toplevel.put(table, getSingleTable(LTI));
-            }
-
-            return toplevel.toJSONString();
-        }
-
-        @SuppressWarnings("unchecked")
-        private JSONArray getSingleTable(LiteTableInfo LTI)
-        {
-            Map<String, ExchangeType> extypemap = LTI.getColumnExTypeMap();
-
-            QueryCollector qcol = CoreUtil.fullTableQuery(LTI.dbTabPair._1, LTI.dbTabPair._2);
-
-            JSONArray table = new JSONArray();
-
-            for(ArgMap amap : qcol.recList())
-            {
-                JSONObject ob = new JSONObject();
-
-                // The point of jumping through all these hoops is to ensure
-                // that the resulting JSON has as much typing as JSON can have, i.e.
-                // if it's a number, you don't need to quote it
-                for(Map.Entry<String, ExchangeType> pr : extypemap.entrySet())
-                {
-                    Object typed = pr.getValue().convertFromArgMap(amap, pr.getKey());
-                    ob.put(pr.getKey(), typed);
-                }
-
-                table.add(ob);
-            }
-
-            return table;
+            return isStandardMode() ? Util.join(reclist, "\n") : _simpleModeOb.toString();
         }
     }
 }
