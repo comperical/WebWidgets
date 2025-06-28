@@ -160,6 +160,8 @@ public class LiteTableInfo
 	}
 	
 
+	// TODO: this is a very strange place to put this method, it is really more naturally part of
+	// Callback processor. Also these names are a bit non-standard.
 	public static LiteTableInfo fromArgMap(ArgMap onemap)
 	{
 		WidgetUser owner = WidgetUser.valueOf(onemap.getStr("wowner"));

@@ -101,7 +101,7 @@ public class GranularPerm
     // Full rebuild of the aux group table
     // All data in the aux group is derived from the group allow column in the main table,
     // so doing this is guaranteed not to destroy any data
-    static void rebuildAuxGroupTable(WidgetItem dbitem, String maintable)
+    public static void rebuildAuxGroupTable(WidgetItem dbitem, String maintable)
     {
         Set<String> tableset = dbitem.getDbTableNameSet();
         Util.massert(tableset.contains(maintable),
