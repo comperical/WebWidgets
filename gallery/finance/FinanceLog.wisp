@@ -244,31 +244,6 @@ function updateNoteCategory()
 	redisplay();
 }
 
-// NOte: I don't think I ever do this. Basically not allowed
-function editPurchaseDate()
-{
-	const newdate = prompt("Enter a new purchase date: ");
-	
-	if(newdate)
-	{
-		dcmap = getDayCodeMap();
-		if(!dcmap.hasOwnProperty(newdate))
-		{
-			alert("Improper date format!");
-			return;
-		}
-		
-		// var showitem = getItem2Show()
-		
-		// showitem.setPurchaseDate(newdate);
-		
-		// syncSingleItem(showitem);		
-
-		// redisplay();		
-	}
-}
-
-
 function reDispInspectItem()
 {
 	if(EDIT_STUDY_ITEM == -1)
