@@ -7,10 +7,7 @@
 
 <script>
 
-PLAN_DAY_CODE = getTodayCode();
-
-W.createIndexForTable("day_plan_main", ["day_code"]);
-
+PLAN_DAY_CODE = U.getTodayCode();
 
 
 function doTemplateImport()
@@ -162,13 +159,14 @@ function deleteItem(killid)
 
 function updatePlanDay()
 {
-	PLAN_DAY_CODE = lookupDayCode(getDocFormValue("plan_day_sel"));
+	PLAN_DAY_CODE = U.lookupDayCode(getDocFormValue("plan_day_sel"));
 	redisplay();
 }
 
 function getPlanDayItemList()
 {
-	const itemlist = W.lookupFromIndex("day_plan_main", { "day_code" : PLAN_DAY_CODE.getDateString() });
+	const query = { day_code : PLAN_DAY_CODE.getDateString() }
+	const itemlist = W.lookupFromOdIndex("day_plan_main", query);
 	itemlist.sort(proxySort(dp => [dp.getEndHour()]));
 	return itemlist;
 }
@@ -181,6 +179,39 @@ function getTemplateIdMap()
 }
 
 
+function createRecordBelow(itemid)
+{
+	const newtask = prompt("Activity name: ");
+
+	if(newtask)
+	{
+
+		const copyitem = W.lookupItem("day_plan_main", itemid);
+
+		let endhour = copyitem.getEndHour();
+		let halfhour = copyitem.getHalfHour();
+
+		if(halfhour == 1)
+		{
+			endhour += 1;
+			halfhour = 0;
+		} else {
+			halfhour = 1;
+		}
+
+		const record = {
+			day_code : PLAN_DAY_CODE.getDateString(),
+			end_hour : endhour,
+			half_hour : halfhour,
+			short_desc : newtask
+		};
+		
+		const newitem = W.buildItem("day_plan_main", record);
+		newitem.syncItem();
+		redisplay();
+	}
+
+}
 
 
 
@@ -204,14 +235,14 @@ function redisplay()
 	// hour:minute now
 	const hourminnow = exactMomentNow().asIsoLongBasic(MY_TIME_ZONE).substring(11, 16);
 
-	// true if previous row was past now	
+	// true if previous row was past now
 	var prevpastnow = false;
 
 	for(var ai in activelist)
 	{
-		const item = activelist[ai];	
+		const item = activelist[ai];
 				
-		const endhourstr = item.getEndHour();	
+		const endhourstr = item.getEndHour();
 		const halfstr = item.getHalfHour() == 1 ? ":30" : ":00";
 				
 		var timespent = "---";
@@ -248,6 +279,14 @@ function redisplay()
 			<td>${hourminstr}</td>
 			<td width="15%">${timespent}</td>
 			<td>
+			<a href="javascript:createRecordBelow(${item.getId()})">
+			<img src="/u/shared/image/downright.png" height="18" /></a>
+
+			&nbsp;
+			&nbsp;
+			
+
+
 			<a href="javascript:addTime2Item(${item.getId()})">
 			<img src="/u/shared/image/upicon.png" height="18" /></a>
 
@@ -265,7 +304,7 @@ function redisplay()
 
 			</td>
 			</tr>
-		`;	
+		`;
 		
 
 		tablestr += rowstr;
