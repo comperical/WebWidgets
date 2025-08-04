@@ -133,7 +133,49 @@ const U = {
         }
 
         return parsefunc(presult);
+    },
+
+
+    okayInt : function(s)
+    {
+        return /^-?\d+$/.test(s.trim());
+    },
+
+    okayFloat : function(s)
+    {
+        // A valid int is also a valid float.
+        if(U.okayInt(s))
+            { return true; }
+
+        return /^-?\d*\.\d+$/.test(s.trim());
+    },
+
+
+    massert : function(condition, message)
+    {
+        return massert(condition, message);
+    },
+
+
+    // June 2025, migrating code from the old TimeUtil.js file
+    // These methods should move into U... methods for the most part
+    // To begin, they will just be pointers to the old methods
+    lookupDayCode : function(dcstr)
+    {
+        return lookupDayCode(dcstr);
+    },
+
+    getTodayCode : function()
+    {
+        return getTodayCode();
+    },
+
+    haveDayCodeForString : function(dcstr)
+    {
+        return haveDayCodeForString(dcstr);
     }
+
+
 }
 
 // Delete Item from given table. 
