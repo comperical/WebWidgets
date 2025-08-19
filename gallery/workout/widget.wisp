@@ -70,16 +70,16 @@ function enterFailedRecordList(mondaycode)
 
 function editItemNotes(editid)
 {
-	var myitem = W.lookupItem("workout_log", editid);
-	
-	var newnotes = prompt("Notes for this item: ", myitem.getNotes());
-	
-	if(newnotes)
+	const updater = function(item)
 	{
-		myitem.setNotes(newnotes);
-		myitem.syncItem();
-		redisplay();		
+		const newnotes = prompt("Notes for this item: ", item.getNotes());
+		
+		if(newnotes != null)
+			{ item.setNotes(newnotes); }
 	}
+
+	U.genericItemUpdate("workout_log", editid, updater);
+
 }
 
 function getEffectiveDate(woitem)
@@ -327,16 +327,16 @@ function getWeeklyLogTable(wologger, linearmap, themonday)
 			
 		const shortdow = lookupDayCode(woitem.getDayCode()).getShortDayOfWeek();
 		
+		// class="editable" onClick="javascript:editItemNotes(${woitem.getId()})"
 		logstr += `
 		<tr>
 		<td>${woitem.getDayCode().substring(5)}</td>
 		<td>${shortdow}</td>
 		<td>${woitem.getWoType()}</td>
 		<td>${woitem.getWoUnits()}</td>
-		<td>${woitem.getNotes()}</td>
+		<td class="editable" onClick="javascript:editItemNotes(${woitem.getId()})">
+		${woitem.getNotes()}</td>
 		<td>
-		<a href="javascript:editItemNotes(${woitem.getId()})"><img src='/u/shared/image/edit.png' height='18'/></a>
-		&nbsp;&nbsp;&nbsp;
 		<a href="javascript:deleteItem(${woitem.getId()})"><img src='/u/shared/image/remove.png' height='18'/></a>
 		</td>
 		</tr>
