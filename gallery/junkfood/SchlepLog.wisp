@@ -146,15 +146,9 @@ function redispFullTable()
             <td>${item.getDayCode()}</td>
             <td>${item.getHour()}</td>
             <td>${item.getCategory()}</td>
-            <td>${item.getNotes()}</td>
+            <td class="editable" onClick="javascript:editItemNote(${item.getId()})">
+            ${item.getNotes()}</td>
             <td>
-            <a href="javascript:editItemNote(${item.getId()})">
-            <img src="/u/shared/image/edit.png" height="16"/></a>
-
-            &nbsp;
-            &nbsp;
-            &nbsp;
-
             <a href="javascript:deleteItem(${item.getId()})">
             <img src="/u/shared/image/remove.png" height="16"/>
             </a>
