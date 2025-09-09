@@ -163,7 +163,7 @@ function __calcDayCodeStr(dateitem)
 function getTodayCode()
 {
     var todaystr = __calcDayCodeStr(new Date());
-    return getDayCodeMap()[todaystr];   
+    return getDayCodeMap()[todaystr];
 }
 
 // N days before today.
