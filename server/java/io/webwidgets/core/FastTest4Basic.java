@@ -15,6 +15,7 @@ import net.danburfoot.shared.Util;
 import net.danburfoot.shared.CoreDb;
 import net.danburfoot.shared.ArgMap;
 import net.danburfoot.shared.FileUtils;
+import net.danburfoot.shared.CollUtil.Pair;
 
 import net.danburfoot.shared.RunnableTech.*;
 import net.danburfoot.shared.Util.SyscallWrapper;
@@ -212,6 +213,10 @@ public class FastTest4Basic
 	{
 		public void runOp()
 		{
+			boolean modokay = _argMap.getBit("modokay", false);
+			List<Pair<String, String>> badlist = Util.arraylist();
+
+
 			for(String colname : Util.listify("owner", "grantee"))
 			{
 				String query = String.format("SELECT %s FROM perm_grant", colname);
@@ -223,11 +228,46 @@ public class FastTest4Basic
 					if(username.equals(AuthLogic.PUBLIC_READ_GRANTEE))
 						{ continue; }
 
-					Util.massert(WidgetUser.softLookup(username).isPresent(),
-						"User %s specified in perm grant table is not actually a user!!", username);
+					if(!WidgetUser.softLookup(username).isPresent())
+					{
+						Util.pferr("User %s specified for grant column %s not is a user\n", username, colname);
+						badlist.add(Pair.build(username, colname));
+					}
+
 				}
-				Util.pf("Success, checked %d records for column %s\n", qcol.getNumRec(), colname);
+				Util.pf("Checked %d records for column %s\n", qcol.getNumRec(), colname);
 			}
+
+			if(badlist.isEmpty())
+			{ 
+				Util.pf("Success, all perms are correct\n");
+				return;
+			}
+
+			Util.massert(modokay, 
+				"Have bad user list %s, run with modokay=true to delete from Perm table", badlist);
+
+			if(Util.checkOkay("Okay to delete bad user list?"))
+			{
+				Util.pf("Going to delete\n");
+
+				for(var usercol : badlist)
+				{
+					String cleaner = Util.sprintf("DELETE FROM perm_grant WHERE %s = '%s'", usercol._2, usercol._1);
+					Util.pf("%s\n", cleaner);
+
+					CoreDb.execSqlUpdate(cleaner, WidgetItem.getMasterWidget());
+                	// QueryCollector qcol = CoreUtil.fullTableQuery(WidgetItem.getMasterWidget(), AuthLogic.PERM_GRANT_TABLE);
+				}
+
+				Util.pf("Removed %d entries from bad list\n", badlist.size());
+				Util.pf("Please reload master from webapp, or restart app server\n");
+
+			} else {
+
+				Util.pf("quitting\n");
+			}
+
 		}
 	}
 
