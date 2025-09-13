@@ -3,7 +3,7 @@ package io.webwidgets.core;
 
 import java.io.*;
 import java.util.*; 
-
+import java.nio.charset.StandardCharsets;
 
 import javax.servlet.http.*;
 import javax.servlet.ServletException;
@@ -58,81 +58,41 @@ public class IncludeInternal
                 );
             }
 
-            Pair<Long, Long> nmpair = parseNoneMatch(request.getHeader("If-None-Match"));
-            long modtime = directinc.sourceItem.getLocalDbFile().lastModified();
+            var marker = CacheInfoMarker.buildFromNoneMatch(request.getHeader("If-None-Match"));
 
             // Here we're checking if the SQLite DB has been modified. If not,
             // we can get away without doing very much work at all
-            if(nmpair != null)
+            if(marker != null && marker.fastCheckOkay(directinc.sourceItem, accessor))
             {
-                long nmtime = nmpair._1;
-                if(nmtime == modtime)
-                {
-                    response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
-                    return;
-                }
+                response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+                return;
             }
 
-            // Generate the full include, and calculate the ETag
+            // At this point, we have to actually compute the content
+            // But we might not have to actually SERVE it
+            // GPT warns me here that there could be character encoding issues
             byte[] content = directinc.include().getBytes();
-            long conhash = generateContentHash(content);
 
             // Okay, this is the secondary check. If the DB was modified, but
             // the specific view of the data was not, we are probably still okay
-            if(nmpair != null)
+            if(marker != null && marker.slowCheckOkay(content))
             {
-                long nmhash = nmpair._2;
-                if(nmhash == conhash)
-                {
-                    response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
-                    return;
-                }
+                response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+                return;
             }
 
             // Okay, we have to actually serve the data. Compose an ETag based on the modtime and the hash
-            response.setHeader("ETag", composeETag(modtime, conhash));
+            String etag = new CacheInfoMarker(directinc.sourceItem, accessor, content).composeETag();
+            response.setHeader("ETag", etag);
             response.setCharacterEncoding("UTF-8");
             response.getOutputStream().write(content);
             response.getOutputStream().write("\n".getBytes());
             response.getOutputStream().close();
         }
 
-        // Very cautious parsing of NoneMatch field
-        // It is a Long::Long pair, enclosed in double quotes
-        private static Pair<Long, Long> parseNoneMatch(String nonematch)
-        {
-            if(nonematch == null)
-                { return null; }
-
-            String[] mod_hash = nonematch.replaceAll("\"", "").split("::");
-
-            if(mod_hash.length != 2)
-                { return null; }
-
-            try {
-                long a = Long.valueOf(mod_hash[0]);
-                long b = Long.valueOf(mod_hash[1]);
-                return Pair.build(a, b);
-            } catch (NumberFormatException nfex) {
-                return null;
-            }
-        }
-
-
-        private static long generateContentHash(byte[] content)
-        {
-            var crc = new java.util.zip.CRC32();
-            crc.update(content);
-            return crc.getValue();
-        }
-
-        private static String composeETag(long modtime, long conhash)
-        {
-            return String.format("\"%d::%d\"", modtime, conhash);
-        }
-
         public abstract boolean simpleMode();
     }
+
 
 
 
@@ -155,6 +115,102 @@ public class IncludeInternal
         public boolean simpleMode() { return true; }
     }
 
+
+    public static class CacheInfoMarker
+    {
+        public static final String ANONYMOUS_ACCESS = "AnonAccessCode";
+
+        public final long dbModTime;
+
+        public final Optional<WidgetUser> optAccessor;
+
+        public final long contentCheckSum;
+
+        private CacheInfoMarker(long modtime, Optional<WidgetUser> optacc, long checksum)
+        {
+            dbModTime = modtime;
+            optAccessor = optacc;
+            contentCheckSum = checksum;
+
+            Util.massert(optAccessor != null, "Should always have an accessor, null lookup means change of user");
+        }
+
+        private CacheInfoMarker(WidgetItem db, Optional<WidgetUser> optacc, byte[] content)
+        {
+            this(db.getLocalDbFile().lastModified(), optacc, generateContentHash(content));
+        }
+
+
+        private static long generateContentHash(byte[] content)
+        {
+            var crc = new java.util.zip.CRC32();
+            crc.update(content);
+            return crc.getValue();
+        }
+
+        // Note: there is a subtlety here about the meaning of empty optional
+        // Empty is a valid Accessor, if the data is public
+        // A null return value here means that the user is not found in the system
+        private static Optional<WidgetUser> optAccessFromCode(String token)
+        {
+            if(token.equals(ANONYMOUS_ACCESS))
+                { return Optional.empty(); }
+
+            var optacc = WidgetUser.softLookup(token);
+
+            return optacc.isPresent() ? optacc : null;
+        }
+
+        String composeETag()
+        {
+            String usercode = optAccessor.map(s -> s.toString()).orElse(ANONYMOUS_ACCESS);
+            return Util.varjoin("::", dbModTime, usercode, contentCheckSum);
+        }
+
+        // This is the fast version of the caching check
+        // The DB has not been modified since the data was last accessed,
+        // and the user is the same
+        boolean fastCheckOkay(WidgetItem dbitem, Optional<WidgetUser> optacc)
+        {
+            return 
+                dbitem.getLocalDbFile().lastModified() == dbModTime &&
+                optAccessor.equals(optacc);
+        }
+
+        // This is the slow version: we had to generate the content,
+        // but we don't need to ship it over the network
+        boolean slowCheckOkay(byte[] content)
+        {
+            return generateContentHash(content) == contentCheckSum;
+        }
+
+        public static CacheInfoMarker buildFromNoneMatch(String nonematch)
+        {
+            if(nonematch == null)
+                { return null; }
+
+
+            String[] tokens = nonematch.replaceAll("\"", "").split("::");
+            if(tokens.length != 3)
+                { return null; }
+
+
+            Optional<WidgetUser> optacc = optAccessFromCode(tokens[1]);
+            if(optacc == null)
+                { return null; }
+
+
+            try {
+                long modtime = Long.valueOf(tokens[0]);
+                long checksum = Long.valueOf(tokens[2]);
+                return new CacheInfoMarker(modtime, optacc, checksum);
+
+            } catch (NumberFormatException nfex) {
+                return null;
+            }
+        }
+
+    }
 
 
 
