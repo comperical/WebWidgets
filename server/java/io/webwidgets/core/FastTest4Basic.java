@@ -1059,15 +1059,15 @@ public class FastTest4Basic
 	{
 		public void runOp()
 		{
-			var inctest = getIncludeTestDir();
+			Util.pf("Going to test Auto Include Logic\n");
 
-			Util.pf("Going to test files in %s\n", inctest);
+			checkIncludeSet("widget1", "MyTestInclude.js", "MySmartHeader.html", "MyFavIcon.png");
+			checkIncludeSet("include", 
+				"TestInclude.js", "SmartHeader.html", "GoodStyle.css", "MyFavIcon.jpg");
 
-
-			checkIncludeSet("widget1", "MyTestInclude.js", "MySmartHeader.html");
-			checkIncludeSet("include", "TestInclude.js", "SmartHeader.html", "GoodStyle.css");
 			checkIncludeSet("badinc");
-			checkIncludeSet("allinc", "MyHappyPrefix.js", "MyBigHeader.html", "MyCleverStyle.css");
+			checkIncludeSet("allinc", 
+				"MyHappyPrefix.js", "MyBigHeader.html", "MyCleverStyle.css", "MyFavIcon.any");
 
 		}
 
@@ -1086,7 +1086,8 @@ public class FastTest4Basic
 			Util.massertEqual(observed, expected,
 				"Observed %s but expected %s for directory %s", repodir);
 
-			Util.pf("Success, found %s as expected for %s\n", observed, repodir);
+			Util.pf("Success, found %s as expected for %s\n", observed, repodir.getName())
+			;
 		}
 
 
