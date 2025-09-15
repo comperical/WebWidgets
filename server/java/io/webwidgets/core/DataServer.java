@@ -4,6 +4,7 @@ package io.webwidgets.core;
 import java.io.*; 
 import java.util.*; 
 import java.sql.*; 
+import java.util.function.Predicate;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -621,6 +622,28 @@ public class DataServer
 			return result;
 		}
 
+		private static boolean standardNameInclude(String filename)
+		{
+			boolean haveprefix = filename.startsWith(AUTO_INCLUDE_PREFIX);
+
+			return haveprefix && easyNameInclude(filename);
+		}
+
+		// This is used for the AUTO_INCLUDE directory
+		private static boolean easyNameInclude(String filename)
+		{
+			if(filename.startsWith(FAVICON_FILE_NAME))
+				{ return true; }
+
+			Optional<String> suffix = AUTO_INCLUDE_SUFFIX
+											.stream()
+											.filter(suff -> filename.endsWith(suff))
+											.filter(suff -> !(suff.equals(".html") && !filename.contains(HTML_HEADER_TAG)))
+											.findAny();
+
+			return suffix.isPresent();
+		}
+
 		// List of files in the user base dir that start with My
 		// and end in either .css or .js extensions
 		public static List<File> getAutoIncludeList(WidgetUser user, Optional<String> optwdg)
@@ -669,6 +692,44 @@ public class DataServer
 			}
 			
 			return inclist;
+		}
+
+
+		static List<File> getAutoIncludeSub(File basedir)
+		{
+			if(!basedir.exists() || !basedir.isDirectory())
+				{ return Collections.emptyList(); }
+
+
+			boolean isautoinc = basedir.getName().equals(CoreUtil.AUTO_INCLUDE_DIR_NAME);
+
+			Predicate<String> filterfunc = isautoinc ? 
+								AutoInclude::easyNameInclude : AutoInclude::standardNameInclude;
+
+			Predicate<File> fullfilter = f -> !f.isDirectory() && filterfunc.test(f.getName());
+
+			return Util.filter2list(basedir.listFiles(), f -> !f.isDirectory() && filterfunc.test(f.getName()));
+
+		}
+
+
+
+		public static List<File> newAutoIncludeList(WidgetUser user, Optional<String> optwdg)
+		{
+			File basedir = optwdg.isPresent()
+							? (new WidgetItem(user, optwdg.get())).getWidgetBaseDir()
+							: user.getUserBaseDir();
+			
+
+			boolean isautoinc = Optional.of(CoreUtil.AUTO_INCLUDE_DIR_NAME).equals(optwdg);
+
+			Predicate<String> filterfunc = isautoinc ? 
+								AutoInclude::easyNameInclude : AutoInclude::standardNameInclude;
+
+
+			Predicate<File> fullfilter = f -> !f.isDirectory() && filterfunc.test(f.getName());
+
+			return Util.filter2list(basedir.listFiles(), f -> !f.isDirectory() && filterfunc.test(f.getName()));
 		}
 
 

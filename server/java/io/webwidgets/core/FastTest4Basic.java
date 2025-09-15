@@ -1054,6 +1054,63 @@ public class FastTest4Basic
 
 	}
 
+
+	public static class AutoIncludeTest extends ArgMapRunnable
+	{
+		public void runOp()
+		{
+			var inctest = getIncludeTestDir();
+
+			Util.pf("Going to test files in %s\n", inctest);
+
+
+			checkIncludeSet("widget1", "MyTestInclude.js", "MySmartHeader.html");
+			checkIncludeSet("include", "TestInclude.js", "SmartHeader.html", "GoodStyle.css");
+			checkIncludeSet("badinc");
+			checkIncludeSet("allinc", "MyHappyPrefix.js", "MyBigHeader.html", "MyCleverStyle.css");
+
+		}
+
+
+		private static void checkIncludeSet(String reponame, String... targets)
+		{
+			File repodir = new File(getIncludeTestDir(), reponame);
+
+			Util.massert(repodir.isDirectory());
+
+			Set<String> observed = Util.map2set(
+				DataServer.AutoInclude.getAutoIncludeSub(repodir), f -> f.getName());
+
+			Set<String> expected = Util.setify(targets);
+
+			Util.massertEqual(observed, expected,
+				"Observed %s but expected %s for directory %s", repodir);
+
+			Util.pf("Success, found %s as expected for %s\n", observed, repodir);
+		}
+
+
+
+
+		private static File getIncludeTestDir()
+		{
+			List<String> tokens = Arrays.asList(
+				CoreUtil.REPO_BASE_DIRECTORY,
+				"server", "testdata", "includetest"
+			);
+
+			String inctestpath = Util.join(tokens, File.separator);
+			File inctestdir = new File(inctestpath);
+			Util.massert(inctestdir.exists() && inctestdir.isDirectory(),
+				"Problem with repo directory setup, expected directory at %s", inctestpath
+			);
+
+			return inctestdir;
+		}
+
+
+	}
+
 	public static class TestExchangeTypeConvert extends ArgMapRunnable
 	{
 

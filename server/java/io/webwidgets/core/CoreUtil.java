@@ -33,6 +33,9 @@ public class CoreUtil
 
 	public static final String BASE_WIDGET_NAME = "base";
 
+	// files in this directory will be auto-included using a simpler naming convention
+	public static final String AUTO_INCLUDE_DIR_NAME = "include";
+
 	// All Widget DB tables must have a single integer primary key with this name
 	public static final String STANDARD_ID_COLUMN_NAME = "id";
 
@@ -50,9 +53,9 @@ public class CoreUtil
 	// A table with this column is considered to have granular permissions
 	public static final String GROUP_ALLOW_COLUMN = "group_allow";
 
-	// TODO: probably want to expand this to include other things like "include"
+	// These are widget names where you can upload code, but not DB files
 	public static final Set<String> AUX_CODE_OKAY = Collections.unmodifiableSet(
-		Util.setify(BASE_WIDGET_NAME)
+		Util.setify(BASE_WIDGET_NAME, AUTO_INCLUDE_DIR_NAME)
 	);
 
 

@@ -187,7 +187,6 @@ public class ActionJackson extends HttpServlet
 			UploadFileType filetype = UploadFileType.valueOf(info._inputMap.getStr("filetype"));
 			WidgetItem dbitem = info._dbItem;
 
-
 			if(!dbitem.dbFileExists())
 			{
 				// Some code-only Widget directories can be uploaded without creating the widget, notably "base"
@@ -736,6 +735,7 @@ public class ActionJackson extends HttpServlet
 
 		public void detectUploadError() throws LoaderException
 		{
+			// TODO: clarify distinction b/t "reseved" and AuxCodeOkay in CoreUtil
 			if(AdvancedUtil.RESERVED_WIDGET_NAMES.contains(_targetItem.theName))
 			{
 				String mssg = String.format("The Widget %s is a special system widget, it cannot be uploaded", _targetItem.theName);
