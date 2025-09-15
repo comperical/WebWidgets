@@ -644,6 +644,17 @@ public class ActionJackson extends HttpServlet
 					{ getBaseDirectory().mkdir(); }
 			}
 
+			// Special behavior here for auto-include
+			// TODO: Should this be general, for other types of special directories?
+			if(witem.theName.equals(CoreUtil.AUTO_INCLUDE_DIR_NAME))
+			{
+				if(!getBaseDirectory().exists())
+				{
+					Util.massert(witem.theOwner.getUserBaseDir().exists(), "User does not exist!!");
+					getBaseDirectory().mkdir();
+				}
+			}
+
 			Util.massert(getBaseDirectory().exists(), "Widget does not exist %s", witem);
 		}
 

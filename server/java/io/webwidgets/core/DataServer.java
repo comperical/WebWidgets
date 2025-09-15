@@ -608,18 +608,55 @@ public class DataServer
 			return sb.toString();
 		}
 
+		// TODO: I don't think this will be called for Base WidgetItems,
+		// so I think the subdirlist could just be:
+		// list(null, AUTO, item.theName)
 		public static List<String> getAutoIncludeStatement(WidgetItem item)
 		{
 			List<String> result = Util.arraylist();
 
-			for(boolean isbase : Util.listify(true, false))
+			List<String> subdirlist = Util.listify(null, CoreUtil.AUTO_INCLUDE_DIR_NAME);
+
+			if(!item.isVirtual)
+				{ subdirlist.add(item.theName); }
+
+			for(String suffix : subdirlist)
 			{
-				Optional<String> wdgname = isbase ? Optional.empty() : Optional.of(item.theName);
-				List<File> srclist = getAutoIncludeList(item.theOwner, wdgname);
-				result.addAll(includeTargetFileList(srclist, item.theOwner, wdgname));
+				var optsuff = Optional.ofNullable(suffix);
+				List<File> srclist = getUserAutoInclude(item.theOwner, optsuff);
+				result.addAll(includeTargetFileList(srclist, item.theOwner, optsuff));
 			}
 
 			return result;
+		}
+
+
+		// List of files in the user base dir that start with My
+		// and end in either .css or .js extensions
+		public static List<File> getUserAutoInclude(WidgetUser user, Optional<String> optsuff)
+		{
+			File basedir = optsuff.isPresent()
+							? (new WidgetItem(user, optsuff.get())).getWidgetBaseDir()
+							: user.getUserBaseDir();
+			
+			return getAutoIncludeSub(basedir);
+		}
+
+
+		static List<File> getAutoIncludeSub(File basedir)
+		{
+			if(!basedir.exists() || !basedir.isDirectory())
+				{ return Collections.emptyList(); }
+
+			boolean isautoinc = basedir.getName().equals(CoreUtil.AUTO_INCLUDE_DIR_NAME);
+
+			Predicate<String> filterfunc = isautoinc ?
+								AutoInclude::easyNameInclude : AutoInclude::standardNameInclude;
+
+			Predicate<File> fullfilter = f -> !f.isDirectory() && filterfunc.test(f.getName());
+
+			return Util.filter2list(basedir.listFiles(), f -> !f.isDirectory() && filterfunc.test(f.getName()));
+
 		}
 
 		private static boolean standardNameInclude(String filename)
@@ -644,94 +681,6 @@ public class DataServer
 			return suffix.isPresent();
 		}
 
-		// List of files in the user base dir that start with My
-		// and end in either .css or .js extensions
-		public static List<File> getAutoIncludeList(WidgetUser user, Optional<String> optwdg)
-		{
-			File basedir = optwdg.isPresent()
-							? (new WidgetItem(user, optwdg.get())).getWidgetBaseDir()
-							: user.getUserBaseDir();
-			
-			if(!basedir.exists())
-				{ return Collections.emptyList(); }
-			
-			List<File> inclist = Util.listify();
-			
-			for(File f : basedir.listFiles())
-			{
-				if(f.isDirectory())
-					{ continue; }
-
-				String name = f.getName();
-
-				// Special handling for fav-icons
-				if(name.startsWith(FAVICON_FILE_NAME))
-				{
-					inclist.add(f);
-					continue;
-				}
-				
-				if(!name.startsWith(AUTO_INCLUDE_PREFIX))
-					{ continue; }
-				
-
-				Optional<String> suffix = AUTO_INCLUDE_SUFFIX
-												.stream()
-												.filter(suff -> name.endsWith(suff))
-												.findAny();
-
-
-				if(!suffix.isPresent())
-					{ continue; }
-
-				// HTML files require extra tag to include
-				if(suffix.get().equals(".html") && !name.contains(HTML_HEADER_TAG))
-					{ continue; }
-
-				inclist.add(f);
-			}
-			
-			return inclist;
-		}
-
-
-		static List<File> getAutoIncludeSub(File basedir)
-		{
-			if(!basedir.exists() || !basedir.isDirectory())
-				{ return Collections.emptyList(); }
-
-
-			boolean isautoinc = basedir.getName().equals(CoreUtil.AUTO_INCLUDE_DIR_NAME);
-
-			Predicate<String> filterfunc = isautoinc ? 
-								AutoInclude::easyNameInclude : AutoInclude::standardNameInclude;
-
-			Predicate<File> fullfilter = f -> !f.isDirectory() && filterfunc.test(f.getName());
-
-			return Util.filter2list(basedir.listFiles(), f -> !f.isDirectory() && filterfunc.test(f.getName()));
-
-		}
-
-
-
-		public static List<File> newAutoIncludeList(WidgetUser user, Optional<String> optwdg)
-		{
-			File basedir = optwdg.isPresent()
-							? (new WidgetItem(user, optwdg.get())).getWidgetBaseDir()
-							: user.getUserBaseDir();
-			
-
-			boolean isautoinc = Optional.of(CoreUtil.AUTO_INCLUDE_DIR_NAME).equals(optwdg);
-
-			Predicate<String> filterfunc = isautoinc ? 
-								AutoInclude::easyNameInclude : AutoInclude::standardNameInclude;
-
-
-			Predicate<File> fullfilter = f -> !f.isDirectory() && filterfunc.test(f.getName());
-
-			return Util.filter2list(basedir.listFiles(), f -> !f.isDirectory() && filterfunc.test(f.getName()));
-		}
-
 
 		private static List<String> includeTargetFileList(List<File> filelist, WidgetUser owner, Optional<String> optname)
 		{
@@ -754,7 +703,6 @@ public class DataServer
 					statelist.add("");
 					continue;
 				}
-
 
 				long modtime = f.lastModified();
 				String relpath = Util.sprintf("/u/%s%s/%s", 

@@ -134,3 +134,5 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# Goddam MAC Os 
+.DS_Store
