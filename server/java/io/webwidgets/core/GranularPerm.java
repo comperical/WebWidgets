@@ -137,11 +137,18 @@ public class GranularPerm
     static Map<String, Boolean> parseGroupAllowData(ArgMap item, JSONParser parser)
     {
         try {
-            JSONObject perminfo = Util.cast(parser.parse(item.getStr(CoreUtil.GROUP_ALLOW_COLUMN)));
+            JSONObject perminfo = parseEmptySafe(item, parser);
             return convert2GroupMap(perminfo);
         } catch (ParseException pex) {
             throw new RuntimeException(pex);
         }
+    }
+
+    private static JSONObject parseEmptySafe(ArgMap item, JSONParser parser) throws ParseException
+    {
+        String gcstr = item.getStr(CoreUtil.GROUP_ALLOW_COLUMN);
+        var isempty = (gcstr == null || gcstr.length() == 0);
+        return isempty ? new JSONObject() : Util.cast(parser.parse(gcstr));
     }
 
     // Full insert of all group allow data into the aux group table
