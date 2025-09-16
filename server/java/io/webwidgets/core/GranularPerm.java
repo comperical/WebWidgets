@@ -29,7 +29,7 @@ public class GranularPerm
     public static final String GROUP_INFO_TABLE = "group_info";
 
     // This is a virtual group that gets added to the group set of all admin users
-    public static final String WWIO_ADMIN_GROUP = "__wwio_admin";
+    public static final String AUTO_ACCESS_GROUP = "__auto_access";
 
     public static List<String> getGroupInfoCreate()
     {

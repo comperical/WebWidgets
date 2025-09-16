@@ -344,8 +344,8 @@ public class LiteTableInfo
 			bigcol = QueryCollector.buildRunPrepared(query, dbTabPair._1, _colFilterTarget._2);
 		} 
 
-		// OK: if we're checking groups, but the group set contains admin, we actually short-circuit this where clause
-		else if (_checkAccessorGroupSet != null && !_checkAccessorGroupSet.contains(GranularPerm.WWIO_ADMIN_GROUP)) 
+		// OK: if we're checking groups, but the group set contains auto-access, we actually short-circuit this where clause
+		else if (_checkAccessorGroupSet != null && !_checkAccessorGroupSet.contains(GranularPerm.AUTO_ACCESS_GROUP))
 		{
 
 			// Note: the querytarget is usually, but not ALWAYS, the same as the table name - sometimes

@@ -151,10 +151,13 @@ public class WidgetUser implements Comparable<WidgetUser>
             groupset.addAll(Util.map2list(qcol.recList(), amap -> amap.getSingleStr()));
         }
 
-        if(isAdmin())
-            { groupset.add(GranularPerm.WWIO_ADMIN_GROUP); }
+        // If you're an admin or the Widget DB owner, you get auto-access
+        boolean autoacc = isAdmin() || (ginfodb.isPresent() && ginfodb.get().theOwner == this);
 
-        Util.massert(groupset.contains(GranularPerm.WWIO_ADMIN_GROUP) == isAdmin(),
+        if(autoacc)
+            { groupset.add(GranularPerm.AUTO_ACCESS_GROUP); }
+
+        Util.massert(groupset.contains(GranularPerm.AUTO_ACCESS_GROUP) == autoacc,
             "Security issue detected : attempt to set non-admin user to admin controls");
 
         return groupset;
