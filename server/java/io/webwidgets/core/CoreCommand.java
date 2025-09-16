@@ -160,7 +160,7 @@ public class CoreCommand
 			createSharedUser(newmaster);
 		}
 		
-		private static String getRandomInitialPass()
+		public static String getRandomInitialPass()
 		{
 			Random r = new Random();
 			
@@ -540,12 +540,16 @@ public class CoreCommand
 			String username = _argMap.getStr("username");
 			dumbCheckUnique(username);
 						
+			String starterhash = AuthLogic.canonicalHash(SetupMasterDb.getRandomInitialPass());
+			Util.pf("Starter hash prefix is %s\n", starterhash.substring(0, 6));
+			Util.massert(starterhash.equals(starterhash.toLowerCase()), "Should be lower-case!!!");
+
 			int curmaxid = Collections.max(Util.map2list(WidgetUser.values(), user -> user.getMasterId()));
 			
 			CoreDb.upsertFromRecMap(WidgetItem.getMasterWidget(), MasterTable.user_main.toString(), 1, CoreDb.getRecMap(
 				"id", curmaxid+1,
 				"username", username,
-				"accesshash", WidgetUser.getDummyHash(),
+				"accesshash", starterhash,
 				"email", ""
 			));
 

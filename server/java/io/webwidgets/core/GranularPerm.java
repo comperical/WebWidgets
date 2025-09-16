@@ -28,6 +28,8 @@ public class GranularPerm
 
     public static final String GROUP_INFO_TABLE = "group_info";
 
+    // This is a virtual group that gets added to the group set of all admin users
+    public static final String WWIO_ADMIN_GROUP = "__wwio_admin";
 
     public static List<String> getGroupInfoCreate()
     {
@@ -233,9 +235,7 @@ public class GranularPerm
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
-
     }
-
 
 
     // Checks for errors in parsing the JSON data for the GROUP ALLOW column
@@ -320,9 +320,8 @@ public class GranularPerm
             return Optional.of("This table has granular permissions; user must be logged in to update");
         }
 
-        // It is not clear if this is the right thing to do here, but it seems consistent with
-        // how the rest of the system works
-        if(user.get().isAdmin())
+        // DB owners and Admins can always write
+        if(user.get().isAdmin() || user.get() == table.dbTabPair._1.theOwner)
         {
             return Optional.empty();
         }

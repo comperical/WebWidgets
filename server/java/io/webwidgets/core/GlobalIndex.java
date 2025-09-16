@@ -33,6 +33,9 @@ public class GlobalIndex
     // System settings
     private static Map<String, String> _SYSTEM_SETTING;
 
+    // List of admin users, want to have this available quickly
+    private static List<WidgetUser> _ADMIN_USER_LIST;
+
     private static Map<WidgetItem, PermInfoPack> _PERMISSION_MAP;
 
     static synchronized Map<String, ArgMap> getMasterData()
@@ -58,6 +61,14 @@ public class GlobalIndex
         return Collections.unmodifiableMap(_SYSTEM_SETTING);
     } 
 
+
+    public static synchronized List<WidgetUser> getAdminUserList()
+    {
+        onDemandLoadIndexes();
+        return Collections.unmodifiableList(_ADMIN_USER_LIST);
+    } 
+
+
     public static int getMasterSize()
     {
         return getMasterData().size();
@@ -78,6 +89,8 @@ public class GlobalIndex
         _SYSTEM_SETTING = null;
 
         _PERMISSION_MAP = null;
+
+        _ADMIN_USER_LIST = null;
 
         PluginCentral.clearIndex();
     }
@@ -126,6 +139,8 @@ public class GlobalIndex
                     _PERMISSION_MAP.get(dbitem).loadFromRecMap(onemap);
                 }
             }
+
+            _ADMIN_USER_LIST = Util.filter2list(_LOOKUP_MAP.values(), user -> user.isAdmin());
 
             _REFRESH_TIMESTAMP = System.currentTimeMillis();
         }

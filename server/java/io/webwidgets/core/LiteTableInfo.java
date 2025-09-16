@@ -342,8 +342,11 @@ public class LiteTableInfo
 		{
 			query += String.format(" WHERE %s = ? ", _colFilterTarget._1);
 			bigcol = QueryCollector.buildRunPrepared(query, dbTabPair._1, _colFilterTarget._2);
+		} 
 
-		} else if (_checkAccessorGroupSet != null) {
+		// OK: if we're checking groups, but the group set contains admin, we actually short-circuit this where clause
+		else if (_checkAccessorGroupSet != null && !_checkAccessorGroupSet.contains(GranularPerm.WWIO_ADMIN_GROUP)) 
+		{
 
 			// Note: the querytarget is usually, but not ALWAYS, the same as the table name - sometimes
 			// it's a view that is built from the underlying table
@@ -353,7 +356,6 @@ public class LiteTableInfo
 				auxtable, CoreDb.nQuestionMarkStr(_checkAccessorGroupSet.size())
 			);
 
-			// query += String.format(" WHERE %s IN (%s) ", CoreUtil.AUTH_OWNER_COLUMN, CoreDb.nQuestionMarkStr(_checkAccessorGroupSet.size()));
 			bigcol = QueryCollector.buildRunPrepared(query, dbTabPair._1, _checkAccessorGroupSet.toArray());
 
 		} else {

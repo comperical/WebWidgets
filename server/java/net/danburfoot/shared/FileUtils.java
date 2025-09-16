@@ -496,7 +496,7 @@ public class FileUtils
     	{
     		_doSkipComment = skip;
     		return this;
-    	}        	
+    	}
     	
     	
     	// Skip empty lines in readLineList()

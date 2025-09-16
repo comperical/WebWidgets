@@ -151,9 +151,20 @@ public class WidgetUser implements Comparable<WidgetUser>
             groupset.addAll(Util.map2list(qcol.recList(), amap -> amap.getSingleStr()));
         }
 
+        if(isAdmin())
+            { groupset.add(GranularPerm.WWIO_ADMIN_GROUP); }
+
+        Util.massert(groupset.contains(GranularPerm.WWIO_ADMIN_GROUP) == isAdmin(),
+            "Security issue detected : attempt to set non-admin user to admin controls");
+
         return groupset;
 
 
+    }
+
+    public String getPersonalGroupName()
+    {
+        return String.format("I::%s", this.toString());
     }
 
 
@@ -169,9 +180,6 @@ public class WidgetUser implements Comparable<WidgetUser>
         Util.massert(hashed.toLowerCase().equals(hashed),
             "You must lowercase the hash string first");
 
-        if(getAccessHash().equals(getDummyHash()))
-            { return false; }
-        
         return hashed.equals(getAccessHash());
     }
 
@@ -275,16 +283,4 @@ public class WidgetUser implements Comparable<WidgetUser>
     {
         return new WidgetUser(uname);
     }
-    
-
-
-    private static String __DUMMY_HASH = null;
-
-    static synchronized String getDummyHash()
-    {
-        if(__DUMMY_HASH == null)
-            { __DUMMY_HASH = AuthLogic.canonicalHash(CoreUtil.DUMMY_PASSWORD); }
-
-        return __DUMMY_HASH;
-    }    
 }
