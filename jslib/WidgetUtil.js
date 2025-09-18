@@ -458,7 +458,7 @@ function getUniqElementByName(elname)
 {
     var selectlist = document.getElementsByName(elname);
     
-    massert(selectlist.length == 1, 
+    massert(selectlist.length == 1,
         "Found wrong number of elements with name: " + elname + " :: " + selectlist.length); 
 
     return selectlist[0];
@@ -518,7 +518,7 @@ function encodeHash2QString(submitpack)
         }
     }
 
-    return qlist.join("&");     
+    return qlist.join("&");
 }
 
 function submit2Base(submitpack)
@@ -535,7 +535,7 @@ function submit2Base(submitpack)
     
     var newloc = window.location.origin + window.location.pathname + "?" + qstr;
     
-    window.location.href = newloc;  
+    window.location.href = newloc;
 }
 
 
@@ -657,37 +657,6 @@ function toggleHidden4Class(classname)
 }
 
 
-// Convert iterator to an array.
-// This is not used in main WWIO code, it is a compatibility trick
-// for testing with Nashorn Java JS engine, which does not have the spread operator [... ]
-function spreadConvert(it)
-{
-    const result = [];
-
-    // Try to provide compatibility with Array and Set arguments
-    if(it.next == null && it.values != null)
-        { it = it.values(); }
-
-    while(true)
-    {
-        try {
-            const newitem = it.next();
-
-            if(newitem.done)
-                { break; }
-
-            result.push(newitem.value);
-
-        } catch (e) {
-            const message = `Failed to apply spreadConvert operator: ${e.message}`;
-            throw new Error(message);
-        }
-    }
-
-    return result;
-}
-
-
 function populateTopNavBar(headerdata, headerselected) {
 
     const data = composeNavBarCode(headerdata, headerselected);
@@ -734,6 +703,45 @@ function showLegacyOptApiWarning(funcname)
         console.log(`**Warning**, use of old OptSelector function ${funcname} is deprecated and will be removed in a future version, please use configureFrom(...) methods`);
     }
 
-    W.__RAW_DEP_WARNING_COUNT++;    
+    W.__RAW_DEP_WARNING_COUNT++;
+}
+
+
+
+// Legacy bridge code. We are moving these methods into the U namespace.
+// You should call them from the U namespace moving forward.
+const _RAW_FUNCTION_LIST = {
+    genericEditIntField,
+    genericEditFloatField,
+    genericEditTextField,
+    genericToggleField,
+    genericToggleActive,
+    genericDeleteItem,
+    proxySort,
+    basicWidgetLogout,
+    logoutAndReturn,
+    logoutWithBounceBack,
+    getWidgetUserName,
+    getDocumentCookieInfo,
+    setCookieNoExpiration,
+    submit2Current,
+    submit2Base,
+    decodeQString2Hash,
+    encodeHash2QString,
+    getUrlParamHash,
+    getUniqElementByName,
+    getDocFormValueDefault,
+    getDocFormValue,
+    populateSpanData,
+};
+
+// Copy them into U
+for (const [name, fn] of Object.entries(_RAW_FUNCTION_LIST)) {
+
+    if (U[name] == null) {   // only copy if U doesn’t already have it
+        U[name] = fn;
+    } else {
+        console.warn(`U already has ${name}, skipping legacy bridge`);
+    }
 }
 
