@@ -22,10 +22,10 @@ function getChoreAge(choreitem)
     if(lastcomp == null)
         { return 100000000; }
 
-    const todaydc = getTodayCode();
+    const todaydc = U.getTodayCode();
     
     // Last date on which it was completed
-    const lastcompdc = lookupDayCode(lastcomp);
+    const lastcompdc = U.lookupDayCode(lastcomp);
     
     return lastcompdc.daysUntil(todaydc);
 }

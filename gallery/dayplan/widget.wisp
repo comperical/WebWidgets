@@ -12,7 +12,7 @@ PLAN_DAY_CODE = U.getTodayCode();
 
 function doTemplateImport()
 {
-	const temp_id = getDocFormValue("temp_id");
+	const temp_id = U.getDocFormValue("temp_id");
 
 	// Look these up before creating the new ones, then delete them after.
 	const deletes = getPlanDayItemList();
@@ -58,7 +58,7 @@ function newByHourSpent()
 		return;
 	}
 	
-	const plusmin = getDocFormValue("time_spent_min");
+	const plusmin = U.getDocFormValue("time_spent_min");
 	
 	const previtem = itemlist.slice(-1)[0];	
 	
@@ -152,14 +152,14 @@ function removeTimeFromItem(itemid)
 
 function deleteItem(killid)
 {
-	genericDeleteItem("day_plan_main", killid);
+	U.genericDeleteItem("day_plan_main", killid);
 
 	redisplay();
 }
 
 function updatePlanDay()
 {
-	PLAN_DAY_CODE = U.lookupDayCode(getDocFormValue("plan_day_sel"));
+	PLAN_DAY_CODE = U.lookupDayCode(U.getDocFormValue("plan_day_sel"));
 	redisplay();
 }
 
@@ -167,7 +167,7 @@ function getPlanDayItemList()
 {
 	const query = { day_code : PLAN_DAY_CODE.getDateString() }
 	const itemlist = W.lookupFromOdIndex("day_plan_main", query);
-	itemlist.sort(proxySort(dp => [dp.getEndHour()]));
+	itemlist.sort(U.proxySort(dp => [dp.getEndHour()]));
 	return itemlist;
 }
 
@@ -338,7 +338,7 @@ function redisplay()
 					.getHtmlString();
 
 
-	populateSpanData({
+	U.populateSpanData({
 		"dayplantable" : tablestr,
 		"template_sel_span" : tempsel.getHtmlString(),
 		"plan_day_name" : PLAN_DAY_CODE.getDayOfWeek(),

@@ -197,7 +197,7 @@ function redisplayChoreList()
     const showinact = U.getUniqElementByName("show_inactive").checked;
     
     var itemlist = W.getItemList("chore_def");
-    itemlist.sort(proxySort(a => [a.getShortName()]));
+    itemlist.sort(U.proxySort(a => [a.getShortName()]));
     
     var tablestr = `
         <table  class="basic-table smarttable">
@@ -304,7 +304,7 @@ function goToDefinition()
 function promoteItem(choreid)
 {
     const chore = W.lookupItem("chore_def", choreid);
-    chore.setPromotedOn(getTodayCode().getDateString());
+    chore.setPromotedOn(U.getTodayCode().getDateString());
     chore.syncItem();
     redisplay();
 

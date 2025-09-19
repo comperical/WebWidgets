@@ -15,7 +15,7 @@ function createNewTemplate()
 	
 	if(templatename)
 	{
-		const newid = newBasicId("day_template");
+		const newid = W.newBasicId("day_template");
 		const newrec = {
 			"id" : newid,
 			"short_name" : templatename,
@@ -23,7 +23,7 @@ function createNewTemplate()
 			"is_active" : 1
 		}
 
-		const newtemplate = buildItem("day_template", newrec);
+		const newtemplate = W.buildItem("day_template", newrec);
 		newtemplate.syncItem();
 		redisplay();
 	}
@@ -41,14 +41,14 @@ function deleteTemplateItem(killid)
 
 	if(confirm("Are you sure you want to delete this template?"))
 	{
-		W.lookupItem("day_template", killid).deleteItem();			
-		redisplay();	
+		W.lookupItem("day_template", killid).deleteItem();
+		redisplay();
 	}
 }
 
 function archiveTemplate(itemid) 
 {
-	genericToggleActive("day_template", itemid);
+	U.genericToggleActive("day_template", itemid);
 }
 
 function redisplay()
@@ -76,7 +76,7 @@ function getSelectedTemplate()
 
 function plusDefaultWakeUp()
 {
-	const newid = newBasicId("template_sub");
+	const newid = W.newBasicId("template_sub");
 	const newrec = {
 		"id" : newid,
 		"temp_id" : EDIT_STUDY_ITEM,
@@ -85,7 +85,7 @@ function plusDefaultWakeUp()
 		"short_desc" : "Jump Out of Bed!!"
 	}
 
-	const newitem = buildItem("template_sub", newrec);
+	const newitem = W.buildItem("template_sub", newrec);
 	newitem.syncItem();
 	redisplay();
 }
@@ -100,13 +100,13 @@ function newByHourSpent()
 		return;
 	}
 	
-	const plusmin = getDocFormValue("time_spent_min");
+	const plusmin = U.getDocFormValue("time_spent_min");
 	const itemname = prompt("Item Desc: ");
 	
 	if(itemname)
-	{	
-		const newid = newBasicId("template_sub");	
-		const previtem = itemlist.slice(-1)[0];			
+	{
+		const newid = W.newBasicId("template_sub");	
+		const previtem = itemlist.slice(-1)[0];
 		var totalmin = previtem.getEndHour() * 60 + previtem.getHalfHour() * 30;
 		
 		totalmin += plusmin*1;
@@ -124,7 +124,7 @@ function newByHourSpent()
 			"short_desc" : itemname
 		}
 
-		const newitem = buildItem("template_sub", newrec);
+		const newitem = W.buildItem("template_sub", newrec);
 		newitem.syncItem();
 		redisplay();
 	}
@@ -133,21 +133,21 @@ function newByHourSpent()
 function createNew()
 {
 
-	const newid = newBasicId("template_sub");
+	const newid = W.newBasicId("template_sub");
 	
 	var itemname = prompt("Item Desc: ");
 	
 	if(itemname)
-	{	
+	{
 		const newrec = {
 			"id" : newid,
 			"temp_id" : EDIT_STUDY_ITEM,
-			"end_hour" : getDocFormValue("end_hour"),
+			"end_hour" : U.getDocFormValue("end_hour"),
 			"half_hour" : 0,
 			"short_desc" : itemname
 		}
 
-		const newitem = buildItem("template_sub", newrec);
+		const newitem = W.buildItem("template_sub", newrec);
 		newitem.syncItem();
 		redisplay();
 	}
@@ -155,7 +155,7 @@ function createNew()
 
 function addTime2Item(itemid)
 {
-	const planitem = lookupItem("template_sub", itemid);
+	const planitem = W.lookupItem("template_sub", itemid);
 	
 	if(planitem.getHalfHour() == 0)
 	{
@@ -171,7 +171,7 @@ function addTime2Item(itemid)
 
 function removeTimeFromItem(itemid)
 {
-	const planitem = lookupItem("template_sub", itemid);
+	const planitem = W.lookupItem("template_sub", itemid);
 	
 	if(planitem.getHalfHour() == 1)
 	{
@@ -187,18 +187,18 @@ function removeTimeFromItem(itemid)
 
 function deleteItem(killid)
 {
-	genericDeleteItem("template_sub", killid);
+	U.genericDeleteItem("template_sub", killid);
 }
 
 function getPlanDayItemList()
 {
 	var biglist = W.getItemList("template_sub").filter(item => item.getTempId() == EDIT_STUDY_ITEM);
-	return biglist.sort(proxySort(item => [item.getEndHour()]));
+	return biglist.sort(U.proxySort(item => [item.getEndHour()]));
 }
 
 function editTemplateName(editid)
 {
-	genericEditTextField("day_template", "short_name", editid);
+	U.genericEditTextField("day_template", "short_name", editid);
 }
 
 function editItemName(editid)
@@ -245,7 +245,7 @@ function redisplayMainList()
 
 	const breaker = `&nbsp; &nbsp;`
 		
-	const showinactive = getUniqElementByName("show_inactive").checked;
+	const showinactive = U.getUniqElementByName("show_inactive").checked;
 
 	templatelist.forEach(function(item) {
 
@@ -288,9 +288,7 @@ function redisplayMainList()
 
 	mainstr += `<table>`;
 
-	populateSpanData({
-		"templatelist" : mainstr
-	});	
+	U.populateSpanData({ templatelist : mainstr });
 }
 
 

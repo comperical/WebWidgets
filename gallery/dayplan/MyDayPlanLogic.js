@@ -41,7 +41,7 @@ function getHourTimeMap()
 function getDateDisplayMap()
 {
 
-    var dayptr = getTodayCode().dayAfter().dayAfter();
+    var dayptr = U.getTodayCode().dayAfter().dayAfter();
     const displaymap = {};
 
     for(var idx = 0; idx < 14; idx++)
