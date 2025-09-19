@@ -38,7 +38,7 @@ var SHOW_BASIC_LOG = true;
 function swap2MiniTask(choreid)
 {
     const choreitem = W.lookupItem("chore_def", choreid);
-    const todaycode = getTodayCode().getDateString();
+    const todaycode = U.getTodayCode().getDateString();
     const shortdesc =  "LifeChore:" + choreitem.getShortName();
     
     const newrec = {
@@ -72,7 +72,7 @@ function markComplete(choreid)
 {
     const newrec = {
         "chore_id" : choreid,
-        "day_code" : getTodayCode().getDateString()
+        "day_code" : U.getTodayCode().getDateString()
     };
     
     const newitem = W.buildItem("chore_comp", newrec);
@@ -95,7 +95,7 @@ function getLastCompletedMap()
 {
     var bigloglist = W.getItemList("chore_comp");
     
-    bigloglist.sort(proxySort(logitem => [logitem.getDayCode()])).reverse();
+    bigloglist.sort(U.proxySort(logitem => [logitem.getDayCode()])).reverse();
 
     var compmap = {};
     
@@ -113,7 +113,7 @@ function getLastCompletedMap()
 
 function toggleChoreActive(choreid, chorename)
 {
-    genericToggleActive("chore_def", choreid);
+    U.genericToggleActive("chore_def", choreid);
 }
 
 function createNew()
@@ -121,7 +121,7 @@ function createNew()
     const chorename = prompt("Enter a name for the chore: ");
     
     if(chorename)
-    {       
+    {
         const newrec = {
             "day_freq" : 30,
             "short_name" : chorename,
@@ -146,7 +146,7 @@ function setEditStudyItem(itemid)
 
 function return2Main()
 {
-    setEditStudyItem(-1);   
+    setEditStudyItem(-1);
 }
 
 function getPageComponent()
@@ -194,7 +194,7 @@ function redisplay()
 
 function redisplayChoreList()
 {
-    const showinact = getUniqElementByName("show_inactive").checked;
+    const showinact = U.getUniqElementByName("show_inactive").checked;
     
     var itemlist = W.getItemList("chore_def");
     itemlist.sort(proxySort(a => [a.getShortName()]));
@@ -258,7 +258,7 @@ function redisplayChoreList()
         </table>
     `;
     
-    populateSpanData({'chore_list_table' : tablestr});
+    U.populateSpanData({'chore_list_table' : tablestr});
 }
 
 function redisplayChoreItem()
@@ -285,7 +285,7 @@ function redisplayChoreItem()
 
 
     
-    populateSpanData(spanmap);
+    U.populateSpanData(spanmap);
 }
 
 
@@ -314,17 +314,17 @@ function promoteItem(choreid)
 
 function redisplayChoreLog()
 {
-    const showall = getUniqElementByName("show_all").checked;
+    const showall = U.getUniqElementByName("show_all").checked;
 
     
     var itemlist = W.getItemList("chore_def");
-    itemlist.sort(proxySort(a => [a.getShortName()]));
+    itemlist.sort(U.proxySort(a => [a.getShortName()]));
     
     // var lastlogmap = getLastLogMap();
     const maintable = getChoreLogTable(itemlist, showall, false);
     const promotable = getChoreLogTable(itemlist, showall, true);
     
-    populateSpanData({
+    U.populateSpanData({
         'chore_log_table' : maintable,
         'promoted_table' : promotable
     });
@@ -505,7 +505,7 @@ function editChoreFreq()
 
 function editChoreName()
 {
-    genericEditTextField("chore_def", "short_name", EDIT_STUDY_ITEM);
+    U.genericEditTextField("chore_def", "short_name", EDIT_STUDY_ITEM);
 }
 
 
@@ -526,7 +526,7 @@ function editWebLink()
 function saveNewDesc()
 {
     const showItem = getEditStudyItem();
-    const newDesc = getDocFormValue("fullitemdesc");
+    const newDesc = U.getDocFormValue("fullitemdesc");
     
     showItem.setExtraInfo(newDesc);
     showItem.syncItem();

@@ -710,6 +710,7 @@ function showLegacyOptApiWarning(funcname)
 
 // Legacy bridge code. We are moving these methods into the U namespace.
 // You should call them from the U namespace moving forward.
+// If a function is not on this list, it is deprecated!
 const _RAW_FUNCTION_LIST = {
     genericEditIntField,
     genericEditFloatField,
