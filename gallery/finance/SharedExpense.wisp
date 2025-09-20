@@ -41,7 +41,7 @@ function createNewSub(payer) {
 		const newrec = {
 			'dollar_amount' : 0,
 			'payer' : payer,
-			'day_code' : getTodayCode().getDateString(),
+			'day_code' : U.getTodayCode().getDateString(),
 			'web_link' : '',
 			'notes' : notes
 		};
@@ -60,7 +60,7 @@ function createNewHonda()
 		const newrec = {
 			'dollar_amount' : 551,
 			'payer' : 'D',
-			'day_code' : getTodayCode().getDateString(),
+			'day_code' : U.getTodayCode().getDateString(),
 			'web_link' : '',
 			'notes' : 'honda CRV payment'
 		};
@@ -79,7 +79,7 @@ function createNewFlexCar()
 		const newrec = {
 			'dollar_amount' : 558,
 			'payer' : 'D',
-			'day_code' : getTodayCode().getDateString(),
+			'day_code' : U.getTodayCode().getDateString(),
 			'web_link' : '',
 			'notes' : 'flexcar'
 		};
@@ -177,7 +177,7 @@ function back2Main() {
 
 function updateItemDate()
 {
-	const newdate = getDocFormValue("day_code_selector");
+	const newdate = U.getDocFormValue("day_code_selector");
 	const item = W.lookupItem("shared_expense", EDIT_STUDY_ITEM);
 	item.setDayCode(newdate);
 	item.syncItem();
@@ -196,7 +196,7 @@ function redisplay() {
 	handleSharedNavBar("Shared Expense");
 
 	const pageinfo = EDIT_STUDY_ITEM == -1 ? getMainPageInfo() : getEditPageInfo();
-	populateSpanData({"page_info" : pageinfo });
+	U.populateSpanData({"page_info" : pageinfo });
 }
 
 function copyItemUp(itemid)
@@ -245,7 +245,7 @@ function getEditPageInfo() {
 
 	<tr><td>Amount</td>
 	<td>${item.getDollarAmount()}</td>
-	<td><a href="javascript:genericEditIntField('shared_expense', 'dollar_amount', EDIT_STUDY_ITEM)"><img src="/u/shared/image/edit.png" height="18"></a></td></tr>
+	<td><a href="javascript:U.genericEditIntField('shared_expense', 'dollar_amount', EDIT_STUDY_ITEM)"><img src="/u/shared/image/edit.png" height="18"></a></td></tr>
 	</tr>
 	<tr><td>Payer</td>
 	<td>${CODE_TO_NAME_MAP[item.getPayer()]}</td>
@@ -259,11 +259,11 @@ function getEditPageInfo() {
 	</tr>
 	<tr><td>WebLink</td>
 	<td>${item.getWebLink()}</td>
-	<td><a href="javascript:genericEditTextField('shared_expense', 'web_link', EDIT_STUDY_ITEM)"><img src="/u/shared/image/edit.png" height="18"></a></td></tr>
+	<td><a href="javascript:U.genericEditTextField('shared_expense', 'web_link', EDIT_STUDY_ITEM)"><img src="/u/shared/image/edit.png" height="18"></a></td></tr>
 	</tr>
 	<tr><td>Notes</td>
 	<td>${item.getNotes()}</td>
-	<td><a href="javascript:genericEditTextField('shared_expense', 'notes', EDIT_STUDY_ITEM)"><img src="/u/shared/image/edit.png" height="18"></a></td></tr>
+	<td><a href="javascript:U.genericEditTextField('shared_expense', 'notes', EDIT_STUDY_ITEM)"><img src="/u/shared/image/edit.png" height="18"></a></td></tr>
 	</tr>
 	</table>
 	`;

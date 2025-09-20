@@ -15,7 +15,7 @@ function redisplay()
 {
     handleNavBar();
 
-    populateSpanData({"mainpage" : getMainPageInfo()})
+    U.populateSpanData({"mainpage" : getMainPageInfo()})
 
 }
 
@@ -107,7 +107,7 @@ function getMainPageInfo()
         const netdollar = val.reduce((acc, item) => acc + item.getCentAmount(), 0);
         const absdollar = val.reduce((acc, item) => acc + Math.abs(item.getCentAmount()), 0);
 
-        val.sort(proxySort(item => [item.getTransactDate()]));
+        val.sort(U.proxySort(item => [item.getTransactDate()]));
         const frstone = val[0].getTransactDate();
         const lastone = val[val.length-1].getTransactDate();
 

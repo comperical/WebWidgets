@@ -41,28 +41,28 @@ function back2Main()
 
 function deleteItem(killid)
 {
-    genericDeleteItem("tag_rule", killid);
+    U.genericDeleteItem("tag_rule", killid);
 }
 
 
 function editAndTags()
 {
-    genericEditTextField("tag_rule", "and_tags", EDIT_STUDY_ITEM);
+    U.genericEditTextField("tag_rule", "and_tags", EDIT_STUDY_ITEM);
 }
 
 function editMinDollar()
 {
-    genericEditIntField("tag_rule", "min_dollar", EDIT_STUDY_ITEM);
+    U.genericEditIntField("tag_rule", "min_dollar", EDIT_STUDY_ITEM);
 }
 
 function editMaxDollar()
 {
-    genericEditIntField("tag_rule", "max_dollar", EDIT_STUDY_ITEM);
+    U.genericEditIntField("tag_rule", "max_dollar", EDIT_STUDY_ITEM);
 }
 
 function updateCategory()
 {
-    const newcat = getDocFormValue("category_sel");
+    const newcat = U.getDocFormValue("category_sel");
 
     const studyitem = W.lookupItem("tag_rule", EDIT_STUDY_ITEM);
 
@@ -78,7 +78,7 @@ function redisplay()
 
     const pageinfo = EDIT_STUDY_ITEM == -1 ? getMainPageInfo() : getEditPageInfo();
 
-    populateSpanData({ "mainpage" : pageinfo});
+    U.populateSpanData({ "mainpage" : pageinfo});
 }
 
 function getEditPageInfo()
@@ -86,12 +86,12 @@ function getEditPageInfo()
     const studyitem = W.lookupItem("tag_rule", EDIT_STUDY_ITEM);
 
     const optsel = buildOptSelector()
-                        .setKeyList(getExpenseCategoryList())
+                        .configureFromList(getExpenseCategoryList())
                         .sortByDisplay()
                         .setSelectedKey(studyitem.getCategory())
                         .setOnChange("javascript:updateCategory()")
                         .setElementName("category_sel")
-                        .getSelectString();
+                        .getHtmlString();
 
     var pageinfo = `
 

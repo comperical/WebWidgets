@@ -22,7 +22,7 @@ function createNew()
             "extra_info" : "NotYetSet"     
         };      
         
-        const newitem = buildItem("finance_plan", newrec);
+        const newitem = W.buildItem("finance_plan", newrec);
         newitem.syncItem();
         redisplay();
     }
@@ -32,7 +32,7 @@ function deleteItem(killid, shortname)
 {
     if(confirm("Are you sure you want to delete item " + shortname + "?"))
     {
-        lookupItem("rage_log", killid).deleteItem();
+        W.lookupItem("rage_log", killid).deleteItem();
         
         redisplay();
     }
@@ -46,7 +46,7 @@ function editStudyItem(itemid)
 
 function editMonthlyTarget()
 {
-    const showitem = lookupItem("finance_plan", EDIT_STUDY_ITEM);
+    const showitem = W.lookupItem("finance_plan", EDIT_STUDY_ITEM);
 
     const target = prompt("Enter a new MONTHLY target: ", showitem.getMonthlyTarget());
 
@@ -81,13 +81,13 @@ function redisplay()
 
     const pagestr = EDIT_STUDY_ITEM == -1 ? getMainTableString() : getStudyItemString();
 
-    populateSpanData({"mainpage" : pagestr });
+    U.populateSpanData({"mainpage" : pagestr });
 }
 
 function editCatNote() 
 {
 
-    const studyitem = lookupItem("finance_plan", EDIT_STUDY_ITEM);
+    const studyitem = W.lookupItem("finance_plan", EDIT_STUDY_ITEM);
 
     const newnote = prompt("Enter a new note for category ", studyitem.getExtraInfo());
 
@@ -101,7 +101,7 @@ function editCatNote()
 
 function getStudyItemString()
 {
-    const studyitem = lookupItem("finance_plan", EDIT_STUDY_ITEM);
+    const studyitem = W.lookupItem("finance_plan", EDIT_STUDY_ITEM);
 
     const dailytarget = studyitem.getMonthlyTarget() / 30;
 
@@ -161,7 +161,7 @@ function getMainTableString()
         </tr>
     `;
 
-    const itemlist = getItemList("finance_plan").sort(proxySort(a => [-a.getMonthlyTarget()]));
+    const itemlist = W.getItemList("finance_plan").sort(U.proxySort(a => [-a.getMonthlyTarget()]));
     var totalmonthly = 0;
 
     itemlist.forEach(function(item) {
@@ -172,7 +172,7 @@ function getMainTableString()
             <td>${item.getCategory()}</td>
             <td>${(item.getMonthlyTarget() / 30).toFixed(2)}</td>
             <td>${item.getMonthlyTarget()}</td>
-            <td>${item.getMonthlyTarget() * 12}</td>            
+            <td>${item.getMonthlyTarget() * 12}</td>
             <td>
 
             <a href="javascript:editStudyItem(${item.getId()})"><img src="/u/shared/image/inspect.png" height="18"/></a>

@@ -102,7 +102,7 @@ function findHoleMonthLastDay(logsource)
 
 function findRecentPadDate()
 {
-    var probe = getTodayCode();
+    var probe = U.getTodayCode();
 
     for(var idx = 0; idx < 30; idx++)
     {

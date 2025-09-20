@@ -57,7 +57,7 @@ PINNED_MAP = { };
 
 function updateAggWindowSize() 
 {
-	const ndays = getDocFormValue("agg_window_size");
+	const ndays = U.getDocFormValue("agg_window_size");
 	AGG_WINDOW_SIZE = parseInt(ndays);
 	redisplay();
 }
@@ -76,7 +76,7 @@ function getCat2ReccMap(notemap)
 		{
 			var noteitem = notelist[ni];
 		
-			var recitem = lookupItem("finance_main", noteitem.getId());
+			var recitem = W.lookupItem("finance_main", noteitem.getId());
 			
 			reccmap[cat].push(recitem);
 		}
@@ -216,10 +216,10 @@ function getAggWindowInfo()
 	const ndaylist = [30, 60, 90, 120, 180, 365, 730];
 
 	const optsel = buildOptSelector()
-						.setKeyList(ndaylist)
+						.configureFromList(ndaylist)
 						.setSelectedKey(AGG_WINDOW_SIZE)
 						.setSelectOpener(`<select name="agg_window_size" onChange="javascript:updateAggWindowSize()">`)
-						.getSelectString();
+						.getHtmlString();
 
 	infostr += `
 		Last NDays: ${optsel}
@@ -324,7 +324,7 @@ function redisplay()
 	
 	tablestr += "</table>";
 		
-	populateSpanData({
+	U.populateSpanData({
 		"aggtable" : tablestr,
 		"dailytotal" : getDollarFormat(dailytotal),
 		"yearlytotal" : getDollarFormat(yearlytotal),

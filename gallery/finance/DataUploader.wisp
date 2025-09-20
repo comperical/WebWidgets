@@ -63,7 +63,7 @@ function redisplay()
     `;
 
 
-    populateSpanData({
+    U.populateSpanData({
         "mainpage" : pagestr,
         "missing_info" : getMissingInfo()
     });
@@ -188,7 +188,7 @@ function getIngestInfo()
 
 function readFileText(elementname, callback)
 {
-    const formEl = getUniqElementByName(elementname);
+    const formEl = U.getUniqElementByName(elementname);
 
     var reader = new FileReader();
     const filename = formEl.files[0].name;
@@ -241,7 +241,7 @@ function uploadAndParse(readtext)
 
 function lookupLogSource()
 {
-    const fileform = getUniqElementByName("my_file");
+    const fileform = U.getUniqElementByName("my_file");
     const filename = fileform.files[0].name;
 
     return filename.indexOf("DailyUsage") > -1 ? "bank" : "cred";

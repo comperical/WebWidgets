@@ -1,6 +1,8 @@
 <html>
 <head>
 
+<title>Search Shared</title>
+
 <wisp/>
 
 <script>
@@ -161,7 +163,7 @@ function back2Main() {
 
 function updateItemDate()
 {
-    const newdate = getDocFormValue("day_code_selector");
+    const newdate = U.getDocFormValue("day_code_selector");
     const item = W.lookupItem("shared_expense", EDIT_STUDY_ITEM);
     item.setDayCode(newdate);
     item.syncItem();
@@ -180,7 +182,7 @@ function redisplay() {
     handleSharedNavBar("Search Shared");
 
     const pageinfo = EDIT_STUDY_ITEM == -1 ? getMainPageInfo() : getEditPageInfo();
-    populateSpanData({"page_info" : pageinfo });
+    U.populateSpanData({"page_info" : pageinfo });
 }
 
 
@@ -212,7 +214,7 @@ function getMainPageInfo() {
         <th>..</th></tr>
     `
 
-    const itemlist = getSearchItemList().sort(proxySort(item => [item.getDayCode()])).reverse();
+    const itemlist = getSearchItemList().sort(U.proxySort(item => [item.getDayCode()])).reverse();
 
     itemlist.forEach(function(item) {
         const rowstr = `

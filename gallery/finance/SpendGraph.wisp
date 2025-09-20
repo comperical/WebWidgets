@@ -103,7 +103,7 @@ function removeCat(remcat)
 
 function addCat()
 {
-    const newcat = getDocFormValue("add_cat_sel");
+    const newcat = U.getDocFormValue("add_cat_sel");
     SHOW_CAT_LIST.push(newcat);
     redisplay();
 }
@@ -117,12 +117,12 @@ function getAddCatOptionList()
 function getControlInfo()
 {
     const addcat = buildOptSelector()
-                        .setKeyList(getAddCatOptionList())
+                        .configureFromList(getAddCatOptionList())
                         .insertStartingPair("---", "---")
                         .setSelectedKey("---")
                         .setElementName("add_cat_sel")
                         .setOnChange("javascript:addCat()")
-                        .getSelectString();
+                        .getHtmlString();
 
 
     var cattab = `
@@ -165,7 +165,7 @@ function redisplay()
 
     drawChart();
 
-    populateSpanData({ "control_info" : getControlInfo() });
+    U.populateSpanData({ "control_info" : getControlInfo() });
 }
 
 </script>
