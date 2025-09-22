@@ -206,6 +206,67 @@ public class FastTest4Basic
 
 	}
 
+
+	public static class ObsoleteAutoGenTest extends ArgMapRunnable
+	{
+
+		public void runOp() throws IOException
+		{
+			int usercount = 0;
+			int dbcount = 0;
+			List<File> badlist = Util.vector();
+			boolean modokay = _argMap.getBit("modokay", false);
+
+			for(WidgetUser user : WidgetUser.values())
+			{
+				List<WidgetItem> dblist = WidgetItem.getUserWidgetList(user);
+				Set<String> dbset = Util.map2set(dblist, db -> db.theName);
+
+				for(File f : getAutoGenList(user))
+				{
+					if(!dbset.contains(f.getName()))
+					{
+						Util.pferr("Detected obsolete autogen dir %s for user %s\n", f, user);
+						badlist.add(f);
+					}
+				}
+
+				usercount += 1;
+				dbcount += dblist.size();
+			}
+
+			if(badlist.isEmpty())
+			{
+				Util.pf("Success, checked %d users and %d DBs\n", usercount, dbcount);
+				return;
+			}
+
+			Util.massert(modokay, "Detected %d obsolete directories, see above", badlist.size());
+
+			for(File f : badlist)
+			{
+				Util.pf("\t%s\n", f.getAbsolutePath());
+			}
+
+			if(Util.checkOkay("Okay to delete above directories? (yes/NO"))
+			{
+				for(File f : badlist)
+					{ FileUtils.recursiveDeleteFile(f);}
+
+				Util.pf("Deleted %d obsolete autogen directories\n", badlist.size());
+			}
+		}
+
+		private static List<File> getAutoGenList(WidgetUser user)
+		{
+			File gendir = user.getAutoGenJsDir();
+
+			return gendir.exists()
+						? Util.map2list(gendir.listFiles(), f -> f)
+						: Collections.emptyList();
+		}
+	}
+
 	// This is really just a foreign key check for the Perm Grant table
 	// The Perm-loading code is cautious to make sure it doesn't break when the FKey here is invalid,
 	// But we don't want to have invalid references hanging around
