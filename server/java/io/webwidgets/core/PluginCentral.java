@@ -54,6 +54,12 @@ public class PluginCentral
      * This can be achieved by doing a simple string replace from the local path to the blob path
      * In cases where only one File argument is supplied, the storage plugin should perform the standard
      * local/remote mapping and then use the result to perform the remote operation
+     * TODO: we can be more explicit about what's happening here
+     * by introducing a parameterized type T that represents a remote location.
+     * We'd also have local2Remote(File), remote2Local(T):File methods
+     * We'd require the implementation to have upload(F, T), list(T), etc.
+     * The key point is that the T would never be used by the calling code! Caller would only use
+     * File arguments
      */
 	public static interface IBlobStorage
 	{
@@ -67,6 +73,11 @@ public class PluginCentral
 
 		public boolean blobPathExists(File localpath) throws IOException;
 
+
+		// Get the set of all local/blob files that are "children" of the given directory
+		public Set<File> listRemoteDirectory(File directory) throws IOException;
+
+
 		// Plausibly it seems like we should rationally want to have a downloadToLocal that
 		// has a separate argument
 		// Transform local to remote, download remote to local
@@ -74,6 +85,7 @@ public class PluginCentral
 
 		// Transform localpath to remote path, and delete remote
 		public void deleteFromLocalPath(File localpath) throws IOException;
+
 	}
 
 	/**
