@@ -333,6 +333,40 @@ public class FastTest4Basic
 	}
 
 
+	public static class FineGrainPermConfigTest extends DescRunnable
+	{
+		public String getDesc()
+		{
+			return
+				"Runs the group allow integrity check on all the DBs in the system\n" +
+				"Anytime group allow is added/removed, aux group table must be adding/removing in parallel";
+		}
+
+
+		public void runOp()
+		{
+			int usercount = 0;
+			int dbcount = 0;
+
+			for(WidgetUser user : WidgetUser.values())
+			{
+				for(WidgetItem dbitem : WidgetItem.getUserWidgetList(user))
+				{
+					boolean okay = GranularPerm.confirmGroupAllowIntegrity(dbitem);
+					Util.massert(okay, "Group Allow table error for %s:%s", user, dbitem);
+					dbcount++;
+				}
+
+				usercount++;
+			}
+
+			Util.pf("Success, checked %d users and %d DBs\n", usercount, dbcount);
+		}
+	}
+
+
+
+
 	public static class TestUserEntryLookup extends ArgMapRunnable
 	{
 		public void runOp()

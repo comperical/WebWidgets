@@ -12,6 +12,7 @@ import org.json.simple.parser.ParseException;
 import net.danburfoot.shared.Util;
 import net.danburfoot.shared.ArgMap;
 import net.danburfoot.shared.CoreDb;
+import net.danburfoot.shared.StringUtil;
 import net.danburfoot.shared.CoreDb.QueryCollector;
 
 
@@ -452,6 +453,54 @@ public class GranularPerm
         }
 
         return logmessage;
+    }
+
+    // True if the group allow setup for the given DB is okay
+    // This is used as a global system test, as well as potentially a check
+    // when uploading a DB
+    public static boolean confirmGroupAllowIntegrity(WidgetItem dbitem)
+    {
+        Set<String> allcolset = Util.treeset();
+        Set<String> auxgrpset = Util.treeset();
+
+        for(String tablename : dbitem.getDbTableNameSet())
+        {
+            LiteTableInfo LTI = new LiteTableInfo(dbitem, tablename);
+            LTI.runSetupQuery();
+
+            if(LTI.hasGranularPerm())
+                { allcolset.add(tablename); }
+        }
+
+        for(String auxtable : dbitem.getFullTableNameSet())
+        {
+            if(!auxtable.startsWith(AUX_GROUP_PREFIX))
+                { continue; }
+
+            // extract the name of the original table
+            String origmain = StringUtil.peelPrefix(auxtable, AUX_GROUP_PREFIX + "_");
+            auxgrpset.add(origmain);
+        }
+
+        for(String tbl : allcolset)
+        {
+            if(!auxgrpset.contains(tbl))
+            {
+                Util.pferr("**Error**, table %s::%s has group allow column, but not aux table", dbitem, tbl);
+                return false;
+            }
+        }
+
+        for(String tbl : auxgrpset)
+        {
+            if(!allcolset.contains(tbl))
+            {
+                Util.pferr("**Error**, table %s::%s has aux group table, but not group allow column", dbitem, tbl);
+                return false;
+            }
+        }
+
+        return true;
     }
 
 
