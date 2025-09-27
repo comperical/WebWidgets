@@ -184,10 +184,17 @@ public class WidgetItem implements ConnectionSource, Comparable<WidgetItem>
 		return Util.sprintf("jdbc:sqlite:%s", getLocalDbPath());
 	}
 	
+	// This should be called something like getCoreTableNameSet
 	public Set<String> getDbTableNameSet()
 	{
 		// False: do not show __ - prefix tables
 		return CoreUtil.getLiteTableNameSet(this, false);
+	}
+
+	// Get all the tables, including the aux/non-standard ones
+	public Set<String> getFullTableNameSet()
+	{
+		return CoreUtil.getLiteTableNameSet(this, true);
 	}
 
 	public Set<String> getDbViewNameSet()

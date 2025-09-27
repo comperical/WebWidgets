@@ -121,6 +121,19 @@ public class GranularPerm
     }
 
 
+    public static void dropAuxGroupTable(WidgetItem dbitem, String maintable)
+    {
+        Set<String> tableset = dbitem.getDbTableNameSet();
+        Util.massert(tableset.contains(maintable),
+            "Main table %s not found in table list for %s, options are %s", maintable, dbitem, tableset);
+
+        // It's tempting to try to just reuse the first line of getAuxTableRebuildSql
+        String dropcomm = Util.sprintf("DROP TABLE IF EXISTS %s", getAuxGroupTable(maintable));
+        CoreDb.execSqlUpdate(dropcomm, dbitem);
+        Util.pf("Dropped Aux Table for %s::%s\n",dbitem, maintable);
+    }
+
+
     // Bulk version of method below. Keys of map are record IDs.
     static Map<Integer, Map<String, Boolean>> parseGroupAllowData(Collection<ArgMap> itemlist)
     {
