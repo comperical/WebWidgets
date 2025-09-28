@@ -48,16 +48,25 @@ const U = {
                 return "float";
             }
 
-            massert(false, `Unable to determine type of default object ${defaultob}`);
+            U.massert(false, `Unable to determine type of default object ${defaultob}`);
         }
 
-        const tablelist = (tablename == null ? W.getWidgetTableList() : [tablename]).sort();
+        const db4table = function(tbl)
+        {
+            return W.__tableNameIndex.get(tbl).widgetName;
+        }
+
+
+        const tablelist = (tablename == null ? W.getWidgetTableList() : [tablename])
+                                            .sort(U.proxySort(tbl => [db4table(tbl), tbl]));
 
         let s = "";
 
         tablelist.forEach(function(tbl) {
 
-            s += `------\n${tbl}\n`;
+            const dbname = db4table(tbl);
+
+            s += `------\n${dbname}::${tbl}\n`;
 
             W.getFieldList(tbl).forEach(function(fieldname) {
                 const ftype = typestr(tbl, fieldname);
