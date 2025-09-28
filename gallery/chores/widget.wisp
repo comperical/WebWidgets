@@ -372,11 +372,11 @@ function getChoreLogTable(itemlist, showall, ispromo)
     const getrow = function(chore)
     {
 
-        const choreage = getChoreAge(chore);
-        const lastupdate = getLastChoreCompletion(chore.getId());
+        const choreage = chore.daysSinceLastComp();
+        const lastupdate = chore.getLastCompletion();
 
-        const okaypromo = isPromoValid(chore, lastupdate);
-        const overdue = choreage - chore.getDayFreq();
+        const okaypromo = chore.isPromoted();
+        const overdue = chore.daysOverDue();
 
         if (okaypromo != ispromo) 
             { return ""; }
@@ -391,13 +391,15 @@ function getChoreLogTable(itemlist, showall, ispromo)
         
         if(chore.getWebLink().length > 0) 
         {
-            weblinkstr = weblinkstr.replace("purewhite", "chainlink").replace("#", chore.getWebLink());
+            weblinkstr = weblinkstr
+                            .replace("purewhite", "chainlink")
+                            .replace("#", chore.getWebLink());
         }
         
                     
         if(device.mobile())
         {
-            const lastdisplay = lastupdate == null ? "never" : lookupDayCode(lastupdate).getNiceDisplay();
+            const lastdisplay = lastupdate == null ? "never" : U.lookupDayCode(lastupdate).getNiceDisplay();
 
             return `
                 <table class="basic-table" width="60%" onClick="javascript:confirmComplete(${chore.getId()})">
