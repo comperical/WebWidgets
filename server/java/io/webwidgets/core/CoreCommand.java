@@ -965,7 +965,10 @@ public class CoreCommand
 		public void runOp()
 		{
 			int maxkill = _argMap.getInt("maxkill", 1);
-			LinkedList<File> bloblist = Util.linkedlistify(CoreUtil.getAllFileList(new File(CoreUtil.WWIO_BLOB_BASE_DIR)));
+			File blobbase = new File(BlobDataManager.getBlobBaseDir());
+			Util.massert(blobbase.exists(), "Blob Base directory does not exist: %s", blobbase);
+
+			LinkedList<File> bloblist = Util.linkedlistify(CoreUtil.getAllFileList(blobbase));
 			CollUtil.sortListByFunction(bloblist, f -> f.lastModified());
 			Util.pf("Got %d blob files\n", bloblist.size());
 

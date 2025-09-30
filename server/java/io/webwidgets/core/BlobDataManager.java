@@ -34,6 +34,25 @@ public class BlobDataManager
 	
 	private static Set<String> _BLOB_COLUMN_SET = Util.map2set(Util.listify(BlobInfoColumn.values()), bc -> bc.toString());
 	
+	private static String _BLOB_BASE_DIR = "/opt/rawdata/wwio/blob";
+
+
+	public static String getBlobBaseDir()
+	{
+		if(_BLOB_BASE_DIR == null)
+		{
+			Optional<String> rawdata = GlobalIndex.getSystemSetting(SystemPropEnum.RAW_DATA_BASE_DIR);
+			Util.massert(rawdata.isPresent(),
+				"You must configure the %s system property to use the Blob Data Manager",
+				SystemPropEnum.RAW_DATA_BASE_DIR);
+
+			_BLOB_BASE_DIR = Util.varjoin(File.separator, rawdata.get(), "wwio", "blob");
+		}
+
+
+		return _BLOB_BASE_DIR;
+	}
+
 	
 	static String getBlobFileName(int recordid)
 	{
@@ -66,7 +85,7 @@ public class BlobDataManager
 	
 	public static File getFullBlobLocalPath(String blobaddr)
 	{
-		return new File(CoreUtil.WWIO_BLOB_BASE_DIR + blobaddr);
+		return new File(getBlobBaseDir() + blobaddr);
 	}
 	
 	static boolean isBlobStorageTable(Set<String> columnset)

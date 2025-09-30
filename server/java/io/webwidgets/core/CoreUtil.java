@@ -134,8 +134,6 @@ public class CoreUtil
 	// Served from /admin
 	public static final String WIDGET_ADMIN_DIR = WIDGET_CODE_DIR + "/admin";
 
-	// TODO: need to rationalize this. The BlobStorageManager should probably use a workdir directory
-	public static final String WWIO_BLOB_BASE_DIR = "/opt/rawdata/wwio/blob";
 
 	static final String MASTER_WIDGET_NAME = "master";
 	
@@ -503,7 +501,10 @@ public class CoreUtil
 		// comma-separated list of user names who are exempt from code format checker
 		// basically, these are accounts who are managed/developed by the admins of the service,
 		// not individuals/etc
-		CODE_FORMAT_EXEMPT_LIST, 
+		CODE_FORMAT_EXEMPT_LIST,
+
+		// Path to raw data directory, that is used for storing large but non-critical objects
+		RAW_DATA_BASE_DIR,
 
 		// If present and equal to "true", the system is in insecure mode
 		INSECURE_ALLOW_MODE;
