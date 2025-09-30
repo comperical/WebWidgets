@@ -26,6 +26,7 @@ import io.webwidgets.core.LiteTableInfo.*;
 import io.webwidgets.core.WispFileLogic.*;
 
 
+// TODO: rename this to something like UserScriptApi
 public class ActionJackson extends HttpServlet
 {
 

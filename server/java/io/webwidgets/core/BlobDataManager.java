@@ -34,8 +34,7 @@ public class BlobDataManager
 	
 	private static Set<String> _BLOB_COLUMN_SET = Util.map2set(Util.listify(BlobInfoColumn.values()), bc -> bc.toString());
 	
-	private static String _BLOB_BASE_DIR = "/opt/rawdata/wwio/blob";
-
+	private static String _BLOB_BASE_DIR = null;
 
 	public static String getBlobBaseDir()
 	{
