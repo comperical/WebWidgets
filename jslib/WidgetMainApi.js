@@ -44,7 +44,7 @@ __DUMB_INDEX_DELIM : "/x/",
 lookupItem : function(tabname, itemid)
 {
     if(!Number.isInteger(itemid))
-        { massert(false, `Attempt to lookup item for table ${tabname} with non-integer ID ${itemid}`); }
+        { U.massert(false, `Attempt to lookup item for table ${tabname} with non-integer ID ${itemid}`); }
 
     W.checkTableName(tabname);
     return W.__tableNameIndex.get(tabname)._dataMap.get(itemid);
@@ -79,7 +79,7 @@ buildItem : function(tabname, record)
         { record["id"] = W.newBasicId(tabname); }
 
     const theid = parseInt(record["id"]);
-    massert(!W.haveItem(tabname, theid), `A record with ID ${theid} already exists in table ${tabname}`);
+    U.massert(!W.haveItem(tabname, theid), `A record with ID ${theid} already exists in table ${tabname}`);
 
     return buildfunc(record);
 },
@@ -174,7 +174,7 @@ serverSideNewDbId : function(tabname, callback)
     xhttp.onreadystatechange = function() {
         
         if (this.readyState == 4) {
-            massert(this.status == 200, "Unexpected error code on Ajax operation: " + this.status);
+            U.massert(this.status == 200, "Unexpected error code on Ajax operation: " + this.status);
 
             // The actual ID is in the extra_info field
             const response = JSON.parse(this.responseText);
@@ -210,7 +210,7 @@ checkTableName : function(tabname)
     }
 
     const tlist = [... W.__tableNameIndex.keys()];
-    massert(false, "Could not find table name " + tabname + ", options are " + tlist);
+    U.massert(false, "Could not find table name " + tabname + ", options are " + tlist);
 },
 
 
@@ -278,7 +278,7 @@ __bulkOpSub : function(tablename, idlist, isdelete, options)
     const itemlist = [];
     idlist.forEach(function(myid) {
 
-        massert(W.haveItem(tablename, myid),
+        U.massert(W.haveItem(tablename, myid),
             `No record found for ${tablename}::${myid}, please check this condition before calling, quitting`);
 
         itemlist.push(W.lookupItem(tablename, myid));
@@ -317,7 +317,7 @@ __bulkOpSub : function(tablename, idlist, isdelete, options)
     else
         { fullpackage["bulkpayload"] = JSON.stringify(itemlist); }
 
-    xhr.send(encodeHash2QString(fullpackage));
+    xhr.send(U.encodeHash2QString(fullpackage));
 
     // Need to perform all appropriate updates to the local copy of the data
     itemlist.forEach(function(item) {
@@ -336,14 +336,13 @@ __bulkOpSub : function(tablename, idlist, isdelete, options)
 // AFTER it is enqueued
 __augmentWithCheckSum : function(opurl)
 {
-    massert(opurl.indexOf(W.CALLBACK_URL) == 0, 
+    U.massert(opurl.indexOf(W.CALLBACK_URL) == 0,
         "Expected OP URL to start with callback URL, found " + W.CALLBACK_URL);
 
     const querystring = opurl.substring((W.CALLBACK_URL + "?").length);
     // console.log("Query string is " + querystring);
 
-    // TODO: these decoded/encode functions should be in a namespace also
-    const allparams = decodeQString2Hash(querystring);
+    const allparams = U.decodeQString2Hash(querystring);
     // console.log(params);
 
     const combined = new Object();
@@ -383,7 +382,7 @@ __checkForBadField : function(tablename, record)
     if(badfield.length > 0)
     {
         const mssg = `Attempt to create record for tablename ${tablename} with bad field(s) ${badfield.join(',')}`;
-        massert(!W.__STRICT_BAD_FIELD_CHECK, mssg);
+        U.massert(!W.__STRICT_BAD_FIELD_CHECK, mssg);
         console.log("*** Warning *** " + mssg);
     }
 },
@@ -411,13 +410,13 @@ createIndexForTable : function(tablename, fnamelist)
     {
         const allfields = W.getFieldList(tablename);
         const badnames = fnamelist.filter(fname => !allfields.includes(fname));
-        massert(badnames.length == 0, 
+        U.massert(badnames.length == 0,
             `Attempt to build index with field ${badnames[0]}, but that field name is not present, options are ${allfields}`);
     }
 
 
     const indexname = W.__composeInternalIndexName(fnamelist);
-    massert(!W.__GLOBAL_INDEX_MAP.get(tablename).has(indexname),
+    U.massert(!W.__GLOBAL_INDEX_MAP.get(tablename).has(indexname),
         `You have already defined an index ${fnamelist.join("--")} on table ${tablename}, do not redefine`);
 
     W.__GLOBAL_INDEX_MAP.get(tablename).set(indexname, new Map());
@@ -456,7 +455,7 @@ lookupFromIndex : function(tablename, lookup)
 {
     const relidx = W.__findRelevantIndex(tablename, lookup);
 
-    massert(relidx != null, `No index found for table ${tablename} and lookup keys ${Object.keys(lookup)}`);
+    U.massert(relidx != null, `No index found for table ${tablename} and lookup keys ${Object.keys(lookup)}`);
 
     const mapresult = W.__followIndexFarAsPossible(tablename, relidx, lookup);
 
@@ -642,9 +641,9 @@ __genericUpsertUrl : function(item, keylist)
         subpack[k] = payload == null ? W.__MAGIC_NULL_STRING : payload;
     });
     
-    massert(!("ajaxop" in subpack), "Shouldn't have an ajaxop!!");
+    U.massert(!("ajaxop" in subpack), "Shouldn't have an ajaxop!!");
     subpack["ajaxop"] = "upsert";
-    return W.CALLBACK_URL + "?" + encodeHash2QString(subpack);
+    return W.CALLBACK_URL + "?" + U.encodeHash2QString(subpack);
 },
 
 __genericDeleteUrl : function(item)
@@ -653,9 +652,9 @@ __genericDeleteUrl : function(item)
     subpack["id"] = item.getId();
 
     
-    massert(!("ajaxop" in subpack), "Shouldn't have an ajaxop!!");
+    U.massert(!("ajaxop" in subpack), "Shouldn't have an ajaxop!!");
     subpack["ajaxop"] = "delete";
-    return W.CALLBACK_URL + "?" + encodeHash2QString(subpack);
+    return W.CALLBACK_URL + "?" + U.encodeHash2QString(subpack);
 },
 
 createNewIdBasic : function(datamap)
@@ -687,7 +686,7 @@ createNewIdRandom : function(datamap)
             { return newid; }
     }
 
-    massert(false, "Could not find new unused ID after ten tries, maybe your table is too big, size = " + datamap.size);
+    U.massert(false, "Could not find new unused ID after ten tries, maybe your table is too big, size = " + datamap.size);
 },
 
 createNewIdIncremental : function(datamap) 
@@ -706,7 +705,7 @@ createNewIdIncremental : function(datamap)
 __submitNewRequest : function(opurl, opname, itemid) 
 {
     const reqlist = [opurl, opname, itemid];
-    W.__REQUEST_QUEUE.push(reqlist);  
+    W.__REQUEST_QUEUE.push(reqlist);
     W.__maybeSendNewRequest();
 },
 
@@ -724,7 +723,7 @@ __maybeSendNewRequest : function()
 
     // This needs to be augmented just-in-time
     const combinedParams = W.__augmentWithCheckSum(reqlist[0]);
-    const opurl = W.CALLBACK_URL + "?" + encodeHash2QString(combinedParams.smllpms);
+    const opurl = W.CALLBACK_URL + "?" + U.encodeHash2QString(combinedParams.smllpms);
 
     // console.log(reqlist[0]);
     // console.log(opurl);
@@ -737,13 +736,13 @@ __maybeSendNewRequest : function()
         // This block of code is actually called several times before
         // It is ready. readyState == 4 implies the request completed.
         if (this.readyState == 4) {
-            massert(this.status == 200, "Unexpected error code on Ajax operation: " + this.status);
+            U.massert(this.status == 200, "Unexpected error code on Ajax operation: " + this.status);
             W.__checkAjaxResponse(opname, itemid, this.responseText);
             W.__REQUEST_IN_FLIGHT = false;
 
 
             // This allows user widget to take actions when the sync's finish
-            if (typeof ajaxRequestUserCallBack == "function") 
+            if (typeof ajaxRequestUserCallBack == "function")
                 { ajaxRequestUserCallBack(opurl, opname, itemid); }
 
             W.__maybeSendNewRequest();
@@ -754,7 +753,7 @@ __maybeSendNewRequest : function()
 
     if (havebig) {
 
-        const bigparamstr = encodeHash2QString(combinedParams.biggpms);
+        const bigparamstr = U.encodeHash2QString(combinedParams.biggpms);
         xhttp.open("POST", opurl, true);
 
         // Send the proper header information along with the request
@@ -763,7 +762,7 @@ __maybeSendNewRequest : function()
 
     } else {
         xhttp.open("GET", opurl, true);
-        xhttp.send();    
+        xhttp.send();
     }
 },
 
@@ -790,26 +789,13 @@ __checkAjaxResponse : function(op, itemid, rtext)
     const umssg = response.user_message;
     const einfo = response.extra_info;
 
-    // Special error message for this one
-    if (fcode == "SyncError")
-    {
-        const syncmssg = `
-            Error: your update was rejected because the widget data has been modified by another user.
-            
-            Please reload the page and try again.
-        `;
-
-        alert(syncmssg);
-        throw syncmssg;
-    }
-    
     var errmssg = `Problem with sync operation: ${fcode} \n ${umssg}`;
     
     if(einfo.length > 0) {
         errmssg += `\nAdditional info:\n${einfo}`;
     }
     
-    massert(false, errmssg);
+    U.massert(false, errmssg);
 },
 
 showRawFunctionWarning : function(funcname) {
