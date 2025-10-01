@@ -179,6 +179,53 @@ public class FastTest4Basic
 	}
 
 
+	public static class FullColumnNameCheck extends DescRunnable
+	{
+		private int _errCount = 0;
+		private int _checkCount = 0;
+
+		public String getDesc()
+		{
+			return "Checks the names of all the columns on all DBs";
+
+		}
+
+		public void runOp()
+		{
+			for(WidgetUser user : WidgetUser.values())
+			{
+				for(WidgetItem db : WidgetItem.getUserWidgetList(user))
+					{ checkDataBase(db); }
+			}
+
+			Util.massert(_errCount == 0, "Found %d bad column, see above for info", _errCount);
+			Util.massert(_checkCount > 10, "Expected at least 10 columns, found %d", _checkCount);
+			Util.pf("Success, checked %d columns total\n", _checkCount);
+		}
+
+		private void checkDataBase(WidgetItem db)
+		{
+			for(String tablename : db.getDbTableNameSet())
+			{
+				LiteTableInfo LTI = new LiteTableInfo(db, tablename);
+				Set<String> colset = LTI.getColumnNameSet();
+
+				// Util.pf("Checking columns for %s::%s --- %s\n", db, tablename, colset);
+				var badset = Util.filter2set(colset,
+								col -> !CoreUtil.ALLOWED_COLUMN_NAME.matcher(col).matches());
+
+
+				if(badset.size() > 0)
+				{
+					Util.pferr("Found bad column name set _%s_ for db %s::%s\n", badset, db, tablename);
+					_errCount += 1;
+				}
+
+				_checkCount += colset.size();
+			}
+		}
+	}
+
 	public static class MailboxConfigurationTest extends DescRunnable
 	{
 

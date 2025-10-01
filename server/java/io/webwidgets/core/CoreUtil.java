@@ -9,6 +9,9 @@ import java.util.stream.Stream;
 import java.util.function.Predicate;
 import java.nio.charset.StandardCharsets;
 
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+
 import net.danburfoot.shared.Util;
 import net.danburfoot.shared.CoreDb;
 import net.danburfoot.shared.ArgMap;
@@ -52,6 +55,10 @@ public class CoreUtil
 
 	// A table with this column is considered to have granular permissions
 	public static final String GROUP_ALLOW_COLUMN = "group_allow";
+
+
+    public static final Pattern ALLOWED_COLUMN_NAME = Pattern.compile("^[_a-z0-9]+$");
+
 
 	// These are widget names where you can upload code, but not DB files
 	public static final Set<String> AUX_CODE_OKAY = Collections.unmodifiableSet(
