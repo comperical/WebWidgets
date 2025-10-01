@@ -87,9 +87,11 @@ public class TemplateGenerator
 
         {
             add("function deleteItem(itemid) {");
-            add("\tconst item = W.lookupItem(MAIN_TABLE, itemid);");
-            add("\titem.deleteItem();");
-            add("\tredisplay();");
+            add("\tif(confirm('Are you sure you want to delete this item?')) {");
+            add("\t\tconst item = W.lookupItem(MAIN_TABLE, itemid);");
+            add("\t\titem.deleteItem();");
+            add("\t\tredisplay();");
+            add("\t}");
             add("}");
         }
 
@@ -209,7 +211,7 @@ public class TemplateGenerator
             { shortcode = "Text"; }
 
         Util.massert(shortcode != null, "Unknown/invalid class type for generic function lookup: " + colclass);
-        return String.format("genericEdit%sField", shortcode);
+        return String.format("U.genericEdit%sField", shortcode);
     }
 
     private void addReDisplay()
@@ -220,7 +222,7 @@ public class TemplateGenerator
             "// Auto-generated redisplay function",
             "function redisplay() {",
             "\tconst pageinfo = EDIT_STUDY_ITEM == -1 ? getMainPageInfo() : getEditPageInfo();",
-            "\tpopulateSpanData({\"page_info\" : pageinfo });",
+            "\tU.populateSpanData({\"page_info\" : pageinfo });",
             "}"
         );
 
