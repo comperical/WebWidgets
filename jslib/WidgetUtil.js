@@ -320,7 +320,7 @@ function proxySort(proxyfun)
         var tup1 = proxyfun(rec1);
         var tup2 = proxyfun(rec2);
 
-        massert(Array.isArray(tup1), "The proxy function must return an Array/List, instead it returned " + tup1);
+        U.massert(Array.isArray(tup1), "The proxy function must return an Array/List, instead it returned " + tup1);
         
         for(var i in tup1)
         {
@@ -342,7 +342,7 @@ function dictFromExtractor(itemlist, extractor)
 
     itemlist.forEach(function(item) {
         const pr = extractor(item);
-        massert(Array.isArray(pr) && pr.length == 2, "The extractor function must return a length-2 array, got " + pr);
+        U.massert(Array.isArray(pr) && pr.length == 2, "The extractor function must return a length-2 array, got " + pr);
         table[pr[0]] = pr[1];
     })
 
@@ -358,7 +358,7 @@ function populateSpanData(spanmap)
     for(var spanid in spanmap)
     {
         const spanel = document.getElementById(spanid);
-        massert(spanel != null, `Could not find element with ID ${spanid}`);
+        U.massert(spanel != null, `Could not find element with ID ${spanid}`);
         spanel.innerHTML = spanmap[spanid];
     }
 }
@@ -396,7 +396,7 @@ function __strictParseOkayNull(inputstr, parsefunc, typename)
         { return null; }
 
     const r = parsefunc(inputstr);
-    massert(!isNaN(r), `Invalid string for ${typename} : ${inputstr}`);
+    U.massert(!isNaN(r), `Invalid string for ${typename} : ${inputstr}`);
     return r;
 }
 
@@ -455,7 +455,7 @@ function getDocFormValueDefault(docformname, defaultval)
 {
     const selectlist = document.getElementsByName(docformname);
     
-    massert(selectlist.length <= 1, 
+    U.massert(selectlist.length <= 1, 
         "Found multiple elements with name " + docformname);
     
     return selectlist.length == 0 ? defaultval : selectlist[0].value;
@@ -465,9 +465,9 @@ function getDocFormValueDefault(docformname, defaultval)
 // Error if there is no element with the given name, or multiple elements.
 function getUniqElementByName(elname)
 {
-    var selectlist = document.getElementsByName(elname);
+    const selectlist = document.getElementsByName(elname);
     
-    massert(selectlist.length == 1,
+    U.massert(selectlist.length == 1,
         "Found wrong number of elements with name: " + elname + " :: " + selectlist.length); 
 
     return selectlist[0];
@@ -500,14 +500,14 @@ function getUrlParamHash()
 // Should be a pure inverse of encodeHash2QString below.
 function decodeQString2Hash(qstring)
 {
-    massert(qstring[0] != '?', "By convention, please strip leading question mark from query string");
+    U.massert(qstring[0] != '?', "By convention, please strip leading question mark from query string");
 
     const params = {};
     const pairs = qstring.split("&");
 
     pairs.forEach(function(prstr) {
         const kv = prstr.split("=");
-        massert(kv.length == 2, "Found bad key=value string " + prstr);
+        U.massert(kv.length == 2, "Found bad key=value string " + prstr);
         params[kv[0]] = decodeURIComponent(kv[1]);
     });
 
@@ -609,7 +609,7 @@ function getDocumentCookieInfo()
 // This is pulled from the full cookie package
 function getWidgetUserName()
 {
-    const result = getDocumentCookieInfo()['username'];
+    const result = U.getDocumentCookieInfo()['username'];
     return result == null || result == "" ? null : result;
 }
 
@@ -620,13 +620,13 @@ function basicWidgetLogout()
 {
     // setCookieNoExpiration("username", "");
     // setCookieNoExpiration("accesshash", "");
-    logoutWithBounceBack(null);
+    U.logoutWithBounceBack(null);
 }
 
 // Log out of Widgets and bounce-back to current url
 function logoutAndReturn()
 {
-    logoutWithBounceBack(window.location.href);
+    U.logoutWithBounceBack(window.location.href);
 }
 
 function logoutWithBounceBack(bounceback)
@@ -672,8 +672,8 @@ function populateTopNavBar(headerdata, headerselected) {
 
     const topnavlist = document.getElementsByClassName("topnav");
 
-    massert(topnavlist.length >  0, "Could not find any elements with class name topnav");
-    massert(topnavlist.length == 1, "Found multiple elements with class name topnav");
+    U.massert(topnavlist.length >  0, "Could not find any elements with class name topnav");
+    U.massert(topnavlist.length == 1, "Found multiple elements with class name topnav");
 
     topnavlist[0].innerHTML = data;
 
@@ -699,7 +699,7 @@ function composeNavBarCode(headerdata, headerselected) {
         navstr += `<a href="${href}" ${selstr}>${display}</a>`;
     });
 
-    massert(foundsel || headerselected == null, 
+    U.massert(foundsel || headerselected == null,
         `Failed to find header named ${headerselected}, use null if you don't want to select`);
 
     return navstr;
