@@ -165,6 +165,11 @@ public class CodeGenerator
 				
 		add("}");
 		add("");
+
+
+		add("// Oct 2025: ensure that this definition exists in Node as well as the browser");
+		add("globalThis.%s = %s;", _liteTable.getRecordName(), _liteTable.getRecordName());
+		add("");
 	}
 	
 	private void genDictionaryBuilder()
