@@ -23,7 +23,7 @@ Goal here is to work with laptop and tablet, but not phone
 
 <script>
 
-var TODAY_CODE = getTodayCode();
+var TODAY_CODE = U.getTodayCode();
 
 var EDIT_STUDY_ITEM = -1;
 
@@ -63,7 +63,7 @@ function createNewTaskSub(priority)
 			"task_type" : showtypelist[0],
 			"short_desc" : itemname,
 			"extra_info" : "",
-			"alpha_date" : getTodayCode().getDateString(),
+			"alpha_date" : U.getTodayCode().getDateString(),
 			"omega_date" : "",
 			"priority" : priority,
 			"is_backlog" : 0
@@ -107,7 +107,7 @@ function deleteItem(killid)
 function markItemComplete(markid)
 {
 	const markitem = W.lookupItem("mini_task_list", markid);
-	const todaycode = getTodayCode().getDateString();
+	const todaycode = U.getTodayCode().getDateString();
 	markitem.setOmegaDate(todaycode);
 	markitem.syncItem();
 	redisplay();
@@ -149,9 +149,9 @@ function editItemPriority(markid)
 function refreshStartDate(markid)
 {
 	const markitem = W.lookupItem("mini_task_list", markid);
-	markitem.setAlphaDate(getTodayCode().getDateString());
+	markitem.setAlphaDate(U.getTodayCode().getDateString());
 	
-	markitem.syncItem();			
+	markitem.syncItem();
 	redisplay();
 }
 
@@ -179,9 +179,9 @@ function getStudyItem()
 
 function toggleItemStatus()
 {
-	massert(EDIT_STUDY_ITEM != -1);
+	U.massert(EDIT_STUDY_ITEM != -1);
 
-	const studyitem = lookupItem("mini_task_list", EDIT_STUDY_ITEM);
+	const studyitem = W.lookupItem("mini_task_list", EDIT_STUDY_ITEM);
 	if(studyitem.getOmegaDate().length == 0) 
 	{ 
 		// This case is identical to just marking the study item complete.
@@ -214,7 +214,7 @@ function getShowTypeList()
 
 function setDefaultShow()
 {
-	const params = getUrlParamHash();
+	const params = U.getUrlParamHash();
 	if (!('default_show' in params)) 
 		{params['default_show'] = 'life';}
 
@@ -244,16 +244,15 @@ function setDefaultShow()
 
 function editItemName()
 {
-	var studyitem = getStudyItem();
-	
-	var newdesc = prompt("Enter a short description for this item: ", studyitem.getShortDesc());
-	
-	if(newdesc)
+	const updater = function(studyitem)
 	{
-		studyitem.setShortDesc(newdesc);
-		syncSingleItem(studyitem);
-		redisplay();			
+		const newdesc = prompt("Enter a short description for this item: ", studyitem.getShortDesc());
+		
+		if(newdesc)
+			{ studyitem.setShortDesc(newdesc); }
 	}
+
+	U.genericItemUpdate("mini_task_list", EDIT_STUDY_ITEM, updater);
 }
 
 function editStudyItemPriority()
@@ -263,13 +262,13 @@ function editStudyItemPriority()
 
 function updateTaskType()
 {
-	const newtype = getDocFormValue("task_type_sel");
+	const newtype = U.getDocFormValue("task_type_sel");
 	const studyitem = getStudyItem();
 			
 	studyitem.setTaskType(newtype);
 	studyitem.syncItem();
 	
-	redisplay();	
+	redisplay();
 }
 
 
@@ -278,8 +277,8 @@ function saveExtraInfo()
 	var studyitem = getStudyItem();
 			
 	studyitem.setExtraInfo(document.getElementById("set_extra_info").value);
-	
-	syncSingleItem(studyitem);		
+
+	studyitem.syncItem();
 			
 	redisplay();
 	
@@ -302,7 +301,7 @@ function reDispActiveTable()
 	var activelist = getTaskItemList(false);
 	
 	// Sort by effective priority
-	activelist.sort(proxySort(actrec => [-actrec.getPriority()]));
+	activelist.sort(U.proxySort(actrec => [-actrec.getPriority()]));
 
 	const showtypelist = getShowTypeList();
 
@@ -390,9 +389,7 @@ function reDispActiveTable()
 	
 	tablestr += "</table>";
 	
-	populateSpanData({
-		"activetable" : tablestr
-	});
+	U.populateSpanData({ "activetable" : tablestr });
 	
 }
 
@@ -434,9 +431,7 @@ function reDispCompleteTable()
 
 	tablestr += `</table>`;
 	
-	populateSpanData({
-		"completetable" : tablestr		
-	});
+	U.populateSpanData({ "completetable" : tablestr	});
 }
 
 function reDispEditItem()
@@ -460,7 +455,7 @@ function reDispEditItem()
 						.setSelectedKey(studyitem.getTaskType())
 						.getHtmlString();
 	
-	populateSpanData({
+	U.populateSpanData({
 		"shortdesc" : studyitem.getShortDesc(),
 		"task_type_sel_span" : ttypesel,
 		"alphadate" : studyitem.getAlphaDate(),
