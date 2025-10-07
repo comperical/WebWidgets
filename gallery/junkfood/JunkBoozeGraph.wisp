@@ -13,8 +13,8 @@
 function getDataArray()
 {
 
-  const junkmap = getMonthlySum(getItemList("junk_food_log"), item => item.getJunkfactor());
-  const boozmap = getMonthlySum(getItemList("alc_log"), item => item.getNumDrink());
+  const junkmap = getMonthlySum(W.getItemList("junk_food_log"), item => item.getJunkfactor());
+  const boozmap = getMonthlySum(W.getItemList("alc_log"), item => item.getNumDrink());
 
   var data = [['Month', 'Junk Food', 'Booze']];
 

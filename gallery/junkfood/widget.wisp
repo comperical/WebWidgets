@@ -8,15 +8,15 @@
 <script>
 
 // The date when I started using the consumption target formula.
-SYSTEM_START_DATE = lookupDayCode("2021-07-01");
+SYSTEM_START_DATE = U.lookupDayCode("2021-07-01");
 
 // Target number of items per year
 YEARLY_CONSUMPTION_TARGET = 200;
 
 function addNew()
 {
-	const junkfact = getDocFormValue("junk_factor_sel");
-	const thenotes = getDocFormValue("notes");
+	const junkfact = U.getDocFormValue("junk_factor_sel");
+	const thenotes = U.getDocFormValue("notes");
 	addNewSub(junkfact, thenotes);
 }
 
@@ -27,7 +27,7 @@ function addClean()
 
 function addNewSub(junkfact, thenotes)
 {
-	const daycode = getDocFormValue("day_code_sel");
+	const daycode = U.getDocFormValue("day_code_sel");
 	
 	const newrec = {
 		"junkfactor" : parseInt(junkfact),
@@ -49,7 +49,7 @@ function copyUp(junkid)
 
 	const record = {
 		junkfactor : copyfrom.getJunkfactor(),
-		day_code : getTodayCode().dayBefore().getDateString(),
+		day_code : U.getTodayCode().dayBefore().getDateString(),
 		notes : copyfrom.getNotes()
 	}
 
@@ -83,7 +83,7 @@ function junkWeightSince(daycode)
 {
 	var jktotal = 0;
 	var itemlist = W.getItemList("junk_food_log");
-	itemlist.sort(proxySort(a => [a.getDayCode()])).reverse();
+	itemlist.sort(U.proxySort(a => [a.getDayCode()])).reverse();
 	
 	for(var ii in itemlist) {
 	
@@ -110,12 +110,12 @@ function redispControls()
 	const displaymap = getNiceDateDisplayMap(14);
 
 	const datesel = buildOptSelector()
-					.configureFromHash(displaymap)
-					.setSelectedKey(getTodayCode().dayBefore().getDateString())
-					.setElementName("day_code_sel")
-					.getHtmlString();
+						.configureFromHash(displaymap)
+						.setSelectedKey(U.getTodayCode().dayBefore().getDateString())
+						.setElementName("day_code_sel")
+						.getHtmlString();
 
-	populateSpanData({
+	U.populateSpanData({
 		"day_code_sel_span" : datesel,
 		"junk_factor_sel_span" : junksel
 	})
@@ -125,7 +125,7 @@ function redispControls()
 function redispSummTable() 
 {
 	var itemlist = W.getItemList("junk_food_log");
-	itemlist.sort(proxySort(a => [a.getDayCode()])).reverse();
+	itemlist.sort(U.proxySort(a => [a.getDayCode()])).reverse();
 	
 	var tablestr = `
 		<table class="basic-table"  width="40%">
@@ -143,7 +143,7 @@ function redispSummTable()
 	daysago.forEach(function(days) {
 		
 							
-		const dayprobe = getTodayCode().nDaysBefore(days);
+		const dayprobe = U.getTodayCode().nDaysBefore(days);
 		const jktotal = junkWeightSince(dayprobe);
 		const jkperday = jktotal / days;
 		
@@ -170,7 +170,7 @@ function redispSummTable()
 // since the epoch times a weight factor.
 function getConsumptionTarget()
 {
-	const daysince = SYSTEM_START_DATE.daysUntil(getTodayCode()) + 1;
+	const daysince = SYSTEM_START_DATE.daysUntil(U.getTodayCode()) + 1;
 
 	const consperday = YEARLY_CONSUMPTION_TARGET / 365;
 	return Math.floor(consperday * daysince);
@@ -209,15 +209,15 @@ function redispStatTable()
 	`;
 
 
-	populateSpanData({"status_table" : tablestr});
+	U.populateSpanData({"status_table" : tablestr});
 }
 
 function redispFullTable()
 {
 	var itemlist = W.getItemList("junk_food_log");
-	itemlist.sort(proxySort(a => [a.getDayCode()])).reverse();
+	itemlist.sort(U.proxySort(a => [a.getDayCode()])).reverse();
 		
-	const cutoff = getTodayCode().nDaysBefore(90);
+	const cutoff = U.getTodayCode().nDaysBefore(90);
 			
 	var tablestr = `
 		<table class="basic-table"  width="40%">

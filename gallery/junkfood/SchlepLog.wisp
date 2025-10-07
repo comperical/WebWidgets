@@ -13,8 +13,8 @@ const MAIN_TABLE = "schlep_log";
 
 function addNew()
 {
-    const hours = getDocFormValue("hours_sel");
-    const categ = getDocFormValue("category_sel");
+    const hours = U.getDocFormValue("hours_sel");
+    const categ = U.getDocFormValue("category_sel");
     addNewSub(hours, categ);
 }
 
@@ -25,7 +25,7 @@ function addClean()
 
 function addNewSub(hours, category)
 {
-    const daycode = getDocFormValue("day_code_sel");
+    const daycode = U.getDocFormValue("day_code_sel");
     
     const newrec = {
         "category" : category,
@@ -51,7 +51,7 @@ function addDownTown()
 
 function addStandardDrive(drivehour, drivenote)
 {
-    const daycode = getDocFormValue("day_code_sel");
+    const daycode = U.getDocFormValue("day_code_sel");
     
     const newrec = {
         category : "car",
@@ -68,12 +68,12 @@ function addStandardDrive(drivehour, drivenote)
 
 function deleteItem(killid)
 {
-    genericDeleteItem(MAIN_TABLE, killid);
+    U.genericDeleteItem(MAIN_TABLE, killid);
 }
 
 function editItemNote(itemid)
 {
-    genericEditTextField(MAIN_TABLE, "notes", itemid);
+    U.genericEditTextField(MAIN_TABLE, "notes", itemid);
 }
 
 function redisplay()
@@ -100,7 +100,7 @@ function redispControls()
 
     buildOptSelector()
         .configureFromHash(displaymap)
-        .setSelectedKey(getTodayCode().dayBefore().getDateString())
+        .setSelectedKey(U.getTodayCode().dayBefore().getDateString())
         .setElementName("day_code_sel")
         .autoPopulate();
 
@@ -117,9 +117,9 @@ function redispControls()
 function redispFullTable()
 {
     var itemlist = W.getItemList(MAIN_TABLE);
-    itemlist.sort(proxySort(a => [a.getDayCode()])).reverse();
+    itemlist.sort(U.proxySort(a => [a.getDayCode()])).reverse();
         
-    const cutoff = getTodayCode().nDaysBefore(90);
+    const cutoff = U.getTodayCode().nDaysBefore(90);
             
     var tablestr = `
         <table class="basic-table"  width="50%">
