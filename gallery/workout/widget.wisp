@@ -40,7 +40,7 @@ function enterFailedRecordList(mondaycode)
 	
 	const statusmap = wologger.getSummaryData(mondaycode);
 	
-	const yesterday = getTodayCode().dayBefore().getDateString();
+	const yesterday = U.getTodayCode().dayBefore().getDateString();
 	
 	Object.keys(statusmap).forEach(function(wotype) {
 			
@@ -93,12 +93,12 @@ function createItem()
 	const payload = {
 		"notes" : "",
 		"hole_fill" : "",
-		"day_code" : getDocFormValue("day_code_sel"),
-		"wo_type" : getDocFormValue("wo_type"),
-		"wo_units" : getDocFormValue("wo_units_sel")
+		"day_code" : U.getDocFormValue("day_code_sel"),
+		"wo_type" : U.getDocFormValue("wo_type"),
+		"wo_units" : U.getDocFormValue("wo_units_sel")
 	};
 	
-	const newitem = W.buildItem("workout_log", payload);		
+	const newitem = W.buildItem("workout_log", payload);
 	newitem.syncItem();
 	redisplay();
 }
@@ -107,7 +107,7 @@ function createItem()
 // Need this to populate units field correctyly.
 function workoutType2Show()
 {
-	return getDocFormValue("wo_type");
+	return U.getDocFormValue("wo_type");
 }
 
 function getPlanItem(shortcode)
@@ -149,8 +149,7 @@ function getRecentMonday()
 function getMondayList()
 {
 	var mondays = [];
-	
-	var daycode = getTodayCode();
+	var daycode = U.getTodayCode();
 	
 	for(var i = 0; i < 70; i++)
 	{
@@ -176,7 +175,7 @@ function isWeekComplete(sumdata)
 			{ continue; }
 				
 		if(onepair[0] < onepair[1])
-			{ return false; }		
+			{ return false; }
 	}
 	
 	return true;
@@ -219,8 +218,6 @@ function redisplay()
 	const linearmap = getLinearMondayMap();
 
 	var dcstr = "";
-
-	// var workoutlist = getItemList("workout_log").filter(wo => wo.getWoType() == workouttype);
 	const workoutlist = W.getItemList("workout_log");
 	
 	// TODO: just return a limited number of Mondays here to avoid rendering years of data.
@@ -259,7 +256,7 @@ function redisplay()
 		</a>
 	`;
 
-	populateSpanData({
+	U.populateSpanData({
 		"show_format_button" : formatbutton,
 		"double_column_table": dcstr
 	});
@@ -295,7 +292,7 @@ function redispControls()
 
 	buildOptSelector()
 		.configureFromHash(displaymap)
-		.setSelectedKey(getTodayCode().dayBefore().getDateString())
+		.setSelectedKey(U.getTodayCode().dayBefore().getDateString())
 		.setElementName("day_code_sel")
 		.autoPopulate();
 }
@@ -320,7 +317,7 @@ function getWeeklyLogTable(wologger, linearmap, themonday)
 		</tr>
 	`;
 	
-	weeklist.sort(proxySort(a => [a.getDayCode()])).reverse();
+	weeklist.sort(U.proxySort(a => [a.getDayCode()])).reverse();
 	
 	
 	weeklist.forEach(function(woitem) {

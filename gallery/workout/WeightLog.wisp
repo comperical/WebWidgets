@@ -7,7 +7,7 @@
 <script>
 
 // Need to maintain this as state
-SELECTED_DAY_CODE = getTodayCode().dayBefore().getDateString();
+SELECTED_DAY_CODE = U.getTodayCode().dayBefore().getDateString();
 
 
 EFFORT_CODE_MAP = {
@@ -30,7 +30,7 @@ function createNewMovement()
             "is_active" : 1
         }
 
-        const newitem = buildItem("movement", newrec);
+        const newitem = W.buildItem("movement", newrec);
         newitem.syncItem();
         redisplay();
 
@@ -44,14 +44,14 @@ function lookupRecent(moveid)
 {
     const movelist = W.getItemList("weight_log")
                             .filter(item => item.getMoveId() == moveid)
-                            .sort(proxySort(item => [item.getDayCode()])).reverse();
+                            .sort(U.proxySort(item => [item.getDayCode()])).reverse();
 
     return movelist.length > 0 ? movelist[0] : null;
 }
 
 function logNewMove()
 {
-    const moveid = parseInt(getDocFormValue("move_select"));
+    const moveid = parseInt(U.getDocFormValue("move_select"));
     const clonefrom = lookupRecent(moveid);
 
     copyFromClone(clonefrom, moveid);
@@ -68,7 +68,7 @@ function copyFromClone(clonefrom, moveid)
         "effort" : clonefrom == null ? "M" : clonefrom.getEffort(),
         "notes" : "",
         "day_code" : SELECTED_DAY_CODE      
-    };      
+    };
     
     const newitem = W.buildItem("weight_log", newrec);
     newitem.syncItem();
@@ -76,7 +76,7 @@ function copyFromClone(clonefrom, moveid)
 
 function copyFromPrevious()
 {
-    const prevday = getDocFormValue("copy_from_sel");
+    const prevday = U.getDocFormValue("copy_from_sel");
     copyFromPrevDay(prevday);
 
 }
@@ -117,13 +117,13 @@ function editEffortLevel(itemid)
 
 function updateSelectedDay()
 {
-    SELECTED_DAY_CODE = getDocFormValue("day_code_sel");
+    SELECTED_DAY_CODE = U.getDocFormValue("day_code_sel");
     redisplay();
 }
 
 function editShortName()
 {
-    genericEditTextField("rage_log", "short_name", EDIT_STUDY_ITEM);
+    U.genericEditTextField("rage_log", "short_name", EDIT_STUDY_ITEM);
 }
 
 function editWeight(itemid)
@@ -149,17 +149,17 @@ function editWeight(itemid)
 function editRepInfo(itemid)
 {
     // Do I want to do some data type checking here...?
-    genericEditTextField("weight_log", "rep_info", itemid)
+    U.genericEditTextField("weight_log", "rep_info", itemid)
 }
 
 function editItemNotes(itemid)
 {
-    genericEditTextField("weight_log", "notes", itemid)
+    U.genericEditTextField("weight_log", "notes", itemid)
 }
 
 function removeItem(itemid) 
 {
-    genericDeleteItem("weight_log", itemid);
+    U.genericDeleteItem("weight_log", itemid);
 }
 
 function redisplay()
@@ -170,7 +170,7 @@ function redisplay()
 
 function getMondayList()
 {
-    var dc = getTodayCode().nDaysAfter(10);
+    var dc = U.getTodayCode().nDaysAfter(10);
     const mlist = [];
 
     for(var idx = 0; idx < 100; idx++)
@@ -204,7 +204,7 @@ function getDataByMonday()
 }
 
 
-function getWeightNameMap() {
+function getWeightNameHash() {
 
     const nmap = {};
 
@@ -249,32 +249,32 @@ function getCopyFromDisplayMap()
 function redisplayMainTable()
 {
 
-    const namemap = getWeightNameMap();
+    const namemap = getWeightNameHash();
     namemap[-1] = "----";
 
     const optsel = buildOptSelector()
-                        .setFromMap(namemap)
+                        .configureFromHash(namemap)
                         .setElementName("move_select")
                         .setOnChange("javascript:logNewMove()")
                         .sortByDisplay()
-                        .getSelectString();
+                        .getHtmlString();
 
-    const displaymap = getNiceDateDisplayMap(10);
+    const displayhash = getNiceDateDisplayMap(10);
 
     const datesel = buildOptSelector()
-                    .setFromMap(displaymap)
+                    .configureFromHash(displayhash)
                     .setSelectedKey(SELECTED_DAY_CODE)
                     .setOnChange("javascript:updateSelectedDay()")
                     .setElementName("day_code_sel")
-                    .getSelectString();    
+                    .getHtmlString();
 
-    const copymap = getCopyFromDisplayMap();
+    const copyhash = getCopyFromDisplayMap();
     const copysel = buildOptSelector()
-                        .setFromMap(copymap)
+                        .configureFromHash(copyhash)
                         .setSelectedKey("---")
                         .setOnChange("javascript:copyFromPrevious()")
                         .setElementName("copy_from_sel")
-                        .getSelectString();
+                        .getHtmlString();
 
     var pagestr = `
 
@@ -305,9 +305,8 @@ function redisplayMainTable()
     const mondayMap = getDataByMonday();
 
     getMondayList().forEach(function(monday) {
-
-
-        const itemlist = (mondayMap[monday.getDateString()] || []).sort(proxySort(item => [item.getDayCode()])).reverse();
+        const itemlist = (mondayMap[monday.getDateString()] || [])
+                                .sort(U.proxySort(item => [item.getDayCode()])).reverse();
 
         if (itemlist.length == 0) 
             {return; }
@@ -388,7 +387,7 @@ function redisplayMainTable()
         pagestr += "</table>";
     });
 
-    populateSpanData({"main_page" : pagestr });
+    U.populateSpanData({"main_page" : pagestr });
 }
 
 </script>

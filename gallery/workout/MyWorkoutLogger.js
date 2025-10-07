@@ -64,9 +64,9 @@ function WorkoutLogger(workouts, goals)
 	// Goal ID :: total distance logged for it.
 	var goalId2Total = {};
 	
-	workouts = workouts.sort(proxySort(witem => [witem.getDayCode(), witem.getId()]));
+	workouts = workouts.sort(U.proxySort(witem => [witem.getDayCode(), witem.getId()]));
 	
-	goals = goals.sort(proxySort(gitem => [gitem.getMondayCode()]));
+	goals = goals.sort(U.proxySort(gitem => [gitem.getMondayCode()]));
 	
 	// Map :: workout type :: list of unfilled goals
 	var unfilled = {};

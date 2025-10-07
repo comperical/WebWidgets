@@ -25,7 +25,7 @@ function handleNavBar()
 
 
 
-function getDateSelCodeMap()
+function getDateSelCodeHash()
 {
     return {
         "all" : "all",
@@ -91,14 +91,14 @@ function getFilteredItemList()
     if(DATE_SEL_CODE.startsWith("last")) {
 
         const daysago = parseInt(DATE_SEL_CODE.split("_")[1]);
-        const cutoff = getTodayCode().nDaysBefore(daysago).getDateString();
+        const cutoff = U.getTodayCode().nDaysBefore(daysago).getDateString();
         return itemlist.filter(item => item.getDayCode() >= cutoff);
     }
 }
 
 function updateDateDisplay()
 {
-    DATE_SEL_CODE = getDocFormValue("date_sel");
+    DATE_SEL_CODE = U.getDocFormValue("date_sel");
     redisplay();
 }
 
@@ -131,13 +131,12 @@ function redisplayMainTable()
     const filterlist = getFilteredItemList();
 
     const minmax = getMinMaxDates(filterlist);
-    const daytimespan = lookupDayCode(minmax[0]).daysUntil(lookupDayCode(minmax[1]));
+    const daytimespan = U.lookupDayCode(minmax[0]).daysUntil(U.lookupDayCode(minmax[1]));
 
     const statpack = getStatInfo(filterlist);
     const wotypemap = getWoTypeMap();
-    console.log(wotypemap);
 
-    const typelist = Object.keys(statpack).sort(proxySort(wtype => [-statpack[wtype]]));
+    const typelist = Object.keys(statpack).sort(U.proxySort(wtype => [-statpack[wtype]]));
 
     typelist.forEach(function(wtype) {
 
@@ -167,12 +166,12 @@ function redisplayMainTable()
 
 
     const selspan = buildOptSelector()
-                        .setFromMap(getDateSelCodeMap())
+                        .configureFromHash(getDateSelCodeHash())
                         .setSelectOpener(`<select name="date_sel" onChange="javascript:updateDateDisplay()">`)
                         .setSelectedKey(DATE_SEL_CODE)
-                        .getSelectString()
+                        .getHtmlString()
 
-    populateSpanData({
+    U.populateSpanData({
         "maintable" : tablestr,
         "date_sel_span" : selspan,
         "number_of_days" : daytimespan
