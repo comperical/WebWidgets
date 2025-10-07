@@ -7,7 +7,7 @@
 
 <script>
 
-var TODAY_CODE = getTodayCode();
+var TODAY_CODE = U.getTodayCode();
 
 const TYPE_SELECTOR_KEY = "typeSelKeY";
 
@@ -68,22 +68,22 @@ function setUpContolArea()
 {
 
     const typesel = buildOptSelector()
-    					.setKeyList(MASTER_TYPE_LIST)
+    					.configureFromList(MASTER_TYPE_LIST)
                         .sortByDisplay()
                         .setElementName(TYPE_SELECTOR_KEY)
                         .insertStartingPair(DUMMY_SEL, DUMMY_SEL)
                         .useGenericUpdater()
-                        .getSelectString();
+                        .getHtmlString();
 
 
 
     const yearsel = buildOptSelector()
-    					.setKeyList(getActiveYearList())
+    					.configureFromList(getActiveYearList())
                         .sortByDisplay()
                         .setElementName(YEAR_SELECTOR_KEY)
                         .insertStartingPair(DUMMY_SEL, DUMMY_SEL)
                         .useGenericUpdater()
-                        .getSelectString();
+                        .getHtmlString();
 
 
     var uidata = `
@@ -106,7 +106,7 @@ function setUpContolArea()
     	<br/>
     `;
 
-    populateSpanData({"control_area" : uidata});
+    U.populateSpanData({"control_area" : uidata});
 }
 
 function textSearchHit(item)
@@ -155,7 +155,7 @@ function reDispActiveTable()
 	var activelist = getSelectedItemList();
 	
 	// Sort by effective priority
-	activelist.sort(proxySort(actrec => [-actrec.getPriority()]));
+	activelist.sort(U.proxySort(actrec => [-actrec.getPriority()]));
 
 	
 	var tablestr = `
@@ -197,8 +197,10 @@ function reDispActiveTable()
 		{
 			const breaker = "&nbsp; &nbsp;";
 			
+			// TODO: this does not currently allow
+
 			rowstr += `
-				<td>					
+				<td>
 				<a href="javascript:editStudyItem(${activitem.getId()})">
 				<img src="/u/shared/image/inspect.png" height="18"></a>
 				
@@ -216,9 +218,7 @@ function reDispActiveTable()
 	
 	tablestr += "</table>";
 	
-	populateSpanData({
-		"activetable" : tablestr
-	});
+	U.populateSpanData({ "activetable" : tablestr });
 	
 }
 

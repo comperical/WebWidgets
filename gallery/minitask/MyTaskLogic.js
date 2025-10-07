@@ -7,8 +7,8 @@ const MASTER_TYPE_LIST = ["chinese", "crm", "life", "work"];
 function getHeaderInfo()
 {
     return [
-        ["Mini Task List", "widget.wisp"],
-        ["Mini Task Search", "MiniTaskSearch.wisp"]
+        ["Mini Task List", "widget"],
+        ["Mini Task Search", "MiniTaskSearch"]
     ];
 }
 
@@ -18,7 +18,7 @@ function getTaskAge(thetask)
 {
     // console.log("Task alpha is " + thetask.getAlphaDate());
     
-    var alphadc = lookupDayCode(thetask.getAlphaDate());
+    var alphadc = U.lookupDayCode(thetask.getAlphaDate());
     
     return alphadc.daysUntil(TODAY_CODE);
 }
@@ -45,7 +45,7 @@ function getTaskItemList(wantcompleted)
     
     var biglist = W.getItemList("mini_task_list").filter(item => item.getIsBacklog() == 0);
         
-    biglist.sort(proxySort(item => [item.getAlphaDate()])).reverse();
+    biglist.sort(U.proxySort(item => [item.getAlphaDate()])).reverse();
     
     for(var bi in biglist)
     {   
@@ -75,7 +75,7 @@ function getTaskItemList(wantcompleted)
     {
         // tasklist.sort(function(a, b) { return b.getOmegaDate().localeCompare(a.getOmegaDate()); });
         
-        tasklist.sort(proxySort(item => [item.getOmegaDate()])).reverse();
+        tasklist.sort(U.proxySort(item => [item.getOmegaDate()])).reverse();
     }
     
 

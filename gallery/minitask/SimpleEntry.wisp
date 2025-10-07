@@ -13,11 +13,11 @@
 
 function createNote(priority)
 {
-    const itemname = getDocFormValue("simple_item")
+    const itemname = U.getDocFormValue("simple_item")
     
     if(itemname)
-    {           
-        var todaycode = getTodayCode().getDateString();
+    {
+        const todaycode = U.getTodayCode().getDateString();
         
         const newrec = {
             "task_type" : "life",
@@ -49,9 +49,7 @@ function doClear()
 
 function redisplay()
 {
-    getUniqElementByName("simple_item").value = "";
-    // getUniqElementByName("simple_item").focus();
-
+    U.getUniqElementByName("simple_item").value = "";
     document.getElementById("noteText").focus();
 }
 
