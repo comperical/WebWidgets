@@ -20,7 +20,7 @@ function createNew()
 	
 	if(shortname)
 	{
-		const todaycode = getTodayCode().dayBefore().getDateString();
+		const todaycode = U.getTodayCode().dayBefore().getDateString();
 		
 		// created_on, active_on, completed_on, dead_line
 		const newrec = {
@@ -55,7 +55,7 @@ function editStudyItem(itemid)
 
 function editShortName()
 {
-	genericEditTextField("rage_log", "short_name", EDIT_STUDY_ITEM);
+	U.genericEditTextField("rage_log", "short_name", EDIT_STUDY_ITEM);
 }
 
 function back2Main()
@@ -116,12 +116,12 @@ function getTagUniverse()
 		tagListFromItem(ritem).forEach(tag => tagset.add(tag));		
 	});
 
-	return [... tagset].sort(proxySort(s => [s.toLowerCase()]));
+	return [... tagset].sort(U.proxySort(s => [s.toLowerCase()]));
 }
 
 function addStudyTag()
 {
-	const newtag = getDocFormValue("add_tag_sel");
+	const newtag = U.getDocFormValue("add_tag_sel");
 	var thetags = getTagList(EDIT_STUDY_ITEM);
 	thetags.push(newtag);
 
@@ -193,7 +193,7 @@ function redisplayStudyItem()
 	const studyitem = W.lookupItem("rage_log", EDIT_STUDY_ITEM);
 	
 	
-	populateSpanData({
+	U.populateSpanData({
 		"day_code" : studyitem.getDayCode(),
 		"short_name" : studyitem.getShortName(),
 		"category_list" : tagstr,
@@ -206,7 +206,7 @@ function redisplayMainTable()
 {
 
 	var ragelist = W.getItemList("rage_log");
-	ragelist.sort(proxySort(a => [a.getDayCode()])).reverse();
+	ragelist.sort(U.proxySort(a => [a.getDayCode()])).reverse();
 
 	var tablestr = `
 		<table class="basic-table"  width="85%">
@@ -249,7 +249,7 @@ function redisplayMainTable()
 
 	tablestr += "</table>";
 
-	populateSpanData({"maintable" : tablestr });
+	U.populateSpanData({"maintable" : tablestr });
 }
 
 </script>

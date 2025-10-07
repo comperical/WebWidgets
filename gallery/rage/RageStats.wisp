@@ -22,7 +22,7 @@ function tagListFromItem(ritem)
     return tagstr.length == 0 ? [] : tagstr.split(";");
 }
 
-function getDateSelCodeMap()
+function getDateSelCodeHash()
 {
     return {
         "all" : "all",
@@ -76,7 +76,7 @@ function getStatInfo(itemlist)
 function getFilteredItemList()
 {
 
-    const itemlist = getItemList("rage_log");
+    const itemlist = W.getItemList("rage_log");
 
     if(DATE_SEL_CODE == "all") {
         return itemlist;
@@ -90,7 +90,7 @@ function getFilteredItemList()
     if(DATE_SEL_CODE.startsWith("last")) {
 
         const daysago = parseInt(DATE_SEL_CODE.split("_")[1]);
-        const cutoff = getTodayCode().nDaysBefore(daysago).getDateString();
+        const cutoff = U.getTodayCode().nDaysBefore(daysago).getDateString();
         return itemlist.filter(item => item.getDayCode() >= cutoff);
     }
 
@@ -100,7 +100,7 @@ function getFilteredItemList()
 
 function updateDateDisplay()
 {
-    DATE_SEL_CODE = getDocFormValue("date_sel");
+    DATE_SEL_CODE = U.getDocFormValue("date_sel");
     redisplay();
 }
 
@@ -120,10 +120,10 @@ function redisplayMainTable()
     const filterlist = getFilteredItemList();
     const minmax = getMinMaxDates(filterlist);
     const statpack = getStatInfo(filterlist);
-    const taglist = Object.keys(statpack).sort(proxySort(tag => [-statpack[tag][0]]));
+    const taglist = Object.keys(statpack).sort(U.proxySort(tag => [-statpack[tag][0]]));
 
 
-    const daytimespan = lookupDayCode(minmax[0]).daysUntil(lookupDayCode(minmax[1]));
+    const daytimespan = U.lookupDayCode(minmax[0]).daysUntil(U.lookupDayCode(minmax[1]));
 
     const alltotals = [0, 0];
 
@@ -162,12 +162,12 @@ function redisplayMainTable()
 
 
     const selspan = buildOptSelector()
-                        .setFromMap(getDateSelCodeMap())
+                        .configureFromHash(getDateSelCodeHash())
                         .setSelectOpener(`<select name="date_sel" onChange="javascript:updateDateDisplay()">`)
                         .setSelectedKey(DATE_SEL_CODE)
-                        .getSelectString()
+                        .getHtmlString()
 
-    populateSpanData({
+    U.populateSpanData({
         "maintable" : tablestr,
         "date_sel_span" : selspan,
         "number_of_days" : daytimespan
