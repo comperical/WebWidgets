@@ -34,14 +34,14 @@ function deleteItem(killid)
     redisplay();
 }
 
-function getLogMap()
+function getLogHash()
 {
-    // Map of Phase ID :: last daycode update   
-    var logmap = {};
-    var loglist = W.getItemList("mroutine_log");
-    loglist.sort(proxySort(a => [a.getLogTimePst()]));
+    // Map of Phase ID :: last daycode update
+    const logmap = {};
+    const loglist = W.getItemList("mroutine_log");
+    loglist.sort(U.proxySort(a => [a.getLogTimePst()]));
     
-    loglist.forEach(function(mrlog) {   
+    loglist.forEach(function(mrlog) {
         var dc = mrlog.getLogTimePst().split(" ")[0];
         logmap[mrlog.getPhaseId()] = dc;
     });
@@ -52,11 +52,11 @@ function getLogMap()
 function getActivePhase()
 {
     // Active Phase is the lowest ORDER KEY phase with no log item for the given day.
-    var logmap = getLogMap();
+    var logmap = getLogHash();
     var phaselist = W.getItemList("mroutine_phase").filter(mrp => mrp.getIsActive() == 1);
     
-    phaselist.sort(proxySort(a => [a.getOrderKey()]));
-    const todayOfWeek = getTodayCode().getShortDayOfWeek();
+    phaselist.sort(U.proxySort(a => [a.getOrderKey()]));
+    const todayOfWeek = U.getTodayCode().getShortDayOfWeek();
 
     for(var pi in phaselist)
     {
@@ -68,11 +68,11 @@ function getActivePhase()
         if(!showdays.includes(todayOfWeek))
             { continue; }
 
-        if(lastup != getTodayCode().dateString)
+        if(lastup != U.getTodayCode().dateString)
             { return phs; }
     }
     
-    return null;    
+    return null;
 }
 
 function markDone()
@@ -93,13 +93,13 @@ function markDone()
     
     const newitem = W.buildItem("mroutine_log", comrecord);
     newitem.syncItem();
-    redisplay();    
+    redisplay();
     
 }
 
 function isTodayLog(mrlog)
 {
-    return mrlog.getLogTimePst().split(" ")[0] == getTodayCode().dateString;    
+    return mrlog.getLogTimePst().split(" ")[0] == U.getTodayCode().dateString;
     
 }
 
@@ -168,12 +168,12 @@ function redisplay()
 
 
     var complist = W.getItemList("mroutine_log").filter(mrlog => isTodayLog(mrlog));
-    complist.sort(proxySort(a => [a.getLogTimePst])).reverse()
+    complist.sort(U.proxySort(a => [a.getLogTimePst])).reverse()
     
     complist.forEach(function(logitem) {
 
         const cphase = W.lookupItem("mroutine_phase", logitem.getPhaseId());
-        const tstamp = logitem.getLogTimePst().split(" ")[1].substring(0, 5);       
+        const tstamp = logitem.getLogTimePst().split(" ")[1].substring(0, 5);
         const itemrow = `
             <tr>
             <td>${cphase.getShortName()}</td>
@@ -190,9 +190,7 @@ function redisplay()
         
     mtstr += "</table>";
     
-    populateSpanData({
-        "mainpage" : mtstr
-    });
+    U.populateSpanData({ "mainpage" : mtstr });
 }
 
 

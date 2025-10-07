@@ -46,7 +46,7 @@ function back2Main()
 
 function toggleItemActive(itemid)
 {
-	genericToggleActive("exercise_plan", itemid);
+	U.genericToggleActive("exercise_plan", itemid);
 	redisplay();
 }
 
@@ -59,7 +59,7 @@ function handleNavBar()
 
 function editUnitCode()
 {
-	genericEditTextField("exercise_plan", "unit_code", EDIT_STUDY_ITEM);
+	U.genericEditTextField("exercise_plan", "unit_code", EDIT_STUDY_ITEM);
 }
 
 function redisplay()
@@ -67,9 +67,7 @@ function redisplay()
 	handleNavBar();
 
 	const pageinfo = EDIT_STUDY_ITEM == -1 ? getMainPageInfo() : getEditPageInfo();
-	populateSpanData({
-		"pageinfo" : pageinfo
-	});
+	U.populateSpanData({ "pageinfo" : pageinfo });
 }
 
 function getEditPageInfo()
@@ -124,7 +122,7 @@ function getMainPageInfo()
 	
 		
 	var activelist = W.getItemList("exercise_plan");
-	activelist.sort(proxySort(a => [a.getExType(), a.getId()]));
+	activelist.sort(U.proxySort(a => [a.getExType(), a.getId()]));
 
 	activelist.forEach(function(activitem) {
 

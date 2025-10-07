@@ -145,7 +145,7 @@ function setEditStudyItem(studyid)
 function addOnDayItem()
 {
 	const showitem = getEditStudyItem();
-	const newday = getDocFormValue("on_day_sel");
+	const newday = U.getDocFormValue("on_day_sel");
 
 	var daylist = getDayList4Item(showitem);
 
@@ -163,7 +163,7 @@ function addOnDayItem()
 
 function composeSaveString(daylist) 
 {
-	daylist.sort(proxySort(dow => [SHORT_DAY_WEEK_LIST.indexOf(dow)]));
+	daylist.sort(U.proxySort(dow => [SHORT_DAY_WEEK_LIST.indexOf(dow)]));
 	return daylist.join(",");
 }
 
@@ -229,14 +229,14 @@ function redisplayMainTable()
 	<tr>
 	<th colspan="2">OrderKey</th>
 	<th>Name</th>
-	<th>Days</th>	
+	<th>Days</th>
 	<th>Active?</th>
 	<th>---</th>
 	</tr>
 	`;
 
 	var biglist = W.getItemList("mroutine_phase");
-	biglist.sort(proxySort(item => [item.getOrderKey()]));
+	biglist.sort(U.proxySort(item => [item.getOrderKey()]));
 
 
 	
@@ -249,7 +249,7 @@ function redisplayMainTable()
 
 
 
-	// Okay, the issue is that when the object goes through getDocFormValue(...) in genericUpdater function,
+	// Okay, the issue is that when the object goes through U.getDocFormValue(...) in genericUpdater function,
 	// It gets transformed into a string
 	const showInActive = GENERIC_OPT_SELECT_MAP.get(SHOW_INACTIVE_KEY) == true.toString();
 
@@ -297,7 +297,7 @@ function redisplayMainTable()
 	mtstr += `</table>`;
 	
 
-	populateSpanData({
+	U.populateSpanData({
 		"show_inactive" : boolSelector,
 		"maintable" : mtstr
 	});
@@ -351,7 +351,7 @@ function redisplayEditItem()
 		"extra_info_box" : getExtraInfoBox().getHtmlString()
 	};
 	
-	populateSpanData(spandata);
+	U.populateSpanData(spandata);
 }
 
 </script>

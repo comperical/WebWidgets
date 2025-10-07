@@ -26,36 +26,31 @@ function deleteItem(killid)
 
 function editMiniNote(editid)
 {
-	var myitem = W.lookupItem("ex_week_goal", editid);
-	
-	var newnotes = prompt("Notes for this item: ", myitem.getMiniNote());
-	
-	if(newnotes)
+	const updater = function(myitem)
 	{
-		myitem.setMiniNote(newnotes);
-		myitem.syncItem();
-		redisplay();		
+		const newnotes = prompt("Notes for this item: ", myitem.getMiniNote());
+	
+		if(newnotes != null)
+		{
+			myitem.setMiniNote(newnotes);
+		}
 	}
+
+	U.genericItemUpdate("ex_week_goal", editid, updater);
 }
 
 
 function updateGoalTarget(goalid)
 {
-	const goalitem = W.lookupItem("ex_week_goal", goalid);
-	const newgoal = prompt("Enter a new goal target: ", goalitem.getWeeklyGoal());
-
-	if(newgoal)
+	const updater = function(goalitem)
 	{
-		if(!okayInt(newgoal))
-		{
-			alert("Please enter an integer");
-			return;
-		}
+		const newgoal = U.promptForInt("Enter a new goal target: ", goalitem.getWeeklyGoal());
 
-		goalitem.setWeeklyGoal(newgoal);
-		goalitem.syncItem();
-		redisplay();
+		if(newgoal != null)
+			{ goalitem.setWeeklyGoal(newgoal); }
 	}
+
+	U.genericItemUpdate("ex_week_goal", goalid, updater);
 }
 
 
@@ -80,7 +75,7 @@ function getExType4Code(shortcode)
 function getMondayList()
 {
 	var daylist = [];
-	var oneday = getTodayCode();
+	var oneday = U.getTodayCode();
 	
 	while(daylist.length < 50)
 	{
@@ -106,7 +101,7 @@ function redisplay()
 	mondaylist.forEach(function(themonday) {
 
 		var weeklist =  workoutlist.filter(witem => witem.getMondayCode() == themonday);
-		weeklist.sort(proxySort(a => [a.getShortCode()]));
+		weeklist.sort(U.proxySort(a => [a.getShortCode()]));
 				
 		mainlog += `
 			<h3>Week of ${themonday.substring(5)}</h3>

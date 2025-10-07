@@ -15,7 +15,7 @@ var STUDY_CATEGORY = false;
 var SEARCH_TERM = "";
 
 
-massert(W.getItemList("link_categ").length > 0,
+U.massert(W.getItemList("link_categ").length > 0,
 	"You must add some link categories by hand first!!");
 
 // Very crude method of picking a default category.
@@ -23,17 +23,6 @@ massert(W.getItemList("link_categ").length > 0,
 // On weekend, select YogaVideo
 function getDefaultCategory()
 {
-	/*
-	dburfoot note: this was a trick I used for my own use, unfortunately it breaks other people who don't have these categories.
-	const shortdow = getTodayCode().getShortDayOfWeek();
-	const weekend = ["sat", "sun"].includes(shortdow.toLowerCase());
-	const defaultcat = weekend ? "YogaVideo" : "LNKD";
-	const hits = getItemList("link_categ").filter(item => item.getShortCode() == defaultcat)
-
-	massert(hits.length == 1, `Expected exactly 1 but got ${hits.length} hits for default category ${defaultcat}`);
-	return hits[0].getId();
-	*/
-
 	const hits = W.getItemList("link_categ");
 	return hits[0].getId();
 
@@ -154,8 +143,8 @@ function getCategoryMap()
 	// Okay, this sorting doesn't come out in the final drop-down,
 	// because it goes through the intermediate map 
 	const categlist = W.getItemList("link_categ")
-				.filter(ctg => ctg.getIsActive() == 1)
-				.sort(proxySort(ctg => [ctg.getShortCode()]));
+							.filter(ctg => ctg.getIsActive() == 1)
+							.sort(U.proxySort(ctg => [ctg.getShortCode()]));
 	
 	// console.log(categlist);
 	
@@ -167,12 +156,12 @@ function getCategoryMap()
 
 function editShortDesc()
 {
-	genericEditTextField("link_main", "short_desc", EDIT_STUDY_ITEM);
+	U.genericEditTextField("link_main", "short_desc", EDIT_STUDY_ITEM);
 }
 
 function editLinkUrl()
 {
-	genericEditTextField("link_main", "link_url", EDIT_STUDY_ITEM);
+	U.genericEditTextField("link_main", "link_url", EDIT_STUDY_ITEM);
 }
 
 function reDoSearch()
@@ -198,7 +187,7 @@ function updateCategory()
 {
 	const updater = function(item)
 	{
-		const catid = parseInt(getDocFormValue("item_category_sel"));
+		const catid = parseInt(U.getDocFormValue("item_category_sel"));
 		item.setCatId(catid);
 	}
 
@@ -261,7 +250,7 @@ function redisplayEditItem()
 	const optmap = getCategoryMap();
 
 	buildOptSelector()
-			.configureFromHash(optmap)
+			.configureFromMap(optmap)
 			.sortByDisplay()
 			.setSelectedKey(getMainCategory())
 			.setElementName("item_category_sel")
@@ -270,7 +259,7 @@ function redisplayEditItem()
 			.autoPopulate();
 
 	
-	populateSpanData({
+	U.populateSpanData({
 		"short_desc" : edititem.getShortDesc(),
 		"link_url" : edititem.getLinkUrl(), 
 	});
@@ -312,8 +301,8 @@ function redisplayCategoryTable()
 		`;
 		
 		const toggleop = `
-			<a href="javascript:genericToggleActive('link_categ', ${categ.getId()})">
-			<img src="/u/shared/image/cycle.png" height="18"></a>		
+			<a href="javascript:U.genericToggleActive('link_categ', ${categ.getId()})">
+			<img src="/u/shared/image/cycle.png" height="18"></a>
 		`;
 		
 		const op2display = numhit == 0 ? removeop : toggleop;
@@ -400,22 +389,21 @@ function getLinkTableStr(linkmainlist)
 
 function getCategoryMap()
 {
-	// TODO: make this a real Map!!!
-	const catmap = {};
+	const catmap = new Map();
 	W.getItemList("link_categ").forEach(function(item) {
-		catmap[item.getId()] = item.getShortCode();
+		catmap.set(item.getId(), item.getShortCode());
 	});
 	return catmap;
 }
 
 
 function redisplayMainTable()
-{		
+{
 	const curcatname = W.lookupItem("link_categ", getMainCategory()).getShortCode();
 
 	const optmap = getCategoryMap();
 	const optsel = buildOptSelector()
-						.configureFromHash(getCategoryMap())
+						.configureFromMap(getCategoryMap())
 						.setElementName(SELECTED_CATEGORY)
 						.useGenericUpdater()
 						.sortByDisplay()
@@ -426,7 +414,7 @@ function redisplayMainTable()
 
 	const tablestr = getLinkTableStr(linkmainlist);
 
-	populateSpanData({
+	U.populateSpanData({
 		"maintable" : tablestr,
 		"main_category_sel_span" : optsel
 	});
@@ -459,7 +447,7 @@ function redisplaySearchTable() {
 
 	const tablestr = getLinkTableStr(searchlist);
 
-	populateSpanData({
+	U.populateSpanData({
 		"searchtable" : tablestr,
 		"search_result" : SEARCH_TERM
 	});

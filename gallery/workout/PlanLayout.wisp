@@ -25,13 +25,13 @@ function getLayoutList()
 
 function updateLayoutSel()
 {
-    SELECTED_LAYOUT = getDocFormValue("layout_sel");
+    SELECTED_LAYOUT = U.getDocFormValue("layout_sel");
     redisplay();
 }
 
 function deleteLayoutItem(itemid)
 {
-    genericDeleteItem("plan_layout", itemid);
+    U.genericDeleteItem("plan_layout", itemid);
 }
 
 function activateSelectedLayout()
@@ -69,7 +69,7 @@ function add2Layout()
     }
 
 
-    const woselected = getDocFormValue("workout_sel");
+    const woselected = U.getDocFormValue("workout_sel");
 
     const isactive = (SELECTED_LAYOUT == null || getActiveLayoutName() == SELECTED_LAYOUT) ? 1 : 0;
 
@@ -119,12 +119,12 @@ function redisplay()
     handleNavBar();
 
     const layoutSel = buildOptSelector()
-                        .setKeyList(getLayoutList())
+                        .configureFromList(getLayoutList())
                         .sortByDisplay()
                         .setSelectedKey(SELECTED_LAYOUT)
                         .setElementName("layout_sel")
                         .setOnChange("javascript:updateLayoutSel()")
-                        .getSelectString();
+                        .getHtmlString();
 
     var pageinfo = `
 
@@ -212,12 +212,12 @@ function redisplay()
 
     const workoutList = W.getItemList("exercise_plan").map(item => item.getShortCode());
     const workoutSel = buildOptSelector()
-                            .setKeyList(workoutList)
+                            .configureFromList(workoutList)
                             .sortByDisplay()
                             .setElementName("workout_sel")
                             .setOnChange("javascript:add2Layout()")
                             .insertStartingPair(-1, "---")
-                            .getSelectString();
+                            .getHtmlString();
 
 
     pageinfo += `
@@ -235,10 +235,7 @@ function redisplay()
     `;
 
 
-    populateSpanData({
-        "complete_log": pageinfo
-    });
-
+    U.populateSpanData({ "complete_log": pageinfo });
 }
 
 
