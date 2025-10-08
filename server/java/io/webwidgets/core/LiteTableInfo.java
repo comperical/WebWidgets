@@ -170,6 +170,14 @@ public class LiteTableInfo
 		return new LiteTableInfo(new WidgetItem(owner, wname), table);
 	}
 
+
+	public static LiteTableInfo buildAndSetup(WidgetItem widget, String table)
+	{
+		var LTI = new LiteTableInfo(widget, table);
+		LTI.runSetupQuery();
+		return LTI;
+	}
+
 	// TODO: this should really just be done in the constructor
 	// I like the general pattern of construct/configure/load, but in this case it's probably
 	// not necessary

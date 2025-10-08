@@ -27,6 +27,8 @@ public class AuthLogic
 
 	public static String PUBLIC_READ_GRANTEE = "pubread_grantee";
 	
+
+	// The ORDER of this enum is important, read < write < admin
 	public enum PermLevel
 	{
 		// load data

@@ -15,6 +15,7 @@ import net.danburfoot.shared.CoreDb;
 import net.danburfoot.shared.StringUtil;
 import net.danburfoot.shared.CoreDb.QueryCollector;
 
+import io.webwidgets.core.AuthLogic.PermLevel;
 
 // Logic for Granular permissions. Key concepts:
 // JSON data in group allow column, specified by user code, with help of nice utility methods
@@ -383,6 +384,57 @@ public class GranularPerm
         return Optional.empty();
     }
 
+
+    // This method queries the FG permissions for a SINGLE record
+    // As of Oct 2025, this is used for the BlobData check, where we need to verify if a user can read a single record
+    // This method is not efficient enough for larger reads, since it requires JSON parsing
+    public static Optional<PermLevel> singleRecordPermCheck(WidgetItem dbitem, String tablename, int recordid, Optional<WidgetUser> accessor)
+    {
+        if(!accessor.isPresent())
+            { return Optional.empty(); }
+
+        // This is partly protection against SQL injection, if someone tries to insert weird stuff into tablename
+        Util.massert(dbitem.dbFileExists(), "Widget DB %s does not exist", dbitem);
+        Util.massert(dbitem.getDbTableNameSet().contains(tablename),
+            "Table %s not present in Widget %s", tablename, dbitem);
+
+        String wherecls = Util.sprintf("%s = %d", CoreUtil.STANDARD_ID_COLUMN_NAME, recordid);
+        QueryCollector qcol = CoreUtil.tableQuery(dbitem, tablename, Util.listify(wherecls));
+
+        // Record is not in the table
+        if(qcol.getNumRec() == 0)
+            { return Optional.empty(); }
+
+        Util.massert(qcol.getSingleArgMap().containsKey(CoreUtil.GROUP_ALLOW_COLUMN),
+            "Table %s of widget %s is not configured with FG permissions, do not use this method");
+
+        var allowmap = parseGroupAllowData(qcol.recList());
+        Util.massert(allowmap.size() <= 1, "Somehow got multiple records with same ID");
+
+        // This is a single Map<String, Boolean> where the keys are the groups
+        var single = allowmap.get(recordid);
+
+        // This means the record isn't actually present
+        if(single == null)
+            { return Optional.empty(); }
+
+        // Short-circuit the JSON logic in case of owner or WWIO admin
+        if(accessor.get().isAdmin() || accessor.get() == dbitem.theOwner)
+            { return Optional.of(PermLevel.write); }
+
+        Set<String> groupset = accessor.get().lookupGroupSet4AccessTarget(dbitem);
+        Util.massert(groupset.size() >= 1, "Should have at least 1 group for user's personal group");
+
+        Set<Boolean> writeset = groupset.stream()
+                                    .filter(gr -> single.containsKey(gr))
+                                    .map(gr -> single.get(gr))
+                                    .collect(java.util.stream.Collectors.toSet());
+
+        if(writeset.isEmpty())
+            { return Optional.empty(); }
+
+        return Optional.of(writeset.contains(true) ? PermLevel.write : PermLevel.read);
+    }
 
 
     private static boolean recordHasWriteGroup(Set<String> usergroup, ArgMap item)

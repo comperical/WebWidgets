@@ -178,16 +178,36 @@ public class BlobDataManager
 		protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 			
 			ArgMap reqparam = WebUtil.getArgMap(request);
-			boolean download = reqparam.getBit("download", true);	
+			boolean download = reqparam.getBit("download", true);
 			
 			WidgetItem dataitem = lookupDataItem(reqparam);
-			
+
+
 			AuthChecker checker = AuthChecker.build().userFromRequest(request).directDbWidget(dataitem);
 			Util.massert(checker.allowRead(),
 				"User does not have read permission for Widget %s", dataitem);
 			
 			String tablename = reqparam.getStr("tablename");
 			int recordid = reqparam.getInt("id");
+
+
+			{
+				LiteTableInfo LTI = LiteTableInfo.buildAndSetup(dataitem, tablename);
+				if(LTI.hasGranularPerm())
+				{
+					var accessor = AuthLogic.getLoggedInUser(request);
+					var optperm = GranularPerm.singleRecordPermCheck(dataitem, tablename, recordid, accessor);
+
+					if(!optperm.isPresent() || optperm.get().ordinal() < PermLevel.read.ordinal())
+					{
+						throw new RuntimeException(
+							"This widget is configured for granular permissions, and user lacks access" + accessor);
+					}
+				}
+			}
+
+
+
 			ArgMap blobrecord = getBlobRecord(dataitem, tablename, recordid);
 			String blobaddr = getStandardBlobAddress(dataitem, tablename, recordid);
 			
