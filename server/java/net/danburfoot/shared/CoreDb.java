@@ -731,6 +731,12 @@ public class CoreDb
 	}
 
 
+	public static List<String> getPrimaryKeyList(ConnectionSource litedb, String tablename)
+	{
+		String query = Util.sprintf("SELECT name FROM pragma_table_info('%s') WHERE pk > 0 ORDER BY pk", tablename);
+
+		return Util.map2list(QueryCollector.buildAndRun(query, litedb).recList(), amap -> amap.getSingleStr());
+	}
 
 	public static Set<String> getLiteViewNameSet(ConnectionSource litedb)
 	{

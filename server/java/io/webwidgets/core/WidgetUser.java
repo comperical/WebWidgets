@@ -123,20 +123,17 @@ public class WidgetUser implements Comparable<WidgetUser>
         return lookupGroupSet4FromDb(optdb);
     }
 
-    // May 2025: in previous thinking about this, I thought it was important to
-    // have another place to put the group definition table, in addition to the widget with the granular perm
-    // This is because granular perms usually should be public read
-    // I now want to ship a basic version of this feature, will review this issue later
-    // If we decide to do this, this is where to put the lookup of the group DB
+    // Oct 2025: groups just go in a specifically named DB
+    // This adds another reserved DB name to the system, but it is simple and will have
+    // other benefits, like allowing a nice admin console panel that controls group info
     private Optional<WidgetItem> findRelevantGroupDb(WidgetItem accesstarget)
     {
-        if(accesstarget.getDbTableNameSet().contains(GranularPerm.GROUP_INFO_TABLE))
-        {
-            return Optional.of(accesstarget);
-        }
+        WidgetItem probe = new WidgetItem(accesstarget.theOwner, GranularPerm.GROUP_DB_NAME);
+
+        if(probe.dbFileExists() && probe.getDbTableNameSet().contains(GranularPerm.GROUP_INFO_TABLE))
+            { return Optional.of(probe); }
 
         return Optional.empty();
-
     }
 
     private Set<String> lookupGroupSet4FromDb(Optional<WidgetItem> ginfodb)

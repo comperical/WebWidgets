@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 
 
 import net.danburfoot.shared.Util;
+import net.danburfoot.shared.CoreDb;
 import net.danburfoot.shared.ArgMap;
 import net.danburfoot.shared.FileUtils;
 import net.danburfoot.shared.StringUtil;
@@ -42,6 +43,14 @@ public class ActionJackson extends HttpServlet
 		CodeFormatError,
 		InsecureConnection,
 		IncludeArgError,
+
+		// This one is somewhat generic
+		GeneralDbConfigurationError,
+		InvalidDbTableName,
+		InvalidDbColumnName,
+		IdColumnMisConfiguration,
+		BadPrimaryKeyError,
+
 		MailboxUploadError,
 		BlobStoreError,
 		ReservedNameError,
@@ -765,7 +774,67 @@ public class ActionJackson extends HttpServlet
 
 			for(String tablename : tableset)
 			{
-				Map<String, ExchangeType> extmap = LiteTableInfo.loadExchangeTypeMap(getConn(), tablename);
+
+				if(!CoreUtil.VALID_TABLE_NAME.matcher(tablename).matches())
+				{
+					String extra = String.format(
+						"Invalid Table name %s, WWIO tables are lowercase alphanumeric with underscores", tablename);
+					throw new LoaderException(LoadApiError.InvalidDbTableName, extra);
+				}
+
+
+				Map<String, ExchangeType> extmap;
+
+				try { extmap = LiteTableInfo.loadExchangeTypeMap(getConn(), tablename); }
+				catch (Exception ex) {
+
+					String extra = String.format(
+						"Misconfiguration error found for table %s : %s",
+						tablename, ex.getMessage());
+					throw new LoaderException(LoadApiError.GeneralDbConfigurationError, extra);
+				}
+
+
+				ExchangeType idtype = extmap.get(CoreUtil.STANDARD_ID_COLUMN_NAME);
+				if(idtype != ExchangeType.m_int)
+				{
+					String extra = String.format(
+						"WWIO tables must all have a single integer primary key column named %s, found %s for table %s",
+						CoreUtil.STANDARD_ID_COLUMN_NAME, idtype, tablename);
+
+					throw new LoaderException(LoadApiError.IdColumnMisConfiguration, extra);
+				}
+
+
+				{
+					List<String> observed = CoreDb.getPrimaryKeyList(getConn(), tablename);
+					List<String> expected = Util.listify(CoreUtil.STANDARD_ID_COLUMN_NAME);
+
+					if(!expected.equals(observed))
+					{
+						String extra = String.format(
+							"WWIO tables must all have a single integer primary key column named %s, found %s for table %s",
+							CoreUtil.STANDARD_ID_COLUMN_NAME, observed, tablename);
+
+						throw new LoaderException(LoadApiError.BadPrimaryKeyError, extra);
+
+					}
+				}
+
+
+				// Block bad column names
+				for(String col : extmap.keySet())
+				{
+					if(!CoreUtil.ALLOWED_COLUMN_NAME.matcher(col).matches())
+					{
+						String extra = String.format(
+							"Column %s on table %s is not a valid WWIO column name; only lowercase alphanumeric plus underscore is allowed",
+							col, tablename);
+
+						throw new LoaderException(LoadApiError.InvalidDbColumnName, extra);
+					}
+				}
+
 
 				// May 2025 - users cannot upload DB's that contain Group Allow data
 				// I could just blow away the AUX GROUP tables and rebuild them

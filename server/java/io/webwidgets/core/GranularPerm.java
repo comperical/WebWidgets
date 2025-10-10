@@ -26,9 +26,11 @@ import io.webwidgets.core.AuthLogic.PermLevel;
 // Groups are just strings; the system is not going to be persnickety about checking the group names
 public class GranularPerm
 {
-    public static final String AUX_GROUP_PREFIX = "__aux_group";
+    public static final String GROUP_DB_NAME = "groups";
 
     public static final String GROUP_INFO_TABLE = "group_info";
+
+    public static final String AUX_GROUP_PREFIX = "__aux_group";
 
     // This is a virtual group that gets added to the group set of all admin users
     public static final String AUTO_ACCESS_GROUP = "__auto_access";

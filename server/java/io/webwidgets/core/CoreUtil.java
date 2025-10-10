@@ -57,6 +57,13 @@ public class CoreUtil
 	public static final String GROUP_ALLOW_COLUMN = "group_allow";
 
 
+	// Valid WWIO table names. Question of whether we allow table names, but simply ignore them,
+	// if they are not properly formatted.
+    public static final Pattern VALID_TABLE_NAME = Pattern.compile("^[_a-z0-9]+$");
+
+
+	// There's a question of whether we should allow these and just ignore them for the purposes
+	// of WWIO. For now (Oct 2025), use a strict approach
     public static final Pattern ALLOWED_COLUMN_NAME = Pattern.compile("^[_a-z0-9]+$");
 
 

@@ -1341,8 +1341,7 @@ public class CoreCommand
 			String username = _argMap.getStr("username", "dburfoot");
 			WidgetUser user = WidgetUser.lookup(username);
 
-			// WidgetItem target = new WidgetItem(user, CoreUtil.CONFIG_DB_NAME);
-			WidgetItem target = new WidgetItem(user, _argMap.getStr("widgetname"));
+			WidgetItem target = new WidgetItem(user, GranularPerm.GROUP_DB_NAME);
 
 			Util.massert(target.dbFileExists(), "DB %s not found", target);
 
