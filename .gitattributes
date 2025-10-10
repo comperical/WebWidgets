@@ -1,0 +1,5 @@
+*.java text eol=lf
+*.js text eol=lf
+*.py text eol=lf
+*.html text eol=lf
+*.wisp text eol=lf
