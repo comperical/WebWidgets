@@ -3,6 +3,8 @@
 // November 2024: moving forward, general Widget Utility code will go in the U namespace.
 const U = {
 
+    
+
     // Get a simple string representation of the schema for the given table
     // Or for all tables if the argument is left out
     // This is typically used in development when the programmer wants a quick reminder
@@ -159,10 +161,40 @@ const U = {
         return /^-?\d*\.\d+$/.test(s.trim());
     },
 
+    __ERRORS_ON_PAGE : 0,
 
+    __MAX_ERRORS_PER_PAGE : 3,
+
+    // Assert that the given condition is true.
+    // If not, alert prompt is shown with the provided error message, as well as some info about the number of errors.
+    // CAUTION - want to avoid showing the user an infinite number of prompts, that's why we keep track of 
+    // the __ERRORS_ON_PAGE info.
     massert : function(condition, message)
     {
-        return massert(condition, message);
+        if (!condition) {
+            
+            this.__ERRORS_ON_PAGE += 1;
+            
+            const mssg = message || "Assertion failed";
+            
+            const alertmssg = `
+Encountered the following error:
+
+>> ${mssg}
+
+This is error ${this.__ERRORS_ON_PAGE}; only the first ${this.__MAX_ERRORS_PER_PAGE} will be shown.
+
+If you are the admin, please fix the error; if you are a user, please contact admin.
+`;
+        
+            if(this.__ERRORS_ON_PAGE <= this.__MAX_ERRORS_PER_PAGE)
+            {
+                alert(alertmssg);
+            }
+            
+            console.log("Error: " + mssg);
+            throw mssg;
+        }
     },
 
 
@@ -171,20 +203,27 @@ const U = {
     // To begin, they will just be pointers to the old methods
     lookupDayCode : function(dcstr)
     {
-        return lookupDayCode(dcstr);
-    },
+        const dcmap = getDayCodeMap();
 
-    getTodayCode : function()
-    {
-        return getTodayCode();
+        U.massert(dcstr in dcmap,
+            `The string ${dcstr} is not present in the DayCode system.
+            Please be aware the system contains only ${__DAY_CODE_LIST.length} entries`);
+
+        return dcmap[dcstr];
     },
 
     haveDayCodeForString : function(dcstr)
     {
-        return haveDayCodeForString(dcstr);
+        const dcmap = getDayCodeMap();
+        return (dcstr in dcmap);
+    },
+
+    // Return the DayCode representing the current day according to the user's time zone
+    getTodayCode : function()
+    {
+        const todaystr = __calcDayCodeStr(new Date());
+        return getDayCodeMap()[todaystr];
     }
-
-
 }
 
 // Delete Item from given table. 
@@ -401,41 +440,10 @@ function __strictParseOkayNull(inputstr, parsefunc, typename)
 }
 
 
-
-__ERRORS_ON_PAGE = 0;
-
-__MAX_ERRORS_PER_PAGE = 3;
-
-// Assert that the given condition is true.
-// If not, alert prompt is shown with the provided error message, as well as some info about the number of errors.
-// CAUTION - want to avoid showing the user an infinite number of prompts, that's why we keep track of 
-// the __ERRORS_ON_PAGE info.
 function massert(condition, message)
 {
-    if (!condition) {
-        
-        __ERRORS_ON_PAGE += 1;
-        
-        const mssg = message || "Assertion failed";
-        
-        const alertmssg = `
-Encountered the following error:
-
->> ${mssg}
-
-This is error ${__ERRORS_ON_PAGE}; only the first ${__MAX_ERRORS_PER_PAGE} will be shown.
-
-If you are the admin, please fix the error; if you are a user, please contact admin.
-`;
-        
-        if(__ERRORS_ON_PAGE <= __MAX_ERRORS_PER_PAGE)
-        {
-            alert(alertmssg);
-        }
-        
-        console.log("Error: " + mssg);
-        throw mssg;
-    }
+    W.showRawFunctionWarning("massert");
+    U.massert(condition, message);
 }
 
 
@@ -455,7 +463,7 @@ function getDocFormValueDefault(docformname, defaultval)
 {
     const selectlist = document.getElementsByName(docformname);
     
-    U.massert(selectlist.length <= 1, 
+    U.massert(selectlist.length <= 1,
         "Found multiple elements with name " + docformname);
     
     return selectlist.length == 0 ? defaultval : selectlist[0].value;

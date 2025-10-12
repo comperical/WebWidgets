@@ -37,21 +37,24 @@ const TIME_ZONE_LIST = Object.keys(TIME_ZONE_OFFSET_MAP);
 // This method returns an immutable DayCode object from the internal pool.
 function lookupDayCode(dcstr)
 {
-    const dcmap = getDayCodeMap();
-
-    massert(dcstr in dcmap, 
-        `The string ${dcstr} is not present in the DayCode system. 
-        Please be aware the system contains only ${__DAY_CODE_LIST.length} entries`);
-
-    return dcmap[dcstr];    
+    W.showRawFunctionWarning("lookupDayCode");
+    return U.lookupDayCode(dcstr);
 }
 
 // True if we have a day code for the given string
 // This can be used as a form of primitive date format checking
 function haveDayCodeForString(dcstr)
 {
-    const dcmap = getDayCodeMap();
-    return (dcstr in dcmap);
+    W.showRawFunctionWarning("haveDayCodeForString");
+    return U.haveDayCodeForString(dcstr);
+}
+
+
+// DayCode for current Date.
+function getTodayCode()
+{
+    W.showRawFunctionWarning("getTodayCode");
+    return U.getTodayCode();
 }
 
 
@@ -156,15 +159,9 @@ function __calcDayCodeStr(dateitem)
 {
     // Ugh, MONTH is zero-indexed, but DATE is 1-indexed!!
     var ds = dateitem.getFullYear() + "-" + padLeadingZeros((dateitem.getMonth()+1)+"", 2) + "-" + padLeadingZeros(dateitem.getDate()+"", 2);   
-    return ds;  
+    return ds;
 }
 
-// DayCode for current Date.
-function getTodayCode()
-{
-    var todaystr = __calcDayCodeStr(new Date());
-    return getDayCodeMap()[todaystr];
-}
 
 // N days before today.
 function getNDaysAgo(n)
@@ -207,7 +204,7 @@ function __maybeInitDayData()
             __DAY_CODE_MAP[dc.getDateString()] = dc;
             
             __DAY_CODE_LIST[di] = dc;
-        }       
+        }
     }
 }
 
