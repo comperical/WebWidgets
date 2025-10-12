@@ -1570,5 +1570,48 @@ public class FastTest4Basic
 			}
 		}
 	}
+
+	public static class CheckJsLibDeploy extends DescRunnable
+	{
+		public String getDesc()
+		{
+			return "Confirm that the JS files in the WWIO repo are identical to those being served";
+		}
+
+		public void runOp()
+		{
+			File servdir = AdvancedUtil.SHARED_JSLIB_ASSET_DIR;
+			File repodir = getJsLibRepoDir();
+
+			Map<File, Long> repomap = CoreUtil.getCheckSumMap(repodir);
+			Map<File, Long> servmap = CoreUtil.getCheckSumMap(servdir);
+
+			var reponame = convertIt(repomap);
+			var servname = convertIt(servmap);
+
+			Util.massert(reponame.size() > 4, "Expected at least 4 files");
+
+			if(!reponame.equals(servname))
+			{
+				Util.pferr("Discrepancy b/t repo map and serv map:\n\t%s\n\t%s\n", reponame, servname);
+				Util.massert(false, "Errors, see above");
+			}
+
+			Util.pf("Success, files are identical, have %d/%d files in each  dir\n",
+				reponame.size(), servname.size());
+
+		}
+
+		private static Map<String, Long> convertIt(Map<File, Long> ckmap)
+		{
+			return Util.map2map(ckmap.entrySet(), pr -> pr.getKey().getName(), pr -> pr.getValue());
+		}
+
+		private static File getJsLibRepoDir()
+		{
+			return CoreUtil.getDescendantFile(
+				new File(CoreUtil.REPO_BASE_DIRECTORY), "jslib");
+		}
+	}
 }
 

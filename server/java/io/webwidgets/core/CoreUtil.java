@@ -669,5 +669,38 @@ public class CoreUtil
 	}
 
 
+	public static Map<File, Long> getCheckSumMap(File topdir)
+	{
+		Map<File, Long> ckmap = Util.treemap();
+		popCheckSumMap(topdir, ckmap);
+		return ckmap;
+	}
 
-} 
+	private static void popCheckSumMap(File subdir, Map<File, Long> ckmap)
+	{
+		Util.massert(subdir.exists() && subdir.isDirectory(), "Bad directory %s", subdir);
+
+		for(File kid : subdir.listFiles())
+		{
+			if(kid.isDirectory())
+			{
+				popCheckSumMap(kid, ckmap);
+				continue;
+			}
+
+			long cksum = CoreUtil.getFileCkSum(kid);
+			ckmap.put(kid, cksum);
+			continue;
+		}
+	}
+
+	public static File getDescendantFile(File parent, String... kidnames)
+	{
+		File probe = parent;
+
+		for(String k : kidnames)
+			{ probe = new File(probe, k); }
+
+		return probe;
+	}
+}
