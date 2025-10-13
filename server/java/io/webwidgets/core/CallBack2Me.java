@@ -15,6 +15,7 @@ import org.json.simple.JSONObject;
 import net.danburfoot.shared.Util;
 import net.danburfoot.shared.ArgMap;
 import net.danburfoot.shared.FileUtils;
+import net.danburfoot.shared.TimeUtil.*;
 
 import io.webwidgets.core.AuthLogic.*;
 import io.webwidgets.core.LiteTableInfo.*;
@@ -46,6 +47,7 @@ public class CallBack2Me extends HttpServlet
 		}
 	}
 	
+	// TODO: we should not use GET!!
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
 	{
 		doBoth(request, response);
@@ -60,7 +62,9 @@ public class CallBack2Me extends HttpServlet
 	throws ServletException, IOException
 	{
 		ArgMap outmap = new ArgMap();
-		
+
+		// This should build a separate, unique object that contains the processing logic
+		// as well as the logging
 		try {
 			processGetSub(request, outmap);
 			
@@ -159,6 +163,37 @@ public class CallBack2Me extends HttpServlet
 		
 		outmap.put("status_code", "okay");
 		outmap.put("user_message", "ajax sync op successful");
+
+		logActionSuccess(tableInfo, optuser.get(), innmap);
+	}
+
+	// Clearly we need to think more about this moving forward
+	// One very obvious problem, is that under high load, we will get interleaved log lines
+	private static void logActionSuccess(LiteTableInfo LTI, WidgetUser accessor, ArgMap innmap)
+	{
+		try {
+			// The full representation could be massive, if the innmap contains a Blob!!
+			// Normally we'd expect 2K to be enough for the full object
+			String flatrep = innmap.flatStringForm("\t");
+			String smaller = flatrep.substring(0, Math.min(flatrep.length(), 2000));
+
+			List<Object> tklist = Util.listify(
+				"CallBackSuccess",
+				ExactMoment.build().asLongBasicTs(TimeZoneEnum.EST),
+				LTI.dbTabPair._1.theOwner,
+				LTI.dbTabPair._1.theName,
+				LTI.dbTabPair._2,
+				innmap.getStr("ajaxop", "?????"),
+				innmap.getInt(CoreUtil.STANDARD_ID_COLUMN_NAME, -1),
+				smaller
+			);
+
+			Util.pf("%s\n", Util.join(tklist, "\t"));
+		} catch (Exception ex) {
+
+			Util.pferr("Exception on log processing!!!!\n");
+			ex.printStackTrace();
+		}
 	}
 
 
