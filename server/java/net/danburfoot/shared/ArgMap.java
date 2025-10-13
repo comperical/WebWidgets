@@ -290,17 +290,24 @@ public class ArgMap extends TreeMap<String, String>
 			Util.massert(!amap.containsKey(toks[0]), "Token %s already in Map", toks[0]);
 			
 			amap.put(toks[0], toks[1]);
-		}		
+		}
 		
-		return amap;	
+		return amap;
 	}
 	
 	public String flatStringForm()
 	{
-		List<String> pairlist = Util.map2list(this.entrySet(), me -> Util.sprintf("%s=%s", me.getKey(), me.getValue()));	
-		return Util.join(pairlist, " ");
+		return flatStringForm(" ");
 	}
 	
+
+	public String flatStringForm(String kvglue)
+	{
+		List<String> pairlist = Util.map2list(this.entrySet(), me -> Util.sprintf("%s=%s", me.getKey(), me.getValue()));
+		return Util.join(pairlist, kvglue);
+	}
+
+
 	public static ArgMap getFromMap(Map<String, String> copyfrom)
 	{
 		ArgMap amap = new ArgMap();
@@ -310,7 +317,7 @@ public class ArgMap extends TreeMap<String, String>
 	
 	public ArgMap copyRemove(Collection<String> remcol)
 	{
-		return copyRemove(remcol, false);	
+		return copyRemove(remcol, false);
 	}
 	
 	
