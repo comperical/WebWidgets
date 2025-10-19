@@ -191,14 +191,16 @@ function deleteWidget(widgetname)
             <div class="col-md-12 stretch-card">
               <div class="card">
                 <div class="card-body">
-                  <p class="card-title">Widgets</p>
+                  <p class="card-title">Widget Listing</p>
 
                   <p align="center">
                     <a href="javascript:createBlankWidget()"><button>new widget</button></a>
                   </p>
 
+                  <br/>
+
                   <div class="table-responsive">
-                    <table id="recent-purchases-listing" class="table">
+                    <table class="table table-striped table-bordered border-light">
                       <thead>
                         <tr>
                             <th>Name</th>

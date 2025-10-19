@@ -185,7 +185,7 @@
                   %> 
 
                   <div class="table-responsive">
-                    <table id="recent-purchases-listing" class="table">
+                    <table class="table table-striped table-bordered border-light">
                       <thead>
                         <tr>
                             <th>Recipient</th>
