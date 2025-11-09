@@ -196,7 +196,7 @@ function editStudyItem(itemid)
 function getFileThenExtension(photoitem)
 {
   const tokens = photoitem.getBlobFileName().split(".");
-  massert(tokens.length == 2, "Expected 2 file tokens, got " + photoitem.getBlobFileName());
+  U.massert(tokens.length == 2, "Expected 2 file tokens, got " + photoitem.getBlobFileName());
   return tokens;
 }
 

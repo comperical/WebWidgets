@@ -224,7 +224,7 @@ function setPageComponent(selectedid)
 		foundit = true;
 	});
 	
-	massert(foundit, "Failed to find page_component element with ID " + selectedid);
+	U.massert(foundit, "Failed to find page_component element with ID " + selectedid);
 }
 
 function getPageComponent()
