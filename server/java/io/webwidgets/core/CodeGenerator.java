@@ -202,7 +202,7 @@ public class CodeGenerator
 		add("\t\t\t{ record[\"id\"] = W.newBasicId('%s'); }", _liteTable.getSimpleTableName());	
 
 		add("");
-		add("\t\tmassert(fname in record, \"Record is missing field \" + fname);");
+		add("\t\tU.massert(fname in record, \"Record is missing field \" + fname);");
 
 		add("\t}");
 		
@@ -310,7 +310,7 @@ public class CodeGenerator
 		add("{");
 		add("\tif(!this.hasOwnProperty(fieldname))");
 		add("\t{");
-		add("\t\tmassert(false, `Unknown field ${fieldname}, options are ${W.getFieldList('%s')}, use W.getFieldList(..) to check if unsure`);",
+		add("\t\tU.massert(false, `Unknown field ${fieldname}, options are ${W.getFieldList('%s')}, use W.getFieldList(..) to check if unsure`);",
 					_liteTable.dbTabPair._2);
 
 		add("\t}");
@@ -354,8 +354,8 @@ public class CodeGenerator
 			add("// Special Blob Record function");
 			add("%s.prototype.%s = function()", _liteTable.getRecordName(), BlobDataManager.GET_BLOB_STORE_METHOD);
 			add("{");
-			add("\tmassert(false, `This object is not configured as a blob store, did you pick the column names correctly?`);");
-			add("}");			
+			add("\tU.massert(false, `This object is not configured as a blob store, did you pick the column names correctly?`);");
+			add("}");
 			
 		}
 	}
