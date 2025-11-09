@@ -1,6 +1,9 @@
 <%@include file="CoreImport.jsp_inc" %>
 
 <%
+    // TODO: need a way for the user to CREATE the groups DB
+    // Also need to be able to filter by user / group
+
     Optional<WidgetUser> currentUser = AuthLogic.getLoggedInUser(request);
     if (!currentUser.isPresent()) {
         response.sendRedirect("LogIn.jsp");
@@ -55,8 +58,6 @@
     if(haveGroupDb)
     {
         groupInfoList = CoreUtil.fullTableQuery(groupInfoDb, GranularPerm.GROUP_INFO_TABLE).recList();
-
-
     }
 
 
@@ -178,7 +179,16 @@ document.addEventListener("DOMContentLoaded", maybeRemoveServerMessage);
                                             </thead>
                                             <tbody>
 
-<%
+<% if(groupInfoList.isEmpty()) { %>
+<tr>
+    <td colspan="3" class="text-center text-muted py-5">
+        <i class="mdi mdi-account-multiple display-5 d-block mb-2"></i>
+        <div>No group records found.</div>
+        <small>Click New Record to add your first group.</small>
+    </td>
+</tr>
+<% } else {
+
     for(ArgMap record : groupInfoList)
     {
         int recid = record.getInt(CoreUtil.STANDARD_ID_COLUMN_NAME);
@@ -191,8 +201,9 @@ document.addEventListener("DOMContentLoaded", maybeRemoveServerMessage);
             <i class="fa-solid fa-trash"></i></a>
             </td>
         </tr>
-<% } %>
 
+<% } %>
+<% } %>
 
                                             </tbody>
                                         </table>
