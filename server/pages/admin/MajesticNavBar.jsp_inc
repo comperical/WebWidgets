@@ -1,90 +1,92 @@
-      <nav class="sidebar sidebar-offcanvas" id="sidebar">
-        <ul class="nav">
-          <%
-            // this is necessary for the Email Control page, which doesn't
-            // necessarily have a currentUser.
-            if(currentUser.isPresent())
-            {
-          %>
-          <li class="nav-item">
+<nav class="sidebar sidebar-offcanvas" id="sidebar">
+    <ul class="nav">
+        <%
+        // this is necessary for the Email Control page, which doesn't
+        // necessarily have a currentUser.
+        if(currentUser.isPresent())
+        {
+        %>
+        <li class="nav-item">
             <a class="nav-link" href="<%= WebUtil.getUserHomeRelative(currentUser.get()) %>">
-              <i class="mdi mdi-home menu-icon"></i>
-              <span class="menu-title">User Home</span>
+                <i class="mdi mdi-home menu-icon"></i>
+                <span class="menu-title">User Home</span>
             </a>
-          </li>          
-          <% } %>
-          <li class="nav-item">
+        </li>
+        <% } %>
+        <li class="nav-item">
             <a class="nav-link" href="/u/admin/AdminMain">
-              <i class="mdi mdi-crown menu-icon"></i>
-              <span class="menu-title">Admin Main</span>
+                <i class="mdi mdi-crown menu-icon"></i>
+                <span class="menu-title">Admin Main</span>
             </a>
-          </li>          
-          <li class="nav-item">
+        </li>
+        <li class="nav-item">
             <a class="nav-link" href="/u/docs/JsFileDoc">
-              <i class="mdi mdi-file-document menu-icon"></i>
-              <span class="menu-title">Tech Docs</span>
+                <i class="mdi mdi-file-document menu-icon"></i>
+                <span class="menu-title">Tech Docs</span>
             </a>
-          </li>    
-          <li class="nav-item">
+        </li>
+        <li class="nav-item">
             <a class="nav-link" href="/u/admin/LogIn">
-              <i class="mdi mdi-shield-key menu-icon"></i>
-              <span class="menu-title">Log-In/Out</span>
+                <i class="mdi mdi-shield-key menu-icon"></i>
+                <span class="menu-title">Log-In/Out</span>
             </a>
-          </li>
-
-          <li class="nav-item">
+        </li>
+        <li class="nav-item">
             <a class="nav-link" href="/u/admin/AccountSetting">
-              <i class="mdi mdi-cogs menu-icon"></i>
-              <span class="menu-title">Account Settings</span>
+                <i class="mdi mdi-cogs menu-icon"></i>
+                <span class="menu-title">Account Settings</span>
             </a>
-          </li>
-
-          <li class="nav-item">
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/u/admin/GroupControl">
+                <i class="mdi mdi-account-multiple menu-icon"></i>
+                <span class="menu-title">Manage Groups</span>
+            </a>
+        </li>
+        <li class="nav-item">
             <a class="nav-link" href="/u/admin/ChangePass">
-              <i class="mdi mdi-key-change menu-icon"></i>
-              <span class="menu-title">Change Password</span>
+                <i class="mdi mdi-key-change menu-icon"></i>
+                <span class="menu-title">Change Password</span>
             </a>
-          </li>
-          <li class="nav-item">
+        </li>
+        <li class="nav-item">
             <a class="nav-link" href="/u/admin/TemplateGenerator">
-              <i class="mdi mdi-content-duplicate menu-icon"></i>
-              <span class="menu-title">Template Generator</span>
+                <i class="mdi mdi-content-duplicate menu-icon"></i>
+                <span class="menu-title">Template Generator</span>
             </a>
-          </li>            
-          <li class="nav-item">
+        </li>            
+        <li class="nav-item">
             <a class="nav-link" href="/u/admin/PermissionControl">
-              <i class="mdi mdi-lock menu-icon"></i>
-              <span class="menu-title">Permission Control</span>
+                <i class="mdi mdi-lock menu-icon"></i>
+                <span class="menu-title">Permission Control</span>
             </a>
-          </li>       
-
-          <li class="nav-item">
+        </li>       
+        <li class="nav-item">
             <a class="nav-link" href="/u/admin/ImportWidget">
-              <i class="mdi mdi-import menu-icon"></i>
-              <span class="menu-title">Import Widget</span>
+                <i class="mdi mdi-import menu-icon"></i>
+                <span class="menu-title">Import Widget</span>
             </a>
-          </li>
-          <li class="nav-item">
+        </li>
+        <li class="nav-item">
             <a class="nav-link" href="/u/admin/MailRunner">
-              <i class="mdi mdi-email menu-icon"></i>
-              <span class="menu-title">Email Manager</span>
+                <i class="mdi mdi-email menu-icon"></i>
+                <span class="menu-title">Email Manager</span>
             </a>
-          </li>
-          <li class="nav-item">
+        </li>
+        <li class="nav-item">
             <a class="nav-link" href="/u/admin/GetConfig">
-              <i class="mdi mdi-download menu-icon"></i>
-              <span class="menu-title">Download Config</span>
+                <i class="mdi mdi-download menu-icon"></i>
+                <span class="menu-title">Download Config</span>
             </a>
-          </li>
-          <li class="nav-item">
+        </li>
+        <li class="nav-item">
             <a class="nav-link" href="/u/admin/SchemaViewer">
-              <i class="mdi mdi-database menu-icon"></i>
-              <span class="menu-title">Schema Viewer</span>
+                <i class="mdi mdi-database menu-icon"></i>
+                <span class="menu-title">Schema Viewer</span>
             </a>
-          </li>
+        </li>
 
+        <%= PluginCentral.getAdminExtensionTool().getExtendedSideBar(currentUser) %>
 
-          <%= PluginCentral.getAdminExtensionTool().getExtendedSideBar(currentUser) %>
-
-        </ul>
-      </nav>
+    </ul>
+</nav>
