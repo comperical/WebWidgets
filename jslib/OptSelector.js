@@ -128,7 +128,7 @@ OptSelector.prototype.insertStartingPair = function(kinit, dinit)
 // Provide the attributes etc you need for the select here.
 OptSelector.prototype.setSelectOpener = function(selopen)
 {
-    massert(this._myAttributes == null, 
+    U.massert(this._myAttributes == null,
         "You cannot set both the select opener and attributes like Name and onChange");
 
     this._selectOpen = selopen;
@@ -139,7 +139,7 @@ OptSelector.prototype.setSelectOpener = function(selopen)
 // Usage of this operation is incompatible with setSelectOpener
 OptSelector.prototype.setAttribute = function(attrname, attrval)
 {
-    massert(this._selectOpen == null, 
+    U.massert(this._selectOpen == null,
         "You cannot set both the select opener and attributes like Name and onChange");
 
     if(this._myAttributes == null) 
@@ -162,7 +162,7 @@ OptSelector.prototype.setElementName = function(thename)
 // By convention, you are required to include the "javascript:" prefix
 OptSelector.prototype.setOnChange = function(funcname)
 {
-    massert(funcname.startsWith("javascript:"),
+    U.massert(funcname.startsWith("javascript:"),
         `By convention, input must have javascript: prefix, found ${funcname}, 
         if you don't like this, use setAttribute('onChange', ...`
     );
@@ -171,7 +171,7 @@ OptSelector.prototype.setOnChange = function(funcname)
     if(this._myAttributes != null)
     {
         const previous = this._myAttributes["onChange"];
-        massert(previous == null,
+        U.massert(previous == null,
             `You have already set the onChange attribute to ${previous}, you cannot reset it`
         );
     }
@@ -204,13 +204,13 @@ OptSelector.prototype.getSelectOpener = function()
 // And you must have a span with the ID=name+"_span"
 OptSelector.prototype.autoPopulate = function()
 {
-    massert(this._myAttributes != null && ("name" in this._myAttributes),
+    U.massert(this._myAttributes != null && ("name" in this._myAttributes),
         "To use the auto-populate approach, you must set the element name attribute");
 
     const spanmap = {};
     spanmap[`${this._myAttributes["name"]}_span`] = this.getHtmlString();
 
-    populateSpanData(spanmap);
+    U.populateSpanData(spanmap);
 
     return this;
 }
@@ -358,11 +358,11 @@ const GENERIC_OPT_SELECT_MAP = new Map();
 // You must provide an element name before calling this function
 OptSelector.prototype.useGenericUpdater = function()
 {
-    massert(this._myAttributes != null && ("name" in this._myAttributes),
+    U.massert(this._myAttributes != null && ("name" in this._myAttributes),
         "You must set the element name of the OptSelector before calling useGenericUpdater()");
 
     const myname = this._myAttributes["name"];
-    massert(GENERIC_OPT_SELECT_MAP.has(myname),
+    U.massert(GENERIC_OPT_SELECT_MAP.has(myname),
         `You must initialize the OptSelector data for ${myname} before creating the selector, place data in GENERIC_OPT_SELECT_MAP`);
 
     this.setSelectedKey(GENERIC_OPT_SELECT_MAP.get(myname));
