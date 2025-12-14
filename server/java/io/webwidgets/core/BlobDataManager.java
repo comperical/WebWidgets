@@ -214,7 +214,6 @@ public class BlobDataManager
 			String filename = blobrecord.getStr(BlobInfoColumn.blob_file_name.toString());
 			{
 				String mimetype = filename == null ? null : URLConnection.guessContentTypeFromName(filename.trim());
-				Util.pf("Setting mimetype %s for filename %s\n", mimetype, filename);
 				response.setContentType(mimetype == null ? "application/octet-stream" : mimetype);
 			}
 			
@@ -227,6 +226,16 @@ public class BlobDataManager
 			
 			if(!blobfile.exists())
 			{
+				{
+					File parent = blobfile.getParentFile();
+					if(!parent.exists())
+					{
+						parent.mkdirs();
+						Util.pf("Created blob data storage directory %s\n", parent);
+					}
+				}
+
+
 				IBlobStorage blobtool = PluginCentral.getStorageTool();
 				Util.massert(blobtool.blobPathExists(blobfile),
 						"Widget blob sync error: full blob path %s does not exist in blob storage", blobfile);
