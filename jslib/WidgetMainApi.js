@@ -328,23 +328,6 @@ __bulkOpSub : function(tablename, idlist, isdelete, options)
     });
 },
 
-
-
-// Look up the widget owner and name from the url
-// Use that info to find the current checksum value
-// This needs to be looked up just-in-time, before the request is sent,
-// AFTER it is enqueued
-__extractParameterHash : function(opurl)
-{
-    U.massert(opurl.indexOf(W.CALLBACK_URL) == 0,
-        "Expected OP URL to start with callback URL, found " + W.CALLBACK_URL);
-
-    const querystring = opurl.substring((W.CALLBACK_URL + "?").length);
-    // console.log("Query string is " + querystring);
-
-    return U.decodeQString2Hash(querystring);
-},
-
 // Configure the system to be strict about bad passing bad fields to the buildItem(...) function
 setStrictBadFieldCheck : function(strict)
 {
@@ -704,12 +687,12 @@ __maybeSendNewRequest : function()
 
     // Okay, the caller has enqueued triple of url, opname, itemid
     // We need this here to potentially log information in the __checkAjaxResponse(...) method
-    const bigurl = reqlist[0];
+    // bigrel - Big Relative Path, /u/callback?....
+    const bigrel = reqlist[0];
     const opname = reqlist[1];
     const itemid = reqlist[2];
 
-    
-    var xhttp = new XMLHttpRequest();
+    const xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         
         // This block of code is actually called several times before
@@ -723,40 +706,30 @@ __maybeSendNewRequest : function()
             // This allows user widget to take actions when the sync's finish
             if (typeof ajaxRequestUserCallBack == "function")
             {
-                // Worried about situations where the bigurl is very big, you are potentially
+                // Worried about situations where the bigrel is very big, you are potentially
                 // passing huge blocks of data back and forth
-                ajaxRequestUserCallBack(bigurl, opname, itemid);
+                ajaxRequestUserCallBack(bigrel, opname, itemid);
             }
 
             W.__maybeSendNewRequest();
         }
     };
 
-
-    // This is just extracting the querying string from the bigurl
+    // This is just extracting the querying string from the bigrel
     const extparam = function()
     {
-        console.log(`Big URL is ${bigurl}`);
-        const url = new URL(bigurl);
-        const base = new URL(W.CALLBACK_URL);
-
-        U.massert(
-            url.origin === base.origin && url.pathname === base.pathname,
-            "Expected OP URL to start with callback URL, found " + bigurl
-        );
+        U.massert(bigrel.startsWith(W.CALLBACK_URL),
+            "Expected OP URL to start with callback URL, found " + bigrel);
 
         // returns "a=1&b=2" (no leading '?')
-        return url.search.slice(1);
+        const fullurl = new URL(bigrel, window.location.origin);
+        return fullurl.search.slice(1);
     }
 
-
     // Send the proper header information along with the request
-
-    const bigparamstr = extparam();
-    console.log(bigparamstr);
     xhttp.open("POST", W.CALLBACK_URL, true);
     xhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-    xhttp.send(bigparamstr);
+    xhttp.send(extparam());
 },
 
 __checkAjaxResponse : function(op, itemid, rtext)
