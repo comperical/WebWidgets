@@ -222,12 +222,54 @@ function handleNavBar() {
     populateTopNavBar(headerinfo, "Phases");
 }
 
+function streamLineOrder()
+{
+
+	const itemlist = W.getItemList("mroutine_phase")
+							.filter(item => item.getIsActive() == 1)
+							.sort(U.proxySort(item => [item.getOrderKey()]));
+
+
+	if(confirm("This will tweak the order keys to integers starting at 1, okay?"))
+	{
+		for(let idx = 0; idx < itemlist.length; idx++)
+		{ 
+			itemlist[idx].setOrderKey(idx+1); 
+			itemlist[idx].syncItem();
+		}
+
+		/*
+	
+		const cb = function()
+		{
+			alert("Updates complete, reloading page");
+			window.location.reload();
+
+		}
+
+		const idlist = itemlist.map(item => item.getId());
+		W.bulkUpdate("mroutine_phase", idlist, { callback : cb });
+		*/
+
+		alert("Please wait for updates to complete");
+		redisplay();
+
+	}
+}
+
 function redisplayMainTable()
 {
 	var mtstr = `
 	<table  class="basic-table" width="60%">
 	<tr>
-	<th colspan="2">OrderKey</th>
+	<th colspan="2">OrderKey
+
+	&nbsp;
+	&nbsp;
+
+	<span style="background-color: white;">
+	<button onClick="javascript:streamLineOrder()">&#10024;</button></span>
+	</th>
 	<th>Name</th>
 	<th>Days</th>
 	<th>Active?</th>

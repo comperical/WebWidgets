@@ -14,6 +14,8 @@ var EDIT_STUDY_ITEM = -1;
 
 var SHOW_YEAR_INFO = true;
 
+const MAIN_TABLE = "rage_log";
+
 function createNew()
 {
 	const shortname = prompt("ENRAGED about what?? : ");
@@ -147,6 +149,11 @@ function newTagForStudyItem()
 	U.genericItemUpdate("rage_log", EDIT_STUDY_ITEM, updater);
 }
 
+function editItemName(itemid)
+{
+	U.genericEditTextField(MAIN_TABLE, "short_name", itemid);
+
+}
 
 function removeStudyTag(tagidx) 
 {
@@ -202,6 +209,7 @@ function redisplayStudyItem()
 	});
 }
 
+
 function redisplayMainTable()
 {
 
@@ -229,8 +237,10 @@ function redisplayMainTable()
 		const rowstr = `
 			<tr>
 			<td>${datedisp}</td>	
-			<td>${taglist}</td>			
-			<td>${item.getShortName()}</td>
+			<td>${taglist}</td>
+			<td class="editable"
+			onClick="javascript:editItemName(${item.getId()})"
+			>${item.getShortName()}</td>
 			<td width="50%">${getBasicDesc(item)}</td>
 			<td width="10%">
 				<a href="javascript:editStudyItem(${item.getId()})">

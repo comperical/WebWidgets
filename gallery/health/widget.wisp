@@ -76,12 +76,12 @@ function redisplayMainTable()
     itemlist.sort(proxySort(a => [a.getDayCode()])).reverse();
 
     var tablestr = `
-        <table class="basic-table"  width="60%">
+        <table class="basic-table"  width="55%">
         <tr>
         <th>Date</th>
-        <th colspan="2">Rating</th>
+        <th>Rating</th>
         <th width="50%">Notes</th>
-        <th>Op</th>
+        <th>..</th>
         </tr>
     `;
     
@@ -90,20 +90,12 @@ function redisplayMainTable()
         const rowstr = `
             <tr>
             <td>${item.getDayCode()}</td>
-            <td>${item.getRating()}</td>
-            <td>
-            <a href="javascript:editItemRating(${item.getId()})"><img src="/u/shared/image/edit.png" height="18"/></a>
-            </td>
-            <td>${item.getNotes()}</td>
+            <td class="editable"
+            onClick="javascript:editItemRating(${item.getId()})">${item.getRating()}</td>
+            <td class="editable" onClick="javascript:editItemDesc(${item.getId()})">${item.getNotes()}</td>
             <td>
 
             <a href="javascript:copyFromId(${item.getId()})"><img src="/u/shared/image/upicon.png" height="18"/></a>
-
-            &nbsp;
-            &nbsp;
-
-
-            <a href="javascript:editItemDesc(${item.getId()})"><img src="/u/shared/image/edit.png" height="18"/></a>
 
             &nbsp;
             &nbsp;

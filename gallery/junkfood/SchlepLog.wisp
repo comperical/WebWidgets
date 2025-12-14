@@ -76,6 +76,13 @@ function editItemNote(itemid)
     U.genericEditTextField(MAIN_TABLE, "notes", itemid);
 }
 
+function editItemHour(itemid)
+{
+    U.genericEditFloatField(MAIN_TABLE, "hour", itemid);
+
+
+}
+
 function redisplay()
 {
     redispControls();
@@ -144,7 +151,8 @@ function redispFullTable()
             <tr>
             <td>${daycode.getShortDayOfWeek()}</td>
             <td>${item.getDayCode()}</td>
-            <td>${item.getHour()}</td>
+            <td
+            class="editable" onClick="javascrpt:editItemHour(${item.getId()})">${item.getHour()}</td>
             <td>${item.getCategory()}</td>
             <td class="editable" onClick="javascript:editItemNote(${item.getId()})">
             ${item.getNotes()}</td>

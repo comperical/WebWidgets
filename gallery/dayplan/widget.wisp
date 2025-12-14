@@ -222,10 +222,9 @@ function redisplay()
 	var activelist = getPlanDayItemList();
 					
 	var tablestr = `
-		<table class="basic-table"  width="750px">
+		<table class="basic-table"  width="650px">
 		<tr>
 		<th>Desc</th>
-		<th>..</th>
 		<th>End</th>
 		<th>Time</th>
 		<th>---</th>
@@ -269,13 +268,8 @@ function redisplay()
 
 		var rowstr = `
 			<tr ${colorstr}>
-			<td>${item.getShortDesc()}</td>
-			<td>
-			
-			<a href="javascript:editItemDesc(${item.getId()})">
-			<img src="/u/shared/image/edit.png" height="18" /></a>
-			
-			</td>
+			<td class="editable" 
+			onClick="javascript:editItemDesc(${item.getId()})">${item.getShortDesc()}</td>
 			<td>${hourminstr}</td>
 			<td width="15%">${timespent}</td>
 			<td>
