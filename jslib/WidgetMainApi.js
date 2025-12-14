@@ -334,7 +334,7 @@ __bulkOpSub : function(tablename, idlist, isdelete, options)
 // Use that info to find the current checksum value
 // This needs to be looked up just-in-time, before the request is sent,
 // AFTER it is enqueued
-__augmentWithCheckSum : function(opurl)
+__extractParameterHash : function(opurl)
 {
     U.massert(opurl.indexOf(W.CALLBACK_URL) == 0,
         "Expected OP URL to start with callback URL, found " + W.CALLBACK_URL);
@@ -342,27 +342,7 @@ __augmentWithCheckSum : function(opurl)
     const querystring = opurl.substring((W.CALLBACK_URL + "?").length);
     // console.log("Query string is " + querystring);
 
-    const allparams = U.decodeQString2Hash(querystring);
-    // console.log(params);
-
-    const combined = new Object();
-    combined.smllpms = new Object();
-    combined.biggpms = new Object();
-
-    for(var k in allparams) 
-    {
-        const v = allparams[k];
-        const relpms = v.length > W.__MAX_GET_PARAM_VALUE ? combined.biggpms : combined.smllpms;
-        relpms[k] = v;
-    }
-
-    // Sept 2022 : remove checksum
-    // const cksumkey = combined.smllpms["wowner"]+ "::" + combined.smllpms["wname"];
-    // const cksumval = W.__databaseCheckSum[cksumkey];
-    // combined.smllpms["checksum"] = cksumval;
-
-    return combined;
-
+    return U.decodeQString2Hash(querystring);
 },
 
 // Configure the system to be strict about bad passing bad fields to the buildItem(...) function
@@ -721,14 +701,13 @@ __maybeSendNewRequest : function()
     
     const reqlist = W.__REQUEST_QUEUE.shift();
 
-    // This needs to be augmented just-in-time
-    const combinedParams = W.__augmentWithCheckSum(reqlist[0]);
-    const opurl = W.CALLBACK_URL + "?" + U.encodeHash2QString(combinedParams.smllpms);
 
-    // console.log(reqlist[0]);
-    // console.log(opurl);
+    // Okay, the caller has enqueued triple of url, opname, itemid
+    // We need this here to potentially log information in the __checkAjaxResponse(...) method
+    const bigurl = reqlist[0];
     const opname = reqlist[1];
     const itemid = reqlist[2];
+
     
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
@@ -743,27 +722,41 @@ __maybeSendNewRequest : function()
 
             // This allows user widget to take actions when the sync's finish
             if (typeof ajaxRequestUserCallBack == "function")
-                { ajaxRequestUserCallBack(opurl, opname, itemid); }
+            {
+                // Worried about situations where the bigurl is very big, you are potentially
+                // passing huge blocks of data back and forth
+                ajaxRequestUserCallBack(bigurl, opname, itemid);
+            }
 
             W.__maybeSendNewRequest();
         }
     };
 
-    const havebig = Object.keys(combinedParams.biggpms).length > 0;
 
-    if (havebig) {
+    // This is just extracting the querying string from the bigurl
+    const extparam = function()
+    {
+        console.log(`Big URL is ${bigurl}`);
+        const url = new URL(bigurl);
+        const base = new URL(W.CALLBACK_URL);
 
-        const bigparamstr = U.encodeHash2QString(combinedParams.biggpms);
-        xhttp.open("POST", opurl, true);
+        U.massert(
+            url.origin === base.origin && url.pathname === base.pathname,
+            "Expected OP URL to start with callback URL, found " + bigurl
+        );
 
-        // Send the proper header information along with the request
-        xhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-        xhttp.send(bigparamstr);
-
-    } else {
-        xhttp.open("GET", opurl, true);
-        xhttp.send();
+        // returns "a=1&b=2" (no leading '?')
+        return url.search.slice(1);
     }
+
+
+    // Send the proper header information along with the request
+
+    const bigparamstr = extparam();
+    console.log(bigparamstr);
+    xhttp.open("POST", W.CALLBACK_URL, true);
+    xhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    xhttp.send(bigparamstr);
 },
 
 __checkAjaxResponse : function(op, itemid, rtext)
