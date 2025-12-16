@@ -31,7 +31,15 @@ public class BulkOperation
     // Somehow I was not able to get the urlPatterns trick to work here
     public static class BulkUpdate extends HttpServlet {
 
+        @Override
         protected void doPost(HttpServletRequest request, HttpServletResponse response)  throws ServletException, IOException 
+        {
+            try { doPostSub(request, response); }
+            catch (Exception ex) { ex.printStackTrace(); }
+        } 
+
+
+        protected void doPostSub(HttpServletRequest request, HttpServletResponse response)  throws ServletException, IOException 
         {
             ArgMap innmap = WebUtil.getArgMap(request);
             ArgMap outmap = new ArgMap();
@@ -67,97 +75,123 @@ public class BulkOperation
                 Util.massert(Util.setify(delidstr != null, bulkupstr != null).size() == 2,
                     "Have DELETE code %s, and UPDATE code %s, one or other must be null", delidstr, bulkupstr);
 
-                if(delidstr != null)
-                {
-                    int delcount = processDelete(tableInfo, delidstr);
-                    outmap.put("user_message", Util.sprintf("Bulk delete of %d records successful", delcount));
-                } else {
-                    boolean supplyid = innmap.getBit("supplyid", false);
-                    int upcount = processBulkUpdate(tableInfo, bulkupstr, supplyid);
-                    outmap.put("user_message", Util.sprintf("Bulk update of %d records successful", upcount));
+                try {
+                    if(delidstr != null)
+                    {
+                        int delcount = processDelete(tableInfo, delidstr);
+                        outmap.put("user_message", Util.sprintf("Bulk delete of %d records successful", delcount));
+                    } else {
+                        int upcount = processBulkUpdate(tableInfo, bulkupstr);
+                        outmap.put("user_message", Util.sprintf("Bulk update of %d records successful", upcount));
+                    }
+
+                    outmap.put("status_code", "okay");
+
+
+                } catch (IOException ioex) {
+                    ioex.printStackTrace();
+                    CallBack2Me.placeFailCode(outmap, FailureCode.OtherError, ioex.getMessage());
                 }
 
-                outmap.put("status_code", "okay");
             }
             
             writeJsonResponse(response, outmap);
         }
 
-        public static int processBulkUpdate(LiteTableInfo table, String bulkupstr, boolean supplyid) throws IOException
+        public static int processBulkUpdate(LiteTableInfo table, String bulkupstr) throws IOException
         {
+            InsertUpdateSplit splitter;
 
-            List<LinkedHashMap<String, Object>> payloadList;
-
-            try { payloadList = loadPayloadList(table, bulkupstr); }
+            try { splitter = new InsertUpdateSplit(table, bulkupstr); }
             catch (ParseException pex) { throw new IOException(pex); }
-
-            // supply=false, the default, this just checks that all the incoming records have IDs
-            maybeSupplyId(table, payloadList, supplyid);
-
-            // Need to clear out old IDs first, because we are using INSERT below
-            // Alternatively, we could find the IDs that are missing, and create skeleton records for those,
-            // then do an UPDATE instead of an insert
-            // If we supplied them, we don't need to re-delete
-            if(!supplyid)
-            {
-                List<Integer> delid = Util.map2list(payloadList, payload -> (Integer) payload.get("id"));
-                processDelete(table, Util.join(delid, ","));
-            }
-
 
             SyncController editcontrol = LiteTableInfo.getEditController(table.dbTabPair._1);
             synchronized(editcontrol)
             {
+                // These are the non-ID columns, need to keep these in proper order
+                List<String> nonidlist = splitter.getNonIdList();
 
-                List<String> clist = new ArrayList<>(table.getColumnNameSet());
-                Util.massert(clist.get(0).equals("id"), "Expect the first column of all tables to be 'id', got '%s'", clist.get(0));
-
-                String prepstr = String.format(
-                    "INSERT INTO %s (%s) VALUES (%s)",
-                    table.dbTabPair._2,
-                    Util.join(clist, ","),
-                    CoreDb.nQuestionMarkStr(clist.size())
-                );
+                String insertstr = getInsertPrepared(table, nonidlist);
+                String updatestr = getUpdatePrepared(table, nonidlist);
 
 
                 try (
                     Connection conn = table.dbTabPair._1.createConnection();
-                    PreparedStatement pstmt = conn.prepareStatement(prepstr);
+                    PreparedStatement instmt = conn.prepareStatement(insertstr);
+                    PreparedStatement upstmt = conn.prepareStatement(updatestr);
                 ) {
 
                     conn.setAutoCommit(false);
 
-                    for(var payload : payloadList)
+                    for(boolean isupdate : Util.listify(true, false))
                     {
-                        int position = 1;
-                        for(String cname : clist)
-                        {
-                            // This is a bit of superstition
-                            // I think between Java setObject(...) being smart and SQLite type affinity,
-                            // this should work okay
-                            if(position == 1)
-                                { pstmt.setInt(1, Util.cast(payload.get(cname))); }
-                            else
-                                { pstmt.setObject(position, payload.get(cname)); }
+                        var pstmt = isupdate ? upstmt : instmt;
+                        var sendlist = splitter.getDesiredSplit(isupdate);
+                        if(sendlist.isEmpty())
+                            { continue; }
 
-                            position++;
+                        for(var payload : sendlist)
+                        {
+                            for(int idx : Util.range(nonidlist))
+                            {
+                                String col = nonidlist.get(idx);
+                                pstmt.setObject(idx+1, payload.get(col));
+                            }
+
+                            int payid = Util.cast(payload.get(CoreUtil.STANDARD_ID_COLUMN_NAME));
+                            pstmt.setInt(nonidlist.size()+1, payid);
+                            pstmt.addBatch();
                         }
 
-                        pstmt.addBatch();
+                        pstmt.executeBatch();
                     }
 
-                    pstmt.executeBatch();
                     conn.commit();
 
                 } catch (Exception ex) {
+
+                    // SQLite guarantees rollback here, even though it's not explicit
+                    // And it is annoying to have multiple layers to make it so conn is in scope
+                    // conn.rollback();
+
                     // Don't really have anything smart to do here other than throw exception
+                    ex.printStackTrace();
                     throw new IOException(ex);
                 }
 
-                return payloadList.size();
+                return splitter.totalSize();
             }
         }
 
+
+        private static String getUpdatePrepared(LiteTableInfo LTI, List<String> nonidlist)
+        {
+            var setclause = Util.map2list(nonidlist, s -> String.format("%s = ?", s));
+
+            return String.format(
+                "UPDATE %s SET %s WHERE %s = ?",
+                LTI.dbTabPair._2,
+                Util.join(setclause, " , "),
+                CoreUtil.STANDARD_ID_COLUMN_NAME
+            );
+        }
+
+        private static String getInsertPrepared(LiteTableInfo LTI, List<String> nonidlist)
+        {
+            // Okay, very important: we are supplying the ID column at the END of the list of values
+            // to match the ordering requirements of the UPDATE command
+            return String.format(
+                "INSERT INTO %s (%s, %s) VALUES (%s, ?)",
+                LTI.dbTabPair._2,
+                Util.join(nonidlist, ","),
+                CoreUtil.STANDARD_ID_COLUMN_NAME,
+                CoreDb.nQuestionMarkStr(nonidlist.size())
+            );
+        }
+
+        // this is no longer used
+        // Previous idea was to allow caller to decline to specify some IDs, and the server would supply for you
+        // That is no longer used
         private static void maybeSupplyId(LiteTableInfo table, List<LinkedHashMap<String, Object>> loadlist, boolean supply)
         {
             // Okay, the id is supplied by the loadPayloadMap, so checking load.containsKey("id") doesn't work
@@ -184,16 +218,6 @@ public class BulkOperation
 
             for(var payload : loadlist)
                 { payload.put("id", newset.pollFirst()); }
-        }
-
-
-        private static List<LinkedHashMap<String, Object>> loadPayloadList(LiteTableInfo table, String bulkupstr) throws ParseException
-        {
-            JSONArray array = Util.cast(new JSONParser().parse(bulkupstr));
-            List<?> array2 = Util.cast(array);
-
-            // Have some weird superstition about converting to List<?> here
-            return table.bulkConvert(array2);
         }
 
         private static List<Integer> loadDeleteIdList(String delidstr)
@@ -256,4 +280,56 @@ public class BulkOperation
         out.print("\n");
         out.close();
     }
+
+
+    private static class InsertUpdateSplit
+    {
+        private List<LinkedHashMap<String, Object>> _mainList;
+
+        private Set<Integer> _currentIdSet;
+
+        InsertUpdateSplit(LiteTableInfo table, String bulkupstr) throws ParseException
+        {
+            JSONArray array = Util.cast(new JSONParser().parse(bulkupstr));
+            List<?> array2 = Util.cast(array);
+
+            String query = Util.sprintf("SELECT id FROM %s", table.dbTabPair._2);
+            QueryCollector qcol = QueryCollector.buildAndRun(query, table.dbTabPair._1);
+
+            _currentIdSet = Util.map2set(qcol.recList(), amap -> amap.getSingleInt());
+
+            // Have some weird superstition about converting to List<?> here
+            _mainList = table.bulkConvert(array2);
+        }
+
+        private boolean haveCurrentId(LinkedHashMap<String, Object> record)
+        {
+            var id = Util.cast(record.get(CoreUtil.STANDARD_ID_COLUMN_NAME));
+            return _currentIdSet.contains(id);
+        }
+
+        private List<LinkedHashMap<String, Object>> getDesiredSplit(boolean isupdate)
+        {
+            return Util.filter2list(_mainList, r -> haveCurrentId(r) == isupdate);
+        }
+
+        private LinkedHashMap<String, Object> getExample()
+        {
+            Util.massert(_mainList.size() > 0, "The update list is empty - you must check before calling!!");
+            return _mainList.get(0);
+        }
+
+        private List<String> getNonIdList()
+        {
+            return Util.filter2list(getExample().keySet(),
+                s -> !CoreUtil.STANDARD_ID_COLUMN_NAME.equals(s));
+
+        }
+
+        private Integer totalSize()
+        {
+            return _mainList.size();
+        }
+    }
+
 }
