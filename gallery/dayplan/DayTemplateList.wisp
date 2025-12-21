@@ -393,10 +393,6 @@ function redisplayStudyItem()
 		"dayplantable" : mainstr,
 		"templatename" : getSelectedTemplate().getShortName()
 	});
-
-
-
-
 }
 
 </script>
