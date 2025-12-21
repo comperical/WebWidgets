@@ -389,7 +389,7 @@ function redisplayStudyItem()
 						.setSelectedKey(60)
 						.autoPopulate();
 
-	populateSpanData({
+	U.populateSpanData({
 		"dayplantable" : mainstr,
 		"templatename" : getSelectedTemplate().getShortName()
 	});
