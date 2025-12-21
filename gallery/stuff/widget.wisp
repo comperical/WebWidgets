@@ -81,7 +81,7 @@ function deleteItem(itemid)
 
     if(confirm("Are you sure you want to delete this item?"))
     {
-        genericDeleteItem("stuff_item", itemid);    
+        U.genericDeleteItem("stuff_item", itemid);
     }
 }
 
@@ -151,7 +151,7 @@ function computeAndUpdateDepth(dmap, itemid)
 
 function editItemName()
 {
-    genericEditTextField("stuff_item", "short_name", EDIT_STUDY_ITEM);
+    U.genericEditTextField("stuff_item", "short_name", EDIT_STUDY_ITEM);
 
 }
 
@@ -163,7 +163,7 @@ function editNoteField()
 
 function saveNoteInfo()
 {
-    const notes = getDocFormValue("note_info");
+    const notes = U.getDocFormValue("note_info");
     const item = W.lookupItem("stuff_item", EDIT_STUDY_ITEM);
     item.setNotes(notes);
     item.syncItem();
@@ -228,13 +228,13 @@ function handleNavBar()
 
 function updateContainer()
 {
-    const containid = parseInt(getDocFormValue("container_sel"));
+    const containid = parseInt(U.getDocFormValue("container_sel"));
     updateContainAndLoc(containid, -1);
 }
 
 function updateLocation()
 {
-    const locid = parseInt(getDocFormValue("location_sel"));
+    const locid = parseInt(U.getDocFormValue("location_sel"));
     updateContainAndLoc(-1, locid);
 }
 
@@ -256,7 +256,7 @@ function redisplay()
 
     const pagestr = EDIT_STUDY_ITEM == -1 ? getMainListing() : getEditListing();
 
-    populateSpanData({"main_page" : pagestr});
+    U.populateSpanData({"main_page" : pagestr});
 }
 
 function getEditListing()

@@ -38,8 +38,8 @@ function createNewSub(qtext)
 	}
 
 	if(qtext)
-	{	
-		const todaycode = getTodayCode().getDateString();
+	{
+		const todaycode = U.getTodayCode().getDateString();
 		
 		// created_on, active_on, completed_on, dead_line
 		var comrecord = {
@@ -70,10 +70,12 @@ function deleteItem(killid)
 
 function markAnswered(editid)
 {
-	var myitem = W.lookupItem("question_log", editid);
-	myitem.setHasAnswer(1);
-	syncSingleItem(myitem);
-	redisplay();
+	const updater = function(item)
+	{
+		item.setHasAnswer(1);
+	}
+
+	U.genericItemUpdate("question_log", editid, updater);
 }
 
 function redisplay()
@@ -157,7 +159,7 @@ function getScore2IdList()
 		score2id.push(score);
 	});
 	
-	score2id.sort(proxySort(a => [-a[0]]));
+	score2id.sort(U.proxySort(a => [-a[0]]));
 	
 	return score2id;
 }
@@ -335,9 +337,9 @@ function getQuestionTableSub(hasanswer)
 	// console.log("Running with hasanswer = " + hasanswer);
 	
 	const openlist = W.getItemList("question_log").filter(fitem => fitem.getHasAnswer() == hasanswer);
-	const datecutoff = getTodayCode().nDaysBefore(60);
+	const datecutoff = U.getTodayCode().nDaysBefore(60);
 		
-	openlist.forEach(function(openitem) {		
+	openlist.forEach(function(openitem) {
 					
 		if(hasanswer == 1 && openitem.getCreatedOn() < datecutoff.getDateString())
 			{ return; }
@@ -484,18 +486,20 @@ function editQuestionText()
 	if(newdesc)
 	{
 		studyitem.setQuestionText(newdesc);
-		syncSingleItem(studyitem);
-		redisplay();			
+		studyitem.syncItem();
+		redisplay();
 	}
 }
 
 function cycleField(fname)
 {
-	const studyitem = getStudyItem();
-	const previous = studyitem[fname]
-	studyitem[fname] = previous == 1 ? 0 : 1;
-	syncSingleItem(studyitem);
-	redisplay();
+	const updater = function(studyitem)
+	{
+		const previous = studyitem[fname]
+		studyitem[fname] = previous == 1 ? 0 : 1;
+	}
+
+	U.genericItemUpdate("question_log", _EDIT_STUDY_ITEM, updater);
 }
 
 
@@ -508,8 +512,8 @@ function editWebLink()
 	if(newlink)
 	{
 		studyitem.setWebLink(newlink);
-		syncSingleItem(studyitem);
-		redisplay();			
+		studyitem.syncItem();
+		redisplay();
 	}
 }
 

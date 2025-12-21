@@ -52,7 +52,7 @@ function copyToNewDay(itemid)
 	const newrec = {
 		'sleep_score' : copyitem.getSleepScore(),
 		'notes' : copyitem.getNotes(),
-		'day_code' : getTodayCode().dayBefore().getDateString()
+		'day_code' : U.getTodayCode().dayBefore().getDateString()
 	};
 
 
@@ -66,7 +66,7 @@ function createNewSub(score)
 	const newrec = {
 		'sleep_score' : score,
 		'notes' : '' ,
-		'day_code' : getTodayCode().dayBefore().getDateString()
+		'day_code' : U.getTodayCode().dayBefore().getDateString()
 	};
 	const newitem = W.buildItem('sleep_log', newrec);
 	newitem.syncItem();
@@ -75,13 +75,13 @@ function createNewSub(score)
 
 function editNoteInfo(itemid)
 {
-	genericEditTextField('sleep_log', 'notes', itemid);
+	U.genericEditTextField('sleep_log', 'notes', itemid);
 
 }
 
 function editSleepScore(itemid)
 {
-	genericEditIntField("sleep_log", "sleep_score", itemid);
+	U.genericEditIntField("sleep_log", "sleep_score", itemid);
 }
 
 
@@ -105,7 +105,7 @@ function shorten4Display(ob) {
 function redisplay() {
 	// No longer any need for an EDIT page view - you just edit directly from the main view
 	// by clicking on the table cells
-	populateSpanData({"page_info" : getMainPageInfo() });
+	U.populateSpanData({"page_info" : getMainPageInfo() });
 }
 
 

@@ -14,7 +14,7 @@ function newGood()
 
 function newFromBump()
 {
-    const itemlist = W.getItemList("health_log").sort(proxySort(a => [a.getDayCode()])).reverse();
+    const itemlist = W.getItemList("health_log").sort(U.proxySort(a => [a.getDayCode()])).reverse();
 
     const lastitem = itemlist[0];
 
@@ -30,7 +30,7 @@ function copyFromId(copyid)
 
 function createNewSub(rating, notestr)
 {
-    const todaycode = getTodayCode().dayBefore().getDateString();
+    const todaycode = U.getTodayCode().dayBefore().getDateString();
     
     // created_on, active_on, completed_on, dead_line
     const newrec = {
@@ -46,17 +46,17 @@ function createNewSub(rating, notestr)
 
 function deleteItem(killid)
 {
-    genericDeleteItem("health_log", killid);
+    U.genericDeleteItem("health_log", killid);
 }
 
 function editItemDesc(itemid)
 {
-    genericEditTextField("health_log", "notes", itemid);
+    U.genericEditTextField("health_log", "notes", itemid);
 }
 
 function editItemRating(itemid)
 {
-    genericEditIntField("health_log", "rating", itemid);
+    U.genericEditIntField("health_log", "rating", itemid);
 }
 
 
@@ -73,7 +73,7 @@ function redisplayMainTable()
 {
 
     const itemlist = W.getItemList("health_log");
-    itemlist.sort(proxySort(a => [a.getDayCode()])).reverse();
+    itemlist.sort(U.proxySort(a => [a.getDayCode()])).reverse();
 
     var tablestr = `
         <table class="basic-table"  width="55%">
@@ -102,7 +102,7 @@ function redisplayMainTable()
 
             <a href="javascript:deleteItem(${item.getId()})"><img src="/u/shared/image/remove.png" height="18"/></a>
 
-            </td>            
+            </td>
             </tr>
         `
 
@@ -111,7 +111,7 @@ function redisplayMainTable()
 
     tablestr += "</table>";
 
-    populateSpanData({"maintable" : tablestr });
+    U.populateSpanData({"maintable" : tablestr });
 }
 
 </script>

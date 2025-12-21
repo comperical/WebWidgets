@@ -38,12 +38,12 @@ function back2Main()
 
 function editNoteInfo()
 {
-  genericEditTextField("photo_main", "full_desc", EDIT_STUDY_ITEM);
+  U.genericEditTextField("photo_main", "full_desc", EDIT_STUDY_ITEM);
 }
 
 function addSearchTag()
 {
-  const newtag = getDocFormValue("search_tag");
+  const newtag = U.getDocFormValue("search_tag");
   SEARCH_TAG_LIST.push(newtag);
   redisplay();
 }
@@ -92,7 +92,7 @@ function removeItemTag(remtag)
 
 function addTagFromSel()
 {
-  const addtag = getDocFormValue("tag_selector");
+  const addtag = U.getDocFormValue("tag_selector");
   const item = W.lookupItem("photo_main", EDIT_STUDY_ITEM);  
   const newlist = getItemTagList(item)
   newlist.push(addtag);
@@ -139,7 +139,7 @@ function refreshAfterUpload()
 
 function checkUploadAndGo()
 {
-    const uploadel = getUniqElementByName("uploadMe");
+    const uploadel = U.getUniqElementByName("uploadMe");
     const filename = uploadel.files[0].name;
     
     if(!confirm(`Okay to upload file ${filename}?`))
@@ -159,12 +159,10 @@ function checkUploadAndGo()
 
 function updateAttachmentContent(base64data, filename)
 {
-  ///CREATE TABLE photo_main (id int, short_name varchar(20), tag_list varchar(30), photo_date varchar(10), base64_blob_data varchar(1000), blob_file_name varchar(100), primary key(id));
-
     const newrec = {
         "full_desc" : "...",
         "tag_list" : "",
-        "photo_date" : getTodayCode().getDateString(),
+        "photo_date" : U.getTodayCode().getDateString(),
         "full_desc" : "---",
         "base64_blob_data" : base64data,
         "blob_file_name" : filename,
@@ -212,7 +210,7 @@ function getFileExtension(photoitem)
 
 function runSearch()
 {
-  SEARCH_TERM = getDocFormValue("new_search");
+  SEARCH_TERM = U.getDocFormValue("new_search");
   redisplay();
 }
 
@@ -255,7 +253,7 @@ function redisplay()
 {
   const pageinfo = EDIT_STUDY_ITEM == -1 ? redisplayMain() : redisplayEdit();
 
-  populateSpanData({"pageinfo" : pageinfo});
+  U.populateSpanData({"pageinfo" : pageinfo});
 }
 
 

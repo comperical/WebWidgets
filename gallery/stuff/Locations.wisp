@@ -58,7 +58,7 @@ function redisplay() {
 	handleNavBar();
 
 	const pageinfo = EDIT_STUDY_ITEM == -1 ? getMainPageInfo() : getEditPageInfo();
-	populateSpanData({"page_info" : pageinfo });
+	U.populateSpanData({"page_info" : pageinfo });
 }
 
 // Auto-generated getEditPageInfo function
@@ -79,7 +79,7 @@ function getEditPageInfo() {
 	</tr>
 	<tr><td>Location Name</td>
 	<td>${item.getLocName()}</td>
-	<td><a href="javascript:genericEditTextField('stuff_loc', 'loc_name', EDIT_STUDY_ITEM)"><img src="/u/shared/image/edit.png" height="18"></a></td></tr>
+	<td><a href="javascript:U.genericEditTextField('stuff_loc', 'loc_name', EDIT_STUDY_ITEM)"><img src="/u/shared/image/edit.png" height="18"></a></td></tr>
 	</tr>
 	</table>
 	`;
