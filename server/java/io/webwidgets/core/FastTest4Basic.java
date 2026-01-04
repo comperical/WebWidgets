@@ -1063,8 +1063,10 @@ public class FastTest4Basic
 		
 		public void runOp()
 		{
-			WidgetUser shared = WidgetUser.buildBackDoorSharedUser();
-			WidgetItem master = new WidgetItem(shared, CoreUtil.MASTER_WIDGET_NAME);
+			// TODO: the getMasterData is a way to ensure the indexes are loaded, otherwise
+			// getMasterWidget will fail
+			GlobalIndex.getMasterData();
+			WidgetItem master = GlobalIndex.getMasterWidget();
 			
 			{
 				File dbfile = master.getLocalDbFile();
