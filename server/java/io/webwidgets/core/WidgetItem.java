@@ -38,16 +38,16 @@ public class WidgetItem implements ConnectionSource, Comparable<WidgetItem>
 		theName = name;
 		isVirtual = isvirt;
 
-		Util.massert(theOwner != null && name != null, 
+		Util.massert(theOwner != null && name != null,
 			"Attempt to create WidgetItem with null owner (%s) or name (%s)", theOwner, name);
 	}
-			
 
 	// TODO: it's a bad idea to have the Master widget be owned by the shared user
 	// Shared user assets are totally public, but master widget is maximally private!!!
 	public static WidgetItem getMasterWidget()
 	{
-		return new WidgetItem(WidgetUser.getSharedUser(), CoreUtil.MASTER_WIDGET_NAME);
+		// return new WidgetItem(WidgetUser.getSharedUser(), CoreUtil.MASTER_WIDGET_NAME);
+		return GlobalIndex.getMasterWidget();
 	}
 
     public static WidgetItem userBaseWidget(WidgetUser owner)
@@ -80,7 +80,7 @@ public class WidgetItem implements ConnectionSource, Comparable<WidgetItem>
 		return CoreUtil.getFileCkSum(getLocalDbFile());
 	}
 	
-	public String getLocalMachinePath() 
+	public String getLocalMachinePath()
 	{
 		return getLocalDbPath();
 	}

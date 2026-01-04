@@ -72,6 +72,7 @@ public class CoreUtil
 		Util.setify(BASE_WIDGET_NAME, AUTO_INCLUDE_DIR_NAME)
 	);
 
+	private static Optional<File> __MASTER_DB_FILE = Optional.empty();
 
 	static String getSubDirectory(String basedir, String kidname)
 	{
@@ -147,7 +148,6 @@ public class CoreUtil
 	// Special non-widget code, running on server. Not controlled by users.
 	// Served from /admin
 	public static final String WIDGET_ADMIN_DIR = WIDGET_CODE_DIR + "/admin";
-
 
 	static final String MASTER_WIDGET_NAME = "master";
 	
@@ -702,5 +702,46 @@ public class CoreUtil
 			{ probe = new File(probe, k); }
 
 		return probe;
+	}
+
+	// Find the MASTER db by scanning all Widget DB directories
+	static synchronized File findMasterDbSlowStart()
+	{
+		if(!__MASTER_DB_FILE.isPresent())
+		{
+			double alpha = Util.curtime();
+			File dbdir = new File(WIDGET_DB_DIR);
+			Util.massert(dbdir.exists() && dbdir.isDirectory(),
+				"Widget DB base directory not found, expected at %s", dbdir);
+
+			// This is what we are looking for
+			String mastfname = String.format("%s_DB.sqlite", MASTER_WIDGET_NAME.toUpperCase());
+			List<File> foundlist = Util.arraylist();
+
+			File[] userdblist = dbdir.listFiles();
+			Util.massert(userdblist != null,
+				"Somehow failed to list directories of Widget DB base");
+
+			for(File kiddir : userdblist)
+			{
+				if(!kiddir.isDirectory())
+					{ continue; }
+
+				File probe = new File(kiddir, mastfname);
+				if(probe.exists())
+				{
+					Util.massert(probe.isFile(), "Found a non-file entry with Master DB name");
+					foundlist.add(probe); 
+				}
+			}
+
+			Util.massert(foundlist.size() > 0, "Failed to find MASTER DB, expected name is %s", mastfname);
+			Util.massert(foundlist.size() == 1, "Found multiple paths for master DB %s, expect only 1", foundlist);
+			__MASTER_DB_FILE = Optional.of(foundlist.get(0));
+			Util.pf("Found Master DB at %s in %.03f seconds\n",  foundlist.get(0), (Util.curtime()-alpha)/1000);
+		}
+
+		return __MASTER_DB_FILE.get();
+
 	}
 }

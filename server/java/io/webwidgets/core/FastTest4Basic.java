@@ -1613,5 +1613,21 @@ public class FastTest4Basic
 				new File(CoreUtil.REPO_BASE_DIRECTORY), "jslib");
 		}
 	}
+
+
+	public static class TestMasterDbLookup extends ArgMapRunnable
+	{
+		public void runOp()
+		{
+			File masterdb = CoreUtil.findMasterDbSlowStart();
+			Util.pf("Success, found master DB at %s\n", masterdb);
+			GlobalIndex.getMasterData();
+			WidgetItem master = GlobalIndex.getMasterWidget();
+
+			// TODO: remove the shared option
+			Util.massert(master.theOwner.isAdmin() || master.theOwner.toString().equals("shared"),
+				"Master widget owner must be an admin, found master owner %s", master.theOwner);
+		}
+	}
 }
 

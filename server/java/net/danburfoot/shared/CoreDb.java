@@ -766,7 +766,7 @@ public class CoreDb
 			theFile = thefile;
 			
 			if(mustexist)
-			{ 
+			{
 				Util.massert(theFile.exists(), 
 					"File %s does not exist, you must create before using", theFile.getAbsolutePath());
 			}
@@ -780,7 +780,7 @@ public class CoreDb
 		public ScrapDb(File thefile)
 		{
 			this(thefile, true);
-		}	
+		}
 		
 		public String toString()
 		{
@@ -790,7 +790,7 @@ public class CoreDb
 		
 		public Connection createConnection() throws SQLException
 		{
-			maybeLoadDbClassInfo(JDBC.class.getName());		
+			maybeLoadDbClassInfo(JDBC.class.getName());
 					
 			return DriverManager.getConnection(geJdbcUrl(), getSqliteConfigProps());
 		}
@@ -809,7 +809,7 @@ public class CoreDb
 		{
 			return (new QueryCollector(sql)).doQuery(this);
 		}
-	}	
+	}
 
 	// }}}	
 

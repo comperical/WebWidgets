@@ -12,7 +12,10 @@ import net.danburfoot.shared.Util;
 import net.danburfoot.shared.CoreDb;
 import net.danburfoot.shared.ArgMap;
 
+import net.danburfoot.shared.CoreDb.ScrapDb;
 import net.danburfoot.shared.CoreDb.QueryCollector;
+import net.danburfoot.shared.CoreDb.ConnectionSource;
+
 
 import io.webwidgets.core.CoreUtil.MasterTable;
 import io.webwidgets.core.CoreUtil.SystemPropEnum;
@@ -25,6 +28,9 @@ public class GlobalIndex
     // This is the contents of the MASTER user DB table
     private static Map<String, ArgMap> _MASTER_DATA;
     
+    // Owner of Master DB
+    private static WidgetUser _MASTER_OWNER;
+
     // Map of String names to WidgetUser objects
     // These are immutable and unique, you never get a WidgetUser object any way
     // Other than lookup from this map
@@ -86,6 +92,8 @@ public class GlobalIndex
             
         _LOOKUP_MAP = null;
 
+        _MASTER_OWNER = null;
+
         _SYSTEM_SETTING = null;
 
         _PERMISSION_MAP = null;
@@ -101,8 +109,9 @@ public class GlobalIndex
 
         if(_MASTER_DATA == null)
         {
-            WidgetItem loadmaster = getLoadOnlyMaster();
             {
+                ConnectionSource loadmaster = getLoadOnlyMaster();
+
                 QueryCollector qcol = CoreUtil.fullTableQuery(loadmaster, MasterTable.user_main.toString());
                 _MASTER_DATA = Util.map2map(qcol.recList(), amap -> amap.getStr("username"), amap -> amap);
                 
@@ -112,7 +121,25 @@ public class GlobalIndex
             }
 
             {
-                QueryCollector qcol = CoreUtil.fullTableQuery(loadmaster, MasterTable.system_setting.toString());
+                // Find the master owner. This is just the user whose name corresponds to 
+                // masterpath found in the startup process. This is just string processing.
+                // Any problems that might happen here, would usually happen in the findMasterDb method
+                File masterpath = CoreUtil.findMasterDbSlowStart();
+                List<WidgetUser> probelist = Util.filter2list(
+                    _LOOKUP_MAP.values(),
+                    probe -> new WidgetItem(probe, CoreUtil.MASTER_WIDGET_NAME).getLocalDbFile().equals(masterpath)
+                );
+
+                Util.massert(probelist.size() == 1, "Expected exactly 1 hit for master owner lookup, got %s", probelist);
+                _MASTER_OWNER = probelist.get(0);
+
+                // TODO: add isAdmin assertion here for master owner
+                // After this step is complete, we use the standard getMasterWidget(...) method
+            }
+
+
+            {
+                QueryCollector qcol = CoreUtil.fullTableQuery(getMasterWidget(), MasterTable.system_setting.toString());
                 _SYSTEM_SETTING = Util.map2map(qcol.recList(), amap -> amap.getStr("key_str"), amap -> amap.getStr("val_str"));
             }
 
@@ -121,7 +148,7 @@ public class GlobalIndex
             {
                 _PERMISSION_MAP = Util.treemap();
 
-                QueryCollector qcol = CoreUtil.fullTableQuery(WidgetItem.getMasterWidget(), AuthLogic.PERM_GRANT_TABLE);
+                QueryCollector qcol = CoreUtil.fullTableQuery(getMasterWidget(), AuthLogic.PERM_GRANT_TABLE);
 
                 for(ArgMap onemap : qcol.recList())
                 {
@@ -149,10 +176,24 @@ public class GlobalIndex
     // This is a special "back-door" that is used only to load the indexes
     // The gotcha is that WidgetItem.getMasterWidget requires a reference to WidgetUser.shared
     // But WidgetUser objects are generally only created by the GlobalIndex code
+    /*
     private static WidgetItem getLoadOnlyMaster()
     { 
         WidgetUser admin = WidgetUser.buildBackDoorSharedUser();
         return new WidgetItem(admin, CoreUtil.MASTER_WIDGET_NAME);
+    }
+    */
+
+    private static ConnectionSource getLoadOnlyMaster()
+    {
+        File masterpath = CoreUtil.findMasterDbSlowStart();
+        return new ScrapDb(masterpath);
+    }
+
+    public static WidgetItem getMasterWidget()
+    {
+        Util.massert(_MASTER_OWNER != null, "This method cannot be called until the Master Owner is found");
+        return new WidgetItem(_MASTER_OWNER, CoreUtil.MASTER_WIDGET_NAME);
     }
 
     public static void updateSystemSetting(Enum setting, Optional<String> optval)
@@ -165,7 +206,7 @@ public class GlobalIndex
         // Sept 2024 bug fix: this table has an integer id PKey, like all the others in the system
         // But code was previously treating it like the key_str was the PK
 
-        WidgetItem master = WidgetItem.getMasterWidget();
+        ConnectionSource master = WidgetItem.getMasterWidget();
         var tabname = MasterTable.system_setting.toString();
 
 
