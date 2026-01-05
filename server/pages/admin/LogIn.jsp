@@ -51,6 +51,8 @@
       // Dec 2023 note: previous versions of login performed the password hash client-side,
       // so that the hashed data was never sent to the server. I think that is just paranoia,
       // makes me depend on weird JS crypto client libs
+      // Jan 2026 update: it is actually required to do it this way; because the accesshash
+      // is now set to be HttpOnly, it cannot be read in JS
       String username = argMap.getStr("username");
       String accessHash = AuthLogic.canonicalHash(argMap.getStr("password"));
       boolean checkLogIn = AuthLogic.checkCredential(username, accessHash);

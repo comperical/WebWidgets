@@ -94,10 +94,19 @@ public class AuthLogic
 		Cookie mycookie = new Cookie(CoreUtil.ACCESS_HASH_COOKIE, accesshash);
 		mycookie.setPath("/");
 
-		// This was previously just TRUE, but if the request is not secure due to config, there's no point
-		// in not allowing the cookie to be stored.
-		mycookie.setSecure(request.isSecure());
-		
+		// Previous versions copied the secure setting from the request
+		// It may be that always-true here breaks the allow insecure testing mode
+		// Moving forward, I think we remove allow insecure and require testing to use a self-signed cert
+		// mycookie.setSecure(request.isSecure());
+
+		mycookie.setSecure(true);
+		mycookie.setHttpOnly(true);
+
+		// Modern browsers will default to SameSite=Lax if no guidance is sent,
+		// but better to be explicit
+		// Need to use higher version of servlet API to turn this on
+		// mycookie.setAttribute("SameSite", "Lax");
+
 		// DAY_MILLI is milliseconds; divide by 1000 and mult by 10 days = divide by 100
 		mycookie.setMaxAge((int) (TimeUtil.DAY_MILLI / 100));
 		response.addCookie(mycookie);
