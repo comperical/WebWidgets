@@ -30,7 +30,7 @@ function getExtraInfoBox()
 
 
 function createNewSub(qtext)
-{	
+{
 	if(!qtext.endsWith("?"))
 	{
 		alert("By convention, questions must end with a question mark");

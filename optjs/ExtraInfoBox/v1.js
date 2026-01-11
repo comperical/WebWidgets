@@ -23,7 +23,7 @@ EXTRA = {
 
     standardSave : function(boxbuilder) {
 
-        massert(boxbuilder.startsWith("javascript:"), `Expected box-builder to start with javascript: prefix, found ${boxbuilder}`);
+        U.massert(boxbuilder.startsWith("javascript:"), `Expected box-builder to start with javascript: prefix, found ${boxbuilder}`);
         const boxfunc = boxbuilder.substring("javascript:".length);
         const thebox = eval(boxfunc);
 
@@ -56,8 +56,8 @@ function ExtraInfoBox() {
 
 ExtraInfoBox.prototype.withProvider = function(provfunc)
 {
-    massert(typeof(provfunc) == 'function', `Expected provfunc to be a function, found ${provfunc}`);
-    massert(this.providerFunc == null, `Attempt to set provider function, but it has already been set`);
+    U.massert(typeof(provfunc) == 'function', `Expected provfunc to be a function, found ${provfunc}`);
+    U.massert(this.providerFunc == null, `Attempt to set provider function, but it has already been set`);
 
     this.providerFunc = provfunc;
     return this;
@@ -66,8 +66,8 @@ ExtraInfoBox.prototype.withProvider = function(provfunc)
 
 ExtraInfoBox.prototype.withConsumer = function(consfunc)
 {
-    massert(typeof(consfunc) == 'function', `Expected consumer func to be a function, found ${consfunc}`);
-    massert(this.consumerFunc == null, `Attempt to set provider function, but it has already been set`);
+    U.massert(typeof(consfunc) == 'function', `Expected consumer func to be a function, found ${consfunc}`);
+    U.massert(this.consumerFunc == null, `Attempt to set provider function, but it has already been set`);
 
     this.consumerFunc = consfunc;
     return this;
@@ -75,7 +75,7 @@ ExtraInfoBox.prototype.withConsumer = function(consfunc)
 
 ExtraInfoBox.prototype.withTextInput = function(text)
 {
-    massert(typeof(text) == 'string', "Expected string argument for withTextInput(...)");
+    U.massert(typeof(text) == 'string', "Expected string argument for withTextInput(...)");
 
     const provider = () => text;
     return withProvider(provider);
@@ -84,7 +84,7 @@ ExtraInfoBox.prototype.withTextInput = function(text)
 // This is required if you want to use multiple EI boxes on the same page
 ExtraInfoBox.prototype.withTextAreaName = function(areaname)
 {
-    massert(typeof(areaname) == 'string', "Expected string argument for withTextAreaName(...)");
+    U.massert(typeof(areaname) == 'string', "Expected string argument for withTextAreaName(...)");
     this.textAreaName = areaname;
     return this;
 }
@@ -116,7 +116,7 @@ ExtraInfoBox.prototype.withStandardConfig = function(tablename, itemid, fieldnam
 
 ExtraInfoBox.prototype.withBoxBuilder = function(boxbuilder)
 {
-    massert(typeof(boxbuilder) == 'string' && boxbuilder.startsWith("javascript:"),
+    U.massert(typeof(boxbuilder) == 'string' && boxbuilder.startsWith("javascript:"),
         `By convention, boxbuilder is a JS function name, starting with javascript:, found ${boxbuilder}`
     );
 
@@ -127,7 +127,7 @@ ExtraInfoBox.prototype.withBoxBuilder = function(boxbuilder)
 
 ExtraInfoBox.prototype.withSaveFunction = function(savefunc)
 {
-    massert(typeof(savefunc) == "string" && savefunc.startsWith("javascript:"), 
+    U.massert(typeof(savefunc) == "string" && savefunc.startsWith("javascript:"), 
         `By convention, savefunc is a text string that starts with javascript:, found ${savefunc}`);
 
     this.saveFuncName = savefunc;
@@ -137,8 +137,8 @@ ExtraInfoBox.prototype.withSaveFunction = function(savefunc)
 
 ExtraInfoBox.prototype.withTableWidth = function(twidth)
 {
-    massert(parseInt(twidth) == twidth, `Expected integer, got ${twidth}`);
-    massert(3 <= twidth && twidth <= 100, `Invalid value for table width, expected integer from 3-100, got ${twidth}`);
+    U.massert(parseInt(twidth) == twidth, `Expected integer, got ${twidth}`);
+    U.massert(3 <= twidth && twidth <= 100, `Invalid value for table width, expected integer from 3-100, got ${twidth}`);
 
     this.tableWidth = twidth;
     return this;
@@ -157,8 +157,8 @@ ExtraInfoBox.prototype.__getSaveFunc = function()
 
 ExtraInfoBox.prototype.getHtmlString = function()
 {
-    massert(this.providerFunc != null, "You must supply a provider function");
-    massert(this.consumerFunc != null, "You must supply a consumer function");
+    U.massert(this.providerFunc != null, "You must supply a provider function");
+    U.massert(this.consumerFunc != null, "You must supply a consumer function");
     const thetext = this.providerFunc();
 
 
