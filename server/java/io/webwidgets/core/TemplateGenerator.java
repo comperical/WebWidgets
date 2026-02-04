@@ -74,7 +74,7 @@ public class TemplateGenerator
         {
             add("");
             add("function getStudyItem() {");
-            add("\tmassert(EDIT_STUDY_ITEM != -1, \"No study item has been selected\");");
+            add("\tU.massert(EDIT_STUDY_ITEM != -1, \"No study item has been selected\");");
             add("\treturn W.lookupItem(MAIN_TABLE, EDIT_STUDY_ITEM);");
             add("}");
             add("");
