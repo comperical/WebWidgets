@@ -219,7 +219,7 @@ function redisplay()
 {
 	handleNavBar("Day Plan");
 
-	var activelist = getPlanDayItemList();
+	const activelist = getPlanDayItemList();
 					
 	var tablestr = `
 		<table class="basic-table"  width="650px">
@@ -308,10 +308,7 @@ function redisplay()
 		</table>
 	`;
 
-	const timeminsel = buildOptSelector()
-							.configureFromHash(getHourTimeMap())
-							.setElementName("time_spent_min")
-							.getHtmlString()
+
 	
 	const tempsel = buildOptSelector()
 						.configureFromHash(getTemplateIdMap())
@@ -332,11 +329,14 @@ function redisplay()
 					.getHtmlString();
 
 
+	const newcontrol = getNewItemControl(activelist.length > 0);
+
+
 	U.populateSpanData({
 		"dayplantable" : tablestr,
 		"template_sel_span" : tempsel.getHtmlString(),
 		"plan_day_name" : PLAN_DAY_CODE.getDayOfWeek(),
-		"time_spent_min_span" : timeminsel,
+		"new_item_control" : newcontrol,
 		"plan_day_code" : PLAN_DAY_CODE.getDateString().substring(5),
 		"plan_day_sel_span" : datesel
 	});
@@ -370,17 +370,7 @@ Go To: <span id="plan_day_sel_span"></span>
 
 <br/><br/>
 
-Hour Spent: <span id="time_spent_min_span"></span>
-
-<a href="javascript:newByHourSpent()">
-<img src="/u/shared/image/add.png" width="18"/></a>
-
-
-<br/><br/>
-
-wakeup
-<a href="javascript:createWakeUpItem()">
-<img src="/u/shared/image/add.png" width="18"/></a> 
+<span id="new_item_control"></span>
 
 <br/><br/>
 Import Template: 

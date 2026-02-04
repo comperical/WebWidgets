@@ -54,6 +54,27 @@ function getDateDisplayMap()
 }
 
 
+
+// Show either a drop down showing New-by-Hour-Spent or a Wakeup button
+// haveany = boolean indicating whether there are any records
+function getNewItemControl(haveany)
+{
+    if(!haveany)
+    {
+        return `<a href="javascript:createWakeUpItem()"><button>wakeup</button</a>`;
+    }
+
+    const timeminsel = buildOptSelector()
+                            .configureFromHash(getHourTimeMap())
+                            .insertStartingPair(-1, "----")
+                            .setOnChange("javascript:newByHourSpent()")
+                            .setElementName("time_spent_min")
+                            .getHtmlString();
+
+    return `Hour Spent ${timeminsel}`;
+
+}
+
 function handleNavBar(curpage) {
 
     const headerinfo = [

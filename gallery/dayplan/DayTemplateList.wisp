@@ -74,11 +74,9 @@ function getSelectedTemplate()
 	return W.lookupItem("day_template", EDIT_STUDY_ITEM);
 }
 
-function plusDefaultWakeUp()
+function createWakeUpItem()
 {
-	const newid = W.newBasicId("template_sub");
 	const newrec = {
-		"id" : newid,
 		"temp_id" : EDIT_STUDY_ITEM,
 		"end_hour" : 8,
 		"half_hour" : 0,
@@ -105,7 +103,6 @@ function newByHourSpent()
 	
 	if(itemname)
 	{
-		const newid = W.newBasicId("template_sub");	
 		const previtem = itemlist.slice(-1)[0];
 		var totalmin = previtem.getEndHour() * 60 + previtem.getHalfHour() * 30;
 		
@@ -117,7 +114,6 @@ function newByHourSpent()
 		// console.log("Total min " + totalmin + " newhour=" + newhour + " newhalf=" + newhalf);
 
 		const newrec = {
-			"id" : newid,
 			"temp_id" : EDIT_STUDY_ITEM,
 			"end_hour" : newhour,
 			"half_hour" : newhalf ? 1 : 0,
@@ -377,20 +373,11 @@ function redisplayStudyItem()
 
 	const endhourlist = [... Array(25).keys()];
 
-	const endsel = buildOptSelector()
-					.configureFromList(endhourlist)
-					.setElementName("end_hour")
-					.setSelectedKey(8)
-					.autoPopulate();
-
-	const timesel = buildOptSelector()
-						.configureFromHash(getHourTimeMap())
-						.setElementName("time_spent_min")
-						.setSelectedKey(60)
-						.autoPopulate();
+	const newcontrol = getNewItemControl(itemlist.length > 0);
 
 	U.populateSpanData({
 		"dayplantable" : mainstr,
+		"new_item_control" : newcontrol,
 		"templatename" : getSelectedTemplate().getShortName()
 	});
 }
@@ -438,28 +425,10 @@ Inactive? <input type="checkbox" name="show_inactive" onChange="javascript:redis
 
 <br/><br/>
 
-End Time: 
-<span id="end_hour_span"></span>
-
-<a href="javascript:createNew()">
-<img src="/u/shared/image/add.png" width="18"/></a>
+<span id="new_item_control"></span>
 
 <br/><br/>
 
-Hour Spent: 
-<span id="time_spent_min_span"></span>
-
-<a href="javascript:newByHourSpent()">
-<img src="/u/shared/image/add.png" width="18"/></a>
-
-
-<br/><br/><br/>
-
-wakeup
-<a href="javascript:plusDefaultWakeUp()">
-<img src="/u/shared/image/add.png" width="18"/></a> 
-
-</span>
 
 </body>
 </html>
