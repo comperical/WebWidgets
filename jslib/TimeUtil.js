@@ -248,7 +248,7 @@ function getCurrentWeekList()
 // Argument is a DayCode
 function getWeekOfList(mondaycode)
 {
-    massert(mondaycode.getShortDayOfWeek() == "Mon");
+    U.massert(mondaycode.getShortDayOfWeek() == "Mon");
     
     var weeklist = [];
     var dc = mondaycode;
@@ -274,7 +274,7 @@ function getMonday4Date(dc)
         dc = dc.dayBefore();
     }
     
-    massert(false, "Failed to find a good Monday!!!");  
+    U.massert(false, "Failed to find a good Monday!!!");
 }
 
 // Most recent Monday - the starting Monday for today's date.
@@ -287,7 +287,7 @@ function getLastMonday()
 
 function checkTimeZoneOkay(timezone)
 {
-    massert(TIME_ZONE_LIST.includes(timezone), "Unknown timezone " + timezone + " options are " + TIME_ZONE_LIST);
+    U.massert(TIME_ZONE_LIST.includes(timezone), "Unknown timezone " + timezone + " options are " + TIME_ZONE_LIST);
 }
 
 function maybePad(pdstr)
@@ -336,7 +336,7 @@ ExactMoment.prototype.withAddedMilli = function(milli)
 // Use the given timezone to produce the timestamp
 ExactMoment.prototype.asIsoLongBasic = function(timezone)
 {
-    massert(timezone in TIME_ZONE_OFFSET_MAP, "Unknown timezone " + timezone + " options are " + TIME_ZONE_OFFSET_MAP);
+    U.massert(timezone in TIME_ZONE_OFFSET_MAP, "Unknown timezone " + timezone + " options are " + TIME_ZONE_OFFSET_MAP);
     
     const hourmod = TIME_ZONE_OFFSET_MAP[timezone];
 
@@ -365,10 +365,10 @@ function isLongIsoTimeValid(timestamp)
 function exactMomentFromIsoBasic(timestamp, timezone)
 {
     const hourmod = TIME_ZONE_OFFSET_MAP[timezone];
-    massert(hourmod != null, 
+    U.massert(hourmod != null,
         `Time Zone string ${timezone} not present in the time zone map, options are\n${TIME_ZONE_LIST}`);
 
-    massert(isLongIsoTimeValid(timestamp),
+    U.massert(isLongIsoTimeValid(timestamp),
         `The timestamp string ${timestamp} is not valid, format is YYYY-MM-DD HH:MM:SS`);
 
     // Don't use replaceAll, it's not widely supported
