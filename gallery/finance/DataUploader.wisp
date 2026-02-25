@@ -16,6 +16,55 @@
 
 var FILTERED_RECORDS = [];
 
+
+function niceDing() {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const now = ctx.currentTime;
+
+    // --- Main tone ---
+    const osc1 = ctx.createOscillator();
+    const gain1 = ctx.createGain();
+
+    osc1.type = "sine";
+    osc1.frequency.setValueAtTime(660, now); // E5
+
+    // Soft envelope (THIS removes harshness)
+    gain1.gain.setValueAtTime(0.0001, now);
+    gain1.gain.exponentialRampToValueAtTime(0.2, now + 0.02);   // gentle attack
+    gain1.gain.exponentialRampToValueAtTime(0.0001, now + 0.4); // smooth decay
+
+    osc1.connect(gain1);
+    gain1.connect(ctx.destination);
+
+    osc1.start(now);
+    osc1.stop(now + 0.4);
+
+    // --- Light sparkle harmonic ---
+    const osc2 = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+
+    osc2.type = "triangle";
+    osc2.frequency.setValueAtTime(880, now); // higher overtone
+
+    gain2.gain.setValueAtTime(0.0001, now);
+    gain2.gain.exponentialRampToValueAtTime(0.08, now + 0.01);
+    gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
+
+    osc2.connect(gain2);
+    gain2.connect(ctx.destination);
+
+    osc2.start(now);
+    osc2.stop(now + 0.25);
+}
+
+
+function copyDateInfo(annoystr)
+{
+    navigator.clipboard.writeText(annoystr).then(() => {
+        niceDing();
+    });
+}
+
 function redisplay()
 {
     handleNavBar();
@@ -86,6 +135,15 @@ function getMissingInfo()
     const noupload_cutoff = padomega.nDaysBefore(30);
 
 
+    const tdblock = function(dcode)
+    {
+        const annoystr = annoyingDateFormat(dcode);
+        return `
+            <td class="editable" onClick="javascript:copyDateInfo('${annoystr}')">${annoystr}</td>
+        `;
+    }
+
+
     getLogSourceList().forEach(function(logsource) {
 
         const missing = findFirstMissingDay(logsource);
@@ -95,11 +153,17 @@ function getMissingInfo()
             <td colspan="2">Up To Date</td>
         `;
 
+
+
+
         if(padalpha.isBefore(noupload_cutoff))
         {
+            const annoyalpha = annoyingDateFormat(padalpha);
+            const annoyomega = annoyingDateFormat(padomega);
+
             infocell = `
-                <td>${annoyingDateFormat(padalpha)}</td>
-                <td>${annoyingDateFormat(padomega)}</td>
+                ${tdblock(padalpha)}
+                ${tdblock(padomega)}
             `;
 
         } 
@@ -115,7 +179,13 @@ function getMissingInfo()
         infostr += rowstr;
     });
 
-    infostr += `</table>`;
+    infostr += `
+            <tr>
+            <td colspan="4">(click cell to copy date)</td>
+            </tr>
+    </table>
+
+    `;
 
     return infostr;
 

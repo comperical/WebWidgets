@@ -19,7 +19,7 @@ Goal here is to work with laptop and tablet, but not phone
 
 <script src="/u/shared/optjs/ExtraInfoBox/v1.js"></script>
 
-<script src="https://unpkg.com/current-device/umd/current-device.min.js"></script>
+<!-- src="https://unpkg.com/current-device/umd/current-device.min.js" -->
 
 <wisp widgetname="minitask" tables="mini_task_list" okay_if_absent="true"/>
 
@@ -310,6 +310,15 @@ function promoteItem(choreid)
 
 }
 
+function isMobile()
+{
+    // GPT told me the device-mobile package is no longer necessary
+    // for this purpose
+    return window.matchMedia("(max-width: 768px)").matches;
+
+    // return device.mobile();
+}
+
 
 
 function redisplayChoreLog()
@@ -331,6 +340,7 @@ function redisplayChoreLog()
 }
 
 
+
 function getChoreLogTable(itemlist, showall, ispromo)
 {
 
@@ -339,7 +349,7 @@ function getChoreLogTable(itemlist, showall, ispromo)
     const getheader = function(headerstr)
     {
 
-        if(device.mobile())
+        if(isMobile())
         {
             return `<h3>${headerstr}</h3>`;
         }
@@ -361,7 +371,7 @@ function getChoreLogTable(itemlist, showall, ispromo)
 
     function getfooter()
     {
-        if(device.mobile())
+        if(isMobile())
         {
             return "";
         }
@@ -397,7 +407,7 @@ function getChoreLogTable(itemlist, showall, ispromo)
         }
         
                     
-        if(device.mobile())
+        if(isMobile())
         {
             const lastdisplay = lastupdate == null ? "never" : U.lookupDayCode(lastupdate).getNiceDisplay();
 
