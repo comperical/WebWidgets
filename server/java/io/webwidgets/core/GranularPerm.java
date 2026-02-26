@@ -604,4 +604,25 @@ public class GranularPerm
 
         return result;
     }
+
+    // Just load the set of strings defined in the user's group table
+    // This is primarily for testing
+    // This cannot be used to check permissions, it is too slow!
+    public static Set<String> loadUserGroupBase(WidgetUser user)
+    {
+        WidgetItem groupdb = new WidgetItem(user, GROUP_DB_NAME);
+
+        if(!groupdb.dbFileExists())
+            { return Collections.emptySet(); }
+
+        Util.massert(groupdb.getDbTableNameSet().contains(GROUP_INFO_TABLE),
+            "Group DB present, but missing Group Info table: %s", groupdb);
+
+        String query = Util.sprintf("SELECT group_name FROM %s", GROUP_INFO_TABLE);
+
+        QueryCollector qcol = QueryCollector.buildAndRun(query, groupdb);
+
+        return Util.map2set(qcol.recList(), amap -> amap.getSingleStr());
+    }
+
 }

@@ -1573,6 +1573,134 @@ public class FastTest4Basic
 		}
 	}
 
+
+	public static class AuxRole2GroupAllowTest extends DescRunnable
+	{
+		public String getDesc()
+		{
+			return
+				"Check Agreement between the Aux Role table and the Group Allow column\n" +
+				"Run for every table that has group allow\n" +
+				"Some concern about speed here, but as of Feb 2026 I think it's okay\n" +
+				"This test should uncover issues with the 'shunting' logic, or perhaps deletion logic\n";
+		}
+
+		public void runOp()
+		{
+			int errcount = 0;
+			int okaycount = 0;
+			int tablecount = 0;
+			Set<WidgetUser> checkset = Util.treeset();
+
+			for(WidgetUser user : WidgetUser.values())
+			{
+				for(var db : WidgetItem.getUserWidgetList(user))
+				{
+					for(var table : db.getDbTableNameSet())
+					{
+						var LTI = new LiteTableInfo(db, table);
+						LTI.runSetupQuery();
+
+						if(!LTI.hasGranularPerm())
+							{ continue; }
+
+						var auxmap = GranularPerm.slowReadAuxRoleData(db, table);
+						var dirmap = GranularPerm.slowReadGroupAllowData(db, table);
+
+						var idset = CoreUtil.combine2set(auxmap.keySet(), dirmap.keySet());
+
+						for(var id : idset)
+						{
+							var auxsub = auxmap.getOrDefault(id, Collections.emptyMap());
+							var dirsub = dirmap.getOrDefault(id, Collections.emptyMap());
+
+							if(auxsub.equals(dirsub))
+							{
+								okaycount++;
+								continue;
+							}
+
+							Util.pferr("Discrepancy on %s::%s::%d\n\t%s\n\t%s\n", db, table, id, auxsub, dirsub);
+							errcount += 1;
+						}
+
+						tablecount += 1;
+						checkset.add(user);
+					}
+				}
+			}
+
+			Util.massert(errcount == 0, "Found %d errors, see above", errcount);
+			Util.pf("Success, checked %d records in %d tables, users %s\n", okaycount, tablecount, checkset);
+		}
+	}
+
+	public static class GroupDefOkayTest extends DescRunnable
+	{
+		public String getDesc()
+		{
+			return 
+				"Test that groups which are referred to in Group Allow columns actually exist\n" +
+				"It is not really enforced that the strings in the Group Allow JSON refer to real groups\n" +
+				"(This could be enforced on record creation/update, perhaps)\n" +
+				"This check will discover any discrepancies";
+		}
+
+		public void runOp()
+		{
+			int errcount = 0;
+			int okaycount = 0;
+			int tablecount = 0;
+			Set<WidgetUser> checkset = Util.treeset();
+
+			for(WidgetUser user : WidgetUser.values())
+			{
+				Set<String> groupset = GranularPerm.loadUserGroupBase(user);
+
+				for(var db : WidgetItem.getUserWidgetList(user))
+				{
+					for(var table : db.getDbTableNameSet())
+					{
+						var LTI = new LiteTableInfo(db, table);
+						LTI.runSetupQuery();
+
+						if(!LTI.hasGranularPerm())
+							{ continue; }
+
+						Map<Integer, Map<String, Boolean>> dirmap = GranularPerm.slowReadGroupAllowData(db, table);
+
+						for(var submap : dirmap.values())
+						{
+							var badlist = Util.filter2list(submap.keySet(), grp -> !groupColumnOkay(groupset, grp));
+
+							if(!badlist.isEmpty())
+							{
+								Util.pferr("Found bad group list %s on LTI %s\n", badlist, LTI.dbTabPair);
+								errcount += 1;
+							} else {
+								okaycount += 1;
+							}
+						}
+
+						tablecount += 1;
+						checkset.add(user);
+					}
+				}
+			}
+
+			Util.massert(errcount == 0, "Found %d errors, see above", errcount);
+			Util.pf("Success, checked %d records in %d tables, users %s\n", okaycount, tablecount, checkset);
+		}
+
+		private static boolean groupColumnOkay(Set<String> groupset, String colvalue)
+		{
+			return groupset.contains(colvalue) || colvalue.startsWith("I::");
+		}
+
+	}
+
+
+
 	public static class CheckJsLibDeploy extends DescRunnable
 	{
 		public String getDesc()
