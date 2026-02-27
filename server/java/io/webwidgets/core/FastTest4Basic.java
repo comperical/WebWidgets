@@ -1703,33 +1703,88 @@ public class FastTest4Basic
 
 	public static class CheckJsLibDeploy extends DescRunnable
 	{
+
 		public String getDesc()
 		{
-			return "Confirm that the JS files in the WWIO repo are identical to those being served";
+			return
+				"Confirm that the JS files in the WWIO repo are identical to those being served\n" +
+				"This is obviously in the 'move fast and break things' mindset, please be careful\n" +
+				"For updates, the intended usage pattern is to rsync files to repo location (or check them out)\n" +
+				"And then run with modokay=true" +
+				"This style is appropriate for the optJS libraries and MINOR updates to the core libs\n" +
+				"For more extensive updates to the core libs, launch a test server\n";
 		}
 
-		public void runOp()
+		public void runOp() throws IOException
 		{
-			File servdir = AdvancedUtil.SHARED_JSLIB_ASSET_DIR;
-			File repodir = getJsLibRepoDir();
+			boolean modokay = _argMap.getBit("modokay", false);
 
+			{
+				int numfile = runSingleDirCheck(getJsLibRepoDir(), AdvancedUtil.SHARED_JSLIB_ASSET_DIR, modokay);
+				Util.massert(numfile >= 4, "Expected at least 4 files in the main Asset directory");
+				Util.pf("Checked %d files in main repo dir OK\n", numfile);
+			}
+
+			Set<String> optset = getOptJsLibSet();
+
+			// Sanity check : these are known optJS in WWIO core gallery
+			for(String s : Util.listify("BulkDataIngester", "SimpleModal", "ExtraInfoBox"))
+				{ Util.massert(optset.contains(s), "Failed to find optJS library %s", s); }
+
+			for(String optjs : optset)
+			{
+				File repodir = new File(getOptJsRepoBase(), optjs);
+				File servdir = new File(AdvancedUtil.SHARED_OPTJS_ASSET_DIR, optjs);
+				int numfile = runSingleDirCheck(servdir, repodir, modokay);
+				Util.massert(numfile > 0, "No files found for repodir %s", repodir);
+				Util.pf("Checked %d files in optJS dir OK\n", numfile);
+			}
+		}
+
+		private Set<String> getOptJsLibSet()
+		{
+			File repobase = getOptJsRepoBase();
+			List<File> allfile =  Util.filter2list(repobase.listFiles(), f -> f.isDirectory());
+			return Util.map2set(allfile, f -> f.getName());
+		}
+
+
+		private int runSingleDirCheck(File servdir, File repodir, boolean modokay) throws IOException
+		{
 			Map<File, Long> repomap = CoreUtil.getCheckSumMap(repodir);
 			Map<File, Long> servmap = CoreUtil.getCheckSumMap(servdir);
 
-			var reponame = convertIt(repomap);
-			var servname = convertIt(servmap);
+			Util.massert(repomap.size() == servmap.size(),
+				"Repodir has files %s, but servmap has %s, modokay cannot handle this, please copy directly",
+				repomap.keySet(), servmap.keySet()
+			);
 
-			Util.massert(reponame.size() > 4, "Expected at least 4 files");
-
-			if(!reponame.equals(servname))
+			for(File repofile : repomap.keySet())
 			{
-				Util.pferr("Discrepancy b/t repo map and serv map:\n\t%s\n\t%s\n", reponame, servname);
-				Util.massert(false, "Errors, see above");
+				File servfile = findPeerFile(servmap, repofile);
+				Util.massert(servfile != null, "Failed to find repo file %s in serving map", repofile);
+
+				long repoval = repomap.get(repofile);
+				long servval = servmap.get(servfile);
+
+				Util.massert(repoval == servval || modokay,
+					"Found discrepancy for file %s, run with modokay=true to copy", repofile);
+
+				if(repoval != servval)
+				{
+					java.nio.file.Files.copy(repofile.toPath(), servfile.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+					Util.pf("Copied repo file to serving dir:\n\t%s\n\t%s\n", repofile, servfile);
+				}
 			}
 
-			Util.pf("Success, files are identical, have %d/%d files in each  dir\n",
-				reponame.size(), servname.size());
+			return repomap.size();
+		}
 
+		private static File findPeerFile(Map<File, Long> ckmap, File lookup)
+		{
+			List<File> single = Util.filter2list(ckmap.keySet(), f -> f.getName().equals(lookup.getName()));
+			Util.massert(single.size() <= 1, "Found multiple files with same name!!");
+			return single.isEmpty() ? null : single.get(0);
 		}
 
 		private static Map<String, Long> convertIt(Map<File, Long> ckmap)
@@ -1739,9 +1794,14 @@ public class FastTest4Basic
 
 		private static File getJsLibRepoDir()
 		{
-			return CoreUtil.getDescendantFile(
-				new File(CoreUtil.REPO_BASE_DIRECTORY), "jslib");
+			return new File(CoreUtil.REPO_BASE_DIRECTORY, "jslib");
 		}
+
+		private static File getOptJsRepoBase()
+		{
+			return new File(CoreUtil.REPO_BASE_DIRECTORY, "optjs");
+		}
+
 	}
 
 
