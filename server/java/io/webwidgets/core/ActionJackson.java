@@ -136,6 +136,12 @@ public class ActionJackson extends HttpServlet
 			// Note that we do not check if this exists here
 			_dbItem = new WidgetItem(owner.get(), widgetname);
 		}
+
+		boolean skipFormatCheck()
+		{
+			boolean fcheck = _inputMap.getBit("formatcheck", true);
+			return !fcheck;
+		}
 	}
 
 
@@ -219,7 +225,7 @@ public class ActionJackson extends HttpServlet
 			
 			{
 				List<Part> payload = Util.filter2list(request.getParts(), p -> p.getName().equals("payload"));
-				Util.massert(payload.size() == 1, 
+				Util.massert(payload.size() == 1,
 					"Expected exactly 1 payload file, got %d", payload.size());
 
 				File codefile = codeloc.getCodeFile();
@@ -232,7 +238,11 @@ public class ActionJackson extends HttpServlet
 			if(filetype.isZip())
 			{
 				CodeExtractor codex = codeloc.getExtractor();
-				if(!isCodeFormatExempt(dbitem.theOwner))
+
+				// Admins and maybe some other special perms have the OPTION to skip format checks,
+				// but need to pass an appropriate flag on userpush
+				boolean skipformat = info.skipFormatCheck() && isCodeFormatExempt(dbitem.theOwner);
+				if(!skipformat)
 					{ codex.checkCodeFormat(codeloc); }
 
 				// Snapshot of the directory before the code clean

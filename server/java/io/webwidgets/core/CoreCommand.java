@@ -1394,11 +1394,33 @@ public class CoreCommand
 				Util.pf("%s\n", s);
 
 			}
-
 		}
-
 	}
 
+	// Allow local checking of WispFileFormat, good if you have an error that you can't easily debug
+	// You must have the DB setup locally (as well as the general setup for running code locally)
+	public static class LocalCheckFileFormat extends ArgMapRunnable
+	{
+		public void runOp()
+		{
+			// TODO: figure out a standard set of argument names for owner and dbname,
+			// we use these all over the place, never in a standard way
+			WidgetUser user = WidgetUser.lookup(_argMap.getStr("owner"));
+			WidgetItem item = new WidgetItem(user, _argMap.getStr("widgetname"));
+
+			File localdir = new File(_argMap.getStr("localdir"));
+
+			Util.massert(localdir.exists() && localdir.isDirectory(),
+					"Problem with local directory %s", localdir);
+
+			for(File f : localdir.listFiles())
+			{
+				Util.pf("Checking file %s\n", f);
+				var wfformat = new WispFileLogic.WispFileFormat(f, item);
+				wfformat.checkCodeFormat();
+			}
+		}
+	}
 }
 
 

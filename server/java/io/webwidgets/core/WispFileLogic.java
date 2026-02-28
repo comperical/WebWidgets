@@ -346,7 +346,31 @@ public class WispFileLogic
 
             }
 
-            // TODO: check the view prefixes
+            {
+                Optional<String> viewpref = Optional.ofNullable(dimap.get(DataIncludeArg.view_prefixes));
+
+                // Key point here is that user can specify a SINGLE view prefix, like "recent",
+                // and that will work for multiple table+view pairs
+                if(viewpref.isPresent())
+                {
+                    Set<String> viewset = dbitem.getDbViewNameSet();
+                    Set<String> tableset = dbitem.getDbTableNameSet();
+
+                    for(String pref : viewpref.get().split(","))
+                    {
+                        // Is a view present for the prefix plus SOME base table?
+                        var hit = tableset
+                                        .stream()
+                                        .map(tbl -> DataServer.composeViewName(pref, tbl))
+                                        .filter(probe -> viewset.contains(probe))
+                                        .findAny();
+
+                        Util.massert(hit.isPresent(),
+                            "No valid view found for prefix %s, views are %s, tables are %s",
+                            pref, viewset, tableset);
+                    }
+                }
+            }
         }
     }
 }

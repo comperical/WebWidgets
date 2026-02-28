@@ -556,7 +556,7 @@ public class DataServer
 					.findFirst();
 	}
 
-	private static String composeViewName(String prefix, String basename)
+	static String composeViewName(String prefix, String basename)
 	{
 		return String.format("%s_%s", prefix, basename);
 	}
