@@ -39,7 +39,7 @@ TAG = {
 
     promptAddTag2Item : function(tablename, itemid)
     {
-        massert(W.haveItem(tablename, itemid), `No item found for ${tablename}::${itemid}`);
+        U.massert(W.haveItem(tablename, itemid), `No item found for ${tablename}::${itemid}`);
         const item = W.lookupItem(tablename, itemid);
 
         const novtag = prompt("Please enter a new tag:");

@@ -6,7 +6,7 @@ MODAL = {
     }
 };
 
-function SimpleModal() 
+function SimpleModal()
 {
 
     this.topClass = "modal-top";
