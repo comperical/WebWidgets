@@ -5,16 +5,27 @@
 
 <wisp/>
 
+<script src="/u/shared/optjs/SimpleTag/v1.js"></script>
+
 <script>
 
 var EDIT_STUDY_ITEM = -1;
+
+
+const TAG_SEARCH_KEY = "TagSearchKey";
+
+const YEAR_SEL_KEY = "YearSelKey";
 
 const CODE_TO_NAME_MAP = {
     "D" : "Dan",
     "H" : "Heather"
 }
 
-var SEARCH_TERM = "flexcar";
+GENERIC_OPT_SELECT_MAP.set(TAG_SEARCH_KEY, "---");
+
+GENERIC_OPT_SELECT_MAP.set(YEAR_SEL_KEY, "---");
+
+var SEARCH_TERM = null;
 
 function deleteItem(itemid) {
     const item = W.lookupItem('shared_expense', itemid)
@@ -46,20 +57,38 @@ function togglePayerSub(itemid)
 function getSearchItemList()
 {
 
-    if (SEARCH_TERM == null)
-        { return W.getItemList("shared_expense"); }
+    const tagtarget = GENERIC_OPT_SELECT_MAP.get(TAG_SEARCH_KEY);
+    const yeartarget = GENERIC_OPT_SELECT_MAP.get(YEAR_SEL_KEY);
 
-    const hits = [];
 
-    W.getItemList("shared_expense").forEach(function(item) {
+    const hit = function(item)
+    {
+        if(SEARCH_TERM != null)
+        {
+            const notes = item.getNotes().toLowerCase();
+            if(!notes.includes(SEARCH_TERM.toLowerCase()))
+                { return false; }
+        }
 
-        const notes = item.getNotes().toLowerCase();
-        if(notes.includes(SEARCH_TERM.toLowerCase()))
-            { hits.push(item); }
+        if(tagtarget != "---")
+        {
+            const itemset = TAG.getItemTagSet(item);
+            if(!itemset.has(tagtarget))
+                { return false; }
+        }
 
-    })
+        if(yeartarget != "---")
+        {
+            if(!item.getDayCode().startsWith(yeartarget))
+                { return false; }
 
-    return hits;
+        }
+
+        return true;
+    }
+
+
+    return W.getItemList("shared_expense").filter(hit);
 }
 
 function getSummaryTable()
@@ -114,11 +143,42 @@ function runSearch()
 
 function getSearchTable()
 {
+
+    const alltagset = TAG.getCompleteTagSet(W.getItemList("shared_expense"));
+    const tagselector = buildOptSelector()
+                            .configureFromList([... alltagset])
+                            .sortByDisplay()
+                            .setElementName(TAG_SEARCH_KEY)
+                            .insertStartingPair("---", "---")
+                            .useGenericUpdater()
+                            .getHtmlString();
+
+
+    const yearlist = [... Array(4).keys()].map(idx => 2025-idx+3);
+    const yearselector = buildOptSelector()
+                            .configureFromList(yearlist)
+                            .setElementName(YEAR_SEL_KEY)
+                            .insertStartingPair("---", "---")
+                            .useGenericUpdater()
+                            .getHtmlString();
+
+
+
     var pageinfo = `
         <table class="basic-table" width="30%">
+
+
         <tr>
-        <td colspan="2"><b>search</b></td>
+        <td>Tag</td>
+        <td>${tagselector}</td>
         </tr>
+
+
+        <tr>
+        <td>Year</td>
+        <td>${yearselector}</td>
+        </tr>
+
     `;
 
     if(SEARCH_TERM != null) {
@@ -133,7 +193,7 @@ function getSearchTable()
         pageinfo += `
             <tr>
             <td colspan="2">
-            <a href="javascript:runSearch()"><button>go</button></a>
+            <a href="javascript:runSearch()"><button>search</button></a>
             </td>
             </tr>
         `;
@@ -211,6 +271,7 @@ function getMainPageInfo() {
         <th>Amount</th>
         <th>payer</th>
         <th>notes</th>
+        <th>tags</th>
         <th>..</th></tr>
     `
 
@@ -223,6 +284,7 @@ function getMainPageInfo() {
             <td>${shorten4Display(item.getDollarAmount())}</td>
             <td>${CODE_TO_NAME_MAP[item.getPayer()]}</td>
             <td>${shorten4Display(item.getNotes())}</td>
+            <td width="5%">${TAG.getTagSetDisplay(item, "&nbsp;/&nbsp;")}</td>
             <td>
             <a href="javascript:deleteItem(${item.getId()})"><img src="/u/shared/image/remove.png" height="16"/></a>
             </td>

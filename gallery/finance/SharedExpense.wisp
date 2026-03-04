@@ -1,7 +1,18 @@
 <html>
 <head>
-
+<title>Shared Expense</title>
 <wisp/>
+
+<script src="/u/shared/optjs/SimpleTag/v1.js"></script>
+
+
+<style>
+/* Intentionally repeating this, have not figured out the correct logic about sharing CSS */
+.editable:hover {
+    background-color: lightskyblue;
+}
+
+</style>
 
 <script>
 
@@ -52,43 +63,58 @@ function createNewSub(payer) {
 	}
 }
 
-
-function createNewHonda()
+function createNewGrocery()
 {
-	if(confirm("Create a Honda CRV payment?"))
+
+	const amount = U.promptForInt("Enter the grocery amount: ");
+	if(amount)
 	{
 		const newrec = {
-			'dollar_amount' : 551,
-			'payer' : 'D',
+			'dollar_amount' : amount,
+			'payer' : "H",
 			'day_code' : U.getTodayCode().getDateString(),
 			'web_link' : '',
-			'notes' : 'honda CRV payment'
+			'tag_set' : "food",
+			'notes' : "Groceries"
 		};
-		const newitem = W.buildItem('shared_expense', newrec);
+
+		const newitem = W.buildItem(MAIN_TABLE, newrec);
 		newitem.syncItem();
-		EDIT_STUDY_ITEM = newitem.getId();
 		redisplay();
 	}
 }
 
 
-function createNewFlexCar()
+function addNovelTag()
 {
-	if(confirm("Create a new FlexCar record?"))
-	{
-		const newrec = {
-			'dollar_amount' : 558,
-			'payer' : 'D',
-			'day_code' : U.getTodayCode().getDateString(),
-			'web_link' : '',
-			'notes' : 'flexcar'
-		};
-		const newitem = W.buildItem('shared_expense', newrec);
-		newitem.syncItem();
-		EDIT_STUDY_ITEM = newitem.getId();
-		redisplay();
-	}
+    const novtag = prompt("Please enter a NOVEL tag:");
+
+    if(novtag)
+    {
+        const item = W.lookupItem(MAIN_TABLE, EDIT_STUDY_ITEM);
+        TAG.addNewTag2Item(item, novtag);
+        item.syncItem();
+        redisplay();
+    }
 }
+
+function removeTagFromStudy(killtag)
+{
+    const item = W.lookupItem(MAIN_TABLE, EDIT_STUDY_ITEM);
+    TAG.removeTagFromItem(item, killtag);
+    item.syncItem();
+    redisplay();
+}
+
+function addTagFromMain(itemid)
+{
+    const item = W.lookupItem(MAIN_TABLE, itemid);
+    const seltag = U.getDocFormValue(`tagsel__${itemid}`)
+    TAG.addNewTag2Item(item, seltag);
+    item.syncItem();
+    redisplay();
+}
+
 
 
 function isPayerDan(payer)
@@ -199,6 +225,44 @@ function redisplay() {
 	U.populateSpanData({"page_info" : pageinfo });
 }
 
+function updateAmountDirect(itemid)
+{
+	const updater = function(item)
+	{
+		const newamt = U.promptForInt("Please enter the new amount: ", item.getDollarAmount());
+		if(newamt != null)
+		{
+			item.setDollarAmount(newamt);
+		}
+	}
+
+	U.genericItemUpdate(MAIN_TABLE, itemid, updater);
+
+}
+
+function updateDateDirect(itemid)
+{
+	const updater = function(item)
+	{
+		const newdate = prompt("Please enter the new date: ", item.getDayCode());
+		if(newdate != null)
+		{
+			if(!U.haveDayCodeForString(newdate))
+			{
+				alert("Invalid date, please use YYYY-MM-DD format");
+				return;
+
+			}
+
+			item.setDayCode(newdate);
+		}
+	}
+
+	U.genericItemUpdate(MAIN_TABLE, itemid, updater);
+
+
+}
+
 function copyItemUp(itemid)
 {
 	const copyitem = W.lookupItem(MAIN_TABLE, itemid);
@@ -218,7 +282,7 @@ function copyItemUp(itemid)
 								.filter(fname => fname != "id")
 								.map(fname => [fname, copyitem.getField(fname)]));
 
-		record['day_code'] = lookupDayCode(copyitem.getDayCode())
+		record['day_code'] = U.lookupDayCode(copyitem.getDayCode())
 									.nDaysAfter(parseInt(copyfuture))
 									.getDateString();
 
@@ -233,6 +297,22 @@ function copyItemUp(itemid)
 function getEditPageInfo() {
 
 	const item = W.lookupItem('shared_expense', EDIT_STUDY_ITEM);
+
+    let tagcell = "";
+    TAG.getItemTagSet(item).forEach(function(tag) {
+
+        tagcell += ` ${tag} 
+            <a href="javascript:removeTagFromStudy('${tag}')">
+            <img src="/u/shared/image/remove.png" height="14"/></a>
+
+            &nbsp;
+            &nbsp;
+            &nbsp;
+        `
+
+    });
+
+
 	var pageinfo = `
 	<h4>Edit Item</h4>
 	<table class="basic-table" width="50%">
@@ -261,9 +341,23 @@ function getEditPageInfo() {
 	<td>${item.getWebLink()}</td>
 	<td><a href="javascript:U.genericEditTextField('shared_expense', 'web_link', EDIT_STUDY_ITEM)"><img src="/u/shared/image/edit.png" height="18"></a></td></tr>
 	</tr>
+
+
+
 	<tr><td>Notes</td>
 	<td>${item.getNotes()}</td>
 	<td><a href="javascript:U.genericEditTextField('shared_expense', 'notes', EDIT_STUDY_ITEM)"><img src="/u/shared/image/edit.png" height="18"></a></td></tr>
+	</tr>
+
+
+	<tr><td>TagSet</td>
+	<td>${tagcell}</td>
+	<td>
+
+    <a href="javascript:addNovelTag()"><img src="/u/shared/image/add.png" height="18"/></a>
+
+
+	</td>
 	</tr>
 	</table>
 	`;
@@ -296,29 +390,57 @@ function getMainPageInfo() {
 		<a href="javascript:createNewHeather()"><button>+Heather</button></a>
 
 
+		&nbsp;
+		&nbsp;
+		&nbsp;
+		&nbsp;
+
+
+		<a href="javascript:createNewGrocery()"><button>+Grocery</button></a>
+
+
 		<br/>
 		<br/>
 	`;
 
 	pageinfo += `
-		<table class="basic-table" width="80%">
+		<table class="basic-table" width="90%">
 		<tr>
 		<th>Date</th>
 		<th>Amount</th>
 		<th>Payer</th>
 		<th>Notes</th>
+		<th colspan="2">Tags</th>
 		<th>..</th></tr>
 	`
 
-	const itemlist = W.getItemList('shared_expense').sort(proxySort(item => [item.getDayCode()])).reverse();
+	const itemlist = W.getItemList(MAIN_TABLE)
+							.sort(U.proxySort(item => [item.getDayCode()])).reverse();
+
+    const alltagset = TAG.getCompleteTagSet(itemlist);
+
+
 
 	itemlist.forEach(function(item) {
+
+
+	    const tagselector = buildOptSelector()
+	                            .configureFromList([... alltagset])
+	                            .sortByDisplay()
+	                            .setElementName(`tagsel__${item.getId()}`)
+	                            .insertStartingPair("---", "---")
+	                            .setOnChange(`javascript:addTagFromMain(${item.getId()})`)
+	                            .getHtmlString();
+
 		const rowstr = `
 			<tr>
-			<td>${shorten4Display(item.getDayCode())}</td>
-			<td>${shorten4Display(item.getDollarAmount())}</td>
+			<td class="editable" onClick="javascript:updateDateDirect(${item.getId()})">
+			${item.getDayCode()}</td>
+			<td class="editable" onClick="javascript:updateAmountDirect(${item.getId()})">${shorten4Display(item.getDollarAmount())}</td>
 			<td>${CODE_TO_NAME_MAP[item.getPayer()]}</td>
 			<td>${item.getNotes()}</td>
+            <td width="5%">${TAG.getTagSetDisplay(item, "&nbsp;/&nbsp;")}</td>
+			<td width="5%">${tagselector}</td>
 			<td>
 
 			<a href="javascript:copyItemUp(${item.getId()})"><img src="/u/shared/image/upicon.png" height="16"/></a>
