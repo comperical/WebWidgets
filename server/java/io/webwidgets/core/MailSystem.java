@@ -22,6 +22,8 @@ public class MailSystem {
 
     public static final String MAILBOX_DB_TABLE = "outgoing";
 
+    public static final String SENT_AT_UTC_COLUMN = "sent_at_utc";
+
     public static final int MINUTES_BETWEEN_SEND = 15;
 
     public static final int MAX_EMAIL_PER_USER_BLOCK = 5;
@@ -42,9 +44,15 @@ public class MailSystem {
         if(!tableInfo.dbTabPair._2.equals(MAILBOX_DB_TABLE))
             { return Optional.empty(); }
 
+        if(messageAlreadySent(tableInfo, argmap))
+            { return Optional.of("This message has already been sent, you cannot modify or delete it after sending"); }
+
         String ajaxop = argmap.getStr("ajaxop");
         if(!ajaxop.equals("upsert"))
             { return Optional.empty(); }
+
+        if(badSentAtIncoming(argmap))
+            { return Optional.of("The sent_at_utc field is managed by the mail system and must be empty when submitting a message"); }
 
         String recipient = argmap.getStr("recipient");
         if(!basicEmailFormatCheck(recipient))
@@ -68,6 +76,27 @@ public class MailSystem {
         }
 
         return Optional.empty();
+    }
+
+
+    // System marks sent_at_utc when message is sent and message cannot be modified / deleted
+    private static boolean messageAlreadySent(LiteTableInfo table, ArgMap incoming)
+    {
+        int recordid = incoming.getInt(CoreUtil.STANDARD_ID_COLUMN_NAME);
+        Optional<ArgMap> current = table.lookupRecordById(recordid);
+        if(!current.isPresent())
+            { return false; }
+
+        String sentat = current.get().getStr(SENT_AT_UTC_COLUMN);
+        boolean alreadysent = (sentat != null && sentat.length() > 0);
+        return alreadysent;
+    }
+
+    // Incoming sent_at_utc is always empty string
+    private static boolean badSentAtIncoming(ArgMap incoming)
+    {
+        String sentat = incoming.getStr(SENT_AT_UTC_COLUMN, "");
+        return sentat == null || sentat.length() > 0;
     }
 
     public static String composeUnsubFooter(WidgetUser sender, ValidatedEmail email)
