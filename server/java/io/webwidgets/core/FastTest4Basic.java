@@ -1720,7 +1720,7 @@ public class FastTest4Basic
 			boolean modokay = _argMap.getBit("modokay", false);
 
 			{
-				int numfile = runSingleDirCheck(getJsLibRepoDir(), AdvancedUtil.SHARED_JSLIB_ASSET_DIR, modokay);
+				int numfile = runSingleDirCheck(AdvancedUtil.SHARED_JSLIB_ASSET_DIR, getJsLibRepoDir(), modokay);
 				Util.massert(numfile >= 4, "Expected at least 4 files in the main Asset directory");
 				Util.pf("Checked %d files in main repo dir OK\n", numfile);
 			}
