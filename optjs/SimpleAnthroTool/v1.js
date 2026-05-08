@@ -101,7 +101,7 @@ ANTHRO = {
             
             if (this.readyState == 4) {
 
-                massert(this.status == 200 || this.status == 529,
+                U.massert(this.status == 200 || this.status == 529,
                     `Unexpected error code on Ajax operation: ${this.status}. Please reach out to Dan to debug`);
 
 
@@ -159,7 +159,6 @@ ANTHRO = {
 
         ANTHRO.sendBasicMessage(prompt, mycb);
     }
-
 };
 
 

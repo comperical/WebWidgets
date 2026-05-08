@@ -102,7 +102,7 @@ const U = {
     // In addition to running the update, also call syncItem on the record and then redisplay()
     genericItemUpdate : function(tablename, itemid, updater)
     {
-        massert(W.haveItem(tablename, itemid),
+        U.massert(W.haveItem(tablename, itemid),
             "Could not find item " + itemid + " in table " + tablename);
 
         const item = W.lookupItem(tablename, itemid);
