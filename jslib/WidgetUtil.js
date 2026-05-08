@@ -165,6 +165,9 @@ const U = {
 
     __MAX_ERRORS_PER_PAGE : 3,
 
+    // When set to true, the warning message functions give stack traces
+    __SHOW_WARNING_TRACE : false,
+
     // Assert that the given condition is true.
     // If not, alert prompt is shown with the provided error message, as well as some info about the number of errors.
     // CAUTION - want to avoid showing the user an infinite number of prompts, that's why we keep track of 
@@ -716,6 +719,10 @@ function composeNavBarCode(headerdata, headerselected) {
 
 function showLegacyOptApiWarning(funcname)
 {
+    if(U.__SHOW_WARNING_TRACE) {
+        console.trace();
+    }
+
     if (W.__RAW_DEP_WARNING_COUNT < 3) {
         console.log(`**Warning**, use of old OptSelector function ${funcname} is deprecated and will be removed in a future version, please use configureFrom(...) methods`);
     }
