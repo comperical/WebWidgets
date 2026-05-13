@@ -766,11 +766,12 @@ __checkAjaxResponse : function(op, itemid, rtext)
 
 showRawFunctionWarning : function(funcname) {
 
-    if(U.__SHOW_WARNING_TRACE) {
-        console.trace();
-    }
-
     if (W.__RAW_DEP_WARNING_COUNT < 3) {
+
+        if(U.__SHOW_WARNING_TRACE) {
+            console.trace();
+        }
+
         console.log(`**Warning**, use of raw function ${funcname} is deprecated and may be removed in future version, please use W.${funcname}`);            
     }
 
