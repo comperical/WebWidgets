@@ -1,7 +1,5 @@
-// MyOpenRouter2.js — fluent rewrite of MyOpenRouter.js.
 // Module-level state and constants live on OPENR.
 // Per-request configuration goes through the OpenRouterRequest fluent builder.
-
 OPENR = {
 
     // OpenRouter "semantic latest" model codes — aliases that auto-route to the
