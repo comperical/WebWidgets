@@ -376,8 +376,10 @@ if __name__ == "__main__":
     result = get_full_html() if usefull else get_basic_html()
 
     if argmap.containsKey("output"):
-        with open(argmap.getStr("output"), 'w') as fh:
+        outputpath = argmap.getStr("output")
+        with open(outputpath, 'w') as fh:
             fh.write(result)
+            print(f"Wrote result length {len(result)} to {outputpath}")
 
     else:
         print(result)
