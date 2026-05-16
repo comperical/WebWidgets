@@ -2,6 +2,7 @@
 
 import os 
 import sys
+import pwd
 from datetime import date
 
 import ArgMap
@@ -14,14 +15,15 @@ import PullData
 def get_running_user():
     
     try:
-        return os.getlogin()
+        return pwd.getpwuid(os.getuid()).pw_name
     except:
         return "???"
 
 def get_basic_html():
 
-    #runuser = get_running_user()
-    runuser = "dburfoot"
+    # on new instance creation, this is run at startup, it causes problems because no one is logg
+    runuser = get_running_user()
+    #runuser = "dburfoot"
     scriptname =  os.path.basename(sys.argv[0])
     isodate = date.today().isoformat()
 
