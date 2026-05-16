@@ -750,6 +750,9 @@ public class FastTest4Basic
 			boolean modokay = _argMap.getBit("modokay", false);
 			boolean fastconfirm = _argMap.getBit("fastconfirm", false);
 
+			// May 2026 : this is no longer necessary, the blob manager creates the directory
+			// if it is not present
+			/*
 			setupRequiredList();
 
 			if(_requiredList.isEmpty())
@@ -775,6 +778,7 @@ public class FastTest4Basic
 					Util.pf("Created directory %s\n", f.getAbsolutePath());
 				}
 			}
+			*/
 		}
 
 		private void setupRequiredList()
