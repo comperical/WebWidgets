@@ -20,7 +20,8 @@ def get_running_user():
 
 def get_basic_html():
 
-    runuser = get_running_user()
+    #runuser = get_running_user()
+    runuser = "dburfoot"
     scriptname =  os.path.basename(sys.argv[0])
     isodate = date.today().isoformat()
 
