@@ -5,6 +5,23 @@
 
 <wisp/>
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"> </link>
+
+<style>
+
+@keyframes copy-flash {
+    0%   { background-color: #fff35c; }
+    40%  { background-color: #fff8a8; }
+    100% { background-color: #ffffff; }
+}
+
+.copy-flash {
+    animation: copy-flash 900ms ease-out;
+}
+
+</style>
+
+
 <script>
 
 
@@ -13,6 +30,9 @@ var EDIT_STUDY_ITEM = -1;
 var STUDY_CATEGORY = false;
 
 var SEARCH_TERM = "";
+
+// The ID and the time of a recent highlight (flash)
+let FLASH_ITEM_INFO = { item_id : -1, flash_time : -1 };
 
 
 U.massert(W.getItemList("link_categ").length > 0,
@@ -338,10 +358,32 @@ function buildOptionMap(items, labelfunc)
 	return optmap;
 }
 
+
+function copyLinkAddress(itemid)
+{
+    const item = W.lookupItem("link_main", itemid);
+
+    navigator.clipboard.writeText(item.getLinkUrl()).then(() => {
+        // alert("Copied!!");
+        const flashtime = exactMomentNow().getEpochTimeMilli();
+        FLASH_ITEM_INFO = { item_id : itemid, flash_time : flashtime };
+        redisplay();
+    });
+
+}
+
+
+
+function shouldFlashRow(itemid)
+{
+    const cutoff = exactMomentNow().getEpochTimeMilli() - 1000;
+    return FLASH_ITEM_INFO.item_id == itemid && FLASH_ITEM_INFO.flash_time > cutoff;
+}
+
 function getLinkTableStr(linkmainlist)
 {
 	var tablestr = `
-		<table  class="basic-table" width="70%">
+		<table  class="basic-table" width="74%">
 		<tr>
 		<th>Category</th>
 		<th>Description</th>
@@ -355,14 +397,13 @@ function getLinkTableStr(linkmainlist)
 		
 		var shorturl = getLinkDisplay(linkitem.getLinkUrl());
 		if(shorturl.length > 40)
-			{ shorturl = shorturl.substring(0, 40)+"..."; }		
+			{ shorturl = shorturl.substring(0, 40)+"..."; }
 		
 		const categitem = W.lookupItem("link_categ", linkitem.getCatId());
-
-		// console.log(`Link display is ${linkdisplay} for link  ${linkitem.getLinkUrl()}`);
+        const rowclass = shouldFlashRow(linkitem.getId()) ? `class="copy-flash"` : "";
 
 		tablestr += `
-			<tr>
+			<tr ${rowclass}>
 			<td>${categitem.getShortCode()}</td>
 			<td>${linkitem.getShortDesc()}</td>
 			<td>
@@ -371,6 +412,13 @@ function getLinkTableStr(linkmainlist)
 			</a>
 			</td>
 			<td>
+
+            <a href="javascript:copyLinkAddress(${linkitem.getId()})">
+            <i class="fa-solid fa-copy icon-black"></i></a>
+
+			&nbsp;&nbsp;
+
+
 			<a href="javascript:editStudyItem(${linkitem.getId()})">
 			<img src="/u/shared/image/inspect.png" height="18"></a>
 			
