@@ -7,7 +7,8 @@
 
 <script>
 
-EDIT_STUDY_ITEM = -1;
+let EDIT_STUDY_ITEM = -1;
+EDIT_STUDY_ITEM = 27;
 
 function createNewTemplate()
 {
@@ -287,6 +288,122 @@ function redisplayMainList()
 	U.populateSpanData({ templatelist : mainstr });
 }
 
+function deleteNoteByIdx(noteidx)
+{
+	const updater = function(item)
+	{
+		item.updateNoteData(function(ndata) { delete ndata[noteidx]; });
+	}
+
+	U.genericItemUpdate("day_template", EDIT_STUDY_ITEM, updater);
+
+}
+
+function editNoteByIdx(noteidx)
+{
+	const updater = function(item)
+	{
+		const notedata = item.getNoteData();
+		const newnote = prompt("Enter a new note:", notedata[noteidx]);
+
+		if(newnote != null)
+		{
+			item.updateNoteData(function(ndata) { ndata[noteidx] = newnote; });
+		}
+	}
+
+	U.genericItemUpdate("day_template", EDIT_STUDY_ITEM, updater);
+
+
+
+}
+
+function getStudyItemData()
+{
+	const item = W.lookupItem("day_template", EDIT_STUDY_ITEM);
+	return item.getNoteData();
+}
+
+function addNoteCurrentTemplate()
+{
+	const newnote = prompt("Please enter a new note text:");
+	if(newnote == null)
+		{ return; }
+
+
+	const updater = function(item)
+	{
+		// ugh, goddam it JS!!
+		const myjson = item.getNoteData();
+		const idlist = [... Object.keys(myjson)]
+							.sort(U.proxySort(s => [-parseInt(s)]));
+
+
+		const newidx = idlist.length == 0 ? 0 : parseInt(idlist[0])+1;
+		item.updateNoteData(function(ndata) { ndata[newidx] = newnote; });
+	}
+
+	U.genericItemUpdate("day_template", EDIT_STUDY_ITEM, updater);
+}
+
+
+function getNoteTemplateTable()
+{
+	const studyitem = W.lookupItem("day_template", EDIT_STUDY_ITEM);
+
+
+	let ntable = `
+
+		<table class="basic-table" width="50%">
+		<tr>
+		<th>IDX</th>
+		<th width="90%">Note</th>
+		<th></th>
+		</tr>
+
+	`;
+
+	const notedata = studyitem.getNoteData();
+
+	[... Object.keys(notedata)].forEach(function(noteidx) {
+
+		const notetext = notedata[noteidx];
+
+		const rowstr = `
+			<tr>
+			<td>${noteidx}</td>
+			<td class="editable"
+				onClick="javascript:editNoteByIdx(${noteidx})">${notetext}</td>
+			<td>
+			<a href="javascript:deleteNoteByIdx(${noteidx})">
+			<img src="/u/shared/image/remove.png" height="18" />
+			</a>
+			</td>
+			</tr>
+		`;
+
+		ntable += rowstr;
+
+	});
+
+
+
+
+	{
+		ntable += `<tr><td colspan="3">
+		<a href="javascript:addNoteCurrentTemplate()">
+		<button>+note</button>
+		</a>
+		</td></tr>`
+
+	}
+
+	ntable += `</table>`;
+	return ntable;
+
+
+}
+
 
 function redisplayStudyItem()
 {
@@ -298,13 +415,13 @@ function redisplayStudyItem()
 		<tr>
 		<th>Desc</th>
 		<th>..</th>
-		<th>EndTime</th>
-		<th>TimeSpent</th>
+		<th>End</th>
+		<th>Length</th>
 		<th>
 		....
 		</th>
 		</tr>
-	`;	
+	`;
 
 
 	const itemlist = getPlanDayItemList();
@@ -369,7 +486,15 @@ function redisplayStudyItem()
 	}
 	
 
-	mainstr += `</table>`
+	mainstr += `</table>
+
+
+		<br/>
+		<br/>
+
+		${getNoteTemplateTable()}
+
+	`
 
 	const endhourlist = [... Array(25).keys()];
 

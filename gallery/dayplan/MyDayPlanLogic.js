@@ -86,3 +86,21 @@ function handleNavBar(curpage) {
 }
 
 
+DayTemplateItem.prototype.getNoteData = function()
+{
+    const notestr = this.getNoteJson();
+    if(notestr.length == 0)
+        { return {}; }
+
+    return JSON.parse(notestr);
+}
+
+
+DayTemplateItem.prototype.updateNoteData = function(modfunc)
+{
+    const notedata = this.getNoteData();
+    modfunc(notedata);
+    this.setNoteJson(JSON.stringify(notedata));
+}
+
+

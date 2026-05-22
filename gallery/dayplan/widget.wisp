@@ -213,6 +213,98 @@ function createRecordBelow(itemid)
 
 }
 
+function editNoteById(noteid)
+{
+	U.genericEditTextField("note_info", "note_text", noteid);
+}
+
+function deleteNoteById(noteid)
+{
+	U.genericDeleteItem("note_info", noteid);
+}
+
+function getNoteList4Day()
+{
+	return W.lookupFromOdIndex("note_info", { day_code : PLAN_DAY_CODE.getDateString() })
+						.sort(U.proxySort(item => [item.getNoteIdx()]));
+}
+
+function addNoteCurrentDay()
+{
+	const itemlist = getPlanDayItemList();
+
+	if(itemlist.length == 0)
+	{
+		alert("You must add at least one record first");
+		return;
+	}
+
+	const newnote = prompt("Please enter the new note text");
+
+	if(newnote)
+	{
+		const record = { 
+			day_code : PLAN_DAY_CODE.getDateString(),
+			note_idx : itemlist.length,
+			note_text : newnote
+		};
+
+
+		W.buildItem("note_info", record).syncItem();
+		redisplay();
+	}
+}
+
+function getNoteTable()
+{
+
+	let ntable = `
+
+		<table class="basic-table" width="50%">
+		<tr>
+		<th width="90%">Note</th>
+		<th></th>
+		</tr>
+
+	`;
+
+
+	const notelist = getNoteList4Day();
+
+	notelist.forEach(function(note) { 
+
+		const rowstr = `
+			<tr>
+			<td class="editable"
+				onClick="javascript:editNoteById(${note.getId()})">${note.getNoteText()}</td>
+			<td>
+			<a href="javascript:deleteNoteById(${note.getId()})">
+			<img src="/u/shared/image/remove.png" height="18" />
+			</a>
+			</td>
+			</tr>
+		`;
+
+		ntable += rowstr;
+
+	});
+
+
+
+
+	{
+		ntable += `<tr><td colspan="2">
+		<a href="javascript:addNoteCurrentDay()">
+		<button>+note</button>
+		</a>
+		</td></tr>`
+
+	}
+
+	ntable += `</table>`;
+	return ntable;
+}
+
 
 
 function redisplay()
@@ -303,9 +395,18 @@ function redisplay()
 
 		tablestr += rowstr;
 	}
+
 	
 	tablestr += `
 		</table>
+
+
+
+
+		<br/>
+		<br/>
+
+		${getNoteTable()}
 	`;
 
 
