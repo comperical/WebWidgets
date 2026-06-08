@@ -262,7 +262,7 @@ function streamLineOrder()
 function redisplayMainTable()
 {
 	var mtstr = `
-	<table  class="basic-table" width="60%">
+	<table  class="basic-table" width="70%">
 	<tr>
 	<th colspan="2">OrderKey
 

@@ -1,7 +1,15 @@
 
 
 
-// Copied from D57TM 
+function getDayList4Item(item)
+{
+    const daystr = item.getOnDayList();
+    if(daystr == "" || daystr == "all")
+        { return [... SHORT_DAY_WEEK_LIST]; }
+    return daystr.split(",");
+}
+
+// Copied from D57TM
 function buildGenericDict(items, keyfunc, valfunc)
 {
     const mydict = {};
@@ -61,7 +69,7 @@ function getNewItemControl(haveany)
 {
     if(!haveany)
     {
-        return `<a href="javascript:createWakeUpItem()"><button>wakeup</button</a>`;
+        return `<a href="javascript:createWakeUpItem()"><button>wakeup</button></a>`;
     }
 
     const timeminsel = buildOptSelector()

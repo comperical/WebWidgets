@@ -173,9 +173,12 @@ function getPlanDayItemList()
 
 function getTemplateIdMap()
 {
-	return buildGenericDict(W.getItemList("day_template").filter(item => item.getIsActive() == 1), 
-		item => item.getId(), item => item.getShortName());
+	const plandow = PLAN_DAY_CODE.getShortDayOfWeek();
+	const templatelist = W.getItemList("day_template")
+								.filter(item => item.getIsActive() == 1)
+								.filter(item => getDayList4Item(item).includes(plandow));
 
+	return buildGenericDict(templatelist, item => item.getId(), item => item.getShortName());
 }
 
 

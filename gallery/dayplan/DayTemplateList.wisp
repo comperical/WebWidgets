@@ -8,12 +8,57 @@
 <script>
 
 let EDIT_STUDY_ITEM = -1;
-EDIT_STUDY_ITEM = 27;
+// EDIT_STUDY_ITEM = 27;
+
+const FILTER_DAY_KEY = "FilterDayKey";
+GENERIC_OPT_SELECT_MAP.set(FILTER_DAY_KEY, "---");
+
+function composeSaveString(daylist)
+{
+	daylist.sort(U.proxySort(dow => [SHORT_DAY_WEEK_LIST.indexOf(dow)]));
+	return daylist.join(",");
+}
+
+function addOnDayItem()
+{
+	const newday = U.getDocFormValue("on_day_sel");
+
+	const updater = function(item) {
+		var daylist = getDayList4Item(item);
+		if(daylist.includes(newday)) { alert("Already have it!"); return; }
+		daylist = [newday].concat(daylist);
+		item.setOnDayList(composeSaveString(daylist));
+	};
+
+	U.genericItemUpdate("day_template", EDIT_STUDY_ITEM, updater);
+}
+
+function removeDay4Item(xday)
+{
+	const updater = function(item) {
+		const prevlist = getDayList4Item(item);
+		const remidx = prevlist.indexOf(xday);
+		U.massert(remidx != -1, `Attempt to remove day ${xday} from list, but list is ${prevlist}`);
+		prevlist.splice(remidx, 1);
+		item.setOnDayList(composeSaveString(prevlist));
+	};
+
+	U.genericItemUpdate("day_template", EDIT_STUDY_ITEM, updater);
+}
+
+function getEditDayListData(daylist)
+{
+	var s = "";
+	daylist.forEach(function(day) {
+		s += `${day} <a href="javascript:removeDay4Item('${day}')"><img src="/u/shared/image/remove.png" height="16"/></a> &nbsp;&nbsp;&nbsp;`;
+	});
+	return s;
+}
 
 function createNewTemplate()
 {
 	const templatename = prompt("Item Desc: ");
-	
+
 	if(templatename)
 	{
 		const newid = W.newBasicId("day_template");
@@ -21,7 +66,8 @@ function createNewTemplate()
 			"id" : newid,
 			"short_name" : templatename,
 			"full_desc" : "",
-			"is_active" : 1
+			"is_active" : 1,
+			"on_day_list" : "all"
 		}
 
 		const newtemplate = W.buildItem("day_template", newrec);
@@ -43,7 +89,7 @@ function deleteTemplateItem(killid)
 	if(confirm("Are you sure you want to delete this template?"))
 	{
 		W.lookupItem("day_template", killid).deleteItem();
-		redisplay();
+		back2Main();
 	}
 }
 
@@ -235,13 +281,23 @@ function redisplayMainList()
 		<table class="basic-table"  width="50%">
 		<tr>
 		<th>Name</th>
-		<th width="5%">Active?</th>		
-		<th width="30%">...</th>
+		<th width="5%">Active?</th>
+		<th>Days</th>
+		<th>#Note</th>
+		<th width="5%">...</th>
 		</tr>
 	`;
 
 	const breaker = `&nbsp; &nbsp;`
-		
+
+	const filterDay = GENERIC_OPT_SELECT_MAP.get(FILTER_DAY_KEY);
+
+	const filterDaySel = buildOptSelector()
+							.configureFromList(["---"].concat(SHORT_DAY_WEEK_LIST))
+							.setElementName(FILTER_DAY_KEY)
+							.useGenericUpdater()
+							.getHtmlString();
+
 	const showinactive = U.getUniqElementByName("show_inactive").checked;
 
 	templatelist.forEach(function(item) {
@@ -249,31 +305,28 @@ function redisplayMainList()
 		if(item.getIsActive() == 0 && !showinactive)
 			{ return; }
 
+		const daylist = getDayList4Item(item);
+
+		if(filterDay != "---" && !daylist.includes(filterDay))
+			{ return; }
+
 		const activstr = item.getIsActive() == 1 ? "Y" : "N";
+		var dayshow = daylist.length == 7 ? "all" : daylist.join("/");
+		if(daylist.length == 5 && !daylist.includes("Sun") && !daylist.includes("Sat"))
+			{ dayshow = "workdays"; }
+
+		const notecount = Object.keys(item.getNoteData()).length;
 
 		const rowstr = `
 			<tr>
 			<td>${item.getShortName()}</td>
-			<td>${activstr}</td>			
+			<td>${activstr}</td>
+			<td>${dayshow}</td>
+			<td>${notecount > 0 ? notecount : ""}</td>
 			<td>
-
-			<a href="javascript:editTemplateName(${item.getId()})">
-			<img src="/u/shared/image/edit.png" height="18"/></a>
-
-			${breaker}
 
 			<a href="javascript:editStudyItem(${item.getId()})">
 			<img src="/u/shared/image/inspect.png" height="18"/></a>
-
-			${breaker}
-
-			<a href="javascript:archiveTemplate(${item.getId()})">
-			<img src="/u/shared/image/cycle.png" height="18"/></a>
-
-			${breaker}
-
-			<a href="javascript:deleteTemplateItem(${item.getId()})">
-			<img src="/u/shared/image/remove.png" height="18"/></a>
 
 			</td>
 			</tr>
@@ -285,7 +338,7 @@ function redisplayMainList()
 
 	mainstr += `<table>`;
 
-	U.populateSpanData({ templatelist : mainstr });
+	U.populateSpanData({ templatelist : mainstr, filter_day_span : filterDaySel });
 }
 
 function deleteNoteByIdx(noteidx)
@@ -358,7 +411,7 @@ function getNoteTemplateTable()
 		<tr>
 		<th>IDX</th>
 		<th width="90%">Note</th>
-		<th></th>
+		<th width="5%"></th>
 		</tr>
 
 	`;
@@ -414,7 +467,6 @@ function redisplayStudyItem()
 		<table class="basic-table"  width="50%">
 		<tr>
 		<th>Desc</th>
-		<th>..</th>
 		<th>End</th>
 		<th>Length</th>
 		<th>
@@ -451,13 +503,8 @@ function redisplayStudyItem()
 
 		const rowstr = `
 			<tr>
-			<td>${item.getShortDesc()}</td>
-			<td>
-
-			<a href="javascript:editItemName(${item.getId()})">
-			<img src="/u/shared/image/edit.png" height="18"/></a>
-			
-			</td>
+			<td class="editable"
+			onClick="javascript:editItemName(${item.getId()})">${item.getShortDesc()}</td>
 			<td>${endhourstr + halfstr}</td>
 			<td>${timespent}</td>			
 			<td>
@@ -486,24 +533,36 @@ function redisplayStudyItem()
 	}
 	
 
+	const newcontrol = getNewItemControl(itemlist.length > 0);
+
 	mainstr += `</table>
 
+		<br/><br/>
 
-		<br/>
-		<br/>
+		${newcontrol}
+
+		<br/><br/>
 
 		${getNoteTemplateTable()}
+	`;
 
-	`
-
-	const endhourlist = [... Array(25).keys()];
-
-	const newcontrol = getNewItemControl(itemlist.length > 0);
+	const showItem = getSelectedTemplate();
+	const currentDays = getDayList4Item(showItem);
+	const daylistEdit = getEditDayListData(currentDays);
+	const addDays = ["---"].concat(SHORT_DAY_WEEK_LIST.filter(dow => !currentDays.includes(dow)));
+	const dayaddsel = buildOptSelector()
+						.configureFromList(addDays)
+						.setElementName("on_day_sel")
+						.setOnChange("javascript:addOnDayItem()")
+						.getHtmlString();
+	const showSelStr = currentDays.length == 7 ? "" : dayaddsel;
 
 	U.populateSpanData({
 		"dayplantable" : mainstr,
-		"new_item_control" : newcontrol,
-		"templatename" : getSelectedTemplate().getShortName()
+		"templatename" : showItem.getShortName(),
+		"on_days" : daylistEdit,
+		"on_day_sel_span" : showSelStr,
+		"isactive" : showItem.getIsActive() == 1 ? "YES" : "NO"
 	});
 }
 
@@ -523,6 +582,8 @@ function redisplayStudyItem()
 
 <span class="page_component" id="main_list">
 
+Show Day: <span id="filter_day_span"></span>
+&nbsp;&nbsp;&nbsp;
 Inactive? <input type="checkbox" name="show_inactive" onChange="javascript:redisplay()"/>
 <br/>
 <br/>
@@ -537,23 +598,36 @@ Inactive? <input type="checkbox" name="show_inactive" onChange="javascript:redis
 
 <span class="page_component" id="study_item">
 
-<h3><span id="templatename"></div></h3>
-
-
-<a href="javascript:back2Main()">
-<img src="/u/shared/image/leftarrow.png" height="18"/></a>
+<table class="basic-table" width="50%">
+<tr>
+<td>Back</td>
+<td colspan="2"><a href="javascript:back2Main()"><img src="/u/shared/image/leftarrow.png" height="18"/></a></td>
+</tr>
+<tr>
+<td>Name</td>
+<td><span id="templatename"></span></td>
+<td><a href="javascript:editTemplateName(EDIT_STUDY_ITEM)"><img src="/u/shared/image/edit.png" height="18"/></a></td>
+</tr>
+<tr>
+<td>Days</td>
+<td><span id="on_days"></span></td>
+<td><span id="on_day_sel_span"></span></td>
+</tr>
+<tr>
+<td>Active?</td>
+<td><span id="isactive"></span></td>
+<td><a href="javascript:archiveTemplate(EDIT_STUDY_ITEM)"><img src="/u/shared/image/cycle.png" height="18"/></a></td>
+</tr>
+<tr>
+<td>Delete</td>
+<td></td>
+<td><a href="javascript:deleteTemplateItem(EDIT_STUDY_ITEM)"><img src="/u/shared/image/remove.png" height="18"/></a></td>
+</tr>
+</table>
 
 <br/><br/>
-
 
 <div id="dayplantable"></div>
-
-<br/><br/>
-
-<span id="new_item_control"></span>
-
-<br/><br/>
-
 
 </body>
 </html>
