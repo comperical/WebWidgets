@@ -23,6 +23,23 @@ const U = {
             return masterob._defaultInfo[fieldname];
         }
 
+        // This is called as a secondary pass to differentiate float/int fields.
+        // If you see ANY float, you know it is a float field.
+        // The real solution here is to augment the SQLite code generator to inform JS about float definitions.
+        const anyfloat = function(tbl, fieldname)
+        {
+            const itemlist = W.getItemList(tbl);
+            let nonnullfloat = null;
+
+            for(let i = 0; i < itemlist.length && nonnullfloat == null; i++)
+            {
+                const f = itemlist[i].getField(fieldname);
+                nonnullfloat = !Number.isInteger(f) ? f : null;
+            }
+
+            return nonnullfloat != null;
+        }
+
 
         const typestr = function(tbl, fieldname)
         {
@@ -44,10 +61,10 @@ const U = {
 
             if(typeof(defaultob) == typeof(42))
             {
-                if(Number.isInteger(defaultob))
-                    { return "int"; }
+                if(!Number.isInteger(defaultob) || anyfloat(tbl, fieldname))
+                    { return "float"; }
 
-                return "float";
+                return "int";
             }
 
             U.massert(false, `Unable to determine type of default object ${defaultob}`);
@@ -770,4 +787,3 @@ for (const [name, fn] of Object.entries(_RAW_FUNCTION_LIST)) {
         console.warn(`U already has ${name}, skipping legacy bridge`);
     }
 }
-
