@@ -81,6 +81,9 @@
 
     Optional<String> optClientId = PluginCentral.getGeneralPlugin().getGoogleClientId();
     // Optional<String> optClientId = Optional.empty();
+
+    // TODO: June, 2026: this should return an optional Azure Client ID from the General Plugin
+    Optional<String> optAzureId = Optional.of("dummy");
 %>
 
 
@@ -140,6 +143,52 @@ function serverSideHashLogin()
 function redisplay()
 {
   updateGoogleLoginButton();
+
+  updateAzureLoginButton();
+}
+
+function updateAzureLoginButton()
+{
+
+  const okayazure = <%= optAzureId.isPresent() %>;
+  const asection = document.getElementById("azure_sign_on");
+
+  if(!okayazure || asection == null)
+    { return; }
+
+  // This link auto-starts the AzureHandler flow
+  const azureflow = "/u/exadmin/AzureHandler.jsp?gologin=true";
+
+  asection.innerHTML = `
+
+    <br/>
+    <br/>
+
+    <p>Login with Microsoft</p>
+
+    <a href="${azureflow}" id="azure_sign_on_button" style="
+         display: inline-flex;
+         align-items: center;
+         height: 41px;
+         padding: 0 12px;
+         background-color: #0090e7;
+         color: #ffffff;
+         font-family: 'Segoe UI', Segoe, Tahoma, Geneva, Verdana, sans-serif;
+         font-size: 15px;
+         font-weight: 600;
+         text-decoration: none;
+         border: 1px solid #0077bd;
+         border-radius: 4px;
+         box-sizing: border-box;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 21 21" style="margin-right: 12px;">
+        <rect x="1"  y="1"  width="9" height="9" fill="#f25022"/>
+        <rect x="11" y="1"  width="9" height="9" fill="#7fba00"/>
+        <rect x="1"  y="11" width="9" height="9" fill="#00a4ef"/>
+        <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
+      </svg>
+      Sign in with Microsoft
+    </a>
+  `;
 }
 
 function updateGoogleLoginButton()
@@ -249,9 +298,10 @@ function loadGoogleClientInfo()
 
                   <button class="btn btn-primary mr-2" onclick="javascript:serverSideHashLogin()">Submit</button>
 
-                  <!-- This remains empty if Google SSO is not present -->
+                  <!-- This remains empty if Google SSO  / Azure SSO is not present -->
                   <div id="google_sign_on"></div>
 
+                  <div id="azure_sign_on"></div>
                 </div>
               </div>
             </div>
@@ -314,9 +364,10 @@ function loadGoogleClientInfo()
                   <button class="btn btn-primary mr-2" onclick="javascript:logoutAndReturn()">Log-Out</button>
 
 
-                  <!-- This remains empty if Google configuration is not present -->
+                  <!-- See above comments -->
                   <div id="google_sign_on"></div>
 
+                  <div id="azure_sign_on"></div>
                 </div>
               </div>
             </div>

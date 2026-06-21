@@ -29,7 +29,8 @@ var EDIT_STUDY_ITEM = -1;
 
 var STUDY_CATEGORY = false;
 
-var SEARCH_TERM = "";
+// dburfoot note: my most common links lookup is my Zoom room URL, change this 
+var SEARCH_TERM = "zoom";
 
 // The ID and the time of a recent highlight (flash)
 let FLASH_ITEM_INFO = { item_id : -1, flash_time : -1 };
