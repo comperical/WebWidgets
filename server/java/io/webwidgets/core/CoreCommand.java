@@ -203,6 +203,9 @@ public class CoreCommand
 
 		public void runOp()
 		{
+			// This is required to run before we can find the master widget
+			GlobalIndex.getSystemSetting();
+
 			String keystr = _argMap.getStr("key");
 			Optional<String> optval = getValueTarget();
 
