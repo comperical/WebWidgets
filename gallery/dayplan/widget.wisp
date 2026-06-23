@@ -12,7 +12,7 @@ PLAN_DAY_CODE = U.getTodayCode();
 
 function doTemplateImport()
 {
-	const temp_id = U.getDocFormValue("temp_id");
+	const temp_id = parseInt(U.getDocFormValue("temp_id"));
 
 	// Look these up before creating the new ones, then delete them after.
 	const deletes = getPlanDayItemList();
@@ -35,7 +35,6 @@ function doTemplateImport()
 		};
 		
 		const newitem = W.buildItem("day_plan_main", record);
-		// newitem.syncItem();
 		newids.push(newitem.getId());
 	});
 	
@@ -43,10 +42,46 @@ function doTemplateImport()
 
 	W.bulkDelete("day_plan_main", deletes.map(item => item.getId()));
 
-	// deletes.forEach(function(olditem) { olditem.deleteItem(); });
+	copyNoteInfo(temp_id);
 	
 	redisplay();
 }
+
+function copyNoteInfo(tempid)
+{
+	// Clean old notes
+	{
+		const oldlist = W.lookupFromOdIndex("note_info", { day_code : PLAN_DAY_CODE.getDateString() });
+		W.bulkDelete("note_info", oldlist.map(item => item.getId()));
+	}
+
+
+	{
+		const newidlist = [];
+		const template = W.lookupItem("day_template", tempid);
+		const notedata = template.getNoteData();
+
+		const firstnote = `Template: ${template.getShortName()}`;
+		const notelist = [firstnote].concat([... Object.values(notedata)]);
+
+		for(let idx = 0; idx < notelist.length; idx++)
+		{
+			const record = {
+				note_idx : idx,
+				day_code : PLAN_DAY_CODE.getDateString(),
+				note_text : notelist[idx]
+			}
+
+			const newid = W.buildItem("note_info", record).getId();
+			newidlist.push(newid);
+		}
+
+		W.bulkUpdate("note_info", newidlist);
+	}
+
+
+}
+
 
 function newByHourSpent()
 {
