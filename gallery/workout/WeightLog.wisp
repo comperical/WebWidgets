@@ -343,7 +343,7 @@ function redisplayMainTable()
 
                 const blankrow = `
                     <tr>
-                    <td colspan="11"><b>${newDow}</b></td>
+                    <td colspan="11"><br/><b>${newDow}</b></td>
                     </tr>
                 `;
 
@@ -356,22 +356,18 @@ function redisplayMainTable()
                 <tr>
                 <td>${item.getDayCode().substr(5)}</td>
                 <td>${move.getShortName()}</td>
-                <td>
+                <td class="editable" colspan="2" onClick="javascript:editRepInfo(${item.getId()})">
                 ${item.getRepInfo()}
                 </td>
-                <td>
-                <a href="javascript:editRepInfo(${item.getId()})"><img src="/u/shared/image/edit.png" height="18"/></a>
-                </td>                
-                <td>
+
+                <td class="editable" colspan="2" onClick="javascript:editWeight(${item.getId()})">
                 ${item.getWeight()}
                 </td>
-                <td>
-                <a href="javascript:editWeight(${item.getId()})"><img src="/u/shared/image/edit.png" height="18"/></a>
-                </td>
 
-                <td width="20%">${item.getNotes()}</td>
-                <td width="5%">
-                <a href="javascript:editItemNotes(${item.getId()})"><img src="/u/shared/image/edit.png" height="18"/></a>
+
+                <td width="20%" class="editable" 
+                colspan="2" onClick="javascript:editItemNotes(${item.getId()})">
+                ${item.getNotes()}
                 </td>
 
                 <td>
