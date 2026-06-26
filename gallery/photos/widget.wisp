@@ -44,7 +44,16 @@ function editNoteInfo()
 function addSearchTag()
 {
   const newtag = U.getDocFormValue("search_tag");
-  SEARCH_TAG_LIST.push(newtag);
+
+  if(newtag != "---" && !SEARCH_TAG_LIST.includes(newtag))
+    { SEARCH_TAG_LIST.push(newtag); }
+
+  redisplay();
+}
+
+function removeSearchTag(tagindex)
+{
+  SEARCH_TAG_LIST.splice(tagindex, 1);
   redisplay();
 }
 
@@ -210,15 +219,19 @@ function getFileExtension(photoitem)
 
 function runSearch()
 {
-  SEARCH_TERM = U.getDocFormValue("new_search");
+  const curterm = SEARCH_TERM == null ? "" : SEARCH_TERM;
+  const newterm = prompt("Enter search term:", curterm);
+
+  if(newterm == null)
+    { return; }
+
+  const rawterm = newterm.trim().toLowerCase();
+  SEARCH_TERM = rawterm.length == 0 ? null : rawterm;
   redisplay();
 }
 
 function clearSearch()
 {
-  while(SEARCH_TAG_LIST.length > 0)
-    { SEARCH_TAG_LIST.pop(); }
-
   SEARCH_TERM = null;
   redisplay();
 }
@@ -406,7 +419,7 @@ function searchTermHit(item)
 function searchTagHit(item)
 {
   const misses = SEARCH_TAG_LIST.filter(stag => !getItemTagList(item).includes(stag));
-  return misses == 0;
+  return misses.length == 0;
 }
 
 function redisplayMain()
@@ -414,13 +427,25 @@ function redisplayMain()
 
   const searchdef = SEARCH_TERM == null ? "" : SEARCH_TERM.toLowerCase();
 
-  const clearbutton = SEARCH_TERM == null && SEARCH_TAG_LIST.length == 0 ? "" : `
-
-    <br/>
-    <br/>
-    
-    <a href="javascript:clearSearch()"><button>clear</button></a>
+  const clearbutton = SEARCH_TERM == null ? "" : `
+    &nbsp;
+    &nbsp;
+    <a href="javascript:clearSearch()"><img src="/u/shared/image/eraser.png" height="18"/></a>
   `;
+
+  var searchtagrows = ``;
+
+  SEARCH_TAG_LIST.forEach(function(tag, tagindex) {
+    searchtagrows += `
+      <tr>
+      <td><b>Tag</b></td>
+      <td>${tag}</td>
+      <td>
+      <a href="javascript:removeSearchTag(${tagindex})"><img src="/u/shared/image/remove.png" height="18"/></a>
+      </td>
+      </tr>
+    `;
+  });
 
   const tagsel = buildOptSelector()
                     .configureFromList([... getFullTagSet()])
@@ -442,16 +467,29 @@ function redisplayMain()
     <br/>
     <br/>
 
-    ${tagsel}
-
-    &nbsp;
-    &nbsp;
-
-
-    <input type="text" name="new_search" value="${searchdef}" />
-    <a href="javascript:runSearch()"><button>search</button></a>
-
+    <table class="basic-table" width="40%">
+    <colgroup>
+    <col width="25%"/>
+    <col width="45%"/>
+    <col width="30%"/>
+    </colgroup>
+    <tr>
+    <th colspan="3">Search</th>
+    </tr>
+    <tr>
+    <td><b>Text</b></td>
+    <td>${searchdef}</td>
+    <td>
+    <a href="javascript:runSearch()"><img src="/u/shared/image/edit.png" height="18"/></a>
     ${clearbutton}
+    </td>
+    </tr>
+    ${searchtagrows}
+    <tr>
+    <td><b>Add Tag</b></td>
+    <td colspan="2">${tagsel}</td>
+    </tr>
+    </table>
 
     <br/>
     <br/>
