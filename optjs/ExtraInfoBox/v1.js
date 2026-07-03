@@ -2,7 +2,15 @@
 
 EXTRA = {
 
-    EDIT_TEXT_MODE : false, 
+    EDIT_TEXT_MODE : false,
+
+    // Opt-in flag for the SAFE event-binding technique.
+    // When true, getHtmlString() emits SAFE data-attribute bindings instead of
+    // inline onClick / javascript: handlers. Pages that set this must load the
+    // SAFE library and call SAFE.registerAllEventListener() after injecting
+    // the box HTML (typically at the end of redisplay()).
+    // When false (default), output is identical to previous versions.
+    USE_SAFE_BINDING : false,
 
     TEXT_AREA_DEFAULT_NAME : "extRA_infO_eDIt",
 
@@ -153,6 +161,33 @@ ExtraInfoBox.prototype.__getSaveFunc = function()
     return `javascript:EXTRA.standardSave('${this.boxBuilder}')`;
 }
 
+// Build the save-button HTML for edit mode, honoring USE_SAFE_BINDING.
+// Custom save functions are javascript: strings and cannot be converted
+// to SAFE bindings, so they are incompatible with SAFE mode.
+ExtraInfoBox.prototype.__getSaveButtonHtml = function()
+{
+    if(!EXTRA.USE_SAFE_BINDING)
+        { return `<a href="${this.__getSaveFunc()}"><button>save</button></a>`; }
+
+    U.massert(this.saveFuncName == null,
+        "Custom save functions (withSaveFunction) are incompatible with USE_SAFE_BINDING, use the standard save flow via withBoxBuilder");
+
+    U.massert(this.boxBuilder != null,
+        "You must configure withBoxBuilder(...) to use the standard save flow with USE_SAFE_BINDING");
+
+    return `<button ${SAFE.smartBinding(EXTRA.standardSave, 'click', { boxbuilder : this.boxBuilder })}>save</button>`;
+}
+
+// Build the attribute string that opens the editor when the display cell
+// is clicked, honoring USE_SAFE_BINDING.
+ExtraInfoBox.prototype.__getEditModeClicker = function()
+{
+    if(!EXTRA.USE_SAFE_BINDING)
+        { return `onClick="javascript:EXTRA.go2EditMode('${this.textAreaId}')"`; }
+
+    return SAFE.smartBinding(EXTRA.go2EditMode, 'click', { areaid : this.textAreaId });
+}
+
 
 
 ExtraInfoBox.prototype.getHtmlString = function()
@@ -164,14 +199,12 @@ ExtraInfoBox.prototype.getHtmlString = function()
 
     if(EXTRA.EDIT_TEXT_MODE) {
 
-        const savefunc = this.__getSaveFunc();
-
         return `
 
             <textarea id="${this.textAreaId}" name="${this.textAreaName}" cols="80" rows="10">${thetext}</textarea>
             <br/>
             <br/>
-            <a href="${savefunc}"><button>save</button></a>
+            ${this.__getSaveButtonHtml()}
         `;
 
     } else {
@@ -180,17 +213,17 @@ ExtraInfoBox.prototype.getHtmlString = function()
 
         if(extradisp.length == 0)
             { extradisp = "Not Yet Set"; }
-        
+
         const extralist = extradisp.replace(/\n/g, "<br/>");
 
         return `
             <table class="basic-table" width="${this.tableWidth}%">
             <tr>
-            <td style="text-align: left;" onClick="javascript:EXTRA.go2EditMode('${this.textAreaId}')">
+            <td style="text-align: left;" ${this.__getEditModeClicker()}>
             ${extralist}
             </td>
             </table>
-        `; 
+        `;
 
     }
 
