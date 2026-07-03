@@ -150,6 +150,19 @@ OptSelector.prototype.setAttribute = function(attrname, attrval)
     return this;
 }
 
+// Set multiple attributes of the select element from a JavaScript Map
+// Keys are attribute names, values are attribute values
+// Delegating to setAttribute keeps its assert that
+// attributes are incompatible with setSelectOpener
+OptSelector.prototype.setAttributeMap = function(attrmap)
+{
+    attrmap.forEach((attrval, attrname) => {
+        this.setAttribute(attrname, attrval);
+    });
+
+    return this;
+}
+
 // Set the name attribute of the selector
 // Shorthand for setAttribute("name", ...)
 OptSelector.prototype.setElementName = function(thename)
