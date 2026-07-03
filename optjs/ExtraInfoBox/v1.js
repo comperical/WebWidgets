@@ -29,6 +29,9 @@ EXTRA = {
         redisplay();
     },
 
+    // Legacy-mode save: the box-builder is a javascript:-prefixed string,
+    // resolved with eval. Not usable under a CSP that blocks eval;
+    // SAFE-mode pages use safeModeSave instead.
     standardSave : function(boxbuilder) {
 
         U.massert(boxbuilder.startsWith("javascript:"), `Expected box-builder to start with javascript: prefix, found ${boxbuilder}`);
@@ -36,6 +39,19 @@ EXTRA = {
         const thebox = eval(boxfunc);
 
         const newval = getDocFormValue(thebox.textAreaName);
+        thebox.consumerFunc(newval);
+    },
+
+    // SAFE-mode save: the box-builder function's NAME travels through the
+    // SAFE args attribute (functions cannot travel through JSON) and is
+    // resolved back at global scope. No eval, works under a strict CSP.
+    safeModeSave : function(buildername) {
+
+        const buildfunc = window[buildername];
+        U.massert(typeof(buildfunc) == 'function', `Box-builder function ${buildername} not found at global scope`);
+
+        const thebox = buildfunc();
+        const newval = U.getDocFormValue(thebox.textAreaName);
         thebox.consumerFunc(newval);
     }
 };
@@ -122,11 +138,27 @@ ExtraInfoBox.prototype.withStandardConfig = function(tablename, itemid, fieldnam
     return this.withConsumer(consfunc).withProvider(provfunc);
 }
 
+// Two contracts, selected by EXTRA.USE_SAFE_BINDING at call time
+// (so the flag must be set at page init, before boxes are built):
+// legacy mode takes a javascript:-prefixed string, SAFE mode takes an
+// actual function, which must be a named function at global scope so
+// its name can travel through the SAFE args attribute.
 ExtraInfoBox.prototype.withBoxBuilder = function(boxbuilder)
 {
-    U.massert(typeof(boxbuilder) == 'string' && boxbuilder.startsWith("javascript:"),
-        `By convention, boxbuilder is a JS function name, starting with javascript:, found ${boxbuilder}`
-    );
+    if(EXTRA.USE_SAFE_BINDING)
+    {
+        U.massert(typeof(boxbuilder) == 'function',
+            `Under USE_SAFE_BINDING, the box-builder must be an actual function, found ${boxbuilder}`);
+
+        U.massert(window[boxbuilder.name] === boxbuilder,
+            `Under USE_SAFE_BINDING, the box-builder must be a named function at global scope, found "${boxbuilder.name}"`);
+    }
+    else
+    {
+        U.massert(typeof(boxbuilder) == 'string' && boxbuilder.startsWith("javascript:"),
+            `By convention, boxbuilder is a JS function name, starting with javascript:, found ${boxbuilder}`
+        );
+    }
 
     this.boxBuilder = boxbuilder;
     return this;
@@ -175,7 +207,7 @@ ExtraInfoBox.prototype.__getSaveButtonHtml = function()
     U.massert(this.boxBuilder != null,
         "You must configure withBoxBuilder(...) to use the standard save flow with USE_SAFE_BINDING");
 
-    return `<button ${SAFE.smartBinding(EXTRA.standardSave, 'click', { boxbuilder : this.boxBuilder })}>save</button>`;
+    return `<button ${SAFE.smartBinding(EXTRA.safeModeSave, 'click', { buildername : this.boxBuilder.name })}>save</button>`;
 }
 
 // Build the attribute string that opens the editor when the display cell
