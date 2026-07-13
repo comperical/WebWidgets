@@ -35,7 +35,13 @@ public class BulkOperation
         protected void doPost(HttpServletRequest request, HttpServletResponse response)  throws ServletException, IOException 
         {
             try { doPostSub(request, response); }
-            catch (Exception ex) { ex.printStackTrace(); }
+            catch (Exception ex) {
+
+                // This is the highest level of logging; this error message does not make it to the user
+                // because the writeJsonResponse has not been called
+                // But it is useful to use the same logging approach
+                CallBack2Me.placeException(request, new ArgMap(), ex);
+            }
         } 
 
 
@@ -50,23 +56,6 @@ public class BulkOperation
             tableInfo.runSetupQuery();
 
             boolean haveissue = standardCheckForIssue(request, tableInfo, outmap);
-
-
-            // June 2025 - FG tables cannot use bulk operations
-            if(tableInfo.hasGranularPerm())
-            {
-                CallBack2Me.placeFailCode(outmap, FailureCode.NoBulkUpdateGranular);
-                haveissue = true;
-            }
-
-            // This sequence of error checking is shared with CallBack2Me, figure out how to share
-            Optional<String> emailissue = MailSystem.checkForEmailError(tableInfo, innmap);
-            if(emailissue.isPresent())
-            {
-                CallBack2Me.placeFailCode(outmap, FailureCode.EmailProblem, emailissue.get());
-                haveissue = true;
-            }
-            
 
             if(!haveissue)
             {
@@ -89,10 +78,11 @@ public class BulkOperation
 
 
                 } catch (IOException ioex) {
-                    ioex.printStackTrace();
-                    CallBack2Me.placeFailCode(outmap, FailureCode.OtherError, ioex.getMessage());
+                    // In this case, there was some glitch in the bulk update. The user will see
+                    // the SQL/IO error, which might not be very useful to them, but it might help
+                    // with debugging
+                    CallBack2Me.placeException(request, outmap, ioex);
                 }
-
             }
             
             writeJsonResponse(response, outmap);
@@ -250,7 +240,7 @@ public class BulkOperation
         Optional<WidgetUser> optuser = AuthLogic.getLoggedInUser(request);
         if(!optuser.isPresent())
         {
-            CallBack2Me.placeFailCode(outmap, FailureCode.UserLoggedOut);
+            CallBack2Me.placeFailCode(request, outmap, FailureCode.UserLoggedOut);
             return true;
         }
         
@@ -258,14 +248,32 @@ public class BulkOperation
 
         if (!myChecker.allowWrite())
         {
-            CallBack2Me.placeFailCode(outmap, FailureCode.AccessDenied);
+            CallBack2Me.placeFailCode(request, outmap, FailureCode.AccessDenied);
             return true;
         }
         
         Optional<String> maintmode = AdvancedUtil.maintenanceModeInfo();
         if(maintmode.isPresent())
         {
-            CallBack2Me.placeFailCode(outmap, FailureCode.MaintenanceMode, maintmode.get());
+            CallBack2Me.placeFailCode(request, outmap, FailureCode.MaintenanceMode, maintmode.get());
+            return true;
+        }
+
+
+        // June 2025 - FG tables cannot use bulk operations
+        if(tableInfo.hasGranularPerm())
+        {
+            CallBack2Me.placeFailCode(request, outmap, FailureCode.NoBulkUpdateGranular);
+            return true;
+        }
+
+        // This sequence of error checking is shared with CallBack2Me, figure out how to share
+        // It's annoying that we have to rebuild the innmap here
+        ArgMap innmap = WebUtil.getArgMap(request);
+        Optional<String> emailissue = MailSystem.checkForEmailError(tableInfo, innmap);
+        if(emailissue.isPresent())
+        {
+            CallBack2Me.placeFailCode(request, outmap, FailureCode.EmailProblem, emailissue.get());
             return true;
         }
 

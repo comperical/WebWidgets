@@ -23,6 +23,8 @@ import io.webwidgets.core.LiteTableInfo.*;
 
 public class CallBack2Me extends HttpServlet
 { 
+	public static final String OKAY_CODE = "okay";
+
 	public enum FailureCode
 	{
 		MaintenanceMode("The server is in maintenance mode"),
@@ -70,16 +72,15 @@ public class CallBack2Me extends HttpServlet
 			
 		} catch (ArgMapNumberException ex) {
 			
-			placeException(outmap, FailureCode.NumberConversionError, ex);
+			placeException(request, outmap, FailureCode.NumberConversionError, ex);
 
 		} catch (Exception ex) {
 			
-			placeException(outmap, ex);
+			placeException(request, outmap, ex);
 		}
 		
 		Util.massert(outmap.containsKey("status_code"), "Should have a status code");
 		
-
 		JSONObject jsonout = buildJsonResponse(outmap);
 		
 		{
@@ -112,7 +113,7 @@ public class CallBack2Me extends HttpServlet
 		Optional<WidgetUser> optuser = AuthLogic.getLoggedInUser(request);
 		if(!optuser.isPresent())
 		{
-			placeFailCode(outmap, FailureCode.UserLoggedOut);
+			placeFailCode(request, outmap, FailureCode.UserLoggedOut);
 			return;
 		}
 		
@@ -125,43 +126,42 @@ public class CallBack2Me extends HttpServlet
 		// If the table has granular permissions, it will be checked in the next step
 		if(!tableInfo.hasGranularPerm() && !myChecker.allowWrite())
 		{
-			placeFailCode(outmap, FailureCode.AccessDenied);
+			placeFailCode(request, outmap, FailureCode.AccessDenied);
 			return;
 		}
 
 		Optional<String> allowjson = GranularPerm.checkGroupAllowJsonError(tableInfo, innmap);
 		if(allowjson.isPresent())
 		{
-			placeFailCode(outmap, FailureCode.GroupAllowJsonError, allowjson.get());
+			placeFailCode(request, outmap, FailureCode.GroupAllowJsonError, allowjson.get());
 			return;
 		}
 
 		Optional<String> granprob = GranularPerm.checkGranularWritePerm(tableInfo, optuser, innmap);
 		if(granprob.isPresent())
 		{
-			placeFailCode(outmap, FailureCode.GranularPermission, granprob.get());
+			placeFailCode(request, outmap, FailureCode.GranularPermission, granprob.get());
 			return;
 		}
 
-		
 		Optional<String> maintmode = AdvancedUtil.maintenanceModeInfo();
 		if(maintmode.isPresent())
 		{
-			placeFailCode(outmap, FailureCode.MaintenanceMode, maintmode.get());
+			placeFailCode(request, outmap, FailureCode.MaintenanceMode, maintmode.get());
 			return;
 		}
 
 		Optional<String> emailissue = MailSystem.checkForEmailError(tableInfo, innmap);
 		if(emailissue.isPresent())
 		{
-			placeFailCode(outmap, FailureCode.EmailProblem, emailissue.get());
+			placeFailCode(request, outmap, FailureCode.EmailProblem, emailissue.get());
 			return;
 		}
 
 
 		tableInfo.processAjaxOp(innmap);
 		
-		outmap.put("status_code", "okay");
+		outmap.put("status_code", OKAY_CODE);
 		outmap.put("user_message", "ajax sync op successful");
 
 		logActionSuccess(tableInfo, optuser.get(), innmap);
@@ -174,8 +174,7 @@ public class CallBack2Me extends HttpServlet
 		try {
 			// The full representation could be massive, if the innmap contains a Blob!!
 			// Normally we'd expect 2K to be enough for the full object
-			String flatrep = innmap.flatStringForm("\t");
-			String smaller = flatrep.substring(0, Math.min(flatrep.length(), 2000));
+			String flatrep = getMinimizedFlatForm(innmap);
 
 			List<Object> tklist = Util.listify(
 				"CallBackSuccess",
@@ -185,7 +184,7 @@ public class CallBack2Me extends HttpServlet
 				LTI.dbTabPair._2,
 				innmap.getStr("ajaxop", "?????"),
 				innmap.getInt(CoreUtil.STANDARD_ID_COLUMN_NAME, -1),
-				smaller
+				flatrep
 			);
 
 			Util.pf("%s\n", Util.join(tklist, "\t"));
@@ -197,17 +196,22 @@ public class CallBack2Me extends HttpServlet
 	}
 
 
-	static void placeException(ArgMap outmap, Exception ex)
+
+
+	static void placeException(HttpServletRequest request, ArgMap outmap, Exception ex)
 	{
-		placeException(outmap, FailureCode.OtherError, ex);
+		placeException(request, outmap, FailureCode.OtherError, ex);
 	}
 
-	static void placeFailCode(ArgMap outmap, FailureCode fcode)
+	static void placeFailCode(HttpServletRequest request, ArgMap outmap, FailureCode fcode)
 	{
-		placeFailCode(outmap, fcode, "");
+		placeFailCode(request, outmap, fcode, "");
 	}
 
-	static void placeException(ArgMap outmap, FailureCode fcode, Exception ex)
+	// Key distinction here is that placeException logs a full stack trace in the stderr logs
+	// We do not expect these exceptions to occur frequently; it likely indicates a software error that
+	// we need to examine & study
+	static void placeException(HttpServletRequest request, ArgMap outmap, FailureCode fcode, Exception ex)
 	{
 		// Should do something smarter in terms of logging, but we definitely want to know
 		// when users are seeing errors
@@ -215,16 +219,59 @@ public class CallBack2Me extends HttpServlet
 
 		outmap.put("status_code", "fail");
 		outmap.put("failure_code", fcode.toString());
-		outmap.put("user_message", ex.getMessage().trim());
+		outmap.put("user_message", ex.getMessage());
 		outmap.put("extra_info", "");
+
+		logActionFailure(request, outmap);
 	}
 
-	static void placeFailCode(ArgMap outmap, FailureCode fcode, String extrainfo)
+	// These errors are more along the lines of "normal operation" of the service
+	// For that reason, we do not use printStackTrace()
+	static void placeFailCode(HttpServletRequest request, ArgMap outmap, FailureCode fcode, String extrainfo)
 	{
 		outmap.put("status_code", "fail");
 		outmap.put("failure_code", fcode.toString());
 		outmap.put("user_message", fcode.userErrorMessage);
 		outmap.put("extra_info", extrainfo);
+
+		logActionFailure(request, outmap);
 	}
+
+	private static String getMinimizedFlatForm(ArgMap argmap)
+	{
+		String fullrep = argmap.flatStringForm("\t");
+		return fullrep.substring(0, Math.min(fullrep.length(), 2000));
+	}
+
+	private static synchronized void logActionFailure(HttpServletRequest request, ArgMap outmap)
+	{
+		try {
+
+			// Re-extracting the innmap here
+			ArgMap innmap = WebUtil.getArgMap(request);
+
+			// Same issue here about length of the innmap, if it contains a BLOB
+			String outrep = getMinimizedFlatForm(outmap);
+			String innrep = getMinimizedFlatForm(innmap);
+
+			// Intentionally doing this a bit out-of-order, since the outrep has a limited
+			// number of fields while innrep could be very large.
+			List<Object> tklist = Util.listify(
+				"CallBackFailure",
+				ExactMoment.build().asLongBasicTs(TimeZoneEnum.EST),
+				outrep,
+				innrep
+			);
+
+			Util.pf("%s\n", Util.join(tklist, "\t"));
+
+		} catch (Exception ex) {
+
+			Util.pferr("Exception on log processing!!!!\n");
+			ex.printStackTrace();
+		}
+	}
+
+
 }
 
