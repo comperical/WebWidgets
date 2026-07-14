@@ -575,7 +575,8 @@ public class LiteTableInfo
 		boolean granupdate = GranularPerm.shuntGroupAllowData(this, argmap);
 		if(granupdate)
 		{
-			Util.pf("Ran Group Allow transfer for %s::%s\n", dbTabPair._1, dbTabPair._2);
+			String extra = Util.sprintf("Ran group allow for table %s", dbTabPair._2);
+			LogCentral.genericLog(LogCentral.LogOpCode.GroupAllowTransfer, dbTabPair._1, extra);
 		}
 	}
 	

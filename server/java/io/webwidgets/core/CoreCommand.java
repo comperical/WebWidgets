@@ -24,6 +24,7 @@ import net.danburfoot.shared.CoreDb.QueryCollector;
 
 import io.webwidgets.core.CoreUtil.*;
 import io.webwidgets.core.AuthLogic.*;
+import io.webwidgets.core.LogCentral.*;
 import io.webwidgets.core.MailSystem.*;
 import io.webwidgets.core.PluginCentral.*;
 import io.webwidgets.core.ActionJackson.*;
@@ -338,10 +339,9 @@ public class CoreCommand
 				List<WidgetItem> itemlist = WidgetItem.getUserWidgetList(wuser);
 				for(WidgetItem witem : itemlist)
 				{
-					Util.pf("Attempting to create code for %s\n", witem);
 					List<String> loglist = witem.createJsCode();
 					for(String log : loglist)
-						{ Util.pf("%s", log); }
+						{ LogCentral.genericLog(LogOpCode.CodeCreation, witem, log); }
 				}
 			}
 		}

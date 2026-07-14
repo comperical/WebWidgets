@@ -164,38 +164,8 @@ public class CallBack2Me extends HttpServlet
 		outmap.put("status_code", OKAY_CODE);
 		outmap.put("user_message", "ajax sync op successful");
 
-		logActionSuccess(tableInfo, optuser.get(), innmap);
+		LogCentral.callBackSuccess(tableInfo, optuser.get(), innmap);
 	}
-
-	// Clearly we need to think more about this moving forward
-	// One very obvious problem, is that under high load, we will get interleaved log lines
-	private static void logActionSuccess(LiteTableInfo LTI, WidgetUser accessor, ArgMap innmap)
-	{
-		try {
-			// The full representation could be massive, if the innmap contains a Blob!!
-			// Normally we'd expect 2K to be enough for the full object
-			String flatrep = getMinimizedFlatForm(innmap);
-
-			List<Object> tklist = Util.listify(
-				"CallBackSuccess",
-				ExactMoment.build().asLongBasicTs(TimeZoneEnum.EST),
-				LTI.dbTabPair._1.theOwner,
-				LTI.dbTabPair._1.theName,
-				LTI.dbTabPair._2,
-				innmap.getStr("ajaxop", "?????"),
-				innmap.getInt(CoreUtil.STANDARD_ID_COLUMN_NAME, -1),
-				flatrep
-			);
-
-			Util.pf("%s\n", Util.join(tklist, "\t"));
-		} catch (Exception ex) {
-
-			Util.pferr("Exception on log processing!!!!\n");
-			ex.printStackTrace();
-		}
-	}
-
-
 
 
 	static void placeException(HttpServletRequest request, ArgMap outmap, Exception ex)
@@ -222,7 +192,7 @@ public class CallBack2Me extends HttpServlet
 		outmap.put("user_message", ex.getMessage());
 		outmap.put("extra_info", "");
 
-		logActionFailure(request, outmap);
+		LogCentral.callBackFailure(request, outmap);
 	}
 
 	// These errors are more along the lines of "normal operation" of the service
@@ -234,44 +204,8 @@ public class CallBack2Me extends HttpServlet
 		outmap.put("user_message", fcode.userErrorMessage);
 		outmap.put("extra_info", extrainfo);
 
-		logActionFailure(request, outmap);
+		LogCentral.callBackFailure(request, outmap);
 	}
-
-	private static String getMinimizedFlatForm(ArgMap argmap)
-	{
-		String fullrep = argmap.flatStringForm("\t");
-		return fullrep.substring(0, Math.min(fullrep.length(), 2000));
-	}
-
-	private static synchronized void logActionFailure(HttpServletRequest request, ArgMap outmap)
-	{
-		try {
-
-			// Re-extracting the innmap here
-			ArgMap innmap = WebUtil.getArgMap(request);
-
-			// Same issue here about length of the innmap, if it contains a BLOB
-			String outrep = getMinimizedFlatForm(outmap);
-			String innrep = getMinimizedFlatForm(innmap);
-
-			// Intentionally doing this a bit out-of-order, since the outrep has a limited
-			// number of fields while innrep could be very large.
-			List<Object> tklist = Util.listify(
-				"CallBackFailure",
-				ExactMoment.build().asLongBasicTs(TimeZoneEnum.EST),
-				outrep,
-				innrep
-			);
-
-			Util.pf("%s\n", Util.join(tklist, "\t"));
-
-		} catch (Exception ex) {
-
-			Util.pferr("Exception on log processing!!!!\n");
-			ex.printStackTrace();
-		}
-	}
-
 
 }
 
