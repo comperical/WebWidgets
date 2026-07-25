@@ -338,12 +338,15 @@ public class CoreCommand
 			{
 				List<WidgetItem> itemlist = WidgetItem.getUserWidgetList(wuser);
 				for(WidgetItem witem : itemlist)
-				{
-					List<String> loglist = witem.createJsCode();
-					for(String log : loglist)
-						{ LogCentral.genericLog(LogOpCode.CodeCreation, witem, log); }
-				}
+					{ runForWidgetItem(witem); }
 			}
+		}
+
+		public static void runForWidgetItem(WidgetItem witem)
+		{
+			List<String> loglist = witem.createJsCode();
+			for(String log : loglist)
+				{ LogCentral.genericLog(LogOpCode.CodeCreation, witem, log); }
 		}
 
 		private static List<WidgetUser> getWidgetUserList(ArgMap amap)
@@ -1425,7 +1428,4 @@ public class CoreCommand
 		}
 	}
 }
-
-
-
 
