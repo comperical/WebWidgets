@@ -3,11 +3,15 @@
 import os 
 import sys
 import shutil
+import time
 
 import ArgMap
 import CodePush
 
 from zipfile import ZipFile
+
+MAX_AGE_SECONDS = 60 * 60
+
 	
 class DataPush(CodePush.AssetUploader):
 	
@@ -31,6 +35,28 @@ class DataPush(CodePush.AssetUploader):
 	def is_okay(self):
 		return os.path.exists(self.get_db_path())
 	
+
+	def check_modtime(self):
+
+		payload = self.get_payload_path()
+		modtime = os.path.getmtime(payload)
+		age_seconds = time.time() - modtime
+		age_minutes = round(age_seconds / 60)
+
+		okaypush = age_seconds <= MAX_AGE_SECONDS
+
+		refmssg = f"""
+Refusing to push {payload}, last modified {age_minutes} minutes ago.
+As a precaution against data overwriting, we block uploads of SQLite files that are older than 1 hour.
+You should probably delete local and re-pull from server. You can also run:
+touch {payload}
+This will update the DB file modtime.
+		"""
+
+		if not okaypush:
+			print(refmssg)
+			sys.exit(1)
+
 	def do_prep(self):
 		pass
 
@@ -52,6 +78,8 @@ if __name__ == "__main__":
 	uploader = DataPush(argmap)
 	uploader.find_base_dir(configmap)
 	uploader.ensure_okay()
+
+	uploader.check_modtime()
 	
 	if uploader.widget == "mailbox":
 		mssg = f"""The mailbox DB can only be downloaded, not uploaded. This is to prevent abuse of the mail system.
