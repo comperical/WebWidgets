@@ -11,7 +11,7 @@ import ArgMap
 from zipfile import ZipFile
 
 # Note - this must agree with code below
-CONFIG_MAP_OKAY_KEYS = ["accesshash", "dbdir", "codedir1", "codedir2", "codedir3", "codedir4", "codedir5"]
+CONFIG_MAP_OKAY_KEYS = ["accesshash", "dbdir", "codedir1", "codedir2", "codedir3", "codedir4", "codedir5", "codedir6", "codedir7", "codedir8"]
 
 SUBFOLDER_NAME = ".wwio"
 
@@ -55,7 +55,7 @@ def check_update_widget_cd(configmap, argmap):
 
 	currentdir = Path(os.getcwd())
 
-	for cdidx in range(1, 5):
+	for cdidx in range(1, 10):
 		cdstr = f"codedir{cdidx}"
 		if cdstr in configmap:
 			cdpath = Path(configmap[cdstr])
@@ -216,7 +216,7 @@ class ZipUploader(AssetUploader):
 	def find_base_dir(self, configmap):
 
 		def genprobes():
-			for idx in range(1, 6):
+			for idx in range(1, 10):
 				codekey = "codedir{}".format(idx)
 				if not codekey in configmap:
 					continue
