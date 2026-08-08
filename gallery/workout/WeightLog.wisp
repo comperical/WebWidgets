@@ -321,11 +321,11 @@ function redisplayMainTable()
             <table class="basic-table"  width="80%">
             <tr>
             <th width="7%">Date</th>
-            <th>Movement</th>
-            <th colspan="2">Sets / Reps</th>
-            <th colspan="2">Weight</th>
+            <th width="25%">Movement</th>
+            <th width="10%" colspan="2">Sets / Reps</th>
+            <th width="10%"colspan="2">Weight</th>
             <th colspan="2">Notes</th>
-            <th></th>
+            <th width="5%"></th>
             </tr>
         `;        
 
