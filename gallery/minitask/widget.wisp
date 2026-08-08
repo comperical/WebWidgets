@@ -23,9 +23,17 @@ Goal here is to work with laptop and tablet, but not phone
 
 <script>
 
+const MAIN_TABLE = "mini_task_list";
+
 var TODAY_CODE = U.getTodayCode();
 
 var EDIT_STUDY_ITEM = -1;
+
+const SNOOZE_EMOJI = "&#128164;";
+
+// Aug 2026 : new Snooze Until feature. If this is false, we hide snoozed items that
+// have a snooze date in the future
+let SHOW_SNOOZED = false;
 
 
 function createNewTop()
@@ -66,17 +74,36 @@ function createNewTaskSub(priority)
 			"alpha_date" : U.getTodayCode().getDateString(),
 			"omega_date" : "",
 			"priority" : priority,
-			"is_backlog" : 0
+			"is_backlog" : 0,
+			"snooze_until" : ""
 		};
 	
 		// CREATE TABLE mini_task_list (id int, task_type varchar(10), short_desc varchar(30), extra_info varchar(400), alpha_date varchar(10), omega_date varchar(10), priority int, is_backlog smallint default 0, primary key(id));
 		
-		const newtaskitem = W.buildItem("mini_task_list", newrec);
+		const newtaskitem = W.buildItem(MAIN_TABLE, newrec);
 		newtaskitem.syncItem();
 		redisplay();
 	}
 }
 
+
+function snoozeItem(itemid)
+{
+
+	const updater = function(item)
+	{
+		const numdays = U.promptForInt("Snooze for how many days? (0=clear)");
+
+		if(numdays == null)
+			{ return; }
+
+		const target = U.getTodayCode().nDaysAfter(numdays);
+		item.setSnoozeUntil(target.getDateString());
+
+	}
+
+	U.genericItemUpdate("mini_task_list", itemid, updater);
+}
 
 
 function archiveItem(itemid)
@@ -119,7 +146,7 @@ function updateItemPriority(markid, delta)
 	const newpriority = markitem.getPriority() + delta;
 	
 	markitem.setPriority(newpriority);
-	markitem.syncItem();			
+	markitem.syncItem();
 	redisplay();
 }
 
@@ -271,6 +298,11 @@ function updateTaskType()
 	redisplay();
 }
 
+function toggleShowSnooze()
+{
+	SHOW_SNOOZED = !SHOW_SNOOZED;
+	redisplay();
+}
 
 function saveExtraInfo()
 {
@@ -307,7 +339,24 @@ function reDispActiveTable()
 
 	const showtypecol = showtypelist.length > 1;	
 	
+	const snoozestr = SHOW_SNOOZED ? "checked" : "";
+
 	var tablestr = `
+
+		<table class="basic-table" width="20%">
+		<tr width="75%">
+		<td>
+		Show Snoozed: 
+		</td>
+		<td>
+		<input type="checkbox" ${snoozestr} onClick="javascript:toggleShowSnooze()" />
+		</td>
+		</tr>
+		</table>
+
+		<br/>
+
+
 		<table class="basic-table tasktable">
 		<tr>
 		${showtypecol ? "<th>Type</th>" : ""}
@@ -324,17 +373,29 @@ function reDispActiveTable()
 			
 		if(showtypelist.indexOf(activitem.getTaskType()) == -1)
 			{ return; }
+
+		const snoozed = activitem.snoozedOnDay(U.getTodayCode());
+
+		if(!SHOW_SNOOZED && snoozed)
+			{ return; }
 	
 		const dayage = getTaskAge(activitem);
 		
 		const tdcell = showtypecol ? `<td width="7">${activitem.getTaskType()}</td>` : "";
 
+		let startshow = activitem.getAlphaDate().substring(5);
+
+		if(snoozed)
+		{
+			startshow = `${activitem.getSnoozeUntil().substring(5)} ${SNOOZE_EMOJI}`;
+		}
+
 		var rowstr = `
 			<tr>
 			${tdcell}
-			<td width="60%">${activitem.getShortDesc()}</td>			
-			<td width="10%">${activitem.getAlphaDate().substring(5)}</td>	
-			<td>${dayage}</td>			
+			<td width="60%">${activitem.getShortDesc()}</td>
+			<td width="10%">${startshow}</td>
+			<td>${dayage}</td>
 		`;
 
 		// Intrinsic priority
@@ -367,8 +428,7 @@ function reDispActiveTable()
 				
 				${breaker}
 
-				<a href="javascript:archiveItem(${activitem.getId()})">
-				<img src="/u/shared/image/rghtarrow.png" height="18"></a>
+				<a class="no-underline" href="javascript:snoozeItem(${activitem.getId()})">${SNOOZE_EMOJI}</a>
 				
 				${breaker}
 				
@@ -460,6 +520,7 @@ function reDispEditItem()
 		"task_type_sel_span" : ttypesel,
 		"alphadate" : studyitem.getAlphaDate(),
 		"omegadate" : studyitem.getOmegaDate(),
+		"snoozedate" : studyitem.getSnoozeUntil(),
 		"item_status" : itemstat,
 		"priority" : studyitem.getPriority(),
 		"extra_info_box" : getExtraInfoBox().getHtmlString()
@@ -647,6 +708,13 @@ function redisplay()
 <td>End Date</td>
 <td><span id="omegadate"></span></td>
 </tr>
+
+<tr>
+<td>Snooze Until</td>
+<td><span id="snoozedate"></span></td>
+</tr>
+
+
 <tr>
 <td>Status</td>
 <td>

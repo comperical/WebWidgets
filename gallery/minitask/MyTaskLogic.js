@@ -3,7 +3,6 @@
 // In this widget, this list is hardcoded
 const MASTER_TYPE_LIST = ["chinese", "crm", "life", "work"];
 
-
 function getHeaderInfo()
 {
     return [
@@ -81,3 +80,16 @@ function getTaskItemList(wantcompleted)
 
     return tasklist;
 }
+
+// Almost always call as item.snoozedOnDay(U.getTodayCode())
+MiniTaskListItem.prototype.snoozedOnDay = function(dc)
+{
+    if(this.getSnoozeUntil().length == 0)
+        { return false; }
+
+    const target = U.lookupDayCode(this.getSnoozeUntil());
+    return dc.isBefore(target);
+}
+
+
+console.log("Loading file!!!");
