@@ -86,15 +86,15 @@ public class AdvancedUtil
 
     public static void addEmailAddress(WidgetUser user, ValidatedEmail email)
     {
-        updateEmailSet(user, emset -> emset.add(email.emailAddr));
+        updateEmailSet(user, emset -> emset.add(email.emailAddr), "add");
     }
 
     public static void removeEmailAddress(WidgetUser user, ValidatedEmail email)
     {
-        updateEmailSet(user, emset -> emset.remove(email.emailAddr));
+        updateEmailSet(user, emset -> emset.remove(email.emailAddr), "remove");
     }
 
-    private static void updateEmailSet(WidgetUser user, Consumer<Set<String>> updater)
+    private static void updateEmailSet(WidgetUser user, Consumer<Set<String>> updater, String loglabel)
     {
         Integer masterid = user.getMasterId();
         Util.massert(masterid != null, 
@@ -102,15 +102,19 @@ public class AdvancedUtil
 
 
         var emailset = user.getEmailSet();
-        Util.pf("Email set is %s\n", emailset);
         updater.accept(emailset);
-        Util.pf("Email set is now %s\n", emailset);
-
         
         CoreDb.upsertFromRecMap(WidgetItem.getMasterWidget(), "user_main", 1, CoreDb.getRecMap(
             "id", masterid,
             "email", emailSet2Str(emailset)
         ));
+
+        LogCentral.genericLog(
+            LogCentral.LogOpCode.EmailInfoUpdate,
+            WidgetItem.getMasterWidget(),
+            Util.sprintf("Updated email list for user %s, now have %d entries, operation is %s",
+                user, emailset.size(), loglabel)
+        );
         
         // See note about hackiness above
         GlobalIndex.clearUserIndexes();

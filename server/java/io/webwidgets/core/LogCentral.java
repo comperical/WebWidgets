@@ -20,6 +20,7 @@ public class LogCentral
 
         CodeCreation,
         CallBackSuccess,
+        EmailInfoUpdate,
         CallBackFailure;
 
 
