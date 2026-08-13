@@ -90,6 +90,3 @@ MiniTaskListItem.prototype.snoozedOnDay = function(dc)
     const target = U.lookupDayCode(this.getSnoozeUntil());
     return dc.isBefore(target);
 }
-
-
-console.log("Loading file!!!");
