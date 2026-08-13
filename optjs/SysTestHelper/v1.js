@@ -45,7 +45,7 @@ TEST_HELP = {
         `
 
         const labelmap = TEST_HELP.TEST_CODE_PACKAGE.getLabelTestMap();
-        massert(labelmap.has(labelkey), `No test found with label ${labelkey}`);
+        U.massert(labelmap.has(labelkey), `No test found with label ${labelkey}`);
         const errorlist = labelmap.get(labelkey)();
 
         errorlist.forEach(function(err) {
@@ -164,4 +164,3 @@ TEST_HELP = {
     }
 
 }
-
