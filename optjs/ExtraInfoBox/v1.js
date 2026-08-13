@@ -38,7 +38,7 @@ EXTRA = {
         const boxfunc = boxbuilder.substring("javascript:".length);
         const thebox = eval(boxfunc);
 
-        const newval = getDocFormValue(thebox.textAreaName);
+        const newval = U.getDocFormValue(thebox.textAreaName);
         thebox.consumerFunc(newval);
     },
 
@@ -102,6 +102,7 @@ ExtraInfoBox.prototype.withTextInput = function(text)
     U.massert(typeof(text) == 'string', "Expected string argument for withTextInput(...)");
 
     const provider = () => text;
+    // TODO: Confirm whether this should call this.withProvider(provider).
     return withProvider(provider);
 }
 

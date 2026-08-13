@@ -58,7 +58,7 @@ SimpleModal.prototype.setModalContentHtml = function(conthtml)
 
 SimpleModal.prototype.setUseButton = function(usebutton)
 {
-    massert(this.titleHtml != null, `Buttons only work if you have a modal title, please supply the title first`);
+    U.massert(this.titleHtml != null, `Buttons only work if you have a modal title, please supply the title first`);
     this.useButton = usebutton;
     return this;
 }
@@ -66,7 +66,7 @@ SimpleModal.prototype.setUseButton = function(usebutton)
 
 SimpleModal.prototype.setModalButtonText = function(buttontext)
 {
-    massert(this.useButton, `You must call setUseButton(true) before supplying the text`);
+    U.massert(this.useButton, `You must call setUseButton(true) before supplying the text`);
 
 
     this.buttonText = buttontext;
@@ -75,10 +75,10 @@ SimpleModal.prototype.setModalButtonText = function(buttontext)
 
 SimpleModal.prototype.setButtonOnClick = function(buttonjs)
 {
-    massert(this.useButton, `You must call setUseButton(true) before supplying the onClick for the button`);
+    U.massert(this.useButton, `You must call setUseButton(true) before supplying the onClick for the button`);
 
 
-    massert(buttonjs.startsWith("javascript:"), 
+    U.massert(buttonjs.startsWith("javascript:"),
             `By convention, argument to this function should have javascript: prefix, found ${buttonjs}`);
 
     this.buttonOnClick = buttonjs;
@@ -123,7 +123,6 @@ SimpleModal.prototype.getHtmlString = function()
       </div>
     `;
 }
-
 
 
 
