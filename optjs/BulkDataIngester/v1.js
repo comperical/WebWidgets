@@ -31,13 +31,15 @@ function BulkDataIngester() {
 
 BulkDataIngester.prototype.withFieldMap = function(fieldmap)
 {
-    massert(fieldmap != null && fieldmap instanceof Map, `Expected field map argument to be a JavaScript Map object`);
+    U.massert(fieldmap != null && fieldmap instanceof Map, `Expected field map argument to be a JavaScript Map object`);
+    // TODO: Confirm whether this should call this.withFieldFunction(...).
     return withFieldFunction(x => fieldmap.get(x));
 }
 
 BulkDataIngester.prototype.withFieldHash = function(fieldhash)
 {
-    massert(fieldhash != null && typeof(fieldhash) == 'object', `Expected field hash to be a regular JS hash`);
+    U.massert(fieldhash != null && typeof(fieldhash) == 'object', `Expected field hash to be a regular JS hash`);
+    // TODO: Confirm whether this should call this.withFieldFunction(...).
     return withFieldFunction(x => fieldhash[x]);
 }
 
@@ -45,8 +47,9 @@ BulkDataIngester.prototype.withFieldHash = function(fieldhash)
 
 BulkDataIngester.prototype.withFieldFunction = function(fieldfunc)
 {
-    massert(fieldfunc != null && typeof(fieldfunc) == 'function', `Expected field function argument to be a function`);
-    massert(fullRecordRemap == null, `Full Record Remap function is already set; you cannot use both the fullRecordRemap and field function arguments`);
+    U.massert(fieldfunc != null && typeof(fieldfunc) == 'function', `Expected field function argument to be a function`);
+    // TODO: Confirm whether fullRecordRemap should be accessed through this.
+    U.massert(fullRecordRemap == null, `Full Record Remap function is already set; you cannot use both the fullRecordRemap and field function arguments`);
     this.fieldFunction = fieldfunc;
     return this;
 
@@ -55,8 +58,8 @@ BulkDataIngester.prototype.withFieldFunction = function(fieldfunc)
 
 BulkDataIngester.prototype.withFullRecordRemap = function(remapper)
 {
-    massert(remapper != null && typeof(remapper) == 'function', `Expected full remap argument to be a function`);
-    massert(this.fieldFunction == null, `Field function is already set; you cannot use both the fullRecordRemap and field function arguments`);
+    U.massert(remapper != null && typeof(remapper) == 'function', `Expected full remap argument to be a function`);
+    U.massert(this.fieldFunction == null, `Field function is already set; you cannot use both the fullRecordRemap and field function arguments`);
 
 
     this.fullRecordRemap = remapper;
@@ -66,7 +69,7 @@ BulkDataIngester.prototype.withFullRecordRemap = function(remapper)
 
 BulkDataIngester.prototype.withInputData = function(inputdata)
 {
-    massert(inputdata.length > 0, `Input data has 0-length. Caller must check for this condition`);
+    U.massert(inputdata.length > 0, `Input data has 0-length. Caller must check for this condition`);
     this.parsedInputData = inputdata;
     return this;
 }
@@ -79,15 +82,15 @@ BulkDataIngester.prototype.withSkipNullOutput = function()
 
 BulkDataIngester.prototype.withOutputFilter = function(allower)
 {
-    massert(allower != null && typeof(allower) == 'function', `Expected allow-output argument to be a function`);
+    U.massert(allower != null && typeof(allower) == 'function', `Expected allow-output argument to be a function`);
     this.allowOutputFilter = allower;
     return this;
 }
 
 BulkDataIngester.prototype.withTargetTable = function(tablename)
 {
-    massert(tablename != null && typeof(tablename) == 'string', `Expected table name to be a string`);
-    massert(W.haveTable(tablename), `Unknown widget table name ${tablename}`)
+    U.massert(tablename != null && typeof(tablename) == 'string', `Expected table name to be a string`);
+    U.massert(W.haveTable(tablename), `Unknown widget table name ${tablename}`)
     this.targetTable = tablename;
     return this;
 }
@@ -100,12 +103,13 @@ BulkDataIngester.prototype.transformDatum = function(datum)
 
     const result = {};
 
+    // TODO: Confirm whether this callback should preserve the ingester instance as this.
     Object.keys(datum).forEach(function(k) {
         if(this.ignoreInputSet.has(k))
             { return; }
 
         const newkey = this.fieldFunction(k);
-        massert(newkey != null, `Field function returned null for field input ${k}, use ignoreInputList(...) if you want to skip fields`);
+        U.massert(newkey != null, `Field function returned null for field input ${k}, use ignoreInputList(...) if you want to skip fields`);
         result[newkey] = datum[k];
     });
 
@@ -116,9 +120,9 @@ BulkDataIngester.prototype.transformDatum = function(datum)
 
 BulkDataIngester.prototype.getRecordList = function()
 {
-    massert(this.fieldFunction != null || this.fullRecordRemap != null, 
+    U.massert(this.fieldFunction != null || this.fullRecordRemap != null,
         `You must set either the field function or the full record remap before calling. Use withEmptyFieldFunc for identity map`);
-    massert(this.parsedInputData != null, `You must set the input data before calling this method`);
+    U.massert(this.parsedInputData != null, `You must set the input data before calling this method`);
 
 
     // Lots of efforts here to get this to work as a collection operation.
@@ -133,7 +137,7 @@ BulkDataIngester.prototype.getRecordList = function()
         if(!this.allowOutputFilter(output))
             { continue; }
 
-        massert(output != null, 
+        U.massert(output != null,
             `Transformation function returned null for input ${input} and this was not skipped. If you want to skip nulls, call with withSkipNullOutput`);
         
         rlist.push(output);
@@ -145,7 +149,7 @@ BulkDataIngester.prototype.getRecordList = function()
 
 BulkDataIngester.prototype.runBulkUpdate = function(cbfunc)
 {
-    massert(cbfunc == null || typeof(cbfunc) == 'function', `Callback argument should be null or a function, found ${cbfunc}`);
+    U.massert(cbfunc == null || typeof(cbfunc) == 'function', `Callback argument should be null or a function, found ${cbfunc}`);
 
     const cb = function(tablename, idlist, _)
     {
@@ -170,6 +174,4 @@ BulkDataIngester.prototype.runBulkUpdate = function(cbfunc)
 
     W.bulkUpdate(this.targetTable, idlist, { callback : cb });
 }
-
-
 
