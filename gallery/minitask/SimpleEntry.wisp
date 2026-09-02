@@ -62,8 +62,8 @@ function redisplay()
         <h2 class="mb-3">Simple Entry</h2>
         <textarea name="simple_item" class="form-control mb-3" id="noteText" rows="4" placeholder="Type your note here..."></textarea>
         <div class="btn-group" role="group">
-            <button type="button" class="btn btn-danger" onclick="createNote(20)">Top Priority</button>
-            <button type="button" class="btn btn-warning" onclick="createNote(10)">High Priority</button>
+            <button type="button" class="btn btn-danger" onclick="createNote(40)">Top Priority</button>
+            <button type="button" class="btn btn-warning" onclick="createNote(20)">High Priority</button>
             <button type="button" class="btn btn-secondary" onclick="createNote(5)">Regular Priority</button>
         </div>
     </div>
