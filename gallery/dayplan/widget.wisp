@@ -352,7 +352,7 @@ function redisplay()
 	const activelist = getPlanDayItemList();
 					
 	var tablestr = `
-		<table class="basic-table"  width="650px">
+		<table class="basic-table"  width="50%">
 		<tr>
 		<th>Desc</th>
 		<th>End</th>
