@@ -292,7 +292,7 @@ function genericEditTextField(tablename, fieldname, itemid)
     if(newval == null)
         { return; }
 
-    theitem[fieldname] = newval;
+    theitem.setField(fieldname, newval);
     theitem.syncItem();
     redisplay();
 }
@@ -314,7 +314,7 @@ function genericEditFloatField(tablename, fieldname, itemid)
         return;
     }
 
-    theitem[fieldname] = parseFloat(newval);
+    theitem.setField(fieldname, parseFloat(newval));
     theitem.syncItem();
     redisplay();
 }
@@ -342,7 +342,7 @@ function genericEditIntField(tablename, fieldname, itemid)
         return;
     }
 
-    theitem[fieldname] = parseInt(newval);
+    theitem.setField(fieldname, parseInt(newval));
     theitem.syncItem();
     redisplay();
 }
