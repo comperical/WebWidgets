@@ -321,8 +321,12 @@ public class FastTest4Basic
 	{
 		public void runOp()
 		{
+			GlobalIndex.getSystemSetting();
+
 			boolean modokay = _argMap.getBit("modokay", false);
 			List<Pair<String, String>> badlist = Util.arraylist();
+
+
 
 
 			for(String colname : Util.listify("owner", "grantee"))
