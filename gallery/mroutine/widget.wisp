@@ -117,8 +117,8 @@ function getDayList4Item(phaseitem)
 function handleNavBar() {
 
 	const headerinfo = [
-        ["Morning Routine", "widget.wisp"],
-        ["Phases", "MroutineList.wisp"]
+        ["Morning Routine", "widget"],
+        ["Phases", "MroutineList"]
     ];
 
     populateTopNavBar(headerinfo, "Morning Routine");

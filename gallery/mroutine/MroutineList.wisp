@@ -188,20 +188,13 @@ function back2Main()
 	setEditStudyItem(-1);
 }
 
-function getPageComponent()
-{
-	return EDIT_STUDY_ITEM == -1 ? "main_component" : "edit_component";	
-}
-
 function redisplay()
 {
 	handleNavBar();
 
-	redisplayMainTable();
-	
-	redisplayEditItem();
-		
-	setPageComponent(getPageComponent());
+	const pagestr = EDIT_STUDY_ITEM == -1 ? getMainTableHtml() : getEditItemHtml();
+
+	U.populateSpanData({ "mainpage" : pagestr });
 }
 
 function getDayList4Item(phaseitem)
@@ -217,8 +210,8 @@ function getDayList4Item(phaseitem)
 function handleNavBar() {
 
 	const headerinfo = [
-        ["Morning Routine", "widget.wisp"],
-        ["Phases", "MroutineList.wisp"]
+        ["Morning Routine", "widget"],
+        ["Phases", "MroutineList"]
     ];
 
     populateTopNavBar(headerinfo, "Phases");
@@ -259,9 +252,25 @@ function streamLineOrder()
 	}
 }
 
-function redisplayMainTable()
+function getMainTableHtml()
 {
+	// Big gotcha. We can use JS boolean literals here, but the genericUpdater turns them into strings
+	const boolSelector = buildOptSelector()
+							.configureFromList([true, false])
+							.setElementName(SHOW_INACTIVE_KEY)
+							.useGenericUpdater()
+							.getHtmlString();
+
 	var mtstr = `
+	Show InActive: ${boolSelector}
+
+	<br/>
+	<br/>
+
+	<a href="javascript:createNew()" class="css3button">NEW</a>
+
+	<br/><br/>
+
 	<table  class="basic-table" width="70%">
 	<tr>
 	<th colspan="2">OrderKey
@@ -281,17 +290,6 @@ function redisplayMainTable()
 
 	var biglist = W.getItemList("mroutine_phase");
 	biglist.sort(U.proxySort(item => [item.getOrderKey()]));
-
-
-	
-	const boolSelector = buildOptSelector()
-							// Big gotcha. We can use JS boolean literals here, but the genericUpdater turns them into strings
-							.configureFromList([true, false])
-							.setElementName(SHOW_INACTIVE_KEY)
-							.useGenericUpdater()
-							.getHtmlString();
-
-
 
 	// Okay, the issue is that when the object goes through U.getDocFormValue(...) in genericUpdater function,
 	// It gets transformed into a string
@@ -338,13 +336,9 @@ function redisplayMainTable()
 
 	});
 	
-	mtstr += `</table>`;
-	
+	mtstr += `</table><br/>`;
 
-	U.populateSpanData({
-		"show_inactive" : boolSelector,
-		"maintable" : mtstr
-	});
+	return mtstr;
 }
 
 function getEditDayListData(daylist) 
@@ -367,11 +361,8 @@ function getEditDayListData(daylist)
 	return s;
 }
 
-function redisplayEditItem()
+function getEditItemHtml()
 {
-	if(EDIT_STUDY_ITEM == -1)
-		{ return; }
-
 	var showItem = getEditStudyItem();
 	const currentDays = getDayList4Item(showItem);
 	const daylistEdit = getEditDayListData(currentDays);
@@ -385,17 +376,46 @@ function redisplayEditItem()
 						.getHtmlString();
 
 	const showSelStr = currentDays.length == 7 ? "" : dayaddsel;
-	
-	const spandata = {
-		"itemname" : showItem.getShortName(),
-		"web_link" : showItem.getWebLink(),
-		"isactive" : showItem.getIsActive() == 1 ? "YES" : "NO",
-		"on_days" : daylistEdit,
-		"on_day_sel_span" : showSelStr,
-		"extra_info_box" : getExtraInfoBox().getHtmlString()
-	};
-	
-	U.populateSpanData(spandata);
+	const activestr = showItem.getIsActive() == 1 ? "YES" : "NO";
+
+	return `
+	<h3>Edit MRoutine Item</h3>
+
+	<br/><br/>
+
+	<table width="60%" class="basic-table">
+	<tr>
+	<td>Back</td>
+	<td></td>
+	<td><a href="javascript:back2Main()"><img src="/u/shared/image/leftarrow.png" height="18"/></a></td>
+	</tr>
+	<tr>
+	<td width="20%">Name</td>
+	<td>${showItem.getShortName()}</td>
+	<td><a href="javascript:editItemName()"><img src="/u/shared/image/edit.png" height=18/></a></td>
+	</tr>
+	<tr>
+	<td>Link</td>
+	<td>${showItem.getWebLink()}</td>
+	<td><a href="javascript:editWebLink()"><img src="/u/shared/image/edit.png" height=18/></a></td>
+	</tr>
+	<tr>
+	<td>Active?</td>
+	<td>${activestr}</td>
+	<td><a href="javascript:flipActive()"><img src="/u/shared/image/cycle.png" height=18/></a></td>
+	</tr>
+	<tr>
+	<td>Days</td>
+	<td>${daylistEdit}</td>
+	<td>${showSelStr}</td>
+	</tr>
+	</table>
+
+	<br/>
+	<br/>
+
+	${getExtraInfoBox().getHtmlString()}
+	`;
 }
 
 </script>
@@ -407,76 +427,13 @@ function redisplayEditItem()
 
 <center>
 
-<span class="page_component" id="main_component">
-
 <div class="topnav"></div>
 
 <br/>
 
-
-Show InActive: <span id="show_inactive"></span>
-
-<br/>
-<br/>
-
-<a href="javascript:createNew()" class="css3button">NEW</a>
-
-
-<br/><br/>
-
-
-<div id="maintable"></div>
+<div id="mainpage"></div>
 
 <br/>
-</span>
- 
-<span class="page_component" id="edit_component">
-
-<h3>Edit MRoutine Item</h3>
-
-<br/><br/>
-
-<table width="60%" class="basic-table">
-<tr>
-<td>Back</td>
-<td></td>
-<td><a href="javascript:back2Main()"><img src="/u/shared/image/leftarrow.png" height="18"/></a></td>
-</tr>
-
-
-<tr>
-<td width="20%">Name</td>
-<td><div id="itemname"></div></td>
-<td><a href="javascript:editItemName()"><img src="/u/shared/image/edit.png" height=18/></a></td>
-</tr>
-<tr>
-<td>Link</td>
-<td><div id="web_link"></div></td>
-<td><a href="javascript:editWebLink()"><img src="/u/shared/image/edit.png" height=18/></a></td>
-</tr>
-
-<tr>
-<td>Active?</td>
-<td><span id="isactive"></span>
-
-</td>
-<td><a href="javascript:flipActive()"><img src="/u/shared/image/cycle.png" height=18/></a></td>
-</tr>    
-
-<tr>
-<td>Days</td>
-<td><span id="on_days"></span></td>
-<td><span id="on_day_sel_span"></td>
-</tr>    
-
-</table>
-
-<br/>
-<br/>
-
-<div id="extra_info_box"></div>
-
-</span>
 
 
 </center>
