@@ -9,7 +9,7 @@
 
     if(!currentUser.isPresent())
     {
-        response.sendRedirect("LogIn.jsp");
+        response.sendRedirect("LogIn");
         return;
     }
 
@@ -50,22 +50,12 @@
 <html lang="en">
 
 <head>
-  <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <title>WebWidgets Admin</title>
-  <!-- plugins:css -->
-  <link rel="stylesheet" href="/u/shared/majestic/vendors/mdi/css/materialdesignicons.min.css">
-  <link rel="stylesheet" href="/u/shared/majestic/vendors/base/vendor.bundle.base.css">
-  <!-- endinject -->
-  <!-- plugin css for this page -->
-  <link rel="stylesheet" href="/u/shared/majestic/vendors/datatables.net-bs4/dataTables.bootstrap4.css">
-  <!-- End plugin css for this page -->
-  <!-- inject:css -->
-  <link rel="stylesheet" href="/u/shared/majestic/css/style.css">
-  <!-- endinject -->
   
 <%@include file="AssetInclude.jsp_inc" %>
+<%@include file="AdminStyle.jsp_inc" %>
 
 <script>
 
@@ -137,15 +127,13 @@ function removeEmail(oldemail)
   
   
 </head>
-<body>
-  <div class="container-scroller">
-    <!-- partial:partials/_navbar.html -->
-    <%@include file="AdminNavBar.jsp_inc" %>
+<body data-page="AccountSetting">
 
-    <!-- partial -->
-    <div class="container-fluid page-body-wrapper">
-      <!-- partial:partials/_sidebar.html -->
-      <%@include file="MajesticNavBar.jsp_inc" %>
+  <%@include file="AdminTopBar.jsp_inc" %>
+
+  <div class="admin-shell">
+
+    <%@include file="AdminSideBar.jsp_inc" %>
 
 
 <%
@@ -179,111 +167,72 @@ function removeEmail(oldemail)
 %>
 
 
-      <!-- partial -->
-      <div class="main-panel">
-        <div class="content-wrapper">
-        
+    <main class="admin-main">
 
-
-
-        
-          <% if(serverMessage.length() > 0) { %>    
-          <div class="row">            
-            <div class="col-md-12 stretch-card">
-              <div class="card">
-                <div class="card-body">
-                  <p class="card-title">Message</p>
-                  <p class="mb-4"><%= serverMessage %></p>
-
-                  <br/>
-
-                  <p>Thanks for using WebWidgets.io, sorry to see you go!</p>
-
-                </div>
-              </div>
-            </div>
+          <% if(serverMessage.length() > 0) { %>
+      <section class="card narrow">
+        <div class="card-body">
+          <p class="card-title">Message</p>
+          <div class="alert alert-info" style="margin-bottom: 16px">
+            <i class="fa-solid fa-circle-info"></i>
+            <p><%= serverMessage %></p>
           </div>
-          <br/>
+          <p class="mb-0">Thanks for using WebWidgets.io, sorry to see you go!</p>
+        </div>
+      </section>
 
 
           <% }  else  { %>
-        
-          <div class="row">
-            <div class="col-md-12 stretch-card">
-              <div class="card">
-                <div class="card-body">
-                    <p class="card-title">Account Settings</p>
 
+      <section class="card">
+        <div class="card-body">
+          <p class="card-title">Account Settings</p>
 
-                      <div class="row">
-                      User: <%= currentUser.get() %>
-                      </div>
+          <dl class="kv-list">
+            <dt>User</dt>
+            <dd><%= currentUser.get() %></dd>
+          </dl>
 
+          <p class="card-title" style="font-size: 14px">Email Addresses</p>
+
+          <div class="table-wrap narrow">
+            <table class="table">
+              <tbody>
                       <%
 
                         for(String anemail : currentUser.get().getEmailSet())
                         {
                       %>
-
-                      <div class="row">
-                      Email: <%= anemail %>
-
-                      &nbsp; 
-                      &nbsp; 
-                      &nbsp; 
-
-                      <a href="javascript:removeEmail('<%= anemail %>')"><button>remove</button></a>
-                      </div>
-                      <br/>
-
+                <tr>
+                  <td><%= anemail %></td>
+                  <td class="actions">
+                    <a class="icon-action danger" href="javascript:removeEmail('<%= anemail %>')" title="Remove email"><i class="fa-solid fa-trash"></i></a>
+                  </td>
+                </tr>
                       <% } %>
-
-                      <center>
-                      <a href="javascript:addNewEmail()"><button>Add New Email</button></a>
-                      </center>
-                </div>
-              </div>
-            </div>
+              </tbody>
+            </table>
           </div>
 
-
-          <br/>
-          <br/>
-
-          <div class="row">
-            <div class="col-md-12 stretch-card">
-              <div class="card">
-                <div class="card-body">
-                  <p class="card-title">Account Deletion</p>
-                  <p class="mb-4">
-
-                  Click this button and answer confirmation questions to delete your account.
-
-                  <center>
-                  <a href="javascript:deleteAccount()"><button>Delete Account</button></a>
-                  </center>
-                  
-                </div>
-              </div>
-            </div>
+          <div class="btn-row" style="margin-top: 14px">
+            <a class="btn btn-sm" href="javascript:addNewEmail()"><i class="fa-solid fa-plus"></i>Add New Email</a>
           </div>
-          <br/>
-          <br/>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-body">
+          <p class="card-title">Account Deletion</p>
+          <p class="muted">Click this button and answer confirmation questions to delete your account.</p>
+          <a class="btn btn-danger" href="javascript:deleteAccount()"><i class="fa-solid fa-trash"></i>Delete Account</a>
+        </div>
+      </section>
 
           <% } %>
 
-
-        <!-- content-wrapper ends -->
-      </div>
-      <!-- main-panel ends -->
-    </div>
-    <!-- page-body-wrapper ends -->
+    </main>
   </div>
-  <!-- container-scroller -->
 
-
-  <%@include file="MajesticFooter.jsp_inc" %>
 </body>
 
 </html>
-

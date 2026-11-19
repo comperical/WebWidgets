@@ -9,7 +9,7 @@
 
     if(!currentUser.isPresent())
     {
-        response.sendRedirect("LogIn.jsp");
+        response.sendRedirect("LogIn");
         return;
     }
 
@@ -41,7 +41,7 @@
 
 
             String encmssg = StringUtil.encodeURIComponent(message);
-            String bounce2 = "ChangePass.jsp?message=" + encmssg;
+            String bounce2 = "ChangePass?message=" + encmssg;
             response.sendRedirect(bounce2);
             return;
         }
@@ -56,22 +56,12 @@
 <html lang="en">
 
 <head>
-  <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <title>WebWidgets Admin</title>
-  <!-- plugins:css -->
-  <link rel="stylesheet" href="/u/shared/majestic/vendors/mdi/css/materialdesignicons.min.css">
-  <link rel="stylesheet" href="/u/shared/majestic/vendors/base/vendor.bundle.base.css">
-  <!-- endinject -->
-  <!-- plugin css for this page -->
-  <link rel="stylesheet" href="/u/shared/majestic/vendors/datatables.net-bs4/dataTables.bootstrap4.css">
-  <!-- End plugin css for this page -->
-  <!-- inject:css -->
-  <link rel="stylesheet" href="/u/shared/majestic/css/style.css">
-  <!-- endinject -->
   
 <%@include file="AssetInclude.jsp_inc" %>
+<%@include file="AdminStyle.jsp_inc" %>
 
 <script>
 
@@ -132,77 +122,48 @@ function doSubmit()
   
   
 </head>
-<body>
-  <div class="container-scroller">
-    <!-- partial:partials/_navbar.html -->
-    <%@include file="AdminNavBar.jsp_inc" %>
+<body data-page="ChangePass">
 
-    <!-- partial -->
-    <div class="container-fluid page-body-wrapper">
-      <!-- partial:partials/_sidebar.html -->
-      <%@include file="MajesticNavBar.jsp_inc" %>
-      <!-- partial -->
-      <div class="main-panel">
-        <div class="content-wrapper">
-        
-        
-          <% if(serverMessage.length() > 0) { %>	
-          <div class="row">            
-            <div class="col-md-12 stretch-card">
-              <div class="card">
-                <div class="card-body">
-                  <p class="card-title">Message</p>
-                  <p class="mb-4"><%= serverMessage %></p>
-                </div>
-              </div>
-            </div>            
-          </div>
-          <br/>
-          <% } %>
-        
-          <div class="row">
-            <div class="col-md-12 stretch-card">
-              <div class="card">
-                <div class="card-body">
-                  <p class="card-title">Change Password</p>
+  <%@include file="AdminTopBar.jsp_inc" %>
 
-                  <form class="forms-sample">
-                    <div class="row">                    
-                    <div class="form-group">
-                      <label for="exampleInputPassword1">Old Password</label>
-                      <input type="password" name="current_pass" cols="40"/>
-                    </div>
-                    </div>
-                    <div class="row">                    
-                    <div class="form-group">
-                      <label for="exampleInputPassword1">New Password</label>
-                      <input type="password" name="new1x_pass" cols="40"/>
-                    </div>
-                    </div>
-                    <div class="row">
-			    <div class="form-group">
-			      <label for="exampleInputConfirmPassword1">Confirm New</label>
-			      <input type="password" name="new2x_pass" cols="40"/>
-			    </div>
-		    </div>
-                  </form>                  
-                  <button class="btn btn-primary mr-2" onclick="doSubmit()">Submit</button>
-                  </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- content-wrapper ends -->
+  <div class="admin-shell">
+
+    <%@include file="AdminSideBar.jsp_inc" %>
+
+    <main class="admin-main">
+
+          <% if(serverMessage.length() > 0) { %>
+      <div class="alert alert-info">
+        <i class="fa-solid fa-circle-info"></i>
+        <p><%= serverMessage %></p>
       </div>
-      <!-- main-panel ends -->
-    </div>
-    <!-- page-body-wrapper ends -->
-  </div>
-  <!-- container-scroller -->
+          <% } %>
 
-  <%@include file="MajesticFooter.jsp_inc" %>
+      <section class="card narrow">
+        <div class="card-body">
+          <p class="card-title">Change Password</p>
+
+          <form>
+            <div class="form-group">
+              <label>Old Password</label>
+              <input type="password" name="current_pass"/>
+            </div>
+            <div class="form-group">
+              <label>New Password</label>
+              <input type="password" name="new1x_pass"/>
+            </div>
+            <div class="form-group">
+              <label>Confirm New</label>
+              <input type="password" name="new2x_pass"/>
+            </div>
+          </form>
+          <button class="btn btn-primary" onclick="doSubmit()">Submit</button>
+        </div>
+      </section>
+
+    </main>
+  </div>
 
 </body>
 
 </html>
-

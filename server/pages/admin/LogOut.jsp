@@ -45,7 +45,7 @@ if("bounceback" in params)
 
 <br/>
 
-<a href="LogIn.jsp"><button>LogIn Again</button></a>
+<a href="LogIn"><button>LogIn Again</button></a>
 
 
 

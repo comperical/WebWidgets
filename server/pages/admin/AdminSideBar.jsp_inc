@@ -1,0 +1,39 @@
+<%--
+    Sidebar for the new admin layout (replaces MajesticNavBar.jsp_inc).
+    The JSP code is identical to MajesticNavBar.jsp_inc; only the markup differs.
+    Current-page highlight is pure CSS: the page sets <body data-page="X"> and
+    AdminLayout.css highlights the link with data-nav="X".
+--%>
+<nav class="admin-sidebar">
+    <ul>
+        <%
+        // this is necessary for the Email Control page, which doesn't
+        // necessarily have a currentUser.
+        if(currentUser.isPresent())
+        {
+        %>
+        <li><a href="<%= WebUtil.getUserHomeRelative(currentUser.get()) %>"><i class="fa-solid fa-house"></i>User Home</a></li>
+        <% } %>
+        <li><a data-nav="AdminMain" href="/u/admin/AdminMain"><i class="fa-solid fa-crown"></i>Admin Main</a></li>
+        <li><a href="/u/docs/JsFileDoc"><i class="fa-solid fa-file-lines"></i>Tech Docs</a></li>
+
+        <li class="nav-section">Account</li>
+        <li><a data-nav="LogIn" href="/u/admin/LogIn"><i class="fa-solid fa-right-to-bracket"></i>Log-In/Out</a></li>
+        <li><a data-nav="AccountSetting" href="/u/admin/AccountSetting"><i class="fa-solid fa-gear"></i>Account Settings</a></li>
+        <li><a data-nav="ChangePass" href="/u/admin/ChangePass"><i class="fa-solid fa-key"></i>Change Password</a></li>
+
+        <li class="nav-section">Widgets</li>
+        <li><a data-nav="GroupControl" href="/u/admin/GroupControl"><i class="fa-solid fa-users"></i>Manage Groups</a></li>
+        <li><a data-nav="PermissionControl" href="/u/admin/PermissionControl"><i class="fa-solid fa-lock"></i>Permission Control</a></li>
+        <li><a data-nav="TemplateGenerator" href="/u/admin/TemplateGenerator"><i class="fa-solid fa-clone"></i>Template Generator</a></li>
+        <li><a data-nav="ImportWidget" href="/u/admin/ImportWidget"><i class="fa-solid fa-file-import"></i>Import Widget</a></li>
+        <li><a data-nav="SchemaViewer" href="/u/admin/SchemaViewer"><i class="fa-solid fa-database"></i>Schema Viewer</a></li>
+
+        <li class="nav-section">System</li>
+        <li><a data-nav="MailRunner" href="/u/admin/MailRunner"><i class="fa-solid fa-envelope"></i>Email Manager</a></li>
+        <li><a data-nav="GetConfig" href="/u/admin/GetConfig"><i class="fa-solid fa-download"></i>Download Config</a></li>
+
+        <%= PluginCentral.getAdminExtensionTool().getExtendedSideBar(currentUser) %>
+
+    </ul>
+</nav>

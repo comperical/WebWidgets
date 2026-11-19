@@ -6,7 +6,7 @@
 
     Optional<WidgetUser> currentUser = AuthLogic.getLoggedInUser(request);
     if (!currentUser.isPresent()) {
-        response.sendRedirect("LogIn.jsp");
+        response.sendRedirect("LogIn");
         return;
     }
 
@@ -72,12 +72,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>WebWidgets Admin</title>
 
-    <link rel="stylesheet" href="/u/shared/majestic/vendors/mdi/css/materialdesignicons.min.css">
-    <link rel="stylesheet" href="/u/shared/majestic/vendors/base/vendor.bundle.base.css">
-    <link rel="stylesheet" href="/u/shared/majestic/vendors/datatables.net-bs4/dataTables.bootstrap4.css">
-    <link rel="stylesheet" href="/u/shared/majestic/css/style.css">
 
     <%@include file="AssetInclude.jsp_inc" %>
+<%@include file="AdminStyle.jsp_inc" %>
 
 
 <script>
@@ -130,97 +127,75 @@ document.addEventListener("DOMContentLoaded", maybeRemoveServerMessage);
 </script>
 </head>
 
-<body>
-    <div class="container-scroller">
-        <%@include file="AdminNavBar.jsp_inc" %>
+<body data-page="GroupControl">
 
-        <div class="container-fluid page-body-wrapper">
-            <%@include file="MajesticNavBar.jsp_inc" %>
+  <%@include file="AdminTopBar.jsp_inc" %>
 
-            <div class="main-panel">
-                <div class="content-wrapper">
+  <div class="admin-shell">
 
+    <%@include file="AdminSideBar.jsp_inc" %>
 
-                    <div class="row">
-                        <div class="col-md-12 stretch-card">
-                            <div class="card">
-                                <div class="card-body">
-                                    <p class="card-title"> User Group Table</p>
+    <main class="admin-main">
 
-                                    <div class="center-btn-container mb-4 mx-auto">
-                                        <button type="button" 
-                                        class="btn btn-primary new-record-btn"
-                                            onclick="createNewRecord()">
-                                            New Record
-                                        </button>
-                                    </div>
+      <% if (serverMessage.length() > 0) { %>
+      <div class="alert alert-info" id="server-message">
+        <i class="fa-solid fa-circle-info"></i>
+        <p><%= serverMessage %></p>
+      </div>
+      <% } %>
 
+      <section class="card">
+        <div class="card-body">
+          <div class="card-header">
+            <p class="card-title">User Group Table</p>
+            <button type="button" class="btn btn-primary" onclick="createNewRecord()"><i class="fa-solid fa-plus"></i>New Record</button>
+          </div>
 
-                                    <% if (serverMessage.length() > 0) { %>
-                                    <div class="row">
-                                        <div class="col-md-12 stretch-card">
-                                            <div class="alert alert-info" id="server-message">
-                                                <%= serverMessage %>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <% } %>
-
-
-                                    <div class="table-responsive">
-                                        <table 
-                                        class="table table-striped table-bordered border-light w-75">
-                                            <thead>
-                                                <tr>
-                                                    <th>User</th>
-                                                    <th>Group</th>
-                                                    <th width="8%">Delete</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
+          <div class="table-wrap narrow">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Group</th>
+                  <th class="actions">Delete</th>
+                </tr>
+              </thead>
+              <tbody>
 
 <% if(groupInfoList.isEmpty()) { %>
-<tr>
-    <td colspan="3" class="text-center text-muted py-5">
-        <i class="mdi mdi-account-multiple display-5 d-block mb-2"></i>
-        <div>No group records found.</div>
-        <small>Click New Record to add your first group.</small>
-    </td>
-</tr>
+                <tr>
+                  <td colspan="3" class="empty-state">
+                    <i class="fa-solid fa-users"></i>
+                    <div>No group records found.</div>
+                    <small>Click New Record to add your first group.</small>
+                  </td>
+                </tr>
 <% } else {
 
     for(ArgMap record : groupInfoList)
     {
         int recid = record.getInt(CoreUtil.STANDARD_ID_COLUMN_NAME);
 %>
-        <tr>
-            <td><%= record.getStr("group_name") %></td>
-            <td><%= record.getStr("user_name") %></td>
-            <td class="text-center">
-            <a href="javascript:deleteOldRecord(<%= recid %>)">
-            <i class="fa-solid fa-trash"></i></a>
-            </td>
-        </tr>
+                <tr>
+                  <td><%= record.getStr("group_name") %></td>
+                  <td><%= record.getStr("user_name") %></td>
+                  <td class="actions">
+                    <a class="icon-action danger" href="javascript:deleteOldRecord(<%= recid %>)" title="Delete record"><i class="fa-solid fa-trash"></i></a>
+                  </td>
+                </tr>
 
 <% } %>
 <% } %>
 
-                                            </tbody>
-                                        </table>
-                                    </div>
-
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-                <!-- content-wrapper ends -->
-            </div>
+              </tbody>
+            </table>
+          </div>
         </div>
-    </div>
+      </section>
 
-    <%@include file="MajesticFooter.jsp_inc" %>
+    </main>
+  </div>
+
 </body>
 
 </html>

@@ -1,0 +1,211 @@
+/*
+ * AdminBase.css
+ * Design tokens, reset, typography and bare form-element styling
+ * for the WebWidgets admin console.
+ * Load order: AdminBase.css -> AdminLayout.css -> AdminWidgets.css
+ */
+
+:root {
+    /* Palette */
+    --adm-bg:            #f4f6fa;
+    --adm-surface:       #ffffff;
+    --adm-surface-alt:   #f8f9fc;
+    --adm-border:        #dfe3eb;
+    --adm-border-strong: #c5ccd8;
+
+    --adm-text:          #1f2533;
+    --adm-text-muted:    #6b7385;
+
+    --adm-accent:        #2f5fd0;
+    --adm-accent-hover:  #244bab;
+    --adm-accent-soft:   #e8eefc;
+
+    --adm-danger:        #c8372d;
+    --adm-danger-hover:  #a42b22;
+    --adm-danger-soft:   #fcebea;
+
+    --adm-success:       #1f8a4c;
+    --adm-success-soft:  #e6f5ec;
+
+    --adm-warning:       #a86a00;
+    --adm-warning-soft:  #fdf3e1;
+
+    --adm-info:          #2f5fd0;
+    --adm-info-soft:     #e8eefc;
+
+    /* Brand: the teal from the WWIO logo */
+    --adm-brand:          #00c8b8;
+
+    /* Top bar & sidebar: same navy family, top bar one step darker */
+    --adm-topbar-bg:      #121826;
+    --adm-sidebar-bg:     #1d2433;
+    --adm-sidebar-text:   #c9d0de;
+    --adm-sidebar-hover:  rgba(255, 255, 255, 0.06);
+    --adm-sidebar-active: #ffffff;
+
+    /* "You are here" pill on the current sidebar link: tinted logo teal */
+    --adm-sidebar-pill-bg:   rgba(0, 200, 184, 0.14);
+    --adm-sidebar-pill-text: #5ee6da;
+
+    /* Shape & spacing */
+    --adm-radius:    6px;
+    --adm-radius-sm: 4px;
+    --adm-gap:       16px;
+    --adm-gap-lg:    24px;
+    --adm-shadow:    0 1px 2px rgba(20, 30, 50, 0.06), 0 1px 3px rgba(20, 30, 50, 0.04);
+
+    --adm-topbar-h:  56px;
+    --adm-sidebar-w: 230px;
+
+    /* Type */
+    --adm-font:      -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --adm-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* ---------- Reset ---------- */
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--adm-font);
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--adm-text);
+    background: var(--adm-bg);
+}
+
+img {
+    max-width: 100%;
+}
+
+/* ---------- Typography ---------- */
+
+h1, h2, h3, h4 {
+    margin: 0 0 0.5em;
+    line-height: 1.25;
+    font-weight: 600;
+}
+
+h1 { font-size: 26px; }
+h2 { font-size: 22px; }
+h3 { font-size: 18px; }
+h4 { font-size: 15px; }
+
+p {
+    margin: 0 0 1em;
+}
+
+a {
+    color: var(--adm-accent);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+small, .muted {
+    color: var(--adm-text-muted);
+}
+
+small {
+    font-size: 12px;
+}
+
+code, pre {
+    font-family: var(--adm-font-mono);
+    font-size: 13px;
+}
+
+code {
+    background: var(--adm-surface-alt);
+    border: 1px solid var(--adm-border);
+    border-radius: var(--adm-radius-sm);
+    padding: 1px 5px;
+}
+
+pre {
+    background: var(--adm-surface-alt);
+    border: 1px solid var(--adm-border);
+    border-radius: var(--adm-radius);
+    padding: 12px 14px;
+    overflow-x: auto;
+    margin: 0 0 1em;
+}
+
+pre code {
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid var(--adm-border);
+    margin: var(--adm-gap-lg) 0;
+}
+
+/* ---------- Bare form elements ----------
+ * Styled without classes so existing markup like
+ * <input type="password" name="..."/> looks right as-is.
+ */
+
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"],
+input[type="search"],
+input[type="date"],
+select,
+textarea {
+    font: inherit;
+    color: var(--adm-text);
+    background: var(--adm-surface);
+    border: 1px solid var(--adm-border-strong);
+    border-radius: var(--adm-radius-sm);
+    padding: 7px 10px;
+    width: 100%;
+    max-width: 360px;
+    transition: border-color 0.12s, box-shadow 0.12s;
+}
+
+textarea {
+    max-width: 100%;
+    min-height: 90px;
+    resize: vertical;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--adm-accent);
+    box-shadow: 0 0 0 3px var(--adm-accent-soft);
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+    background: var(--adm-surface-alt);
+    color: var(--adm-text-muted);
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+    accent-color: var(--adm-accent);
+    width: 15px;
+    height: 15px;
+    margin: 0;
+    vertical-align: middle;
+}
+
+label {
+    font-weight: 500;
+}

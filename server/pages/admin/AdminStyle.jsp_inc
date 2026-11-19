@@ -1,0 +1,5 @@
+
+<!-- Admin console stylesheets. Include AFTER AssetInclude.jsp_inc so these override BasicWidget.css -->
+<link rel="stylesheet" href="/u/admin/AdminBase.css">
+<link rel="stylesheet" href="/u/admin/AdminLayout.css">
+<link rel="stylesheet" href="/u/admin/AdminWidgets.css">

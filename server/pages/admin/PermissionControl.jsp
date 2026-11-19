@@ -8,7 +8,7 @@
 
     if(!currentUser.isPresent())
     {
-        response.sendRedirect("LogIn.jsp");
+        response.sendRedirect("LogIn");
         return;
     }
 
@@ -23,7 +23,7 @@
     if(!argMap.containsKey("widget"))
     {
       CollUtil.sortListByFunction(widgetList, item -> -item.getLocalDbFile().lastModified());
-      String bounce = Util.sprintf("PermissionControl.jsp?widget=" + widgetList.get(0).theName);
+      String bounce = Util.sprintf("PermissionControl?widget=" + widgetList.get(0).theName);
       response.sendRedirect(bounce);
       return;
     }
@@ -48,7 +48,7 @@
       {
         String message = Util.sprintf("No Widget User found with name _%s_. Please check the spelling and try again, or contact system admin", granteeStr);
 
-        String bounce = Util.sprintf("PermissionControl.jsp?widget=%s&message=%s", 
+        String bounce = Util.sprintf("PermissionControl?widget=%s&message=%s", 
           selectedItem.theName, StringUtil.encodeURIComponent(message));
 
         response.sendRedirect(bounce);
@@ -74,7 +74,7 @@
         Util.massert(false, "Invalid op code " + opcode);
       }
 
-      String bounce = Util.sprintf("PermissionControl.jsp?widget=%s", selectedItem.theName);
+      String bounce = Util.sprintf("PermissionControl?widget=%s", selectedItem.theName);
       response.sendRedirect(bounce);
       return;
     }
@@ -90,23 +90,12 @@
 <html lang="en">
 
 <head>
-  <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <title>WebWidgets Admin</title>
-  <!-- plugins:css -->
-  <link rel="stylesheet" href="/u/shared/majestic/vendors/mdi/css/materialdesignicons.min.css">
-  <link rel="stylesheet" href="/u/shared/majestic/vendors/base/vendor.bundle.base.css">
-  <!-- endinject -->
-  <!-- plugin css for this page -->
-  <link rel="stylesheet" href="/u/shared/majestic/vendors/datatables.net-bs4/dataTables.bootstrap4.css">
-  <!-- End plugin css for this page -->
-  <!-- inject:css -->
-  <link rel="stylesheet" href="/u/shared/majestic/css/style.css">
-  <!-- endinject -->
-  <link rel="shortcut icon" href="/u/shared/majestic/images/favicon.png" />
   
 <%@include file="AssetInclude.jsp_inc" %>
+<%@include file="AdminStyle.jsp_inc" %>
 
 <script>
 
@@ -199,62 +188,44 @@ function promptAddPerm(permlevel)
   
   
 </head>
-<body onload="javascript:redisplay()">
-  <div class="container-scroller">
-    <!-- partial:partials/_navbar.html -->
-    <%@include file="AdminNavBar.jsp_inc" %>
+<body data-page="PermissionControl" onload="javascript:redisplay()">
 
-    <!-- partial -->
-    <div class="container-fluid page-body-wrapper">
-      <!-- partial:partials/_sidebar.html -->
-      <%@include file="MajesticNavBar.jsp_inc" %>
-      <!-- partial -->
-      <div class="main-panel">
-        <div class="content-wrapper">
-        
-        
-          <% if(serverMessage.length() > 0) { %>    
-          <div class="row">            
-            <div class="col-md-12 stretch-card">
-              <div class="card">
-                <div class="card-body">
-                  <p class="card-title">Message</p>
-                  <p class="mb-4"><%= serverMessage %></p>
-                </div>
-              </div>
-            </div>            
-          </div>
-          <br/>
+  <%@include file="AdminTopBar.jsp_inc" %>
+
+  <div class="admin-shell">
+
+    <%@include file="AdminSideBar.jsp_inc" %>
+
+    <main class="admin-main">
+
+          <% if(serverMessage.length() > 0) { %>
+      <div class="alert alert-warning">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <p><%= serverMessage %></p>
+      </div>
           <% } %>
-        
-          <div class="row">
-            <div class="col-md-12 stretch-card">
-              <div class="card">
-                <div class="card-body">
-                  <p class="card-title">Permission Control</p>
 
-                  <center>
-                  <form class="forms-sample" align="center">
-                    <div class="row">    
-                    <div class="form-group">
-                      <label>Widget:</label>
-                      <span id="widget_select_span"></span>
-                    </div>
-                    </div>
-                  </form> 
-                  </center>
+      <section class="card">
+        <div class="card-body">
+          <p class="card-title">Permission Control</p>
 
+          <form class="form-inline" style="margin-bottom: 16px">
+            <div class="form-group">
+              <label>Widget:</label>
+              <span id="widget_select_span"></span>
+            </div>
+          </form>
 
-                  <div>
-                    <table class="table" border="1">
-                      <thead>
-                        <tr>
-                            <th>User</th>
-                            <th>Permission</th>
-                            <th>..</th>
-                        </tr>
-                      </thead>
-                      <tbody>
+          <div class="table-wrap narrow">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Permission</th>
+                  <th class="actions"></th>
+                </tr>
+              </thead>
+              <tbody>
 <% 
 
     for(WidgetUser grantee : permInfoMap.keySet())
@@ -262,66 +233,38 @@ function promptAddPerm(permlevel)
       PermLevel level = permInfoMap.get(grantee);
 
 %>
-<tr>
-<td><b><%= grantee %></b></td>
-<td><%= level %></td>
-<td>
-
-<a href="javascript:removePerm('<%= grantee %>')"><i class="fa-solid fa-trash fa-lg"></i></a>
-
-</td>
-</tr>
+                <tr>
+                  <td><b><%= grantee %></b></td>
+                  <td><span class="badge badge-accent"><%= level %></span></td>
+                  <td class="actions">
+                    <a class="icon-action danger" href="javascript:removePerm('<%= grantee %>')" title="Remove permission"><i class="fa-solid fa-trash"></i></a>
+                  </td>
+                </tr>
 
 <% } %>
 
+                <tr>
+                  <td><b>Public Read</b></td>
+                  <td><span class="badge"><%= selectedPerm.isPublicRead() %></span></td>
+                  <td class="actions">
+                    <a class="icon-action" href="javascript:togglePublicRead()" title="Toggle public read"><i class="fa-solid fa-arrows-spin"></i></a>
+                  </td>
+                </tr>
 
-<tr>
-<td><b>Public Read</b></td>
-<td><%= selectedPerm.isPublicRead() %></td>
-<td>
+              </tbody>
+            </table>
+          </div>
 
-<a href="javascript:togglePublicRead()"><i class="fa-solid fa-arrows-spin fa-lg"></i></a>
-
-
-</td>
-</tr>
-
-
-
-                      </tbody>
-                    </table>
-
-                    <br/>
-                    <br/>
-
-                  <center>
-
-                  <button class="btn btn-primary mr-2" onclick="addReadPerm()">+Read</button>
-
-                  &nbsp;
-                  &nbsp;
-                  &nbsp;
-                  &nbsp;
-
-                  <button class="btn btn-primary mr-2" onclick="addWritePerm()">+Write</button>
-
-                  </center>
-
-                  </div>
-              </div>
-            </div>
+          <div class="btn-row" style="margin-top: 16px">
+            <button class="btn btn-primary" onclick="addReadPerm()"><i class="fa-solid fa-plus"></i>Read</button>
+            <button class="btn btn-primary" onclick="addWritePerm()"><i class="fa-solid fa-plus"></i>Write</button>
           </div>
         </div>
-        <!-- content-wrapper ends -->
-      </div>
-      <!-- main-panel ends -->
-    </div>
-    <!-- page-body-wrapper ends -->
-  </div>
-  <!-- container-scroller -->
+      </section>
 
-  <%@include file="MajesticFooter.jsp_inc" %>
+    </main>
+  </div>
+
 </body>
 
 </html>
-

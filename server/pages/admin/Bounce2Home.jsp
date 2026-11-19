@@ -5,7 +5,7 @@
 
     String bounce2url = currentUser.isPresent()
             ? WebUtil.getUserHomeRelative(currentUser.get())
-            : "/u/admin/LogIn.jsp";
+            : "/u/admin/LogIn";
 
     response.sendRedirect(bounce2url);
 %>

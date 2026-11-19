@@ -8,7 +8,7 @@
 
     if(!currentUser.isPresent())
     {
-        response.sendRedirect("LogIn.jsp");
+        response.sendRedirect("LogIn");
         return;
     }
 
@@ -22,7 +22,7 @@
     if(!argMap.containsKey("widget"))
     {
       CollUtil.sortListByFunction(widgetList, item -> -item.getLocalDbFile().lastModified());
-      String bounce = Util.sprintf("SchemaViewer.jsp?widget=" + widgetList.get(0).theName);
+      String bounce = Util.sprintf("SchemaViewer?widget=" + widgetList.get(0).theName);
       response.sendRedirect(bounce);
       return;
     }
@@ -40,23 +40,12 @@
 <html lang="en">
 
 <head>
-  <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <title>WebWidgets Admin</title>
-  <!-- plugins:css -->
-  <link rel="stylesheet" href="/u/shared/majestic/vendors/mdi/css/materialdesignicons.min.css">
-  <link rel="stylesheet" href="/u/shared/majestic/vendors/base/vendor.bundle.base.css">
-  <!-- endinject -->
-  <!-- plugin css for this page -->
-  <link rel="stylesheet" href="/u/shared/majestic/vendors/datatables.net-bs4/dataTables.bootstrap4.css">
-  <!-- End plugin css for this page -->
-  <!-- inject:css -->
-  <link rel="stylesheet" href="/u/shared/majestic/css/style.css">
-  <!-- endinject -->
-  <link rel="shortcut icon" href="/u/shared/majestic/images/favicon.png" />
   
 <%@include file="AssetInclude.jsp_inc" %>
+<%@include file="AdminStyle.jsp_inc" %>
 
 <script>
 
@@ -127,47 +116,36 @@ function redisplay()
   
   
 </head>
-<body onload="javascript:redisplay()">
-  <div class="container-scroller">
-    <!-- partial:partials/_navbar.html -->
-    <%@include file="AdminNavBar.jsp_inc" %>
+<body data-page="SchemaViewer" onload="javascript:redisplay()">
 
-    <!-- partial -->
-    <div class="container-fluid page-body-wrapper">
-      <!-- partial:partials/_sidebar.html -->
-      <%@include file="MajesticNavBar.jsp_inc" %>
-      <!-- partial -->
-      <div class="main-panel">
-        <div class="content-wrapper">
-      
-        
-          <div class="row">
-            <div class="col-md-12 stretch-card">
-              <div class="card">
-                <div class="card-body">
-                  <p class="card-title">Schema Viewer</p>
+  <%@include file="AdminTopBar.jsp_inc" %>
 
-                  <center>
-                  <form class="forms-sample" align="center">
-                    <div class="row">    
-                    <div class="form-group">
-                      <label>Widget: </label>
-                      <span id="widget_select_span"></span>
-                    </div>
-                    </div>
-                  </form> 
-                  </center>
+  <div class="admin-shell">
 
+    <%@include file="AdminSideBar.jsp_inc" %>
 
-                  <div>
-                    <table class="table" border="1">
-                      <thead>
-                        <tr>
-                        <th>Table</th>
-                        <th>Definition</th>
-                        </tr>
-                      </thead>
-                      <tbody>
+    <main class="admin-main">
+
+      <section class="card">
+        <div class="card-body">
+          <p class="card-title">Schema Viewer</p>
+
+          <form class="form-inline" style="margin-bottom: 16px">
+            <div class="form-group">
+              <label>Widget:</label>
+              <span id="widget_select_span"></span>
+            </div>
+          </form>
+
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Table</th>
+                  <th>Definition</th>
+                </tr>
+              </thead>
+              <tbody>
 <% 
 
     for(String table : schemaInfo.keySet())
@@ -175,33 +153,22 @@ function redisplay()
       String definition = schemaInfo.get(table);
 
 %>
-<tr>
-<td><b><%= table %></b></td>
-<td style="font-family: monospace;"><%= definition %></td> 
-</tr>
+                <tr>
+                  <td><b><%= table %></b></td>
+                  <td class="code"><%= definition %></td>
+                </tr>
 
 <% } %>
 
-                      </tbody>
-                    </table>
-                  </div>
-              </div>
-            </div>
+              </tbody>
+            </table>
           </div>
         </div>
-        <!-- content-wrapper ends -->
-      </div>
-      <!-- main-panel ends -->
-    </div>
-    <!-- page-body-wrapper ends -->
+      </section>
+
+    </main>
   </div>
-  <!-- container-scroller -->
-
-  <%@include file="MajesticFooter.jsp_inc" %>
-
-
 
 </body>
 
 </html>
-

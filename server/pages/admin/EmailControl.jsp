@@ -52,25 +52,15 @@
 <html lang="en">
 
 <head>
-  <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <title>WebWidgets Admin</title>
-  <!-- plugins:css -->
-  <link rel="stylesheet" href="/u/shared/majestic/vendors/mdi/css/materialdesignicons.min.css">
-  <link rel="stylesheet" href="/u/shared/majestic/vendors/base/vendor.bundle.base.css">
-  <!-- endinject -->
-  <!-- plugin css for this page -->
-  <link rel="stylesheet" href="/u/shared/majestic/vendors/datatables.net-bs4/dataTables.bootstrap4.css">
-  <!-- End plugin css for this page -->
-  <!-- inject:css -->
-  <link rel="stylesheet" href="/u/shared/majestic/css/style.css">
-  <!-- endinject -->
 
 
 <!-- IMPORTANT : user may not be logged in on this page !!! -->
 <!-- But we need the JavaScript libraries -->
 <%@include file="AssetInclude.jsp_inc" %>
+<%@include file="AdminStyle.jsp_inc" %>
 
 <!-- Unlike other pages in this section, this does not include a NavBar -->
 <script>
@@ -98,116 +88,76 @@ function toggleStatus(currentAllow)
 </script>
 
 </head>
-<body>
-  <div class="container-scroller">
-    <!-- partial:partials/_navbar.html -->
-    <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
-      <div class="navbar-brand-wrapper d-flex justify-content-center">
-        <div class="navbar-brand-inner-wrapper d-flex justify-content-between align-items-center w-100">  
-        </div>  
+<body data-page="EmailControl">
+
+  <%-- The person viewing this page may not be logged in (they arrived from a link in an email),
+       so per the TODO in EmailControl.jsp it has only the top bar, no admin sidebar. --%>
+  <%@include file="AdminTopBar.jsp_inc" %>
+
+  <div class="admin-shell">
+
+    <main class="admin-main">
+
+      <div class="page-header">
+        <h2>Email Control</h2>
+        <p>Control the emails you receive from WebWidgets.IO</p>
       </div>
-      <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
-    </nav>    
 
-    <!-- partial -->
-    <div class="container-fluid page-body-wrapper">
-      <!-- partial:partials/_sidebar.html --> 
-      <!-- TODO: remove Nav Bar for this page!!! -->
-      <%@include file="MajesticNavBar.jsp_inc" %>
-      <!-- partial -->
-      <div class="main-panel">
-        <div class="content-wrapper">
-          
-          <div class="row">
-            <div class="col-md-12 grid-margin">
-              <div class="d-flex justify-content-between flex-wrap">
-                <div class="d-flex align-items-end flex-wrap">
-                  <div class="mr-md-3 mr-xl-5">
-                    <h2>Email Control</h2>
-                    <p class="mb-md-0">Control the emails you receive from WebWidgets.IO</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-12 stretch-card">
-              <div class="card">
-                <div class="card-body">
-                  <p class="card-title">Email Info</p>
+      <section class="card">
+        <div class="card-body">
+          <p class="card-title">Email Info</p>
 
-                  <p>
-                    <b>Address</b> : <%= emailAddr %>
-                  </p>            
+          <dl class="kv-list">
+            <dt>Address</dt>
+            <dd><%= emailAddr %></dd>
+            <dt>Sender</dt>
+            <dd><%= widgetSender %></dd>
+            <dt>Status</dt>
+            <dd><span class="badge <%= currentAllow ? "badge-success" : "badge-danger" %>"><%= currentAllow ? "ALLOWED" : "BLOCKED" %></span></dd>
+          </dl>
 
-                  <p>
-                    <b>Sender</b> : <%= widgetSender %>
-                  </p>      
-
-                  <p>
-                    <b>Status</b> : <%= currentAllow ? "ALLOWED" : "BLOCKED" %>
-                  </p>                        
-
-
-                  <p>
+          <div class="btn-row" style="margin-bottom: 20px">
                   <%
                     if(currentAllow) {
                   %>
-                    <a href="javascript:toggleStatus(true)"><button>BLOCK</button></a>
+            <a class="btn btn-danger" href="javascript:toggleStatus(true)"><i class="fa-solid fa-ban"></i>Block</a>
                   <% } else { %>
-                    <a href="javascript:toggleStatus(false)"><button>ALLOW</button></a>
+            <a class="btn btn-primary" href="javascript:toggleStatus(false)"><i class="fa-solid fa-check"></i>Allow</a>
                   <% } %>
-                  </p>
+          </div>
 
-
-                  <br/>
-                  <br/>
-
-                  <div>
-                    <table class="table">
-                      <thead>
-                        <tr>
-                            <th>Status</th>
-                            <th>Comment</th>
-                            <th>Timestamp (UTC)</th>
-                        </tr>
-                      </thead>
-                      <tbody>
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Status</th>
+                  <th>Comment</th>
+                  <th>Timestamp (UTC)</th>
+                </tr>
+              </thead>
+              <tbody>
 
                       <%
 
                         for(ArgMap statusRec : emailStatusResult.recList())
                         {
                       %>
-                      <tr>
-                        <td><%= statusRec.getStr("status") %></td>
-                        <td><%= statusRec.getStr("notes") %></td>
-                        <td><%= statusRec.getStr("timestamp_utc") %></td>
-                      <tr>
+                <tr>
+                  <td><%= statusRec.getStr("status") %></td>
+                  <td><%= statusRec.getStr("notes") %></td>
+                  <td class="num"><%= statusRec.getStr("timestamp_utc") %></td>
+                </tr>
 
                       <% } %>
-                      </tbody>                  
-                    </table>
-                  </div>
-
-
-
-                </div>
-              </div>
-            </div>
+              </tbody>
+            </table>
           </div>
         </div>
-        <!-- content-wrapper ends -->
-      </div>
-      <!-- main-panel ends -->
-    </div>
-    <!-- page-body-wrapper ends -->
-  </div>
-  <!-- container-scroller -->
+      </section>
 
-  <%@include file="MajesticFooter.jsp_inc" %>
+    </main>
+  </div>
 
 </body>
 
 </html>
-

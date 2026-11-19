@@ -12,7 +12,7 @@
     if(!currentUser.isPresent())
     {
         String bounce2url = request.getRequestURL().toString();
-        response.sendRedirect("/u/admin/LogIn.jsp?bounceback="+bounce2url);
+        response.sendRedirect("/u/admin/LogIn?bounceback="+bounce2url);
         return;
     }
 
@@ -35,7 +35,7 @@
         }
 
         String encmssg = StringUtil.encodeURIComponent(serverMessage);
-        String bounce2 = "MailRunner.jsp?message=" + encmssg;
+        String bounce2 = "MailRunner?message=" + encmssg;
         response.sendRedirect(bounce2);
         return;
 
@@ -54,23 +54,12 @@
 <html lang="en">
 
 <head>
-  <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <title>WebWidgets Admin</title>
-  <!-- plugins:css -->
-  <link rel="stylesheet" href="/u/shared/majestic/vendors/mdi/css/materialdesignicons.min.css">
-  <link rel="stylesheet" href="/u/shared/majestic/vendors/base/vendor.bundle.base.css">
-  <!-- endinject -->
-  <!-- plugin css for this page -->
-  <link rel="stylesheet" href="/u/shared/majestic/vendors/datatables.net-bs4/dataTables.bootstrap4.css">
-  <!-- End plugin css for this page -->
-  <!-- inject:css -->
-  <link rel="stylesheet" href="/u/shared/majestic/css/style.css">
-  <!-- endinject -->
-  <link rel="shortcut icon" href="/u/shared/majestic/images/favicon.png" />
 
   <%@include file="AssetInclude.jsp_inc" %>
+<%@include file="AdminStyle.jsp_inc" %>
 
   <script>
   function sendNextMail()
@@ -112,89 +101,74 @@
 
 
 </head>
-<body>
-  <div class="container-scroller">
+<body data-page="MailRunner">
 
-    <!-- partial:partials/_navbar.html -->
-    <%@include file="AdminNavBar.jsp_inc" %>
+  <%@include file="AdminTopBar.jsp_inc" %>
 
-    <!-- partial -->    
-    <div class="container-fluid page-body-wrapper">
-      <!-- partial:partials/_sidebar.html -->
-      <%@include file="MajesticNavBar.jsp_inc" %>
-      <!-- partial -->
-      <div class="main-panel">
-        <div class="content-wrapper">
-          
+  <div class="admin-shell">
 
-          <div class="row">
-            <div class="col-md-12 stretch-card">
-              <div class="card">
-                <div class="card-body">
-                  <p class="card-title">Widget Mail System</p>
-                  <p class="mb-md-0">
-                  Normally, the widget mailing system runs every 15 minutes.
-                  <br/>
-                  This tool allows you to send widget mails directly.
-                  </p>
+    <%@include file="AdminSideBar.jsp_inc" %>
 
+    <main class="admin-main">
 
+                  <%
+                    // Original checked (serverMessage != null), which is always true and
+                    // rendered an empty message box; only the display condition changed here.
+                    if(serverMessage.length() > 0) {
+
+                  %>
+      <div class="alert alert-info">
+        <i class="fa-solid fa-circle-info"></i>
+        <p><%= serverMessage %></p>
+      </div>
+                  <%
+                    }
+                  %>
+
+      <section class="card">
+        <div class="card-body">
+          <div class="card-header">
+            <p class="card-title">Widget Mail System</p>
+            <div class="btn-row">
                   <%
                     if(!haveMailBox)
                     {
 
                   %>
-                    <center>
-                    <a href="javascript:createMailBox()"><button>Create MailBox</button></a>
-                    </center>
-                    <br/>
+              <a class="btn" href="javascript:createMailBox()"><i class="fa-solid fa-inbox"></i>Create MailBox</a>
                   <% } %>
-
 
                   <%
 
                     if(!allReadyMap.isEmpty()) {
                   %>
-                    <br/>
-                    <center>
-                    <a href="javascript:sendNextMail()"><button>Send Next Mail</button></a>
-                    </center>
-                    <br/>
-                  <%
-                    } else { 
-                  %>
-                    <center>
-                    <br/>
-                    <p> You do not have any emails that are ready to be sent.</p>
-                    </center>
+              <a class="btn btn-primary" href="javascript:sendNextMail()"><i class="fa-solid fa-paper-plane"></i>Send Next Mail</a>
+                  <% } %>
+            </div>
+          </div>
 
+          <p class="muted">
+          Normally, the widget mailing system runs every 15 minutes.
+          This tool allows you to send widget mails directly.
+          </p>
+
+                  <%
+                    if(allReadyMap.isEmpty()) {
+                  %>
+          <p>You do not have any emails that are ready to be sent.</p>
                   <% } %>
 
-
-                  <%
-                    if(serverMessage != null) {
-
-                  %>
-                    <table width="50%" class="basic-table" align="center">
-                    <tr>
-                    <td><%= serverMessage %></td>
-                    </tr>
-                    </table>
-                  <%
-                    }
-                  %> 
-
-                  <div class="table-responsive">
-                    <table class="table table-striped table-bordered border-light">
-                      <thead>
-                        <tr>
-                            <th>Recipient</th>
-                            <th>Subject</th>
-                            <th>Send-Target (UTC)</th>
-                            <th>Sent-At (UTC)</th>
-                        </tr>
-                      </thead>
-                      <tbody>
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Recipient</th>
+                  <th>Subject</th>
+                  <th>Send-Target (UTC)</th>
+                  <th>Sent-At (UTC)</th>
+                </tr>
+              </thead>
+              <tbody>
 <% 
 
     for(ArgMap onemail : bigMailList)
@@ -205,35 +179,24 @@
 
 
 %>
-<tr>
-<td><b><%= onemail.getStr("recipient") %></b></td>
-<td><%= onemail.getStr("subject") %></td>
-<td><%= onemail.getStr("send_target_utc") %></td>
-<td><%= onemail.getStr("sent_at_utc") %></td>
-
-</tr>
+                <tr>
+                  <td><b><%= onemail.getStr("recipient") %></b></td>
+                  <td><%= onemail.getStr("subject") %></td>
+                  <td class="num"><%= onemail.getStr("send_target_utc") %></td>
+                  <td class="num"><%= onemail.getStr("sent_at_utc") %></td>
+                </tr>
 
 <% } %>
 
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
+              </tbody>
+            </table>
           </div>
         </div>
-        <!-- content-wrapper ends -->
-      </div>
-      <!-- main-panel ends -->
-    </div>
-    <!-- page-body-wrapper ends -->
-  </div>
-  <!-- container-scroller -->
+      </section>
 
-  <%@include file="MajesticFooter.jsp_inc" %>
+    </main>
+  </div>
 
 </body>
 
 </html>
-

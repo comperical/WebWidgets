@@ -1,0 +1,481 @@
+/*
+ * AdminWidgets.css
+ * Cards, alerts, buttons, forms, tables, badges, icon actions, utilities.
+ * Class names deliberately overlap with the Bootstrap names the admin pages
+ * already use (card, card-title, btn btn-primary, form-group, alert alert-info,
+ * table) so migrating off Majestic is mostly removing wrapper divs.
+ */
+
+/* ---------- Card ---------- */
+
+.card {
+    background: var(--adm-surface);
+    border: 1px solid var(--adm-border);
+    border-radius: var(--adm-radius);
+    box-shadow: var(--adm-shadow);
+}
+
+.card-body {
+    padding: 20px 22px;
+}
+
+.card-title {
+    margin: 0 0 16px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--adm-text);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--adm-gap);
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.card-header .card-title {
+    margin: 0;
+}
+/* Narrow card for short forms (log in, change password) */
+.card.narrow {
+    max-width: 520px;
+}
+
+/* Medium width for compact tables (e.g. AdminMain's widget listing),
+ * and for an alert sitting above such a card so the two line up */
+.card.medium,
+.alert.medium {
+    max-width: 760px;
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: var(--adm-gap);
+}
+
+/* ---------- Alerts / server messages ---------- */
+
+.alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: var(--adm-radius);
+    border: 1px solid transparent;
+    border-left-width: 4px;
+}
+
+.alert > i {
+    margin-top: 3px;
+}
+
+.alert p:last-child {
+    margin-bottom: 0;
+}
+
+.alert-info    { background: var(--adm-info-soft);    border-color: var(--adm-info);    color: #1d3c86; }
+.alert-success { background: var(--adm-success-soft); border-color: var(--adm-success); color: #155f35; }
+.alert-warning { background: var(--adm-warning-soft); border-color: var(--adm-warning); color: #6f4600; }
+.alert-danger  { background: var(--adm-danger-soft);  border-color: var(--adm-danger);  color: #86241d; }
+
+/* ---------- Buttons ---------- */
+
+.btn,
+button:not([class]) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font: inherit;
+    font-weight: 500;
+    line-height: 1.2;
+    padding: 8px 16px;
+    border-radius: var(--adm-radius-sm);
+    border: 1px solid var(--adm-border-strong);
+    background: var(--adm-surface);
+    color: var(--adm-text);
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.12s, border-color 0.12s;
+}
+
+.btn:hover,
+button:not([class]):hover {
+    background: var(--adm-surface-alt);
+    border-color: var(--adm-text-muted);
+    text-decoration: none;
+}
+
+.btn:focus-visible,
+button:not([class]):focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--adm-accent-soft);
+}
+
+.btn-primary {
+    background: var(--adm-accent);
+    border-color: var(--adm-accent);
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: var(--adm-accent-hover);
+    border-color: var(--adm-accent-hover);
+}
+
+.btn-danger {
+    background: var(--adm-danger);
+    border-color: var(--adm-danger);
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background: var(--adm-danger-hover);
+    border-color: var(--adm-danger-hover);
+}
+
+.btn-sm {
+    padding: 4px 10px;
+    font-size: 13px;
+}
+
+.btn:disabled,
+.btn.disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.btn-row.center { justify-content: center; }
+.btn-row.end    { justify-content: flex-end; }
+
+/* ---------- Forms ---------- */
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 16px;
+}
+
+.form-group .hint {
+    font-size: 12px;
+    color: var(--adm-text-muted);
+}
+
+.form-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    font-weight: 400;
+}
+
+/* Label beside the control instead of above it */
+.form-inline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.form-inline .form-group {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 0;
+}
+
+.form-inline input,
+.form-inline select {
+    width: auto;
+}
+
+/* Two-part row: controls, then a column of buttons a fixed distance to their right
+ * (not pinned to the card's right edge), e.g. SchemaDesign.
+ * Wraps so the buttons drop below the controls on narrow screens. */
+.split-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: var(--adm-gap-lg) 80px;
+}
+
+/* Pickers stacked one above the other, labels the same width so the selects line up */
+.picker-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.picker-stack .form-group {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 0;
+}
+
+.picker-stack .form-group > label {
+    min-width: 60px;
+}
+
+.picker-stack select {
+    width: auto;
+}
+
+/* Button grid, two equal-width columns, filled row by row (e.g. SchemaDesign:
+ * New Table | Configure Group Allow, then Drop Table under New Table).
+ * Icons and text left-aligned. */
+.btn-column {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.btn-column .btn {
+    justify-content: flex-start;
+}
+
+/* Read-only label/value pairs, e.g. Account Settings */
+.kv-list {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 8px 20px;
+    margin: 0 0 16px;
+}
+
+.kv-list dt {
+    color: var(--adm-text-muted);
+    font-weight: 500;
+}
+
+.kv-list dd {
+    margin: 0;
+}
+
+/* ---------- Tables ---------- */
+
+.table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--adm-border);
+    border-radius: var(--adm-radius);
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--adm-surface);
+}
+
+.table th,
+.table td {
+    padding: 10px 14px;
+    text-align: left;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--adm-border);
+}
+
+.table thead th {
+    background: var(--adm-surface-alt);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--adm-text-muted);
+    white-space: nowrap;
+}
+
+.table tbody tr:nth-child(even) {
+    background: #fbfcfd;
+}
+
+.table tbody tr:hover {
+    background: var(--adm-accent-soft);
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.table .num {
+    text-align: right;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.table .actions {
+    width: 1%;
+    white-space: nowrap;
+    text-align: right;
+}
+
+/* Monospace cell for long code-like values, e.g. CREATE TABLE statements on SchemaViewer */
+.table td.code {
+    font-family: var(--adm-font-mono);
+    font-size: 13px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.table-compact th,
+.table-compact td {
+    padding: 6px 10px;
+}
+
+.table-wrap.narrow {
+    max-width: 720px;
+}
+
+/* Empty state: works in a table cell or on its own */
+.empty-state {
+    text-align: center;
+    padding: 40px 16px;
+    color: var(--adm-text-muted);
+}
+
+.table tbody tr:hover:has(.empty-state) {
+    background: transparent;
+}
+
+.empty-state i {
+    display: block;
+    font-size: 28px;
+    margin-bottom: 10px;
+    opacity: 0.6;
+}
+
+.empty-state div {
+    font-weight: 500;
+    color: var(--adm-text);
+}
+
+/* ---------- Icon action links (link / trash / toggle) ---------- */
+
+.icon-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: var(--adm-radius-sm);
+    color: var(--adm-text-muted);
+}
+
+/* Same look when the action is a submit button inside a form (e.g. QuickBooksHandler) */
+button.icon-action {
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+    cursor: pointer;
+}
+
+.icon-action-form {
+    display: inline;
+}
+
+.icon-action:hover {
+    background: var(--adm-accent-soft);
+    color: var(--adm-accent);
+    text-decoration: none;
+}
+
+.icon-action.danger:hover {
+    background: var(--adm-danger-soft);
+    color: var(--adm-danger);
+}
+
+/* ---------- Badges ---------- */
+
+.badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--adm-surface-alt);
+    border: 1px solid var(--adm-border);
+    color: var(--adm-text-muted);
+}
+
+.badge-accent  { background: var(--adm-accent-soft);  border-color: transparent; color: var(--adm-accent); }
+.badge-success { background: var(--adm-success-soft); border-color: transparent; color: var(--adm-success); }
+.badge-warning { background: var(--adm-warning-soft); border-color: transparent; color: var(--adm-warning); }
+.badge-danger  { background: var(--adm-danger-soft);  border-color: transparent; color: var(--adm-danger); }
+
+/* ---------- Single sign-on buttons (LogIn) ---------- */
+
+.sso-section {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid var(--adm-border);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sso-section .sso-label {
+    font-size: 12px;
+    color: var(--adm-text-muted);
+}
+
+/* Google renders its own button into .g_id_signin; reserve the space so the page doesn't jump */
+.g_id_signin {
+    display: inline-block;
+    min-width: 230px;
+    min-height: 41px;
+}
+
+.sso-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    width: 230px;
+    height: 41px;
+    padding: 0 12px;
+    border-radius: var(--adm-radius-sm);
+    font-size: 15px;
+    font-weight: 500;
+    color: #fff;
+    text-decoration: none;
+}
+
+.sso-btn:hover {
+    text-decoration: none;
+    filter: brightness(1.08);
+}
+
+.sso-btn.google    { background: #1a73e8; border: 1px solid #1558b0; font-family: Roboto, Arial, sans-serif; }
+.sso-btn.microsoft { background: #0090e7; border: 1px solid #0077bd; font-family: "Segoe UI", Segoe, Tahoma, sans-serif; font-weight: 600; }
+
+/* ---------- Utilities ---------- */
+
+.text-center { text-align: center; }
+.text-right  { text-align: right; }
+.mt-0 { margin-top: 0; }
+.mb-0 { margin-bottom: 0; }
+.stack { display: flex; flex-direction: column; gap: var(--adm-gap); }
+
+/* Visually hidden, still read by screen readers (same name as Bootstrap's) */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}

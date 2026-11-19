@@ -11,7 +11,7 @@
     if(!currentUser.isPresent())
     {
         String bounce2url = request.getRequestURL().toString();
-        response.sendRedirect("/u/admin/LogIn.jsp?bounceback="+bounce2url);
+        response.sendRedirect("/u/admin/LogIn?bounceback="+bounce2url);
         return;
     }
 
@@ -21,7 +21,8 @@
 
 
     List<WidgetItem> widgetList = WidgetItem.getUserWidgetList(currentUser.get());
-    CollUtil.sortListByFunction(widgetList, witem -> -witem.getLocalDbFile().length());
+    // Alphabetical by name, ignoring case (was: largest DB file first)
+    CollUtil.sortListByFunction(widgetList, witem -> witem.theName.toLowerCase());
 
 
     String opcode = argMap.getStr("opcode", "");
@@ -58,7 +59,7 @@
 
         Util.massert(message != null, "Unknown opcode %s", opcode);
         String encmssg = StringUtil.encodeURIComponent(message);
-        String bounce2 = "AdminMain.jsp?message=" + encmssg;
+        String bounce2 = "AdminMain?message=" + encmssg;
         response.sendRedirect(bounce2);
         return;
     }
@@ -72,35 +73,24 @@
 <html lang="en">
 
 <head>
-  <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <title>WebWidgets Admin</title>
-  <!-- plugins:css -->
-  <link rel="stylesheet" href="/u/shared/majestic/vendors/mdi/css/materialdesignicons.min.css">
-  <link rel="stylesheet" href="/u/shared/majestic/vendors/base/vendor.bundle.base.css">
-  <!-- endinject -->
-  <!-- plugin css for this page -->
-  <link rel="stylesheet" href="/u/shared/majestic/vendors/datatables.net-bs4/dataTables.bootstrap4.css">
-  <!-- End plugin css for this page -->
-  <!-- inject:css -->
-  <link rel="stylesheet" href="/u/shared/majestic/css/style.css">
-  <!-- endinject -->
 
 <%@include file="AssetInclude.jsp_inc" %>
+<%@include file="AdminStyle.jsp_inc" %>
 
 <script>
 
 
-function maybeAlertMessage()
+// The server message is shown in the info box on the page; just drop ?message= from the
+// address bar so a refresh doesn't show it again.
+function clearMessageFromUrl()
 {
     const mymessage = "<%= serverMessage %>";
 
     if(mymessage.length > 0)
-    {
-        alert(mymessage);
-        window.location.href = "AdminMain.jsp";
-    }
+        { history.replaceState(null, "", "AdminMain"); }
 }
 
 function isReservedName(myname)
@@ -162,55 +152,47 @@ function deleteWidget(widgetname)
 
 
 </head>
-<body onLoad="javascript:maybeAlertMessage()">
-  <div class="container-scroller">
-    <!-- partial:partials/_navbar.html -->
-    <%@include file="AdminNavBar.jsp_inc" %>
+<body data-page="AdminMain" onLoad="javascript:clearMessageFromUrl()">
 
-    <!-- partial -->
-    <div class="container-fluid page-body-wrapper">
-      <!-- partial:partials/_sidebar.html -->
-      <%@include file="MajesticNavBar.jsp_inc" %>
-      <!-- partial -->
-      <div class="main-panel">
-        <div class="content-wrapper">
-          
-          <div class="row">
-            <div class="col-md-12 grid-margin">
-              <div class="d-flex justify-content-between flex-wrap">
-                <div class="d-flex align-items-end flex-wrap">
-                  <div class="mr-md-3 mr-xl-5">
-                    <h2>Welcome <%= currentUser.get() %></h2>
-                    <p class="mb-md-0">Your WebWidgets admin dashboard.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+  <%@include file="AdminTopBar.jsp_inc" %>
+
+  <div class="admin-shell">
+
+    <%@include file="AdminSideBar.jsp_inc" %>
+
+    <main class="admin-main">
+
+      <div class="page-header">
+        <h2>Welcome <%= currentUser.get() %></h2>
+        <p>Your WebWidgets admin dashboard.</p>
+      </div>
+
+          <% if(serverMessage.length() > 0) { %>
+      <div class="alert alert-info medium">
+        <i class="fa-solid fa-circle-info"></i>
+        <p><%= serverMessage %></p>
+      </div>
+          <% } %>
+
+      <section class="card medium">
+        <div class="card-body">
+          <div class="card-header">
+            <p class="card-title">Widget Listing</p>
+            <a class="btn btn-primary" href="javascript:createBlankWidget()"><i class="fa-solid fa-plus"></i>New Widget</a>
           </div>
-          <div class="row">
-            <div class="col-md-12 stretch-card">
-              <div class="card">
-                <div class="card-body">
-                  <p class="card-title">Widget Listing</p>
 
-                  <p align="center">
-                    <a href="javascript:createBlankWidget()"><button>new widget</button></a>
-                  </p>
-
-                  <br/>
-
-                  <div class="table-responsive">
-                    <table class="table table-striped table-bordered border-light">
-                      <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>#Tables</th>
-                            <th>Size</th>
-                            <th></th>
-                        </tr>
-                      </thead>
-                      <tbody>
-<% 
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th class="num">#Tables</th>
+                  <th class="num">Size</th>
+                  <th class="actions"></th>
+                </tr>
+              </thead>
+              <tbody>
+<%
 
     for(WidgetItem witem : widgetList)
     {
@@ -229,59 +211,34 @@ function deleteWidget(widgetname)
 
         Optional<File> targetFile = witem.findPreferredTargetPage();
 %>
-                      
-<td><b><%= witem.theName %></b></td>
-<td><%= tableset.size() %></td>
-<td><%= sizestr %></td>
-<td width="15%">
-
-<!-- TODO: rebuild the InspectTable tool -->
-
+                <tr>
+                  <td><b><%= witem.theName %></b></td>
+                  <td class="num"><%= tableset.size() %></td>
+                  <td class="num"><%= sizestr %></td>
+                  <td class="actions">
 <%
   if(targetFile.isPresent())
   {
     String widgetlink = Util.sprintf("/u/%s/%s/%s", usercode, witem.theName, targetFile.get().getName());
 
 %>
-
-<a class="no-underline" href="<%= widgetlink %>"><i class="fa-solid fa-link"></i></a>
-
+                    <a class="icon-action" href="<%= widgetlink %>" title="Open widget"><i class="fa-solid fa-link"></i></a>
 <% } else { %>
-
-<img src="/u/shared/image/purewhite.png" style="height: 18px; width: 18px" /></a>
-
+                    <span class="icon-action" style="visibility: hidden"></span>
 <% } %>
-
-
-&nbsp;
-&nbsp;
-
-
-<a href="javascript:deleteWidget('<%= witem.theName %>')"><i class="fa-solid fa-trash"></i></a>
-
-</td>
-</tr>
-
+                    <a class="icon-action danger" href="javascript:deleteWidget('<%= witem.theName %>')" title="Delete widget"><i class="fa-solid fa-trash"></i></a>
+                  </td>
+                </tr>
 <% } %>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
+              </tbody>
+            </table>
           </div>
         </div>
-        <!-- content-wrapper ends -->
-      </div>
-      <!-- main-panel ends -->
-    </div>
-    <!-- page-body-wrapper ends -->
-  </div>
-  <!-- container-scroller -->
+      </section>
 
-  <%@include file="MajesticFooter.jsp_inc" %>
+    </main>
+  </div>
 
 </body>
 
 </html>
-

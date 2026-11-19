@@ -1,0 +1,8 @@
+
+<!-- Top bar for the new admin layout (replaces AdminNavBar.jsp_inc). Plain HTML, no logic. -->
+<header class="admin-topbar">
+  <a class="admin-brand" href="/">
+    <img src="/myimages/WWIO_B.png" alt="">
+    <span>WebWidgets Admin</span>
+  </a>
+</header>

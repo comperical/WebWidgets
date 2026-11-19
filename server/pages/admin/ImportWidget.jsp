@@ -11,7 +11,7 @@
     if(!currentUser.isPresent())
     {
         String bounce2url = request.getRequestURL().toString();
-        response.sendRedirect("/u/admin/LogIn.jsp?bounceback="+bounce2url);
+        response.sendRedirect("/u/admin/LogIn?bounceback="+bounce2url);
         return;
     }
 
@@ -96,7 +96,7 @@
 
         Util.massert(message != null, "Unknown opcode %s", opcode);
         String encmssg = StringUtil.encodeURIComponent(message);
-        String bounce2 = "ImportWidget.jsp?message=" + encmssg;
+        String bounce2 = "ImportWidget?message=" + encmssg;
         response.sendRedirect(bounce2);
         return;        
     }
@@ -109,22 +109,12 @@
 <html lang="en">
 
 <head>
-<!-- Required meta tags -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>WebWidgets Admin</title>
-<!-- plugins:css -->
-<link rel="stylesheet" href="/u/shared/majestic/vendors/mdi/css/materialdesignicons.min.css">
-<link rel="stylesheet" href="/u/shared/majestic/vendors/base/vendor.bundle.base.css">
-<!-- endinject -->
-<!-- plugin css for this page -->
-<link rel="stylesheet" href="/u/shared/majestic/vendors/datatables.net-bs4/dataTables.bootstrap4.css">
-<!-- End plugin css for this page -->
-<!-- inject:css -->
-<link rel="stylesheet" href="/u/shared/majestic/css/style.css">
-<!-- endinject -->
 
 <%@include file="AssetInclude.jsp_inc" %>
+<%@include file="AdminStyle.jsp_inc" %>
 
 <script>
   
@@ -134,15 +124,17 @@ function importWidget(widgetname)
     submit2Base(subpack);
 }
 
-function maybeAlertMessage()
+// The server message is shown in the info box on the page; just drop ?message= from the
+// address bar so a refresh doesn't show it again.
+function clearMessageFromUrl()
 {
-    <% 
+    <%
 
         if(serverMessage.length() > 0)
         {
     %>
 
-    alert("<%= serverMessage %>");
+    history.replaceState(null, "", "ImportWidget");
 
     <% } %>
 }
@@ -151,42 +143,41 @@ function maybeAlertMessage()
 
 
 </head>
-<body onLoad="javascript:maybeAlertMessage()">
-  <div class="container-scroller">
+<body data-page="ImportWidget" onLoad="javascript:clearMessageFromUrl()">
 
-    <!-- partial:partials/_navbar.html -->
-    <%@include file="AdminNavBar.jsp_inc" %>
+  <%@include file="AdminTopBar.jsp_inc" %>
 
-    <!-- partial -->    
-    <div class="container-fluid page-body-wrapper">
-      <!-- partial:partials/_sidebar.html -->
-      <%@include file="MajesticNavBar.jsp_inc" %>
-      <!-- partial -->
-      <div class="main-panel">
-        <div class="content-wrapper">
-          
+  <div class="admin-shell">
 
-          <div class="row">
-            <div class="col-md-12 stretch-card">
-              <div class="card">
-                <div class="card-body">
-                  <p class="card-title">Import Widget Template</p>
-                  <p class="mb-md-0">
-                  This tool allows you to copy pre-created widgets from a template.
-                  <br/>
-                  You can use them directly, or tweak them to suite your own needs.
-                  </p>
-                  
-                  <div class="table-responsive">
-                    <table id="recent-purchases-listing" class="table">
-                      <thead>
-                        <tr>
-                            <th>Widget</th>
-                            <th>Description</th>
-                            <th>..</th>
-                        </tr>
-                      </thead>
-                      <tbody>
+    <%@include file="AdminSideBar.jsp_inc" %>
+
+    <main class="admin-main">
+
+          <% if(serverMessage.length() > 0) { %>
+      <div class="alert alert-info">
+        <i class="fa-solid fa-circle-info"></i>
+        <p><%= serverMessage %></p>
+      </div>
+          <% } %>
+
+      <section class="card">
+        <div class="card-body">
+          <p class="card-title">Import Widget Template</p>
+          <p class="muted">
+          This tool allows you to copy pre-created widgets from a template.
+          You can use them directly, or tweak them to suite your own needs.
+          </p>
+
+          <div class="table-wrap">
+            <table id="recent-purchases-listing" class="table">
+              <thead>
+                <tr>
+                  <th>Widget</th>
+                  <th>Description</th>
+                  <th class="actions"></th>
+                </tr>
+              </thead>
+              <tbody>
 <% 
 
     for(String importname : descriptionMap.keySet())
@@ -195,39 +186,25 @@ function maybeAlertMessage()
 
 
 %>
-<tr>
-<td><b><%= importname %></b></td>
-<td><%= thedesc %></td>
-<td>
-
-<a href="javascript:importWidget('<%= importname %>')">
-<img src="/u/shared/image/leftarrow.png" style="height: 18px; width: 18px" /></a>
-
-
-</td>
-</tr>
+                <tr>
+                  <td><b><%= importname %></b></td>
+                  <td><%= thedesc %></td>
+                  <td class="actions">
+                    <a class="btn btn-sm" href="javascript:importWidget('<%= importname %>')"><i class="fa-solid fa-file-import"></i>Import</a>
+                  </td>
+                </tr>
 
 <% } %>
 
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
+              </tbody>
+            </table>
           </div>
         </div>
-        <!-- content-wrapper ends -->
-      </div>
-      <!-- main-panel ends -->
-    </div>
-    <!-- page-body-wrapper ends -->
-  </div>
-  <!-- container-scroller -->
+      </section>
 
-  <%@include file="MajesticFooter.jsp_inc" %>
+    </main>
+  </div>
 
 </body>
 
 </html>
-

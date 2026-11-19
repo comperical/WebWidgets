@@ -66,7 +66,7 @@
           AuthLogic.setUserCookie(request, response, username);
           AuthLogic.setAuthCookie(request, response, accessHash);
           
-          String bounce2 = optBounceBack.orElse("/u/admin/LogIn.jsp");
+          String bounce2 = optBounceBack.orElse("/u/admin/LogIn");
           response.sendRedirect(bounce2);
           return;
       }
@@ -91,32 +91,15 @@
 <html lang="en">
 
 <head>
-  <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <title>WebWidgets Admin</title>
-  <!-- plugins:css -->
-  <link rel="stylesheet" href="/u/shared/majestic/vendors/mdi/css/materialdesignicons.min.css">
-  <link rel="stylesheet" href="/u/shared/majestic/vendors/base/vendor.bundle.base.css">
-  <!-- endinject -->
-  <!-- plugin css for this page -->
-  <link rel="stylesheet" href="/u/shared/majestic/vendors/datatables.net-bs4/dataTables.bootstrap4.css">
-  <!-- End plugin css for this page -->
-  <!-- inject:css -->
-  <link rel="stylesheet" href="/u/shared/majestic/css/style.css">
-  <!-- endinject -->
   
 <%@include file="../admin/AssetInclude.jsp_inc" %>
+<%@include file="AdminStyle.jsp_inc" %>
 
 <style>
 
-code 
-{
-  background-color: lightgrey;
-  color: black;
-  border: 1px solid;
-  border-color: black;
-}
 
 .g_id_signin {
     display: inline-block;
@@ -213,89 +196,80 @@ function updateAzureLoginButton()
   
   
 </head>
-<body onLoad="javascript:redisplay()">
-  <div class="container-scroller">
-    <!-- partial:partials/_navbar.html -->
-    <%@include file="AdminNavBar.jsp_inc" %>
+<body data-page="LogIn" onLoad="javascript:redisplay()">
 
-    <!-- partial -->
-    <div class="container-fluid page-body-wrapper">
-      <!-- partial:partials/_sidebar.html -->
-      <%@include file="../admin/MajesticNavBar.jsp_inc" %>
-      <!-- partial -->
-      <div class="main-panel">
-        <div class="content-wrapper">
-        
+  <%@include file="AdminTopBar.jsp_inc" %>
 
-          <% 
+  <div class="admin-shell">
+
+    <%@include file="AdminSideBar.jsp_inc" %>
+
+    <main class="admin-main">
+
+          <%
             // This means there's NOTHING in the login cookies, probably user cleared cookies
-            if(!noAuthUser.isPresent()) { 
+            if(!noAuthUser.isPresent()) {
           %>
-          <div class="row">
-            <div class="col-md-12 stretch-card">
-              <div class="card">
-                <div class="card-body">
-                  <p class="card-title">Log In</p>
-                  <p class="mb-4">
-                  Please log-in with username and password
-                  </p>
+      <section class="card narrow">
+        <div class="card-body">
+          <p class="card-title">Log In</p>
+          <p class="muted">Please log-in with username and password</p>
 
                   <%
                     if(passwordFailCode != null)
                     {
                   %>
-                  <p style="color: red;">Incorrect password, please try again</p>
+          <div class="alert alert-danger" style="margin-bottom: 16px">
+            <i class="fa-solid fa-circle-xmark"></i>
+            <p>Incorrect password, please try again</p>
+          </div>
                   <% } %>
 
+          <form>
+            <div class="form-group">
+              <label>Username</label>
+              <input type="text" name="input_username" autofocus />
+            </div>
+            <div class="form-group">
+              <label>Password</label>
+              <input type="password" name="input_password" />
+            </div>
+          </form>
 
-                  <form class="forms-sample">
-                  <label style="font-size: 0.875rem;">Username:</label>
-                  <input type="text" name="input_username" cols="40" autofocus />
-                  <br/>
-                  <label style="font-size: 0.875rem;">Password:</label>
-                  <input type="password" name="input_password" cols="40" />
-                  </form>
-
-                  <br/>
-
-                  <button class="btn btn-primary mr-2" onclick="javascript:serverSideHashLogin()">Submit</button>
+          <button class="btn btn-primary" onclick="javascript:serverSideHashLogin()">Submit</button>
 
                   <!-- This remains absent if Google SSO is not configured. -->
                   <% if(optClientId.isPresent()) { %>
-                  <div id="google_sign_on">
-                    <br/>
-                    <br/>
-                    <div id="g_id_onload"
-                         data-client_id="<%= optClientId.get() %>"
-                         data-context="signin"
-                         data-ux_mode="popup"
-                         data-login_uri="https://webwidgets.io/u/exadmin/OAuthHandler.jsp<%= bounceBackAppend %>"
-                         data-auto_prompt="false">
-                    </div>
-                    <div class="g_id_signin"
-                         data-type="standard"
-                         data-shape="rectangular"
-                         data-theme="filled_blue"
-                         data-text="signin_with"
-                         data-size="large"
-                         data-width="230"
-                         data-logo_alignment="left">
-                      <span class="google-signin-placeholder">Sign in with Google</span>
-                    </div>
-                  </div>
-                  <% } %>
-
-                  <div id="azure_sign_on"></div>
-                </div>
-              </div>
+          <div id="google_sign_on" class="sso-section">
+            <div id="g_id_onload"
+                 data-client_id="<%= optClientId.get() %>"
+                 data-context="signin"
+                 data-ux_mode="popup"
+                 data-login_uri="https://webwidgets.io/u/exadmin/OAuthHandler.jsp<%= bounceBackAppend %>"
+                 data-auto_prompt="false">
+            </div>
+            <div class="g_id_signin"
+                 data-type="standard"
+                 data-shape="rectangular"
+                 data-theme="filled_blue"
+                 data-text="signin_with"
+                 data-size="large"
+                 data-width="230"
+                 data-logo_alignment="left">
+              <span class="google-signin-placeholder">Sign in with Google</span>
             </div>
           </div>
+                  <% } %>
 
-          <% 
+          <div id="azure_sign_on"></div>
+        </div>
+      </section>
+
+          <%
 
           // Okay, have a username, but the password is not valid
           // Show a re-login screen
-          } else if (!currentUser.isPresent()) { 
+          } else if (!currentUser.isPresent()) {
 
             String messageHeader = "Session Expired";
             String messageBody = "Your session has expired. Please re-enter your password to continue";
@@ -309,75 +283,64 @@ function updateAzureLoginButton()
 
           %>
 
-          <div class="row">
-            <div class="col-md-12 stretch-card">
-              <div class="card">
-                <div class="card-body">
-                  <p class="card-title"><%= messageHeader %></p>
-                  <p class="mb-4">
-                  <%= messageBody %>
-                  </p>
-
-
+      <section class="card narrow">
+        <div class="card-body">
+          <p class="card-title"><%= messageHeader %></p>
+          <p class="muted"><%= messageBody %></p>
 
                   <%
                     if(passwordFailCode != null)
                     {
                   %>
-                  <p style="color: red;">Incorrect password, please try again</p>
+          <div class="alert alert-danger" style="margin-bottom: 16px">
+            <i class="fa-solid fa-circle-xmark"></i>
+            <p>Incorrect password, please try again</p>
+          </div>
                   <% } %>
 
+          <form>
+            <div class="form-group">
+              <label>Username</label>
+              <div><code><%= noAuthUser.get() %></code></div>
+              <input type="hidden" name="input_username" value="<%= noAuthUser.get() %>" />
+            </div>
+            <div class="form-group">
+              <label>Password</label>
+              <input type="password" name="input_password" autofocus />
+            </div>
+          </form>
 
-                  <p>Username: <code><%= noAuthUser.get() %></code></p>
-                  <form class="forms-sample">
-                  <label style="font-size: 0.875rem;">Password:</label>
-                  <input type="hidden" name="input_username" value="<%= noAuthUser.get() %>" />
-                  <input type="password" name="input_password" cols="40" autofocus />
-                  </form>
-
-                  <br/>
-                  <br/>
-
-                  <button class="btn btn-primary mr-2" onclick="javascript:serverSideHashLogin()">Submit</button>
-
-                  &nbsp;
-                  &nbsp;
-                  &nbsp;
-
-
-                  <button class="btn btn-primary mr-2" onclick="javascript:logoutAndReturn()">Log-Out</button>
-
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="javascript:serverSideHashLogin()">Submit</button>
+            <button class="btn" onclick="javascript:logoutAndReturn()">Log-Out</button>
+          </div>
 
                   <% if(optClientId.isPresent()) { %>
-                  <div id="google_sign_on">
-                    <br/>
-                    <br/>
-                    <div id="g_id_onload"
-                         data-client_id="<%= optClientId.get() %>"
-                         data-context="signin"
-                         data-ux_mode="popup"
-                         data-login_uri="https://webwidgets.io/u/exadmin/OAuthHandler.jsp<%= bounceBackAppend %>"
-                         data-auto_prompt="false">
-                    </div>
-                    <div class="g_id_signin"
-                         data-type="standard"
-                         data-shape="rectangular"
-                         data-theme="filled_blue"
-                         data-text="signin_with"
-                         data-size="large"
-                         data-width="230"
-                         data-logo_alignment="left">
-                      <span class="google-signin-placeholder">Sign in with Google</span>
-                    </div>
-                  </div>
-                  <% } %>
-
-                  <div id="azure_sign_on"></div>
-                </div>
-              </div>
+          <div id="google_sign_on" class="sso-section">
+            <div id="g_id_onload"
+                 data-client_id="<%= optClientId.get() %>"
+                 data-context="signin"
+                 data-ux_mode="popup"
+                 data-login_uri="https://webwidgets.io/u/exadmin/OAuthHandler.jsp<%= bounceBackAppend %>"
+                 data-auto_prompt="false">
+            </div>
+            <div class="g_id_signin"
+                 data-type="standard"
+                 data-shape="rectangular"
+                 data-theme="filled_blue"
+                 data-text="signin_with"
+                 data-size="large"
+                 data-width="230"
+                 data-logo_alignment="left">
+              <span class="google-signin-placeholder">Sign in with Google</span>
             </div>
           </div>
-          <% 
+                  <% } %>
+
+          <div id="azure_sign_on"></div>
+        </div>
+      </section>
+          <%
 
             // In this situation, user is logged-in properly, but does not have access to the given widget
             } else if(optBounceBack.isPresent())  {
@@ -392,69 +355,41 @@ function updateAzureLoginButton()
                 }
           %>
 
+      <section class="card narrow">
+        <div class="card-body">
+          <p class="card-title">Permission Denied</p>
+          <p>
+            Your account <code><%= noAuthUser.get() %></code>
+            does not have permission to access <%= noAccessPage %>
+          </p>
+          <p>
+            If you think you should have access to this page, please ask for access from the <%= pageOwner %>
+          </p>
+          <p class="muted">You can also log-out and log-in under a different account.</p>
 
-          <div class="row">
-            <div class="col-md-12 stretch-card">
-              <div class="card">
-                <div class="card-body">
-                  <p class="card-title">Permission Denied</p>
-                  <p class="mb-4">
-                  Your account <code><%= noAuthUser.get() %></code> 
-                  does not have permission to access <%= noAccessPage %>
-                  </p>
+          <button class="btn btn-primary" onclick="javascript:logoutAndReturn()">Log-Out</button>
+        </div>
+      </section>
+          <%
 
-                  <p class="mb-4">
-                  If you think you should have access to this page, please ask for access from the <%= pageOwner %>
-                  </p>
-
-                  <p>
-                  You can also log-out and log-in under a different account.
-                  </p>
-                  <br/>
-                  <br/>
-
-                  <button class="btn btn-primary mr-2" onclick="javascript:logoutAndReturn()">Log-Out</button>
-
-                </div>
-              </div>
-            </div>
-          </div>
-          <% 
-
-          // This is the final condition, user is logged-in and there's no bounceback, 
+          // This is the final condition, user is logged-in and there's no bounceback,
           // So just show a sucess message
-          } else  { 
+          } else  {
 
           %>
 
-      
-          <div class="row">
-            <div class="col-md-12 stretch-card">
-              <div class="card">
-                <div class="card-body">
-                  <p class="card-title">Logged In</p>
-                  <p class="mb-4">
-                  You are logged in as <code><%= currentUser.get() %></code>
-                  </p>
+      <section class="card narrow">
+        <div class="card-body">
+          <p class="card-title">Logged In</p>
+          <p>You are logged in as <code><%= currentUser.get() %></code></p>
+          <p class="muted">You can access your home page from the User Home button, or log-out and log-in as another user.</p>
 
-                  <p>You can access your home page from the User Home button, or log-out and log-in as another user.</p>
-
-                  <br/>
-                  <br/>
-
-                  <a href="<%= WebUtil.getUserHomeRelative(currentUser.get()) %>">
-                  <button class="btn btn-primary mr-2">User Home</button></a>
-
-                  &nbsp;
-                  &nbsp;
-                  &nbsp;
-
-                  <button class="btn btn-primary mr-2" onclick="javascript:logoutAndReturn()">Log-Out</button>
-
-                </div>
-              </div>
-            </div>
+          <div class="btn-row">
+            <a class="btn btn-primary" href="<%= WebUtil.getUserHomeRelative(currentUser.get()) %>">User Home</a>
+            <button class="btn" onclick="javascript:logoutAndReturn()">Log-Out</button>
           </div>
+        </div>
+      </section>
           <% } %>
 
           <form name="_sub_form" method="POST">
@@ -464,15 +399,8 @@ function updateAzureLoginButton()
           <input type="hidden" name="bounceback" value="" />
           </form>
 
-        <!-- content-wrapper ends -->
-      </div>
-      <!-- main-panel ends -->
-    </div>
-    <!-- page-body-wrapper ends -->
+    </main>
   </div>
-  <!-- container-scroller -->
-
-  <%@include file="MajesticFooter.jsp_inc" %>
 
 </body>
 </html>
