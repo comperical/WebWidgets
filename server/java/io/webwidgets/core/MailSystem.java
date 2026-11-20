@@ -70,6 +70,7 @@ public class MailSystem {
         // In the future, this should be some kind of global configuration setting.
         // Feb 2025: special WWIO-hosting specific email allowance goes in the plugin, not here
         boolean sendokay = PluginCentral.getMailPlugin().allowEmailSend(valid, tableInfo.dbTabPair._1.theOwner);
+        // TODO: message below is missing "to" before the recipient
         if(!sendokay)
         {
             return Optional.of("This recipient has not elected to receive email from you. Please send a confirmation email " + recipient);
@@ -269,6 +270,7 @@ public class MailSystem {
             { return Util.listify("No ready mail available for user " + user); }
 
         Util.massert(mymap.size() == 1, "Expected exactly one item here, otherwise the LIMIT statement isn't working properly");
+        // TODO: if the plugin skips this mail it is never marked sent, so it blocks the queue and still reports success
         // MailerUtil<Integer> mailutil = new MailerUtil<Integer>(mid -> markMailSentAt(user, mid));
         IMailSender sender = PluginCentral.getMailPlugin();
 
@@ -313,6 +315,7 @@ public class MailSystem {
             { return false; }
 
         // Is this good prevention vs SQL injection...?
+        // TODO: No - quotes, -- and /**/ pass this check; see busicode design/EmailAllowLogicIssues.md
         return emailAddr.replaceAll(" ", "").equals(emailAddr);
     }
 
