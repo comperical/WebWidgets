@@ -5,6 +5,8 @@
 
 <wisp/>
 
+<wisp widgetname="psequence" okay_if_absent="true" />
+
 <style>
 
 /* 
@@ -30,6 +32,13 @@ var TODAY_CODE = U.getTodayCode();
 var EDIT_STUDY_ITEM = -1;
 
 const SNOOZE_EMOJI = "&#128164;";
+
+const XOVER_EMOJI = "&#128256;";
+
+const XOVER_PROJECT_NAME = "Mini Task Xover";
+
+// Some users do not have psequence data; the crossover feature is only available if they do
+const PSEQUENCE_LOADED = W.haveTable("project_task");
 
 // Aug 2026 : new Snooze Until feature. If this is false, we hide snoozed items that
 // have a snooze date in the future
@@ -103,6 +112,45 @@ function snoozeItem(itemid)
 	}
 
 	U.genericItemUpdate("mini_task_list", itemid, updater);
+}
+
+
+// Find the ID of the psequence project that receives crossover items
+function getXoverProjectId()
+{
+	const hits = W.getItemList("project_main").filter(proj => proj.getShortName() == XOVER_PROJECT_NAME);
+	U.massert(hits.length == 1, `Expected exactly one psequence project named ${XOVER_PROJECT_NAME}, found ${hits.length}`);
+	return hits[0].getId();
+}
+
+// Move the MTL item into the Xover psequence project, at the highest order key, then delete it
+function xoverItem(itemid)
+{
+	const theitem = W.lookupItem(MAIN_TABLE, itemid);
+
+	if(!confirm(`Cross over item ${theitem.getShortDesc()} to ${XOVER_PROJECT_NAME}?`))
+		{ return; }
+
+	const projectid = getXoverProjectId();
+
+	const orderlist = W.lookupFromOdIndex("project_task", { project_id : projectid }).map(task => task.getOrderKey());
+	const neworder = orderlist.length == 0 ? 100 : Math.max(...orderlist) + 1;
+
+	const extrainfo = theitem.getExtraInfo().length == 0 ? "NotYetSet" : theitem.getExtraInfo();
+
+	const newrec = {
+		"project_id" : projectid,
+		"phase_id" : -1,
+		"item_name" : theitem.getShortDesc(),
+		"extra_info" : extrainfo,
+		"order_key" : neworder,
+		"started_on" : "",
+		"completed_on" : ""
+	};
+
+	W.buildItem("project_task", newrec).syncItem();
+	theitem.deleteItem();
+	redisplay();
 }
 
 
@@ -429,9 +477,11 @@ function reDispActiveTable()
 				${breaker}
 
 				<a class="no-underline" href="javascript:snoozeItem(${activitem.getId()})">${SNOOZE_EMOJI}</a>
-				
+
 				${breaker}
-				
+
+				${PSEQUENCE_LOADED ? `<a class="no-underline" href="javascript:xoverItem(${activitem.getId()})">${XOVER_EMOJI}</a> ${breaker}` : ""}
+
 				<a href="javascript:deleteItem(${activitem.getId()})">
 				<img src="/u/shared/image/remove.png" height="18"></a>
 				
