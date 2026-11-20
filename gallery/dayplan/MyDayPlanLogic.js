@@ -86,8 +86,11 @@ function getNewItemControl(haveany)
 function handleNavBar(curpage) {
 
     const headerinfo = [
-        ["Day Plan", "widget"],
-        ["Plan Templates", "DayTemplateList"]
+        ["Day Plan", "../dayplan/widget"],
+        ["Plan Templates", "../dayplan/DayTemplateList"],
+
+        // This is not included in the gallery
+        ["Smart Day Plan", "../misc/SmartDayPlan"]
     ];
 
     populateTopNavBar(headerinfo, curpage);
