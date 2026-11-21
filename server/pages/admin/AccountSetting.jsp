@@ -23,7 +23,8 @@
 
       String newemail = argMap.getStr("new_email");
       AdvancedUtil.addEmailAddress(currentUser.get(), ValidatedEmail.from(newemail));
-      response.sendRedirect(request.getRequestURI());
+      String encmssg = StringUtil.encodeURIComponent("Added email address " + newemail);
+      response.sendRedirect("AccountSetting?message=" + encmssg);
       return;
     }
 
@@ -32,7 +33,8 @@
 
       String email = argMap.getStr("old_email");
       AdvancedUtil.removeEmailAddress(currentUser.get(), ValidatedEmail.from(email));
-      response.sendRedirect(request.getRequestURI());
+      String encmssg = StringUtil.encodeURIComponent("Removed email address " + email);
+      response.sendRedirect("AccountSetting?message=" + encmssg);
       return;
     }
 
@@ -143,6 +145,9 @@ function removeEmail(oldemail)
     // So the sidebar stuff above will break (and anything that tries to run queries on currentUser's entry)
     // So do the actual deletion after the nav bar is built
 
+    // Result of account deletion; when present, replaces the normal page content
+    String deleteMessage = "";
+
     if(opcode.length() > 0)
     {
 
@@ -161,7 +166,7 @@ function removeEmail(oldemail)
         deletor.initFromArgMap(mymap);
         deletor.setLogResult(consumer);
         deletor.runOp();
-        serverMessage = Util.join(consumer, "<br/>");
+        deleteMessage = Util.join(consumer, "<br/>");
       }
     }
 %>
@@ -169,13 +174,13 @@ function removeEmail(oldemail)
 
     <main class="admin-main">
 
-          <% if(serverMessage.length() > 0) { %>
+          <% if(deleteMessage.length() > 0) { %>
       <section class="card narrow">
         <div class="card-body">
           <p class="card-title">Message</p>
           <div class="alert alert-info" style="margin-bottom: 16px">
             <i class="fa-solid fa-circle-info"></i>
-            <p><%= serverMessage %></p>
+            <p><%= deleteMessage %></p>
           </div>
           <p class="mb-0">Thanks for using WebWidgets.io, sorry to see you go!</p>
         </div>
@@ -183,6 +188,13 @@ function removeEmail(oldemail)
 
 
           <% }  else  { %>
+
+          <% if(serverMessage.length() > 0) { %>
+      <div class="alert alert-info">
+        <i class="fa-solid fa-circle-info"></i>
+        <p><%= serverMessage %></p>
+      </div>
+          <% } %>
 
       <section class="card">
         <div class="card-body">
@@ -200,7 +212,7 @@ function removeEmail(oldemail)
               <tbody>
                       <%
 
-                        for(String anemail : currentUser.get().getEmailSet())
+                        for(String anemail : new TreeSet<>(currentUser.get().getEmailSet()))
                         {
                       %>
                 <tr>
