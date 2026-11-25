@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 import net.danburfoot.shared.Util;
 import net.danburfoot.shared.CoreDb;
 import net.danburfoot.shared.ArgMap;
+import net.danburfoot.shared.CollUtil;
 import net.danburfoot.shared.FileUtils;
 import net.danburfoot.shared.StringUtil;
 import net.danburfoot.shared.CoreDb.*;
@@ -41,6 +42,10 @@ public class ActionJackson extends HttpServlet
 	{
 		AccessDenied,
 		CodeFormatError,
+
+		// Only admins can upload blocked file extensions
+		BlockedFileListError,
+
 		InsecureConnection,
 		IncludeArgError,
 
@@ -238,6 +243,16 @@ public class ActionJackson extends HttpServlet
 			if(filetype.isZip())
 			{
 				CodeExtractor codex = codeloc.getExtractor();
+
+				if(!CoreUtil.canUploadBlockedFile(dbitem.theOwner))
+				{
+					var blocklist = codex.getBlockedFileList(codeloc);
+					if(!blocklist.isEmpty())
+					{
+						String wrapmssg = "Attempt to upload blocked file extensions by non-admin user: " + blocklist;
+						throw new LoaderException(LoadApiError.BlockedFileListError, wrapmssg);
+					}
+				}
 
 				// Admins and maybe some other special perms have the OPTION to skip format checks,
 				// but need to pass an appropriate flag on userpush
@@ -543,35 +558,50 @@ public class ActionJackson extends HttpServlet
 		}
 		
 
+		List<String> getBlockedFileList(CodeLocator codeloc) throws IOException
+		{
+			try (ZipFile zf = new ZipFile(codeloc.getCodeFile())) {
+
+			    return zf.stream()
+			    			.map(ZipEntry::getName)
+			             	.filter(CoreUtil::isFileExtensionBlocked)
+			             	.collect(CollUtil.toList());
+			}
+		}
+
+
 		void checkCodeFormat(CodeLocator codeloc) throws LoaderException, IOException
 		{
-			ZipFile myfile = new ZipFile(codeloc.getCodeFile());
-			Enumeration<? extends ZipEntry> zipen = myfile.entries();
-			
-			while(zipen.hasMoreElements()) {
-				ZipEntry zent = zipen.nextElement();
-				String zname = zent.getName();
 
-				// Formerly checked .jsp files here, but now only dburfoot/admin should be using .jsp files
-				if(zname.endsWith(".wisp"))
-				{
-					List<String> srclist = FileUtils.getReaderUtil()
-													.setStream(myfile.getInputStream(zent))
-													.readLineListE();
+			try (ZipFile myfile = new ZipFile(codeloc.getCodeFile())) {
 
-					Optional<WidgetItem> optitem = codeloc.getCodeTarget();
-					if(!optitem.isPresent())
+				Enumeration<? extends ZipEntry> zipen = myfile.entries();
+				
+				while(zipen.hasMoreElements()) {
+					ZipEntry zent = zipen.nextElement();
+					String zname = zent.getName();
+
+					// Formerly checked .jsp files as well, but now all non-admin JSP uploads are blocked
+					if(zname.endsWith(".wisp"))
 					{
-						String wrapmssg = ".wisp files cannot be included in base directories, use .html instead";
-						throw new LoaderException(LoadApiError.CodeFormatError, wrapmssg);
-					}
+						List<String> srclist = FileUtils.getReaderUtil()
+														.setStream(myfile.getInputStream(zent))
+														.readLineListE();
 
-					WispFileFormat wff = new WispFileFormat(srclist, optitem.get());
-					try {
-						wff.checkCodeFormat();
-					} catch (Exception ex) {
-						String wrapmssg = Util.sprintf("Found error in WISP file format: %s", ex.getMessage());
-						throw new LoaderException(LoadApiError.CodeFormatError, wrapmssg);
+						Optional<WidgetItem> optitem = codeloc.getCodeTarget();
+						if(!optitem.isPresent())
+						{
+							String wrapmssg = ".wisp files cannot be included in base directories, use .html instead";
+							throw new LoaderException(LoadApiError.CodeFormatError, wrapmssg);
+						}
+
+						WispFileFormat wff = new WispFileFormat(srclist, optitem.get());
+						try {
+							wff.checkCodeFormat();
+						} catch (Exception ex) {
+							String wrapmssg = Util.sprintf("Found error in WISP file format: %s", ex.getMessage());
+							throw new LoaderException(LoadApiError.CodeFormatError, wrapmssg);
+						}
 					}
 				}
 			}
@@ -585,6 +615,8 @@ public class ActionJackson extends HttpServlet
 			Util.massert(basedir.exists(),
 				"Base directory %s does not exist", basedir);
 			
+
+			// TODO: this is potentially a resource leak if there is a problem with unzipping
 			try {
 				Util.massert(codeloc.getCodeFile().toString().endsWith("zip"),
 					"Expected to see a file ending in .zip, got %s", codeloc.getCodeFile());

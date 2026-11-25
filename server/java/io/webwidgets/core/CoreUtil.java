@@ -66,6 +66,10 @@ public class CoreUtil
 	// of WWIO. For now (Oct 2025), use a strict approach
     public static final Pattern ALLOWED_COLUMN_NAME = Pattern.compile("^[_a-z0-9]+$");
 
+    // This is a legacy of WebWidgets' origin as a J2EE-based system
+    // At least in terms of API, it no longer depends meaningfully on JSP or any other J2EE stuff
+    // But we block upload of JSP files for security reasons
+    public static final Set<String> BLOCKED_EXTENSION_LIST = Util.hardset("jsp", "jspx", "tag", "tagx", "jspf");
 
 	// These are widget names where you can upload code, but not DB files
 	public static final Set<String> AUX_CODE_OKAY = Collections.unmodifiableSet(
@@ -674,6 +678,20 @@ public class CoreUtil
 		Map<File, Long> ckmap = Util.treemap();
 		popCheckSumMap(topdir, ckmap);
 		return ckmap;
+	}
+
+	public static boolean isFileExtensionBlocked(String filename)
+	{
+		int extendhit = Util.countPred(CoreUtil.BLOCKED_EXTENSION_LIST,
+			ext -> filename.toLowerCase().endsWith("." + ext.toLowerCase()));
+
+		return extendhit > 0;
+	}
+
+	// Admins can always upload blocked file types; plugin can grant this to other users
+	public static boolean canUploadBlockedFile(WidgetUser user)
+	{
+		return user.isAdmin() || PluginCentral.getGeneralPlugin().canUploadBlockedFile(user);
 	}
 
 	private static void popCheckSumMap(File subdir, Map<File, Long> ckmap)

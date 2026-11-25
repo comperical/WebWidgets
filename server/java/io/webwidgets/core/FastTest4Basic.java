@@ -226,6 +226,101 @@ public class FastTest4Basic
 		}
 	}
 
+	public static class BlockedFileExtensionTest extends DescRunnable
+	{
+		public String getDesc()
+		{
+			return "Checks the logic that blocks upload of JSP and related file extensions";
+		}
+
+		public void runOp()
+		{
+			List<String> blocked = Arrays.asList(
+				"index.jsp", "INDEX.JSP", "Page.Jsp", "dir/sub/page.jsp",
+				"page.jspx", "frag.jspf", "mytags/hello.tag", "mytags/hello.TAGX",
+				"weird.name.jsp"
+			);
+
+			List<String> allowed = Arrays.asList(
+				"index.html", "widget.wisp", "script.js", "style.css",
+				"hashtag", "notajsp", "foo.ajsp", "price-tag.png",
+				"page.jsp.html", "jsp/index.html", "tag/readme.txt", "jsp"
+			);
+
+			for(String fname : blocked)
+			{
+				Util.massert(CoreUtil.isFileExtensionBlocked(fname),
+					"Expected file name %s to be blocked", fname);
+			}
+
+			for(String fname : allowed)
+			{
+				Util.massert(!CoreUtil.isFileExtensionBlocked(fname),
+					"Expected file name %s to be allowed", fname);
+			}
+
+			Util.pf("Success, checked %d blocked and %d allowed file names\n", blocked.size(), allowed.size());
+		}
+	}
+
+	public static class UserCodeBlockedFileCheck extends DescRunnable
+	{
+		public String getDesc()
+		{
+			return "Scans every WidgetUser's code directory for blocked file extensions (JSP etc).\n" +
+					"Blocked files are okay only if the user is admin or allowed by the general plugin";
+		}
+
+		public void runOp() throws IOException
+		{
+			int filecount = 0;
+			int allowcount = 0;
+			int errcount = 0;
+
+			for(WidgetUser wuser : WidgetUser.values())
+			{
+				File basedir = wuser.getUserBaseDir();
+				if(!basedir.exists())
+					{ continue; }
+
+				List<File> blocklist = new ArrayList<>();
+
+				// Files.walk does not follow symlinks by default
+				try (var pathstream = java.nio.file.Files.walk(basedir.toPath())) {
+					for(var path : (Iterable<java.nio.file.Path>) pathstream::iterator)
+					{
+						File f = path.toFile();
+						if(!f.isFile())
+							{ continue; }
+
+						filecount++;
+						if(CoreUtil.isFileExtensionBlocked(f.getName()))
+							{ blocklist.add(f); }
+					}
+				}
+
+				if(blocklist.isEmpty())
+					{ continue; }
+
+				if(CoreUtil.canUploadBlockedFile(wuser))
+				{
+					allowcount += blocklist.size();
+					continue;
+				}
+
+				Util.pferr("User %s is not allowed blocked files, but has %d:\n", wuser, blocklist.size());
+				for(File f : blocklist)
+					{ Util.pferr("\t%s\n", f); }
+
+				errcount += blocklist.size();
+			}
+
+			Util.massert(errcount == 0, "Found %d blocked files for users without permission, see above", errcount);
+			Util.pf("Success, scanned %d files for %d users, %d blocked files belong to permitted users\n",
+				filecount, WidgetUser.values().size(), allowcount);
+		}
+	}
+
 	public static class MailboxConfigurationTest extends DescRunnable
 	{
 

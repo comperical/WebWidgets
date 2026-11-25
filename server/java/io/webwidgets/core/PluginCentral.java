@@ -106,6 +106,12 @@ public class PluginCentral
 			return s -> "";
 		}
 
+		// Override to allow special users to upload blocked file types.
+		public boolean canUploadBlockedFile(WidgetUser user)
+		{
+			return false;
+		}
+
 		// If you return a valid Google Client ID here, the LogIn page will give users the option
 		// of signing in with Google Sign On
 		public Optional<String> getGoogleClientId()
